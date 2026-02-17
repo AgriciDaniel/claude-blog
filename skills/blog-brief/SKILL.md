@@ -4,7 +4,7 @@ description: >
   Generate detailed content briefs for blog posts with target keywords,
   content outlines, competitive analysis, recommended statistics, image and
   chart suggestions, word count targets, and internal linking plans. Briefs
-  are optimized for Google rankings (Authenticity Update) and AI citations
+  are optimized for Google rankings (December 2025 Core Update) and AI citations
   (GEO/AEO). Use when user says "content brief", "blog brief", "write brief",
   "outline blog", "plan blog post", "blog outline", "content outline".
 allowed-tools:

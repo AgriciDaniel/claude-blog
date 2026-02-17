@@ -2,7 +2,7 @@
 name: blog
 description: >
   Blog strategy, content briefs, editorial calendars, and article generation
-  optimized for Google rankings (Authenticity Update, E-E-A-T) and AI citations
+  optimized for Google rankings (December 2025 Core Update, E-E-A-T) and AI citations
   (GEO/AEO). Writes, rewrites, analyzes, and updates blog posts with answer-first
   formatting, sourced statistics, Pixabay/Unsplash images, SVG charts via /svg skill,
   FAQ schema injection, and freshness signals. Supports any platform (WordPress,
@@ -26,7 +26,7 @@ allowed-tools:
 # Blog -- Content Engine for Rankings & AI Citations
 
 Full-lifecycle blog management: strategy, briefs, writing, analysis, optimization,
-and editorial planning. Dual-optimized for Google's January 2026 Authenticity Update
+and editorial planning. Dual-optimized for Google's December 2025 Core Update
 and AI citation platforms (ChatGPT, Perplexity, Google AI Overviews).
 
 ## Quick Reference
@@ -124,7 +124,7 @@ Blog quality is scored across 6 categories (100 points total):
 ## Reference Files
 
 Load on-demand as needed:
-- `references/seo-2026.md` — Google Authenticity Update, E-E-A-T, algorithm changes
+- `references/google-landscape-2026.md` — December 2025 Core Update, E-E-A-T, algorithm changes
 - `references/geo-optimization.md` — GEO/AEO techniques, AI citation factors
 - `references/content-rules.md` — Structure, readability, answer-first formatting
 - `references/visual-media.md` — Image sourcing (Pixabay, Unsplash) + SVG chart integration
@@ -159,7 +159,7 @@ Load on-demand as needed:
 
 | Anti-Pattern | Why |
 |-------------|-----|
-| Fabricate statistics | Authenticity Update penalizes unsourced claims |
+| Fabricate statistics | December 2025 Core Update penalizes unsourced claims |
 | Use the same chart type twice | Visual monotony, reduces engagement |
 | Keyword-stuff headings or meta | Google ignores/penalizes this |
 | Bury answers in paragraphs | AI systems extract from section openers |

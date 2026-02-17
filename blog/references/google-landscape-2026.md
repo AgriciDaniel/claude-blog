@@ -1,10 +1,11 @@
 # SEO Landscape 2026 -- Google Updates & E-E-A-T
 
-## January 2026 "Authenticity Update"
+## December 2025 Core Update
 
-Launched January 4, 2026. Google's strongest push against generic AI-generated content.
-Built on the December 2025 Core Update (Dec 11-29, 2025) which caused 15% of top-10
-pages to disappear from top 100.
+Ran December 11-29, 2025 (18 days). Google's official statement: "designed to better
+surface relevant, satisfying content." Rewarded authentic first-hand experience and
+penalized "fake freshness." 71% of affiliate sites without original testing were
+negatively impacted. E-E-A-T requirements expanded beyond YMYL to ALL competitive queries.
 
 ### Authenticity Signals Google Evaluates
 

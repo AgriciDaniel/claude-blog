@@ -1,6 +1,6 @@
 # claude-blog
 
-A Claude Code skill ecosystem for blog content creation, optimization, and management. Dual-optimized for Google rankings (Authenticity Update, E-E-A-T) and AI citation platforms (GEO/AEO).
+A Claude Code skill ecosystem for blog content creation, optimization, and management. Dual-optimized for Google rankings (December 2025 Core Update, E-E-A-T) and AI citation platforms (GEO/AEO).
 
 ## What It Does
 

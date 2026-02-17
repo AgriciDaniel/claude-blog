@@ -79,7 +79,7 @@ Design 3-5 content pillars based on audience needs and competitive gaps:
 
 ### Step 5: Differentiation Strategy
 
-The January 2026 Authenticity Update rewards first-hand experience. Plan
+The December 2025 Core Update rewards first-hand experience. Plan
 how to demonstrate genuine expertise:
 
 | Signal Type | Implementation |
