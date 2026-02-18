@@ -1,16 +1,20 @@
 ---
 name: blog
 description: >
-  Blog strategy, content briefs, editorial calendars, and article generation
-  optimized for Google rankings (December 2025 Core Update, E-E-A-T) and AI citations
-  (GEO/AEO). Writes, rewrites, analyzes, and updates blog posts with answer-first
-  formatting, sourced statistics, Pixabay/Unsplash images, SVG charts via /svg skill,
-  FAQ schema injection, and freshness signals. Supports any platform (WordPress,
-  Next.js MDX, Hugo, Ghost, HTML). Use when user says "blog", "write blog",
-  "blog post", "blog strategy", "content brief", "editorial calendar", "analyze blog",
-  "rewrite blog", "update blog", "blog SEO", "blog optimization", "content plan".
+  Full-lifecycle blog engine with 12 commands, 12 content templates, 5-category
+  100-point scoring, and 4 specialized agents. Optimized for Google rankings
+  (December 2025 Core Update, E-E-A-T) and AI citations (GEO/AEO). Writes,
+  rewrites, analyzes, outlines, audits, and repurposes blog content with
+  answer-first formatting, sourced statistics, Pixabay/Unsplash/Pexels images,
+  SVG charts via /svg skill, JSON-LD schema generation, and freshness signals.
+  Supports any platform (WordPress, Next.js MDX, Hugo, Ghost, Astro, Jekyll,
+  11ty, Gatsby, HTML). Use when user says "blog", "write blog", "blog post",
+  "blog strategy", "content brief", "editorial calendar", "analyze blog",
+  "rewrite blog", "update blog", "blog SEO", "blog optimization", "content plan",
+  "blog outline", "seo check", "schema markup", "repurpose", "geo audit",
+  "blog audit", "citation readiness".
 user-invocable: true
-argument-hint: "[write|rewrite|analyze|brief|calendar|strategy] [topic-or-file]"
+argument-hint: "[write|rewrite|analyze|brief|calendar|strategy|outline|seo-check|schema|repurpose|geo|audit] [topic-or-file]"
 allowed-tools:
   - Read
   - Write
@@ -25,9 +29,10 @@ allowed-tools:
 
 # Blog -- Content Engine for Rankings & AI Citations
 
-Full-lifecycle blog management: strategy, briefs, writing, analysis, optimization,
-and editorial planning. Dual-optimized for Google's December 2025 Core Update
-and AI citation platforms (ChatGPT, Perplexity, Google AI Overviews).
+Full-lifecycle blog management: strategy, briefs, outlines, writing, analysis,
+optimization, schema generation, repurposing, and editorial planning. Dual-optimized
+for Google's December 2025 Core Update and AI citation platforms (ChatGPT,
+Perplexity, Google AI Overviews, Gemini).
 
 ## Quick Reference
 
@@ -39,7 +44,13 @@ and AI citation platforms (ChatGPT, Perplexity, Google AI Overviews).
 | `/blog brief <topic>` | Generate a detailed content brief |
 | `/blog calendar [monthly\|quarterly]` | Generate an editorial calendar |
 | `/blog strategy <niche>` | Blog strategy and topic ideation |
-| `/blog update <file>` | Update existing post with fresh stats and sources |
+| `/blog outline <topic>` | Generate SERP-informed content outline |
+| `/blog seo-check <file>` | Post-writing SEO validation checklist |
+| `/blog schema <file>` | Generate JSON-LD schema markup |
+| `/blog repurpose <file>` | Repurpose content for other platforms |
+| `/blog geo <file>` | AI citation readiness audit |
+| `/blog audit [directory]` | Full-site blog health assessment |
+| `/blog update <file>` | Update existing post with fresh stats (routes to rewrite) |
 
 ## Orchestration Logic
 
@@ -50,10 +61,16 @@ and AI citation platforms (ChatGPT, Perplexity, Google AI Overviews).
 3. Route to the appropriate sub-skill:
    - `write` → `blog-write` (new articles from scratch)
    - `rewrite` → `blog-rewrite` (optimize existing posts)
-   - `analyze` / `audit` → `blog-analyze` (quality scoring)
+   - `analyze` → `blog-analyze` (quality scoring)
    - `brief` → `blog-brief` (content briefs)
    - `calendar` / `plan` → `blog-calendar` (editorial calendars)
    - `strategy` / `ideation` → `blog-strategy` (positioning and topics)
+   - `outline` → `blog-outline` (SERP-informed outlines)
+   - `seo-check` / `seo` → `blog-seo-check` (SEO validation)
+   - `schema` → `blog-schema` (JSON-LD generation)
+   - `repurpose` → `blog-repurpose` (cross-platform content)
+   - `geo` / `aeo` / `citation` → `blog-geo` (AI citation audit)
+   - `audit` / `health` → `blog-audit` (site-wide assessment)
    - `update` → `blog-rewrite` (with freshness-update mode)
 
 ### Platform Detection
@@ -69,6 +86,8 @@ Detect blog platform from file extension and project structure:
 | `wp-content/` directory | WordPress | HTML or Gutenberg blocks |
 | `ghost/` or Ghost API | Ghost | Mobiledoc or HTML |
 | `.astro` files | Astro | MDX or markdown |
+| `.njk` files, `.eleventy.js` | 11ty | Nunjucks/Markdown |
+| `gatsby-config.js` | Gatsby | MDX/React |
 
 Adapt output format to detected platform. Default to standard markdown if unknown.
 
@@ -101,55 +120,124 @@ These are hard rules. Never ship content that violates them:
 
 ## Scoring Methodology
 
-Blog quality is scored across 6 categories (100 points total):
+Blog quality is scored across 5 categories (100 points total):
 
 | Category | Weight | What it measures |
 |----------|--------|-----------------|
-| Content Quality | 25 pts | Readability, paragraph length, sentence length, information gain |
-| Answer-First Formatting | 20 pts | Stat-first H2 openers, direct answers, question headings |
-| Statistics & Citations | 20 pts | Source count, tier quality, attribution format |
-| Visual Elements | 15 pts | Image count, chart count/diversity, distribution |
-| Schema & Structure | 10 pts | FAQ schema, BlogPosting schema, heading hierarchy |
-| Freshness & Trust | 10 pts | Update date, author E-E-A-T, brand mentions |
+| Content Quality | 30 pts | Depth, readability (Flesch 45-60), originality, logical structure, engagement elements |
+| SEO Optimization | 25 pts | Heading hierarchy, title tag, keyword placement, internal linking, meta description |
+| E-E-A-T Signals | 15 pts | Author attribution, source citations, trust indicators, experience signals |
+| Technical Elements | 15 pts | Schema markup, image optimization, page speed, mobile-friendliness, OG meta |
+| AI Citation Readiness | 15 pts | Passage citability, Q&A format, entity clarity, AI crawler accessibility |
 
 ### Scoring Bands
 
 | Score | Rating | Action |
 |-------|--------|--------|
-| 90-100 | Excellent | Publish as-is |
-| 75-89 | Good | Minor tweaks needed |
-| 60-74 | Needs Work | Significant improvements required |
-| < 60 | Poor | Full rewrite recommended |
+| 90-100 | Exceptional | Publish as-is, flagship content |
+| 80-89 | Strong | Minor polish, ready for publication |
+| 70-79 | Acceptable | Targeted improvements needed |
+| 60-69 | Below Standard | Significant rework required |
+| < 60 | Rewrite | Fundamental issues, start from outline |
 
 ## Reference Files
 
-Load on-demand as needed:
-- `references/google-landscape-2026.md` — December 2025 Core Update, E-E-A-T, algorithm changes
-- `references/geo-optimization.md` — GEO/AEO techniques, AI citation factors
-- `references/content-rules.md` — Structure, readability, answer-first formatting
-- `references/visual-media.md` — Image sourcing (Pixabay, Unsplash) + SVG chart integration
-- `references/quality-scoring.md` — Full scoring checklist with point values
-- `references/platform-guides.md` — Platform-specific output formatting (Next.js, Astro, Hugo, Jekyll, WordPress, Ghost, 11ty, Gatsby, HTML)
-- `references/distribution-playbook.md` — Content distribution strategy (Reddit, YouTube, LinkedIn, Twitter/X, Email, Reviews)
-- `references/content-templates.md` — Content type template index and selection guide (12 templates)
+Load on-demand as needed (12 references):
+
+- `references/google-landscape-2026.md` -- December 2025 Core Update, E-E-A-T, algorithm changes
+- `references/geo-optimization.md` -- GEO/AEO techniques, AI citation factors
+- `references/content-rules.md` -- Structure, readability, answer-first formatting
+- `references/visual-media.md` -- Image sourcing (Pixabay, Unsplash, Pexels) + SVG chart integration
+- `references/quality-scoring.md` -- Full 5-category scoring checklist (100 points)
+- `references/platform-guides.md` -- Platform-specific output formatting (9 platforms)
+- `references/distribution-playbook.md` -- Content distribution strategy (Reddit, YouTube, LinkedIn, etc.)
+- `references/content-templates.md` -- Content type template index (12 templates)
+- `references/eeat-signals.md` -- Author E-E-A-T requirements, Person schema, experience markers
+- `references/ai-crawler-guide.md` -- AI bot management, robots.txt, SSR requirements
+- `references/schema-stack.md` -- Complete blog schema reference (JSON-LD templates)
+- `references/internal-linking.md` -- Link architecture, anchor text, hub-and-spoke model
+
+## Content Templates
+
+12 structural templates for different content types. Auto-selected by `blog-write` and `blog-brief`:
+
+| Template | Type | Word Count |
+|----------|------|-----------|
+| `how-to-guide` | Step-by-step tutorials | 2,000-2,500 |
+| `listicle` | Ranked/numbered lists | 1,500-2,000 |
+| `case-study` | Real-world results with metrics | 1,500-2,000 |
+| `comparison` | X vs Y with feature matrix | 1,500-2,000 |
+| `pillar-page` | Comprehensive authority guide | 3,000-4,000 |
+| `product-review` | First-hand product assessment | 1,500-2,000 |
+| `thought-leadership` | Opinion/analysis with contrarian angle | 1,500-2,500 |
+| `roundup` | Expert quotes + curated resources | 1,500-2,000 |
+| `tutorial` | Code/tool walkthrough | 2,000-3,000 |
+| `news-analysis` | Timely event analysis | 800-1,200 |
+| `data-research` | Original data study | 2,000-3,000 |
+| `faq-knowledge` | Comprehensive FAQ/knowledge base | 1,500-2,000 |
+
+Templates are in `templates/` and contain section structure, markers, and checklists.
 
 ## Sub-Skills
 
 | Sub-Skill | Purpose |
 |-----------|---------|
-| `blog-write` | Write new blog articles from scratch with full optimization |
-| `blog-rewrite` | Rewrite/optimize existing posts for rankings and AI citations |
-| `blog-analyze` | Audit blog quality with 0-100 scoring and prioritized recommendations |
-| `blog-brief` | Generate detailed content briefs with outlines and research |
-| `blog-calendar` | Editorial calendars with topic clusters and freshness schedules |
-| `blog-strategy` | Blog positioning, content pillars, audience mapping, distribution |
+| `blog-write` | Write new blog articles with template selection, TL;DR, citation capsules |
+| `blog-rewrite` | Optimize existing posts with AI detection, anti-AI patterns |
+| `blog-analyze` | 5-category 100-point quality audit with AI content detection |
+| `blog-brief` | Content briefs with template recommendation, distribution plan |
+| `blog-calendar` | Editorial calendars with decay detection, 60/30/10 content mix |
+| `blog-strategy` | Positioning, topic clusters, AI citation surface strategy |
+| `blog-outline` | SERP-informed outlines with competitive gap analysis |
+| `blog-seo-check` | Post-writing SEO validation (title, meta, headings, links, OG) |
+| `blog-schema` | JSON-LD schema generation (BlogPosting, Person, FAQ, Breadcrumb) |
+| `blog-repurpose` | Cross-platform repurposing (social, email, YouTube, Reddit) |
+| `blog-geo` | AI citation readiness audit with 0-100 GEO score |
+| `blog-audit` | Full-site blog health assessment with parallel subagents |
 
-## Subagents
+## Agents
 
 | Agent | Role |
 |-------|------|
-| `blog-researcher` | Research specialist — finds current statistics, sources, competitive data |
-| `blog-writer` | Content generation specialist — writes optimized blog content |
+| `blog-researcher` | Research specialist -- finds statistics, sources, images, competitive data |
+| `blog-writer` | Content generation specialist -- writes optimized blog content |
+| `blog-seo` | SEO validation specialist -- checks on-page SEO post-writing |
+| `blog-reviewer` | Quality assessment -- runs 100-point scoring, AI content detection |
+
+### Agent Details
+
+**blog-researcher**: Runs as a Task subagent. Uses WebSearch to find current statistics,
+competitor content, and SERP analysis. Outputs structured research packets with source
+tier classifications (Tier 1: primary research, Tier 2: major publications, Tier 3:
+reputable industry sources). Also sources Pixabay/Unsplash/Pexels image URLs.
+
+**blog-writer**: Receives research packets and content briefs. Writes content using the
+selected template structure. Applies answer-first formatting, citation capsules, and
+TL;DR blocks. Outputs platform-formatted content ready for the SEO agent.
+
+**blog-seo**: Post-writing validation agent. Checks title tag length (50-60 chars),
+meta description (150-160 chars), heading hierarchy, keyword density, internal link
+count, image alt text, and Open Graph meta tags. Returns pass/fail checklist.
+
+**blog-reviewer**: Final quality gate. Runs the full 5-category 100-point scoring
+rubric. Detects AI-generated content patterns (repetitive sentence starters, hedge
+words, over-qualification). Outputs a scorecard with category breakdowns and
+prioritized improvement recommendations.
+
+## Execution Flow
+
+Standard execution order for `/blog write`:
+
+1. **Parse** -- Identify topic, detect platform, select template
+2. **Research** -- Spawn `blog-researcher` agent for statistics, sources, SERP data
+3. **Outline** -- Build section structure from template + research gaps
+4. **Write** -- Spawn `blog-writer` agent with research packet and outline
+5. **Optimize** -- Spawn `blog-seo` agent for on-page validation
+6. **Score** -- Spawn `blog-reviewer` agent for 100-point quality audit
+7. **Deliver** -- Output final content with scorecard and improvement notes
+
+For `/blog analyze`, only steps 1 and 6 run (read + score).
+For `/blog audit`, step 6 runs in parallel across all posts in the directory.
 
 ## Integration with Other Skills
 
@@ -157,6 +245,10 @@ Load on-demand as needed:
 - **`/seo`**: Deep SEO analysis of published blog pages
 - **`/seo-schema`**: Schema markup validation and generation
 - **`/seo-geo`**: AI citation optimization audit
+
+Use `/svg` inline during `blog-write` when data points warrant a chart. The blog skill
+automatically identifies chart-worthy data (3+ comparable metrics, trend data, before/after
+comparisons) and calls `/svg` to generate inline SVG with dark-mode styling.
 
 ## Anti-Patterns (Never Do These)
 

@@ -1,95 +1,206 @@
 # claude-blog
 
-A Claude Code skill ecosystem for blog content creation, optimization, and management. Dual-optimized for Google rankings (December 2025 Core Update, E-E-A-T) and AI citation platforms (GEO/AEO).
+<!-- Cover Image Placeholder -->
+<!-- ![claude-blog cover](screenshots/cover-image.jpeg) -->
 
-## What It Does
+**The most comprehensive blog creation skill for Claude Code.**
 
-`claude-blog` provides a complete blog lifecycle through Claude Code slash commands:
+Strategy, briefs, calendars, writing, optimization, schema, repurposing, and full-site audits — all from slash commands. Dual-optimized for Google rankings (December 2025 Core Update) and AI citation platforms (ChatGPT, Perplexity, AI Overviews).
+
+<!-- Badges -->
+![Claude Code Skill](https://img.shields.io/badge/Claude_Code-Skill-blueviolet)
+![License: MIT](https://img.shields.io/badge/License-MIT-green)
+![Python 3.12+](https://img.shields.io/badge/Python-3.12%2B-blue)
+![Sub-Skills](https://img.shields.io/badge/Sub--Skills-12-orange)
+
+---
+
+## Quick Start
+
+One-command install (Unix/macOS):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/agricidaniel/claude-blog/main/install.sh | bash
+```
+
+Or clone and install manually:
+
+```bash
+git clone https://github.com/agricidaniel/claude-blog.git
+cd claude-blog
+chmod +x install.sh && ./install.sh
+```
+
+Windows (PowerShell):
+```powershell
+.\install.ps1
+```
+
+Restart Claude Code after installation to activate.
+
+## Commands
 
 | Command | Description |
 |---------|-------------|
 | `/blog write <topic>` | Write a new blog post from scratch |
 | `/blog rewrite <file>` | Optimize an existing blog post |
-| `/blog analyze <file>` | Audit blog quality with a 0-100 score |
+| `/blog analyze <file>` | Quality audit with 0-100 score |
 | `/blog brief <topic>` | Generate a detailed content brief |
 | `/blog calendar` | Generate an editorial calendar |
 | `/blog strategy <niche>` | Blog strategy and topic ideation |
+| `/blog outline <topic>` | SERP-informed content outline |
+| `/blog seo-check <file>` | Post-writing SEO validation |
+| `/blog schema <file>` | Generate JSON-LD schema markup |
+| `/blog repurpose <file>` | Repurpose for social, email, YouTube |
+| `/blog geo <file>` | AI citation readiness audit |
+| `/blog audit [directory]` | Full-site blog health assessment |
 
-Every article follows 6 optimization pillars: answer-first formatting, sourced statistics, visual media (Pixabay/Unsplash images + SVG charts), FAQ schema, content structure, and freshness signals.
+## Features
 
-## Requirements
+### 12 Content Templates
+Auto-selected based on topic and intent: how-to guide, listicle, case study, comparison, pillar page, product review, thought leadership, roundup, tutorial, news analysis, data research, FAQ knowledge base.
 
-- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI installed and configured
-- Python 3.12+ (for the `analyze_blog.py` quality scoring script)
+### 5-Category Quality Scoring (100 Points)
+| Category | Points | Focus |
+|----------|--------|-------|
+| Content Quality | 30 | Depth, readability, originality, engagement |
+| SEO Optimization | 25 | Headings, title, keywords, links, meta |
+| E-E-A-T Signals | 15 | Author, citations, trust, experience |
+| Technical Elements | 15 | Schema, images, speed, mobile, OG tags |
+| AI Citation Readiness | 15 | Citability, Q&A format, entity clarity |
 
-## Installation
+Scoring bands: Exceptional (90-100), Strong (80-89), Acceptable (70-79), Below Standard (60-69), Rewrite (<60).
 
-Run the installer to copy skills, agents, references, and scripts to your Claude Code configuration:
+### AI Content Detection
+Burstiness scoring, known AI phrase detection (17 phrases), vocabulary diversity analysis (TTR). Flags content that reads as AI-generated.
 
-```bash
-chmod +x install.sh
-./install.sh
-```
+### Dual Optimization
+Every article targets both Google rankings and AI citation platforms:
+- **Google**: December 2025 Core Update compliance, E-E-A-T, schema markup, internal linking
+- **AI Citations**: Answer-first formatting (+340% citations), citation capsules, passage-level citability, FAQ schema (+28% citations)
 
-This installs to:
-- `~/.claude/skills/blog/` — Main skill + references
-- `~/.claude/skills/blog-*/` — 6 sub-skills
-- `~/.claude/agents/` — 2 specialized agents
-- `~/.claude/skills/blog/scripts/` — Quality analysis script
+### Visual Media
+- Pixabay/Unsplash/Pexels image sourcing with alt text
+- SVG chart generation via `/svg-chart` (bar, lollipop, donut, line, area)
+- Image density targets by content type
 
-Restart Claude Code after installation to activate.
+### Platform Support
+Next.js/MDX, Astro, Hugo, Jekyll, WordPress, Ghost, 11ty, Gatsby, and static HTML.
 
-## Project Structure
+## Architecture
 
 ```
 claude-blog/
 ├── blog/
-│   ├── SKILL.md                    # Main orchestrator skill
-│   └── references/
-│       ├── content-rules.md        # Structure, readability, answer-first formatting
-│       ├── geo-optimization.md     # GEO/AEO techniques, AI citation factors
-│       ├── quality-scoring.md      # Full scoring checklist (100 points)
-│       ├── seo-2026.md             # Google updates, E-E-A-T, algorithm changes
-│       └── visual-media.md         # Image sourcing + SVG chart integration
-├── skills/
-│   ├── blog-analyze/SKILL.md       # Quality audit & 0-100 scoring
-│   ├── blog-brief/SKILL.md         # Content brief generation
-│   ├── blog-calendar/SKILL.md      # Editorial calendar planning
-│   ├── blog-rewrite/SKILL.md       # Existing post optimization
-│   ├── blog-strategy/SKILL.md      # Blog positioning & architecture
-│   └── blog-write/SKILL.md         # New article generation
-├── agents/
-│   ├── blog-researcher.md          # Research agent (stats, images, competition)
-│   └── blog-writer.md              # Content writing agent
+│   ├── SKILL.md                        # Main orchestrator (12 commands)
+│   ├── references/                     # 12 on-demand reference docs
+│   │   ├── google-landscape-2026.md
+│   │   ├── geo-optimization.md
+│   │   ├── content-rules.md
+│   │   ├── visual-media.md
+│   │   ├── quality-scoring.md
+│   │   ├── platform-guides.md
+│   │   ├── distribution-playbook.md
+│   │   ├── content-templates.md
+│   │   ├── eeat-signals.md
+│   │   ├── ai-crawler-guide.md
+│   │   ├── schema-stack.md
+│   │   └── internal-linking.md
+│   └── templates/                      # 12 content type templates
+│       ├── how-to-guide.md
+│       ├── listicle.md
+│       ├── case-study.md
+│       ├── comparison.md
+│       ├── pillar-page.md
+│       ├── product-review.md
+│       ├── thought-leadership.md
+│       ├── roundup.md
+│       ├── tutorial.md
+│       ├── news-analysis.md
+│       ├── data-research.md
+│       └── faq-knowledge.md
+├── skills/                             # 12 sub-skills
+│   ├── blog-write/SKILL.md
+│   ├── blog-rewrite/SKILL.md
+│   ├── blog-analyze/SKILL.md
+│   ├── blog-brief/SKILL.md
+│   ├── blog-calendar/SKILL.md
+│   ├── blog-strategy/SKILL.md
+│   ├── blog-outline/SKILL.md
+│   ├── blog-seo-check/SKILL.md
+│   ├── blog-schema/SKILL.md
+│   ├── blog-repurpose/SKILL.md
+│   ├── blog-geo/SKILL.md
+│   └── blog-audit/SKILL.md
+├── agents/                             # 4 specialized agents
+│   ├── blog-researcher.md
+│   ├── blog-writer.md
+│   ├── blog-seo.md
+│   └── blog-reviewer.md
 ├── scripts/
-│   └── analyze_blog.py             # Python quality analysis tool
-├── install.sh                      # Installer script
+│   └── analyze_blog.py                 # Python quality analysis (5-category scoring)
+├── docs/                               # 6 documentation files
+│   ├── INSTALLATION.md
+│   ├── COMMANDS.md
+│   ├── ARCHITECTURE.md
+│   ├── TEMPLATES.md
+│   ├── TROUBLESHOOTING.md
+│   └── MCP-INTEGRATION.md
+├── install.sh                          # Unix/macOS installer
+├── install.ps1                         # Windows PowerShell installer
+├── uninstall.sh                        # Clean removal
+├── requirements.txt                    # Python dependencies
+├── CHANGELOG.md
+├── TODO.md
 ├── LICENSE
 └── README.md
 ```
 
-## Quality Scoring
+## Requirements
 
-Blog posts are scored across 6 categories (100 points total):
+- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI installed and configured
+- Python 3.12+ (for `analyze_blog.py` quality scoring script)
+- Optional: `pip install -r requirements.txt` for advanced analysis (readability scoring, schema detection)
 
-| Category | Weight | What It Measures |
-|----------|--------|-----------------|
-| Content Quality | 25 pts | Readability, paragraph length, information gain |
-| Answer-First Formatting | 20 pts | Stat-first H2 openers, direct answers |
-| Statistics & Citations | 20 pts | Source count, tier quality, attribution |
-| Visual Elements | 15 pts | Image count, chart diversity, distribution |
-| Schema & Structure | 10 pts | FAQ schema, heading hierarchy |
-| Freshness & Trust | 10 pts | Update date, author E-E-A-T, brand mentions |
+## Uninstall
+
+```bash
+chmod +x uninstall.sh && ./uninstall.sh
+```
 
 ## Integration
 
 Works with the broader Claude Code skill ecosystem:
 
-- `/svg` or `/svg-chart` — Generate dark-mode SVG data visualizations
-- `/seo` — Deep SEO analysis of published blog pages
-- `/seo-schema` — Schema markup validation and generation
-- `/seo-geo` — AI citation optimization audit
+| Skill | Integration |
+|-------|-------------|
+| `/svg` or `/svg-chart` | Generate SVG data visualizations for blog posts |
+| `/seo` | Deep SEO analysis of published blog pages |
+| `/seo-schema` | Schema markup validation and generation |
+| `/seo-geo` | AI citation optimization audit |
+
+## Documentation
+
+Detailed documentation is available in [docs/](docs/):
+
+- [Installation Guide](docs/INSTALLATION.md) -- Unix, macOS, Windows, manual install
+- [Command Reference](docs/COMMANDS.md) -- Full 12-command reference with examples
+- [Architecture](docs/ARCHITECTURE.md) -- System design and component overview
+- [Templates](docs/TEMPLATES.md) -- Template reference and customization
+- [Troubleshooting](docs/TROUBLESHOOTING.md) -- Common issues and fixes
+- [MCP Integration](docs/MCP-INTEGRATION.md) -- Optional MCP server setup
+
+## Contributing
+
+Contributions welcome! Please:
+1. Fork the repository
+2. Create a feature branch
+3. Submit a pull request
 
 ## License
 
 MIT License. See [LICENSE](LICENSE) for details.
+
+---
+
+Built by [agricidaniel](https://github.com/agricidaniel) with Claude Code.
