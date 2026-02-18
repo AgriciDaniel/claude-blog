@@ -1,13 +1,8 @@
 # claude-blog
 
-<!-- Cover Image Placeholder -->
-<!-- ![claude-blog cover](screenshots/cover-image.jpeg) -->
-
 **The most comprehensive blog creation skill for Claude Code.**
 
 Strategy, briefs, calendars, writing, optimization, schema, repurposing, and full-site audits — all from slash commands. Dual-optimized for Google rankings (December 2025 Core Update) and AI citation platforms (ChatGPT, Perplexity, AI Overviews).
-
-<!-- Badges -->
 ![Claude Code Skill](https://img.shields.io/badge/Claude_Code-Skill-blueviolet)
 ![License: MIT](https://img.shields.io/badge/License-MIT-green)
 ![Python 3.12+](https://img.shields.io/badge/Python-3.12%2B-blue)
