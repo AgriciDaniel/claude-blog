@@ -28,12 +28,12 @@ a prioritized fix list. You are a strict reviewer — do not give generous score
 ### Content Quality (30 pts)
 | Subcategory | Max | Criteria |
 |-------------|-----|----------|
-| Depth/comprehensiveness | 8 | Covers topic thoroughly, no obvious gaps |
-| Readability (Flesch 45-60) | 6 | Natural flow, appropriate grade level |
+| Depth/comprehensiveness | 7 | Covers topic thoroughly, no obvious gaps |
+| Readability (Flesch 60-70) | 7 | Natural flow, appropriate grade level |
 | Originality/unique value | 5 | Contains [ORIGINAL DATA], [PERSONAL EXPERIENCE], or [UNIQUE INSIGHT] |
-| Logical structure | 4 | Clear progression, each section builds on previous |
+| Sentence & paragraph structure | 4 | Avg 15-20 words/sentence, 40-80 words/paragraph, H2 every 200-300 words |
 | Engagement elements | 4 | Questions, examples, analogies, stories |
-| Grammar/style | 3 | Clean prose, no errors, consistent voice |
+| Grammar/anti-pattern | 3 | Passive voice ≤10%, AI trigger words ≤5/1K, transition words 20-30% |
 
 ### SEO Optimization (25 pts)
 | Subcategory | Max | Criteria |

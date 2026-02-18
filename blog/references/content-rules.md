@@ -22,6 +22,11 @@ AI systems extract answers from section openers. If your answer is buried in
 paragraph 3 of a section, it will not be cited. Lead with the answer, then
 explain.
 
+44.2% of all LLM citations come from the first 30% of text (Growth Memo,
+Feb 2026). Use declarative "X is Y because Z" sentence structures for maximum
+AI extractability. Target 40-60 words per answer paragraph — this is the optimal
+length for paragraph featured snippet capture.
+
 ## Title Optimization
 
 | Parameter | Target | Impact |
@@ -59,8 +64,9 @@ Every post must open with a TL;DR summary box immediately after the title/intro:
 ### Rules
 - ONE H1 per page (the title only)
 - H2s for main sections (target 6-8 per post)
-- H2 every 150-200 words — maintain consistent heading frequency for scannability
-- H3s for subsections — never skip levels (no H1 → H3)
+- H2 every 200-300 words (Yoast flags sections >300 words without a subheading)
+- H3 every 100-200 words under each H2 for deeper structure
+- H3s for subsections — never skip levels (no H2 → H4)
 - Include primary keyword naturally in 2-3 headings
 
 ### Question-Format Headings
@@ -73,42 +79,112 @@ Convert 60-70% of H2s to questions:
 AI systems directly extract answers following question formats. Search engines
 show these in People Also Ask. Users scan headings as questions they want answered.
 
+## Sentence Rules
+
+| Parameter | Target | Flag At | Source |
+|-----------|--------|---------|--------|
+| Average sentence length | 15-20 words | >22 words | Yoast, Siteimprove |
+| Max sentence length | 25 words | >20 words | Yoast flags >20 |
+| Sentences over 20 words | ≤25% | >25% | Yoast threshold |
+| Sentence length variance | StdDev ≥5 words | <5 StdDev | Wikipedia AI guidelines |
+| AEO-optimal average | 15-18 words | — | GEO research synthesis |
+
+### Sentence Rhythm
+Mix short (5-10 words), medium (15-20 words), and occasional long (20-25 words)
+sentences. Uniform sentence length signals AI authorship. Human writing has
+natural burstiness — a short punchy sentence after a longer explanatory one.
+
+No more than 3 consecutive sentences within 5 words of each other's length.
+
 ## Paragraph Rules
 
-| Parameter | Target | Hard Limit |
-|-----------|--------|------------|
-| Paragraph length | 40-55 words | Never > 100 words |
-| Sentence length | 15-20 words | Occasional longer OK |
-| Extractable chunks | 50-150 words | For AI citation |
+| Parameter | Target | Flag At | Hard Limit | Source |
+|-----------|--------|---------|------------|--------|
+| Paragraph length | 40-80 words | >100 words | 150 words (200 = Yoast red) | Yoast, NNGroup |
+| Sentences per paragraph | 2-3 | >3 | 4 max | NNGroup scanning research |
+| Mobile paragraph max | 60 words / 2-3 visual lines | — | — | WCAG, Baymard |
+| Extractable chunks | 50-150 words | — | — | GEO citation research |
 
 ### Key Principle
 Start each paragraph with the most important sentence. This enables both
-readers and AI to grasp concepts by scanning.
+readers and AI to grasp concepts by scanning. 79% of users scan rather than
+read (NNGroup). Concise, scannable formatting improves usability 124-159%
+(NNGroup).
 
 ### Paragraph Sentence Limit
 Maximum 2-3 sentences per paragraph. This is a hard rule. Single-sentence
 paragraphs are acceptable and often preferred for emphasis. Paragraphs
 exceeding 3 sentences should be split.
 
+One topic per paragraph — no topic drift within a paragraph.
+
 ## Readability Targets
 
-| Metric | Target | Why |
-|--------|--------|-----|
-| Flesch Reading Ease | 45-60 | Optimal for ranking (Originality.AI study) |
-| Flesch-Kincaid Grade | 10-12 | Expert-accessible, not oversimplified |
-| Language style | Conversational | Mirrors how people ask questions |
+| Metric | Target | Acceptable | Source |
+|--------|--------|-----------|--------|
+| Flesch Reading Ease | 60-70 | 55-75 | Yoast ≥60; Spotlight 18K prompts: 60-75 = 31% more AI citations |
+| Flesch-Kincaid Grade | 7-8 | 6-9 (B2B/technical: 8-10) | Siteimprove, First Page Sage |
+| Gunning Fog | 7-8 | Max 12 | Springer 2023: highest correlation with engagement |
+| SMOG | ≤8 | — | Healthcare gold standard |
 
-**Updated guidance**: Flesch-Kincaid 45-60 is the optimal range for ranking, not 60-70
-as previously believed (Originality.AI, 2025). Content that is too simple underperforms
-because it lacks the depth and specificity that signals expertise.
+Flesch 60-70 is the optimal band for both engagement and AI citation.
+Content in this range demonstrates expertise through clear expression of
+complex ideas — not oversimplification. The key is conversational authority:
+natural language that mirrors how experts actually explain things.
 
-62% of high-performing posts score "easy" on readability tools (Semrush), but "easy"
-in Semrush's scale corresponds to Flesch 45-60 for expert topics — not dumbed-down
-content. The key is clear expression of complex ideas, not avoidance of complexity.
+AI systems prefer content that is fluent, specific, and well-structured.
+Readability alone doesn't determine AI citation — content must also demonstrate
+expertise and provide unique value.
 
-AI systems prefer natural, conversational language. But readability alone
-doesn't determine AI citation — content must also demonstrate expertise
-and provide unique value.
+## Visual Content Rules
+
+| Parameter | Target | Minimum | Source |
+|-----------|--------|---------|--------|
+| Image/visual frequency | Every 200-350 words | 1 per 500 words | BuzzSumo, NNGroup |
+| Bold/emphasis | 3-5 per 300 words | — | Competitive analysis |
+| Bold % of total text | <10% | — | Diminishing impact above 10% |
+
+### Lists
+Use bulleted or numbered lists when 3+ parallel items exist. Don't force lists
+where prose works better — lists are for scannable parallel items, not for
+every piece of information.
+
+### Visual Impact
+Content with visuals gets 94% more views and 150% more social engagement.
+NNGroup: visitors read only ~20% of words on a page — visuals anchor scanning
+patterns and guide the eye to key information.
+
+## Anti-Pattern Detection
+
+### AI Trigger Words (≤5 per 1,000 words)
+Red-flag words that spiked >50% post-ChatGPT. Flag if total exceeds 5 per
+1,000 words:
+
+delve, tapestry, multifaceted, testament, pivotal, robust, cutting-edge,
+furthermore, indeed, moreover, utilize, leverage, comprehensive, landscape,
+crucial, foster, illuminate, underscore, embark, endeavor, facilitate,
+paramount, nuanced, intricate, meticulous, realm
+
+### Passive Voice (≤10% of sentences)
+Yoast threshold. Switching to active voice improves readability scores
+and reduces bounce rates. Occasional passive is fine for variety; clusters
+of passive construction signal automated content.
+
+### Transition Words (20-30% of sentences)
+Yoast optimal range: ~25%. Below 20% feels choppy; above 35% reads as
+formulaic or AI-generated. Common transitions: however, therefore, additionally,
+for example, in contrast, similarly, meanwhile, consequently.
+
+### Keyword Density (0.5-2%)
+Flag at >2.5%, penalize at >3%. Keyword stuffing performs worse than baseline
+in generative engines (-10%, Princeton GEO paper). Primary keyword should
+appear 3-5 times naturally (intro 1x, body 1-2x, conclusion 1x).
+
+### Filler Content Detection
+QRG 2025 explicitly targets pages that "artificially inflate content."
+Flag: entity drift (wandering off-topic), topical dilution (covering too
+many topics shallowly), needless repetition, intent mismatch between
+title and content body.
 
 ## Content Length Guidelines
 
@@ -120,7 +196,31 @@ and provide unique value.
 | FAQ/listicle | 1,500-2,000 words | 1,000 |
 | News/update | 800-1,200 words | 600 |
 
-Long-form (2,000+ words) gets 3x more AI citations than short posts.
+Sweet spot: 1,500-2,500 words for most content. Minimum 700 words
+(absolute floor: 300 words for news updates). Long-form (2,000+ words)
+gets 3x more AI citations than short posts.
+
+Reading time: word count ÷ 225, rounded up. Optimal reading time is
+5-7 minutes (~1,100-1,575 words). Engagement falls off sharply after
+7 minutes; approaches zero at 14+ minutes (Medium, Smartocto 2025).
+
+## Citation & Statistics Rules (GEO)
+
+| Parameter | Target | GEO-Optimized | Source |
+|-----------|--------|--------------|--------|
+| Statistic density | 1 per 200 words | 1 per 150 words | Princeton GEO paper |
+| External citations | 1-3 per 1,000 words | — | GEO best practices |
+| Internal links | 2-5 per 1,000 words | — | SEO + engagement |
+
+Statistics addition boosts AI visibility up to 41% (Princeton GEO paper,
+KDD 2024). For lower-ranked sites, citing authoritative sources boosts
+visibility up to 115%. The combination of fluency + statistics outperforms
+any single optimization tactic by 5.5%.
+
+### Attribution Format
+Always attribute statistics: `[Number]% [claim] ([Source](url), [Year])`.
+Unattributed statistics damage E-E-A-T trust signals and are flagged as
+fabrication risks in quality scoring.
 
 ## Information Gain -- The Key Differentiator
 

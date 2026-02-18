@@ -193,3 +193,52 @@ Entity building timeline (3-6 months):
 3. Build entity consistency across all platforms (exact same name)
 4. Practice "controlled co-occurrence" via third-party mentions
 5. Earn external citations from recognized publications
+
+## Readability-GEO Connection
+
+Readability directly impacts AI citation rates. Content in the Flesch 60-75
+band receives significantly more AI citations across all major platforms.
+
+### Flesch Score & AI Citation Rates
+- **Flesch 60-75 = 31% more AI citations** (Spotlight, 18,000 monitored prompts)
+- Teams improving Flesch from 52→68 saw parallel citation lifts within two
+  crawl windows
+- Content that is too complex (Flesch <50) or too simple (Flesch >80) gets
+  fewer citations — AI systems prefer fluent, authoritative writing
+
+### Citation Position Bias
+- **44.2% of all LLM citations come from the first 30% of text** (Growth Memo,
+  Feb 2026, Kevin Indig). Answer-first formatting is critical for citation capture.
+- Direct answers in the first 1-2 sentences of each section maximize
+  extractability for AI systems
+
+### GEO Tactic Combinations
+Princeton GEO paper (KDD 2024) findings on readability-related tactics:
+- **Fluency optimization** = 15-30% visibility boost
+- **Statistics addition** = up to 41% visibility boost
+- **Fluency + Statistics combined** outperforms any single tactic by 5.5%
+- Keyword stuffing performs -10% WORSE than baseline
+
+### Schema & Structure for AI Citation
+- Schema markup increases AI citations by **44%** (BrightEdge 2025)
+- Comparison tables with proper HTML (`<thead>`, `<tbody>`) = **47% higher**
+  AI citation rates (Search Engine Land experiment)
+- SearchVIU confirmed ChatGPT, Claude, Perplexity, and Gemini all process
+  Schema Markup during citation selection
+
+### Platform-Specific Citation Behaviors
+| Platform | Key Behavior | Readability Preference |
+|----------|-------------|----------------------|
+| ChatGPT | Wikipedia = 7.8% of citations; SearchGPT: 87% match Bing top 10 | Prefers well-structured, fluent content |
+| Perplexity | Reddit = 46.7% of top-10 sources; strongest depth correlation (0.191) | 2-3 day content decay; heavily weights recency |
+| AI Overviews | 93.67% from top-10 organic; avg 10.2 links per response | Prefers established authority + clear answers |
+
+Only 11% of domains are cited by both ChatGPT and Perplexity. Only 12% of URLs
+cited by ChatGPT, Perplexity, AND Copilot rank in Google's top 10.
+
+### Content Freshness for AI Citation
+- **65%** of AI bot hits target content published within the past year (Seer Interactive)
+- **85%** of AI Overview citations come from content <2 years old
+- **44%** of AI Overview citations come from 2025 content specifically
+- **50%** of Perplexity citations come from 2025 alone
+- Content older than 3 months sees 3x fewer citations

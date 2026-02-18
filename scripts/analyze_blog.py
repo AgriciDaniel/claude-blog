@@ -84,6 +84,26 @@ AI_PHRASES = [
     "empower", "state-of-the-art",
 ]
 
+# AI trigger words (single words that spiked >50% post-ChatGPT)
+AI_TRIGGER_WORDS = [
+    "delve", "tapestry", "multifaceted", "testament", "pivotal", "robust",
+    "cutting-edge", "furthermore", "indeed", "moreover", "utilize", "leverage",
+    "comprehensive", "landscape", "crucial", "foster", "illuminate", "underscore",
+    "embark", "endeavor", "facilitate", "paramount", "nuanced", "intricate",
+    "meticulous", "realm",
+]
+
+# Transition words/phrases for readability scoring
+TRANSITION_WORDS = [
+    "however", "therefore", "furthermore", "moreover", "additionally",
+    "consequently", "nevertheless", "meanwhile", "similarly", "likewise",
+    "nonetheless", "accordingly", "subsequently", "hence", "thus",
+    "in contrast", "on the other hand", "for example", "for instance",
+    "in addition", "as a result", "in other words", "that said",
+    "in particular", "specifically", "alternatively", "conversely",
+    "in fact", "notably", "importantly", "significantly",
+]
+
 # ---------------------------------------------------------------------------
 # Content type word-count benchmarks
 # ---------------------------------------------------------------------------
@@ -200,17 +220,20 @@ def analyze_paragraphs(content: str) -> dict[str, Any]:
     paragraphs = [p.strip() for p in re.split(r'\n\s*\n', cleaned) if p.strip()]
 
     word_counts: list[int] = []
-    over_100 = 0
-    in_range = 0  # 40-55 words
+    over_150 = 0
+    over_200 = 0
+    in_range = 0  # 40-80 words (ideal paragraph range)
 
     for p in paragraphs:
         words = len(p.split())
         if words < 5:
             continue
         word_counts.append(words)
-        if words > 100:
-            over_100 += 1
-        if 40 <= words <= 55:
+        if words > 200:
+            over_200 += 1
+        if words > 150:
+            over_150 += 1
+        if 40 <= words <= 80:
             in_range += 1
 
     total = len(word_counts)
@@ -220,7 +243,11 @@ def analyze_paragraphs(content: str) -> dict[str, Any]:
     return {
         'total_paragraphs': total,
         'avg_word_count': round(avg, 1),
-        'over_100_words': over_100,
+        'over_150_words': over_150,
+        'over_200_words': over_200,
+        # Backward-compatible aliases
+        'over_100_words': over_150,
+        'in_ideal_range': in_range,
         'in_40_55_range': in_range,
         'in_range_ratio': round(in_range_ratio, 2),
         'max_word_count': max(word_counts) if word_counts else 0,
@@ -477,14 +504,20 @@ def analyze_sentences(text: str) -> dict[str, Any]:
     std_dev = (sum((l - avg) ** 2 for l in lengths) / len(lengths)) ** 0.5
     burstiness = std_dev / avg if avg > 0 else 0
     very_long = sum(1 for l in lengths if l > 40)
+    over_20 = sum(1 for l in lengths if l > 20)
+    over_25 = sum(1 for l in lengths if l > 25)
+    total = len(lengths)
 
     return {
-        'count': len(lengths),
+        'count': total,
         'avg_length': round(avg, 1),
         'max_length': max(lengths),
         'burstiness': round(burstiness, 2),
         'std_dev': round(std_dev, 1),
         'very_long_count': very_long,
+        'over_20_count': over_20,
+        'over_20_pct': round(over_20 / total * 100, 1) if total else 0,
+        'over_25_count': over_25,
     }
 
 
@@ -512,6 +545,90 @@ def analyze_ai_signals(text: str, sentences_info: dict[str, Any]) -> dict[str, A
         'vocabulary_diversity_ttr': round(ttr, 3),
         'burstiness': sentences_info.get('burstiness', 0),
         'likely_ai': sentences_info.get('burstiness', 0) < 0.3 and ttr < 0.4,
+    }
+
+
+# ---------------------------------------------------------------------------
+# NEW: Passive voice estimation
+# ---------------------------------------------------------------------------
+
+
+def analyze_passive_voice(text: str) -> dict[str, Any]:
+    """Estimate passive voice percentage using regex heuristics."""
+    sentences = re.split(r'(?<=[.!?])\s+', text)
+    sentences = [s for s in sentences if len(s.split()) > 2]
+    if not sentences:
+        return {'passive_count': 0, 'total_sentences': 0, 'passive_pct': 0.0}
+
+    passive_pattern = re.compile(
+        r'\b(was|were|been|being|is|are|am|get|got|gets|getting)\s+'
+        r'(\w+ly\s+)?'  # optional adverb
+        r'(\w+ed|written|spoken|taken|given|made|done|seen|known|shown|built|sent|found|held|told|left|run|set|kept|brought|thought|put)\b',
+        re.IGNORECASE,
+    )
+    passive_count = sum(1 for s in sentences if passive_pattern.search(s))
+
+    return {
+        'passive_count': passive_count,
+        'total_sentences': len(sentences),
+        'passive_pct': round(passive_count / len(sentences) * 100, 1),
+    }
+
+
+# ---------------------------------------------------------------------------
+# NEW: Transition word analysis
+# ---------------------------------------------------------------------------
+
+
+def analyze_transition_words(text: str) -> dict[str, Any]:
+    """Measure percentage of sentences containing transition words."""
+    sentences = re.split(r'(?<=[.!?])\s+', text)
+    sentences = [s for s in sentences if len(s.split()) > 2]
+    if not sentences:
+        return {'transition_count': 0, 'total_sentences': 0, 'transition_pct': 0.0}
+
+    lower_sentences = [s.lower() for s in sentences]
+    transition_count = 0
+    for s in lower_sentences:
+        for tw in TRANSITION_WORDS:
+            if tw in s:
+                transition_count += 1
+                break  # count each sentence once
+
+    return {
+        'transition_count': transition_count,
+        'total_sentences': len(sentences),
+        'transition_pct': round(transition_count / len(sentences) * 100, 1),
+    }
+
+
+# ---------------------------------------------------------------------------
+# NEW: AI trigger word detection
+# ---------------------------------------------------------------------------
+
+
+def analyze_ai_trigger_words(text: str) -> dict[str, Any]:
+    """Count AI trigger words per 1,000 words."""
+    words = text.split()
+    word_count = len(words)
+    if word_count == 0:
+        return {'trigger_count': 0, 'per_1k': 0.0, 'found': []}
+
+    lower_text = text.lower()
+    found: list[dict[str, Any]] = []
+    total = 0
+    for tw in AI_TRIGGER_WORDS:
+        count = len(re.findall(r'\b' + re.escape(tw) + r'\b', lower_text))
+        if count > 0:
+            found.append({'word': tw, 'count': count})
+            total += count
+
+    per_1k = round(total / word_count * 1000, 1)
+
+    return {
+        'trigger_count': total,
+        'per_1k': per_1k,
+        'found': found,
     }
 
 
@@ -784,13 +901,13 @@ def calculate_score(analysis: dict[str, Any]) -> dict[str, Any]:
     cq = 0
     cq_breakdown: dict[str, Any] = {}
 
-    # Depth / comprehensiveness: 8 pts
+    # Depth / comprehensiveness: 7 pts
     paras = analysis['paragraphs']
     word_count = paras['total_word_count']
     content_type = _detect_content_type(analysis['frontmatter'], analysis['headings'], '')
     bench_min, bench_max = CONTENT_TYPE_BENCHMARKS.get(content_type, (1200, 3000))
     if bench_min <= word_count <= bench_max:
-        depth_score = 8
+        depth_score = 7
     elif word_count >= bench_min * 0.7:
         depth_score = 5
     elif word_count >= bench_min * 0.5:
@@ -806,19 +923,19 @@ def calculate_score(analysis: dict[str, Any]) -> dict[str, Any]:
     cq += depth_score
     cq_breakdown['depth'] = depth_score
 
-    # Readability (Flesch 45-60 ideal): 6 pts
+    # Readability (Flesch 60-70 ideal): 7 pts
     readability = analysis['readability']
     fre = readability.get('flesch_reading_ease', 50)
-    if 45 <= fre <= 60:
-        read_score = 6
-    elif 35 <= fre <= 70:
-        read_score = 4
-    elif 25 <= fre <= 80:
-        read_score = 2
+    if 60 <= fre <= 70:
+        read_score = 7
+    elif 55 <= fre <= 75:
+        read_score = 5
+    elif 45 <= fre <= 80:
+        read_score = 3
     else:
         read_score = 1
         issues.append({'category': 'content', 'severity': 'medium',
-                       'issue': f'Flesch reading ease ({fre}) outside ideal range (45-60)'})
+                       'issue': f'Flesch reading ease ({fre}) outside acceptable range (55-75)'})
     cq += read_score
     cq_breakdown['readability'] = read_score
 
@@ -847,7 +964,7 @@ def calculate_score(analysis: dict[str, Any]) -> dict[str, Any]:
         issues.append({'category': 'content', 'severity': 'medium',
                        'issue': 'Heading hierarchy has skips (e.g., H2 to H4)'})
     # Section length variance: check if paragraphs are reasonably distributed
-    if paras['total_paragraphs'] >= 5 and paras['max_word_count'] < 150:
+    if paras['total_paragraphs'] >= 5 and paras['max_word_count'] < 200:
         struct_score += 1
     cq += struct_score
     cq_breakdown['structure'] = struct_score
@@ -870,21 +987,48 @@ def calculate_score(analysis: dict[str, Any]) -> dict[str, Any]:
     cq += eng_score
     cq_breakdown['engagement'] = eng_score
 
-    # Grammar / style: 3 pts
+    # Grammar / anti-pattern: 3 pts
     sentences = analysis['sentences']
+    passive = analysis.get('passive_voice', {})
+    transitions = analysis.get('transition_words', {})
+    ai_triggers = analysis.get('ai_trigger_words', {})
     gram_score = 0
-    if sentences['burstiness'] >= 0.4:
-        gram_score += 1  # Good sentence variety
-    if sentences['very_long_count'] == 0:
+    # 1 pt: burstiness >= 0.4 AND passive voice <= 15%
+    passive_pct = passive.get('passive_pct', 0)
+    if sentences['burstiness'] >= 0.4 and passive_pct <= 15:
         gram_score += 1
-    else:
+    if passive_pct > 15:
+        issues.append({'category': 'content', 'severity': 'high',
+                       'issue': f'Passive voice at {passive_pct}% — target ≤10%, max 15%'})
+    elif passive_pct > 10:
+        issues.append({'category': 'content', 'severity': 'low',
+                       'issue': f'Passive voice at {passive_pct}% — ideal is ≤10%'})
+    # 1 pt: no sentences > 40 words AND AI trigger words <= 8 per 1K
+    trigger_per_1k = ai_triggers.get('per_1k', 0)
+    if sentences['very_long_count'] == 0 and trigger_per_1k <= 8:
+        gram_score += 1
+    if sentences['very_long_count'] > 0:
         issues.append({'category': 'content', 'severity': 'low',
                        'issue': f'{sentences["very_long_count"]} sentences over 40 words — consider splitting'})
-    if sentences['count'] > 0 and 12 <= sentences['avg_length'] <= 25:
+    if trigger_per_1k > 8:
+        issues.append({'category': 'content', 'severity': 'high',
+                       'issue': f'AI trigger words: {trigger_per_1k}/1K — target ≤5, max 8'})
+    elif trigger_per_1k > 5:
+        issues.append({'category': 'content', 'severity': 'medium',
+                       'issue': f'AI trigger words: {trigger_per_1k}/1K — target ≤5'})
+    # 1 pt: avg sentence length 12-25 AND transition words 15-35%
+    transition_pct = transitions.get('transition_pct', 0)
+    if sentences['count'] > 0 and 12 <= sentences['avg_length'] <= 25 and 15 <= transition_pct <= 35:
         gram_score += 1
+    if transition_pct < 15:
+        issues.append({'category': 'content', 'severity': 'medium',
+                       'issue': f'Transition words at {transition_pct}% — target 20-30%'})
+    elif transition_pct > 35:
+        issues.append({'category': 'content', 'severity': 'medium',
+                       'issue': f'Transition words at {transition_pct}% — reads formulaic, target 20-30%'})
     gram_score = min(gram_score, 3)
     cq += gram_score
-    cq_breakdown['grammar_style'] = gram_score
+    cq_breakdown['grammar_antipattern'] = gram_score
 
     cq = min(cq, 30)
     category_details['content_quality'] = {'score': cq, 'max': 30, 'breakdown': cq_breakdown}
@@ -1349,6 +1493,9 @@ def analyze_file(file_path: str) -> dict[str, Any]:
         'readability': analyze_readability(plain_text),
         'sentences': sentences_info,
         'ai_signals': analyze_ai_signals(plain_text, sentences_info),
+        'passive_voice': analyze_passive_voice(plain_text),
+        'transition_words': analyze_transition_words(plain_text),
+        'ai_trigger_words': analyze_ai_trigger_words(plain_text),
         'schema': analyze_schema(content),
         'links': analyze_links(body),
         'originality': analyze_originality(body),
@@ -1431,11 +1578,22 @@ def _format_markdown(result: dict[str, Any]) -> str:
 
     # Readability
     read = result.get('readability', {})
+    passive = result.get('passive_voice', {})
+    transitions = result.get('transition_words', {})
+    ai_triggers = result.get('ai_trigger_words', {})
+    sents = result.get('sentences', {})
     lines.append('### Readability')
-    lines.append(f'- Flesch Reading Ease: {read.get("flesch_reading_ease", "N/A")}')
+    lines.append(f'- Flesch Reading Ease: {read.get("flesch_reading_ease", "N/A")} (target: 60-70)')
     if read.get('flesch_kincaid_grade'):
-        lines.append(f'- Flesch-Kincaid Grade: {read.get("flesch_kincaid_grade")}')
+        lines.append(f'- Flesch-Kincaid Grade: {read.get("flesch_kincaid_grade")} (target: 7-8)')
     lines.append(f'- Reading time: {read.get("reading_time_minutes", "N/A")} minutes')
+    lines.append(f'- Passive voice: {passive.get("passive_pct", "N/A")}% (target: ≤10%)')
+    lines.append(f'- Transition words: {transitions.get("transition_pct", "N/A")}% (target: 20-30%)')
+    lines.append(f'- AI trigger words: {ai_triggers.get("per_1k", "N/A")}/1K (target: ≤5)')
+    lines.append(f'- Sentences over 20 words: {sents.get("over_20_pct", "N/A")}% (target: ≤25%)')
+    if ai_triggers.get('found'):
+        trigger_list = ', '.join(f'{t["word"]}({t["count"]})' for t in ai_triggers['found'][:5])
+        lines.append(f'- Trigger words found: {trigger_list}')
     if read.get('estimated'):
         lines.append('- *(Estimated — install textstat for accurate metrics)*')
     lines.append('')

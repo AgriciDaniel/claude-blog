@@ -44,7 +44,7 @@ rewrite content — you identify issues and prescribe fixes.
 - No skipped levels (H1→H2→H3, never H1→H3)
 - Primary keyword in 2-3 headings naturally
 - 60-70% of H2s formatted as questions
-- H2 every 150-200 words
+- H2 every 200-300 words
 - **Pass criteria**: No skips + keyword in headings + question ratio met
 
 ### 4. Internal Links

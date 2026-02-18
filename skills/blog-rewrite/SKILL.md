@@ -42,7 +42,7 @@ and AI citation platforms. Preserves the author's voice while applying the
    - Count fabricated vs sourced statistics
    - Check answer-first formatting (H2 -> stat in first sentence?)
    - Count images and charts (type diversity?)
-   - Measure paragraph lengths (any > 100 words?)
+   - Measure paragraph lengths (any > 150 words?)
    - Check heading hierarchy (H1 -> H2 -> H3, no skips?)
    - Look for FAQ schema
    - Check freshness signals (lastUpdated, dateModified)
@@ -142,8 +142,8 @@ Every H2 section MUST open with a 40-60 word paragraph containing:
 - Ensure keyword appears in 2-3 headings naturally
 
 #### 4f. Fix Paragraph Length
-- Split any paragraph > 100 words
-- Target 40-55 words per paragraph
+- Split any paragraph > 150 words
+- Target 40-80 words per paragraph
 - Ensure each paragraph starts with its most important sentence
 
 #### 4g. Add Visual Elements
@@ -232,7 +232,7 @@ After rewriting, verify all quality gates pass:
 
 #### Core Quality Gates
 1. Every H2 opens with a statistic + source
-2. No paragraph exceeds 100 words
+2. No paragraph exceeds 150 words
 3. Zero fabricated statistics
 4. Heading hierarchy is clean
 5. FAQ section present with schema

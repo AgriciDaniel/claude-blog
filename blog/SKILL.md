@@ -111,7 +111,7 @@ These are hard rules. Never ship content that violates them:
 | Rule | Threshold | Action |
 |------|-----------|--------|
 | Fabricated statistics | Zero tolerance | Every number must have a named source |
-| Paragraph length | Never > 100 words | Split or trim |
+| Paragraph length | Never > 150 words | Split or trim |
 | Heading hierarchy | Never skip levels | H1 → H2 → H3 only |
 | Source tier | Tier 1-3 only | Never cite content mills or affiliate sites |
 | Image alt text | Required on all images | Descriptive, includes topic keywords naturally |
@@ -124,7 +124,7 @@ Blog quality is scored across 5 categories (100 points total):
 
 | Category | Weight | What it measures |
 |----------|--------|-----------------|
-| Content Quality | 30 pts | Depth, readability (Flesch 45-60), originality, logical structure, engagement elements |
+| Content Quality | 30 pts | Depth, readability (Flesch 60-70), originality, structure, engagement, grammar/anti-pattern |
 | SEO Optimization | 25 pts | Heading hierarchy, title tag, keyword placement, internal linking, meta description |
 | E-E-A-T Signals | 15 pts | Author attribution, source citations, trust indicators, experience signals |
 | Technical Elements | 15 pts | Schema markup, image optimization, page speed, mobile-friendliness, OG meta |

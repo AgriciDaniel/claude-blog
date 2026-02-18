@@ -162,3 +162,40 @@ AMP (Accelerated Mobile Pages) is effectively dead:
 - No SEO benefit to AMP implementation — Core Web Vitals replaced AMP's purpose
 - Recommendation: Remove AMP versions if maintaining them creates overhead; focus on
   native page speed optimization instead
+
+## Readability & Engagement Signals
+
+Google does NOT use readability as a direct ranking factor. John Mueller has
+stated this explicitly. However, readability drives the engagement signals
+Google DOES measure — bounce rate, time on page, scroll depth, and return
+visits.
+
+### December 2025 Core Update: Readability Correlation
+Raptive analysis (published Feb 2026, high reliability) found:
+- Sites with <7% of pages ≤500 words had more stable rankings
+- Winning pages averaged 393 days freshness vs 500 for losers
+- Sites with >4% branded search clicks showed stronger resilience
+- Ad-to-content ratio <25% correlated with 4pp better performance
+- **LCP >3 seconds** = 23% more traffic loss
+- **INP >300ms** = 31% more traffic loss
+- Thin content, template-based pages, and generic AI aggregation were penalized
+
+### E-E-A-T Expansion
+E-E-A-T now applies to virtually ALL content categories, not just YMYL. The
+December 2025 Core Update extended E-E-A-T evaluation to ALL competitive
+queries — the biggest scope expansion since E-A-T was introduced.
+
+### Quality Rater Guidelines Updates
+- **January 2025 QRG**: Added "Filler" section penalizing pages that bury useful
+  information under padding content. Topical dilution and entity drift are
+  explicit quality signals raters evaluate.
+- **September 2025 QRG**: Added AI content evaluation criteria. AI content is
+  acceptable IF it demonstrates genuine E-E-A-T. Low-quality markers: generic
+  language, no unique insights, regurgitated facts.
+
+### Hidden Gems Ranking System
+Hidden Gems is its own ranking system (Brad Kellett confirmation), separate from
+core ranking. It surfaces experience-based niche content from forums, social media,
+and small blogs. 77% of keyphrases with product reviews now show "Discussions and
+Forums" SERP features. Domain authority influence is diminishing — depth,
+originality, and strong intent alignment matter more.

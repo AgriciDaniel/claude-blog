@@ -52,7 +52,7 @@ discovered blog files:
 
 #### Content Quality Agent
 - Score each post on the 30-point content quality scale
-- Check paragraph length (target 40-55 words, hard limit 100)
+- Check paragraph length (target 40-80 words, hard limit 150)
 - Check sentence length (target 15-20 words)
 - Evaluate heading structure and question-format headings
 - Assess readability (Flesch Reading Ease 60-70 target)

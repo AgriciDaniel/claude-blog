@@ -122,7 +122,7 @@ what the searcher wants]
 
 ## Content Parameters
 - **Word count**: [2,000-2,500] words
-- **Reading level**: Flesch 45-60 (expert-accessible)
+- **Reading level**: Flesch 60-70 (expert-accessible)
 - **Format**: [Markdown/MDX/HTML]
 - **H2 sections**: [6-8]
 - **Images**: 3-5 from Pixabay/Unsplash

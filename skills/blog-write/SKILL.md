@@ -299,7 +299,7 @@ Target 5-10 internal link zones per 2,000-word post. Use descriptive anchor text
 anchor text rules and linking strategy.
 
 #### 5g. Paragraph Rules
-- Every paragraph: 40-55 words (never exceed 100)
+- Every paragraph: 40-80 words (never exceed 150)
 - Every sentence: max 15-20 words
 - Start each paragraph with the most important information
 - Target Flesch Reading Ease: 60-70
@@ -379,7 +379,7 @@ Before delivering, verify:
 
 #### Structure and Content
 1. Every H2 opens with a statistic + source
-2. No paragraph exceeds 100 words
+2. No paragraph exceeds 150 words
 3. All statistics have named tier 1-3 sources
 4. 2-4 charts with type diversity
 5. 3-5 inline images with descriptive alt text

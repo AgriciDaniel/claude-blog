@@ -104,7 +104,7 @@ irm https://raw.githubusercontent.com/AgriciDaniel/claude-blog/main/install.ps1 
 | Missing images | -4 to -7 pts | Add 3-5 images from Pixabay/Unsplash with descriptive alt text |
 | Missing charts | -5 to -8 pts | Generate 2-4 SVG charts via built-in `blog-chart` (diverse types) |
 | No FAQ section | -4 pts | Add 3-5 FAQ items with 40-60 word answers containing statistics |
-| Long paragraphs (>100 words) | -8 pts | Split into 40-55 word paragraphs |
+| Long paragraphs (>150 words) | -8 pts | Split into 40-80 word paragraphs |
 | Missing `lastUpdated` | -4 pts | Add `lastUpdated: "YYYY-MM-DD"` to frontmatter |
 | Excessive self-promotion | -3 pts | Remove brand mentions except 1 in author bio context |
 

@@ -61,12 +61,12 @@ Load `references/quality-scoring.md` for the full checklist. Score each:
 #### Content Quality (30 points)
 | Check | Points | Pass Criteria |
 |-------|--------|---------------|
-| Depth/comprehensiveness | 8 | Covers topic thoroughly, no major gaps |
-| Readability/clarity (Flesch 45-60) | 6 | Expert-accessible, clear expression |
+| Depth/comprehensiveness | 7 | Covers topic thoroughly, no major gaps |
+| Readability (Flesch 60-70) | 7 | Flesch 60-70 ideal, 55-75 acceptable; Grade 7-8; Gunning Fog 7-8 |
 | Originality/unique value markers | 5 | Original data, case studies, first-hand experience |
-| Logical structure | 4 | Answer-first formatting, clear progression |
+| Sentence & paragraph structure | 4 | Avg sentence 15-20 words, ≤25% over 20; paragraphs 40-80 words; H2 every 200-300 words |
 | Engagement elements | 4 | TL;DR box, callouts, varied content blocks |
-| Grammar/style | 3 | Clean prose, no errors, consistent voice |
+| Grammar/anti-pattern | 3 | Passive voice ≤10%, AI trigger words ≤5/1K, transition words 20-30%, clean prose |
 
 #### SEO Optimization (25 points)
 | Check | Points | Pass Criteria |
@@ -197,7 +197,7 @@ Default output format (Markdown):
 
 ### Quick Stats
 - Word count: [N]
-- Paragraphs: [N] (X over 100 words)
+- Paragraphs: [N] (X over 150 words)
 - H2 sections: [N] (X as questions, X with answer-first formatting)
 - Statistics: [N] sourced / [N] unsourced
 - Images: [N] (X with alt text, formats: ...)

@@ -30,8 +30,8 @@ Every H2 section opens with a 40-60 word paragraph containing:
 - A direct answer to the heading's implied question
 
 ### Paragraph Discipline
-- Target: 40-55 words per paragraph
-- Hard limit: Never exceed 100 words
+- Target: 40-80 words per paragraph
+- Hard limit: Never exceed 150 words
 - Start each paragraph with the most important sentence
 - One idea per paragraph
 
@@ -145,21 +145,21 @@ After completing the full draft, before returning content:
 
 1. Self-check readability:
    - Count average sentence length (target: 15-20 words)
-   - Verify no paragraph exceeds 100 words (hard limit)
+   - Verify no paragraph exceeds 150 words (hard limit)
    - Check for passive voice clusters -- rewrite to active
    - Replace jargon with plain alternatives where possible
 2. If `analyze_blog.py` is accessible, run a quick check:
    `python3 ~/.claude/skills/blog/scripts/analyze_blog.py <draft_file> --category content`
-3. If readability sub-score is below 4/6, revise before returning:
+3. If readability sub-score is below 5/7, revise before returning:
    - Split sentences over 25 words
-   - Break paragraphs over 60 words
+   - Break paragraphs over 100 words
    - Convert passive to active voice
 
 ## Quality Self-Check
 
 Before returning content, verify:
 - [ ] Every H2 opens with stat + source (40-60 words)
-- [ ] No paragraph exceeds 100 words
+- [ ] No paragraph exceeds 150 words
 - [ ] All statistics have named sources
 - [ ] Heading hierarchy is clean (H1 → H2 → H3)
 - [ ] 60-70% of H2s are questions

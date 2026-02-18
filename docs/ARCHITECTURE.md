@@ -289,7 +289,7 @@ These are non-negotiable. Content violating any of these must not be published:
 | Gate | Threshold |
 |------|-----------|
 | Fabricated statistics | Zero tolerance |
-| Paragraph length | Never > 100 words |
+| Paragraph length | Never > 150 words |
 | Heading hierarchy | Never skip levels (H1 > H2 > H3) |
 | Source tier | Tier 1-3 only |
 | Image alt text | Required on all images |
