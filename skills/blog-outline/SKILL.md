@@ -1,10 +1,13 @@
 ---
 name: blog-outline
 description: >
-  SERP-informed outline generation with H2/H3 hierarchy, content gap analysis,
-  and section-by-section planning. Lighter than a full brief — generates
-  structure only. Use when user says "outline", "blog outline", "content
-  outline", "structure blog", "plan sections".
+  SERP-informed outline generation with H2/H3 heading hierarchy, competitive
+  content gap analysis, section-by-section word count targets, chart and image
+  placement markers, FAQ question planning, and internal linking zones. Lighter
+  than a full content brief — generates article skeleton and structure only,
+  ready for /blog write to consume. Use when user says "outline", "blog outline",
+  "content outline", "structure blog", "plan sections", "article skeleton",
+  "heading structure", "SERP analysis", "competitive outline", "plan article".
 allowed-tools:
   - Read
   - Write

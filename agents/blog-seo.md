@@ -5,6 +5,7 @@ description: >
   elements post-writing: title tag, meta description, heading hierarchy,
   internal/external links, canonical URL, OG meta tags, Twitter Card,
   URL structure. Produces a pass/fail checklist with specific fixes.
+context: fork
 tools:
   - Read
   - Grep

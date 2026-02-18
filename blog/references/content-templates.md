@@ -515,7 +515,7 @@ Changes take effect immediately -- no restart needed.
 
 1. Copy an existing template as a starting point:
    ```bash
-   cp ~/.claude/skills/blog/templates/how-to.md \
+   cp ~/.claude/skills/blog/templates/how-to-guide.md \
       ~/.claude/skills/blog/templates/my-custom-type.md
    ```
 

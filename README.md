@@ -20,13 +20,13 @@ Strategy, briefs, calendars, writing, optimization, schema, repurposing, and ful
 One-command install (Unix/macOS):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/agricidaniel/claude-blog/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/AgriciDaniel/claude-blog/main/install.sh | bash
 ```
 
 Or clone and install manually:
 
 ```bash
-git clone https://github.com/agricidaniel/claude-blog.git
+git clone https://github.com/AgriciDaniel/claude-blog.git
 cd claude-blog
 chmod +x install.sh && ./install.sh
 ```
@@ -203,4 +203,4 @@ MIT License. See [LICENSE](LICENSE) for details.
 
 ---
 
-Built by [agricidaniel](https://github.com/agricidaniel) with Claude Code.
+Built by [AgriciDaniel](https://github.com/AgriciDaniel) with Claude Code.

@@ -1,10 +1,14 @@
 ---
 name: blog-seo-check
 description: >
-  Post-writing SEO validation with pass/fail checklist. Checks title tag, meta
-  description, heading hierarchy, internal/external links, canonical URL, OG
-  meta tags, Twitter Card, URL structure. Use when user says "seo check",
-  "check seo", "validate seo", "blog seo", "seo validation", "on-page seo".
+  Post-writing SEO validation with pass/fail checklist covering title tag length
+  and keyword placement, meta description quality, heading hierarchy and keyword
+  density, internal/external link audit with anchor text analysis, canonical URL
+  verification, Open Graph meta tags (og:title, og:description, og:image), Twitter
+  Card validation, URL structure optimization, and image alt text presence. Produces
+  prioritized fix list with specific recommendations. Use when user says "seo check",
+  "check seo", "validate seo", "blog seo", "seo validation", "on-page seo",
+  "title tag check", "meta description check", "heading check", "link audit".
 allowed-tools:
   - Read
   - Grep

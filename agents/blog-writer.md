@@ -5,6 +5,7 @@ description: >
   with answer-first formatting, proper heading hierarchy, sourced statistics,
   and natural readability. Follows the 6 pillars of dual optimization.
   Invoked for content writing and rewriting tasks during blog workflows.
+context: fork
 tools:
   - Read
   - Write

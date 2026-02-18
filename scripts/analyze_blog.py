@@ -1697,6 +1697,7 @@ Optional dependencies (graceful degradation):
   pip install textstat beautifulsoup4
         """,
     )
+    parser.add_argument('--version', action='version', version='%(prog)s 1.0.0')
     parser.add_argument('input', help='Blog file path or directory (with --batch)')
     parser.add_argument('--output', '-o', help='Output file path')
     parser.add_argument('--format', '-f', choices=['json', 'markdown', 'table'],
