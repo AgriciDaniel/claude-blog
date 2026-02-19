@@ -1,12 +1,17 @@
-# claude-blog
+<p align="center">
+  <img src="assets/header.jpeg" alt="Claude Blog — AI-Powered Blog Creation" width="800">
+</p>
 
-**The most comprehensive blog creation skill for Claude Code.**
+<p align="center">
+  <img src="https://img.shields.io/badge/Claude_Code-Skill-blueviolet" alt="Claude Code Skill">
+  <img src="https://img.shields.io/badge/License-MIT-green" alt="License: MIT">
+  <img src="https://img.shields.io/badge/Python-3.12%2B-blue" alt="Python 3.12+">
+  <img src="https://img.shields.io/badge/Sub--Skills-13-orange" alt="Sub-Skills">
+</p>
 
-Strategy, briefs, calendars, writing, optimization, schema, repurposing, and full-site audits — all from slash commands. Dual-optimized for Google rankings (December 2025 Core Update) and AI citation platforms (ChatGPT, Perplexity, AI Overviews).
-![Claude Code Skill](https://img.shields.io/badge/Claude_Code-Skill-blueviolet)
-![License: MIT](https://img.shields.io/badge/License-MIT-green)
-![Python 3.12+](https://img.shields.io/badge/Python-3.12%2B-blue)
-![Sub-Skills](https://img.shields.io/badge/Sub--Skills-13-orange)
+<p align="center"><strong>The most comprehensive blog creation skill for Claude Code.</strong></p>
+
+<p align="center">Strategy, briefs, calendars, writing, optimization, schema, repurposing, and full-site audits — all from slash commands.<br>Dual-optimized for Google rankings (December 2025 Core Update) and AI citation platforms (ChatGPT, Perplexity, AI Overviews).</p>
 
 ---
 
@@ -49,6 +54,18 @@ Restart Claude Code after installation to activate.
 | `/blog repurpose <file>` | Repurpose for social, email, YouTube |
 | `/blog geo <file>` | AI citation readiness audit |
 | `/blog audit [directory]` | Full-site blog health assessment |
+
+## Demo
+
+<p align="center">
+  <img src="assets/blog-write-demo.gif" alt="Blog write command demo" width="700">
+  <br><em>/blog write — generate a full blog post from a topic</em>
+</p>
+
+<p align="center">
+  <img src="assets/blog-command-demo.gif" alt="Blog commands demo" width="700">
+  <br><em>Slash commands in action inside Claude Code</em>
+</p>
 
 ## Features
 
@@ -143,6 +160,10 @@ claude-blog/
 │   ├── TEMPLATES.md
 │   ├── TROUBLESHOOTING.md
 │   └── MCP-INTEGRATION.md
+├── assets/                             # Images and demo GIFs
+│   ├── header.jpeg
+│   ├── blog-write-demo.gif
+│   └── blog-command-demo.gif
 ├── install.sh                          # Unix/macOS installer
 ├── install.ps1                         # Windows PowerShell installer
 ├── uninstall.sh                        # Unix/macOS uninstaller
