@@ -5,7 +5,7 @@ set -euo pipefail
 # Installs the blog skill ecosystem to ~/.gemini/skills/ and ~/.gemini/agents/
 #
 # One-command install:
-#   curl -sL https://raw.githubusercontent.com/AgriciDaniel/gemini-blog/main/install.sh | bash
+#   curl -sL https://raw.githubusercontent.com/imitry/gemini-blog/main/install.sh | bash
 
 main() {
     local SKILL_DIR="${HOME}/.gemini/skills"
@@ -27,7 +27,7 @@ main() {
         echo "→ Cloning gemini-blog..."
         TEMP_DIR="$(mktemp -d)"
         trap 'rm -rf "${TEMP_DIR}"' EXIT
-        git clone --depth 1 https://github.com/AgriciDaniel/gemini-blog.git "${TEMP_DIR}/gemini-blog" 2>/dev/null
+        git clone --depth 1 https://github.com/imitry/gemini-blog.git "${TEMP_DIR}/gemini-blog" 2>/dev/null
         SCRIPT_DIR="${TEMP_DIR}/gemini-blog"
     fi
 

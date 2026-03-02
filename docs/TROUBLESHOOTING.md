@@ -84,7 +84,7 @@ system."
 **Fix**:
 ```powershell
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-irm https://raw.githubusercontent.com/AgriciDaniel/gemini-blog/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/imitry/gemini-blog/main/install.ps1 | iex
 ```
 
 ---
@@ -385,4 +385,4 @@ If your issue is not listed here:
    ./uninstall.sh && ./install.sh
    ```
 
-4. **Open an issue**: https://github.com/AgriciDaniel/gemini-blog/issues
+4. **Open an issue**: https://github.com/imitry/gemini-blog/issues

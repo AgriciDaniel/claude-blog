@@ -413,5 +413,5 @@ Current priorities:
 | Contentful / Sanity CMS | Future | Low |
 
 Community contributions for MCP server implementations are welcome.
-See the [repository](https://github.com/AgriciDaniel/gemini-blog) for
+See the [repository](https://github.com/imitry/gemini-blog) for
 contribution guidelines.

@@ -7,7 +7,7 @@ ecosystem for blog content creation, optimization, and management.
 
 | Requirement | Version | Purpose |
 |-------------|---------|---------|
-| [Gemini CLI CLI](https://docs.anthropic.com/en/docs/gemini-code) | Latest | Runtime for all `/blog` commands |
+| [Gemini CLI CLI](https://geminicli.com/docs/) | Latest | Runtime for all `/blog` commands |
 | Python | 3.12+ | Quality analysis script (`analyze_blog.py`) |
 | pip | Latest | Python dependency management |
 
@@ -22,13 +22,13 @@ other commands work without it.
 ### Linux / macOS
 
 ```bash
-curl -sL https://raw.githubusercontent.com/AgriciDaniel/gemini-blog/main/install.sh | bash
+curl -sL https://raw.githubusercontent.com/imitry/gemini-blog/main/install.sh | bash
 ```
 
 ### Windows (PowerShell)
 
 ```powershell
-irm https://raw.githubusercontent.com/AgriciDaniel/gemini-blog/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/imitry/gemini-blog/main/install.ps1 | iex
 ```
 
 Both installers automatically copy all skills, agents, references, templates,
@@ -39,7 +39,7 @@ and scripts to the correct Gemini CLI configuration directories.
 ## Standard Install (Git Clone)
 
 ```bash
-git clone https://github.com/AgriciDaniel/gemini-blog.git
+git clone https://github.com/imitry/gemini-blog.git
 cd gemini-blog
 chmod +x install.sh
 ./install.sh

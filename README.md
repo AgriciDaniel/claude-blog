@@ -21,13 +21,13 @@ Strategy, briefs, calendars, writing, optimization, schema, repurposing, and ful
 One-command install (Unix/macOS):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/AgriciDaniel/gemini-blog/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/imitry/gemini-blog/main/install.sh | bash
 ```
 
 Or clone and install manually:
 
 ```bash
-git clone https://github.com/AgriciDaniel/gemini-blog.git
+git clone https://github.com/imitry/gemini-blog.git
 cd gemini-blog
 chmod +x install.sh && ./install.sh
 ```
@@ -166,7 +166,7 @@ gemini-blog/
 
 ## Requirements
 
-- [Gemini CLI](https://docs.anthropic.com/en/docs/gemini-code) CLI installed and configured
+- [Gemini CLI](https://geminicli.com/docs/) CLI installed and configured
 - Python 3.12+ (for `analyze_blog.py` quality scoring script)
 - Optional: `pip install -r requirements.txt` for advanced analysis (readability scoring, schema detection)
 
@@ -218,4 +218,6 @@ MIT License. See [LICENSE](LICENSE) for details.
 
 ---
 
-Built by [AgriciDaniel](https://github.com/AgriciDaniel) with Gemini CLI.
+Built by [imitry](https://github.com/imitry) with Gemini CLI.
+
+Original author: [AgriciDaniel](https://github.com/AgriciDaniel). English version for Claude Code.
