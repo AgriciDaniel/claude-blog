@@ -480,7 +480,8 @@ Track AI citations manually (no automated tool covers all platforms yet):
 1. **ChatGPT**: Search your brand and key topics weekly. Record mentions.
 2. **Google AI Overviews**: Check Google Search Console for AI Overview impressions.
 3. **Perplexity**: Search your topics monthly. Record source citations.
-4. **Gemini**: Search your topics monthly. Note when your content is referenced.
+4. **Claude**: Search your topics monthly. Note when your content is referenced.
+5. **Gemini**: Search your topics monthly. Note when your content is referenced.
 
 ### GA4 AI Referral Traffic Segments
 
@@ -490,7 +491,8 @@ Create custom segments to track AI-referred visitors:
 |--------|-----------|
 | ChatGPT | source contains "chatgpt" OR "chat.openai" |
 | Perplexity | source contains "perplexity" |
-| Gemini | source contains "gemini" OR "anthropic" |
+| Claude | source contains "claude" OR "anthropic" |
+| Gemini | source contains "gemini" OR "google-extended" |
 | Google AI | medium equals "organic" AND landing page in AI Overview set |
 | Bing Copilot | source contains "bing" AND referrer contains "copilot" |
 
