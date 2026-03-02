@@ -10,15 +10,16 @@ description: >
   Use when user says "write blog", "new blog post", "create article",
   "write about", "draft blog", "generate blog post".
 allowed-tools:
-  - Read
-  - Write
-  - Edit
-  - Bash
-  - Grep
-  - Glob
-  - WebFetch
-  - WebSearch
-  - Task
+  - read_file
+  - write_file
+  - replace
+  - run_shell_command
+  - bash
+  - grep_search
+  - glob
+  - web_fetch
+  - google_web_search
+  - write_todos
 ---
 
 # Blog Writer -- New Article Generation

@@ -8,11 +8,11 @@ description: >
   user says "geo", "ai citation", "ai optimization", "citation audit", "aeo",
   "perplexity optimization", "chatgpt citation".
 allowed-tools:
-  - Read
-  - Write
-  - Grep
-  - Glob
-  - WebFetch
+  - read_file
+  - write_file
+  - grep_search
+  - glob
+  - web_fetch
 ---
 
 # Blog GEO -- AI Citation Optimization Audit

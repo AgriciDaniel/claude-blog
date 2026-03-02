@@ -7,10 +7,10 @@ description: >
   says "schema", "blog schema", "json-ld", "structured data", "schema markup",
   "generate schema".
 allowed-tools:
-  - Read
-  - Write
-  - Grep
-  - Glob
+  - read_file
+  - write_file
+  - grep_search
+  - glob
 ---
 
 # Blog Schema -- JSON-LD Structured Data Generation

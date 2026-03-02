@@ -10,14 +10,15 @@ description: >
   when user says "content brief", "blog brief", "write brief", "outline blog",
   "plan blog post", "blog outline", "content outline".
 allowed-tools:
-  - Read
-  - Write
-  - Bash
-  - Grep
-  - Glob
-  - WebFetch
-  - WebSearch
-  - Task
+  - read_file
+  - write_file
+  - run_shell_command
+  - bash
+  - grep_search
+  - glob
+  - web_fetch
+  - google_web_search
+  - write_todos
 ---
 
 # Blog Brief Generator -- Content Planning

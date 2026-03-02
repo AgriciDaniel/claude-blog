@@ -10,10 +10,10 @@ description: >
   "check seo", "validate seo", "blog seo", "seo validation", "on-page seo",
   "title tag check", "meta description check", "heading check", "link audit".
 allowed-tools:
-  - Read
-  - Grep
-  - Glob
-  - WebFetch
+  - read_file
+  - grep_search
+  - glob
+  - web_fetch
 ---
 
 # Blog SEO Check -- Post-Writing Validation

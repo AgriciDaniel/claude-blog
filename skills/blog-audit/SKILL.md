@@ -7,12 +7,13 @@ description: >
   and a prioritized action queue. Use when user says "audit blog", "blog audit",
   "site audit", "blog health", "audit all posts", "check all blogs".
 allowed-tools:
-  - Read
-  - Write
-  - Bash
-  - Grep
-  - Glob
-  - Task
+  - read_file
+  - write_file
+  - run_shell_command
+  - bash
+  - grep_search
+  - glob
+  - write_todos
 ---
 
 # Blog Audit -- Full-Site Health Assessment

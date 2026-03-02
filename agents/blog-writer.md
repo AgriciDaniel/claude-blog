@@ -7,11 +7,11 @@ description: >
   Invoked for content writing and rewriting tasks during blog workflows.
 context: fork
 tools:
-  - Read
-  - Write
-  - Edit
-  - Grep
-  - Glob
+  - read_file
+  - write_file
+  - replace
+  - grep_search
+  - glob
 ---
 
 You are a blog content writing specialist. You write articles optimized for

@@ -9,13 +9,14 @@ description: >
   Use when user says "editorial calendar", "content calendar", "blog calendar",
   "publishing schedule", "blog plan", "content plan", "what should I write".
 allowed-tools:
-  - Read
-  - Write
-  - Bash
-  - Grep
-  - Glob
-  - WebFetch
-  - WebSearch
+  - read_file
+  - write_file
+  - run_shell_command
+  - bash
+  - grep_search
+  - glob
+  - web_fetch
+  - google_web_search
 ---
 
 # Blog Calendar -- Editorial Planning

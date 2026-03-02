@@ -16,15 +16,18 @@ description: >
 user-invocable: true
 argument-hint: "[write|rewrite|analyze|brief|calendar|strategy|outline|seo-check|schema|repurpose|geo|audit] [topic-or-file]"
 allowed-tools:
-  - Read
-  - Write
-  - Edit
-  - Bash
-  - Grep
-  - Glob
-  - WebFetch
-  - WebSearch
-  - Task
+  - read_file
+  - write_file
+  - replace
+  - run_shell_command
+  - bash
+  - grep_search
+  - glob
+  - web_fetch
+  - google_web_search
+  - write_todos
+  - list_directory
+  - ask_user
 ---
 
 # Blog -- Content Engine for Rankings & AI Citations

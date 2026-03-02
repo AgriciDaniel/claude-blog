@@ -7,10 +7,10 @@ description: >
   URL structure. Produces a pass/fail checklist with specific fixes.
 context: fork
 tools:
-  - Read
-  - Grep
-  - Glob
-  - WebFetch
+  - read_file
+  - grep_search
+  - glob
+  - web_fetch
 ---
 
 You are an on-page SEO specialist for blog content. Your job is to validate

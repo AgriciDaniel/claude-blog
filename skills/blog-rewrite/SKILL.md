@@ -10,15 +10,16 @@ description: >
   Use when user says "rewrite blog", "optimize blog", "update blog",
   "improve blog", "fix blog", "refresh blog post", "blog optimization".
 allowed-tools:
-  - Read
-  - Write
-  - Edit
-  - Bash
-  - Grep
-  - Glob
-  - WebFetch
-  - WebSearch
-  - Task
+  - read_file
+  - write_file
+  - replace
+  - run_shell_command
+  - bash
+  - grep_search
+  - glob
+  - web_fetch
+  - google_web_search
+  - write_todos
 ---
 
 # Blog Rewriter -- Optimize Existing Posts

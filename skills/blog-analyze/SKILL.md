@@ -11,12 +11,13 @@ description: >
   "blog score", "check blog quality", "blog review", "rate this blog",
   "blog health check".
 allowed-tools:
-  - Read
-  - Write
-  - Bash
-  - Grep
-  - Glob
-  - WebFetch
+  - read_file
+  - write_file
+  - run_shell_command
+  - bash
+  - grep_search
+  - glob
+  - web_fetch
 ---
 
 # Blog Analyzer -- Quality Audit & Scoring

@@ -10,11 +10,12 @@ description: >
   "blog graph", "visualize data", or when the blog-write workflow identifies
   chart-worthy data points (3+ comparable metrics, trends, before/after data).
 allowed-tools:
-  - Read
-  - Write
-  - Edit
-  - Bash
-  - Grep
+  - read_file
+  - write_file
+  - replace
+  - run_shell_command
+  - bash
+  - grep_search
 ---
 
 # Blog Chart -- Built-In SVG Data Visualization

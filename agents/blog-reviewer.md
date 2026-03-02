@@ -7,10 +7,11 @@ description: >
   AI-detectable phrases. Invoked for quality review tasks during blog workflows.
 context: fork
 tools:
-  - Read
-  - Bash
-  - Grep
-  - Glob
+  - read_file
+  - run_shell_command
+  - bash
+  - grep_search
+  - glob
 ---
 
 You are a blog quality assessment specialist. Your job is to score blog posts

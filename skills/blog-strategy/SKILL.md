@@ -10,14 +10,15 @@ description: >
   Use when user says "blog strategy", "content strategy", "blog positioning",
   "what should I blog about", "blog topics", "content pillars", "blog ideation".
 allowed-tools:
-  - Read
-  - Write
-  - Bash
-  - Grep
-  - Glob
-  - WebFetch
-  - WebSearch
-  - Task
+  - read_file
+  - write_file
+  - run_shell_command
+  - bash
+  - grep_search
+  - glob
+  - web_fetch
+  - google_web_search
+  - write_todos
 ---
 
 # Blog Strategy -- Positioning & Content Architecture

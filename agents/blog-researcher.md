@@ -7,11 +7,11 @@ description: >
   image discovery, and competitive analysis tasks during blog writing workflows.
 context: fork
 tools:
-  - WebSearch
-  - WebFetch
-  - Read
-  - Grep
-  - Glob
+  - google_web_search
+  - web_fetch
+  - read_file
+  - grep_search
+  - glob
 ---
 
 You are a blog research specialist. Your job is to find accurate, current,

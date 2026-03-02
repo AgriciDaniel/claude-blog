@@ -7,10 +7,10 @@ description: >
   Use when user says "repurpose", "blog repurpose", "share blog", "social media",
   "twitter thread", "linkedin post", "youtube script", "reddit post".
 allowed-tools:
-  - Read
-  - Write
-  - Grep
-  - Glob
+  - read_file
+  - write_file
+  - grep_search
+  - glob
 ---
 
 # Blog Repurpose -- Cross-Platform Content Adaptation

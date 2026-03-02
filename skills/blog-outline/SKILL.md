@@ -9,13 +9,14 @@ description: >
   "content outline", "structure blog", "plan sections", "article skeleton",
   "heading structure", "SERP analysis", "competitive outline", "plan article".
 allowed-tools:
-  - Read
-  - Write
-  - Bash
-  - Grep
-  - Glob
-  - WebSearch
-  - WebFetch
+  - read_file
+  - write_file
+  - run_shell_command
+  - bash
+  - grep_search
+  - glob
+  - google_web_search
+  - web_fetch
 ---
 
 # Blog Outline Generator -- SERP-Informed Structure Planning
