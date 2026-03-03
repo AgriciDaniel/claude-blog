@@ -26,8 +26,8 @@ improvement recommendations. Includes AI content detection analysis. Works with
 local files or published URLs.
 
 Reference documents:
-- `references/quality-scoring.md` -- full scoring checklist
-- `references/eeat-signals.md` -- E-E-A-T evaluation criteria
+- `blog/references/quality-scoring.md` -- full scoring checklist
+- `blog/references/eeat-signals.md` -- E-E-A-T evaluation criteria
 
 ## Input Handling
 
@@ -56,7 +56,7 @@ Read the blog post and extract:
 
 ### Step 2: Score Each Category
 
-Load `references/quality-scoring.md` for the full checklist. Score each:
+Load `blog/references/quality-scoring.md` for the full checklist. Score each:
 
 #### Content Quality (30 points)
 | Check | Points | Pass Criteria |
@@ -278,3 +278,5 @@ summary table. Use `--sort score` to order by score (ascending by default).
 
 Run `/blog rewrite <file>` on each, starting from lowest score.
 ```
+
+

@@ -257,3 +257,5 @@ Combine all schemas into a single `<script>` tag using the @graph pattern:
 
 Save the generated schema to the blog post file or to a separate schema file
 as the user prefers.
+
+

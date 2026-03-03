@@ -177,3 +177,5 @@ Status values:
 - **FAIL** — Does not meet the criteria, fix provided
 - **WARN** — Partially meets criteria or edge case, recommendation provided
 - **N/A** — Not applicable (e.g., no Twitter Card tags if site has no X account)
+
+

@@ -27,11 +27,11 @@ Writes complete blog articles from a topic, brief, or outline. Every article
 follows the 6 pillars of dual optimization (Google rankings + AI citations).
 
 **Key references:**
-- `references/content-templates.md` — Template selection guide and usage
-- `references/quality-scoring.md` — 5-category scoring (Content 30, SEO 25, E-E-A-T 15, Technical 15, AI Citation 15)
-- `references/eeat-signals.md` — Experience, expertise, authority, trust markers
-- `references/internal-linking.md` — Linking strategy and anchor text rules
-- `references/visual-media.md` — Image sourcing and chart styling
+- `blog/references/content-templates.md` — Template selection guide and usage
+- `blog/references/quality-scoring.md` — 5-category scoring (Content 30, SEO 25, E-E-A-T 15, Technical 15, AI Citation 15)
+- `blog/references/eeat-signals.md` — Experience, expertise, authority, trust markers
+- `blog/references/internal-linking.md` — Linking strategy and anchor text rules
+- `blog/references/visual-media.md` — Image sourcing and chart styling
 
 ## Workflow
 
@@ -70,7 +70,7 @@ Select the appropriate content template from the 12 templates in `blog/templates
 4. **Fallback** — If no template clearly fits, use the generic outline structure
    in Phase 3 below. Inform the user which template was selected (or that none matched).
 
-See `references/content-templates.md` for detailed selection criteria and intent mapping.
+See `blog/references/content-templates.md` for detailed selection criteria and intent mapping.
 
 ### Phase 2: Research
 
@@ -78,7 +78,7 @@ Spawn a `blog-researcher` agent (or do inline research with WebSearch):
 
 1. **Find 8-12 current statistics** (2025-2026 data preferred)
    - Search: `[topic] study 2025 2026 data statistics`
-   - Prioritize tier 1-3 sources (see `references/quality-scoring.md`)
+   - Prioritize tier 1-3 sources (see `blog/references/quality-scoring.md`)
    - Record: statistic, source name, URL, date, methodology
 2. **Find a cover image** (wide, high-quality, topic-relevant):
    - Search: `site:pixabay.com [topic] wide banner` (preferred)
@@ -86,7 +86,7 @@ Spawn a `blog-researcher` agent (or do inline research with WebSearch):
    - Fallback: `site:pexels.com [topic] wide banner`
    - Target dimensions: 1200x630 (OG-compatible) or 1920x1080
    - Or generate a custom SVG cover via `blog-chart` (text-on-gradient with key stat)
-   - See `references/visual-media.md` for cover image sizing details
+   - See `blog/references/visual-media.md` for cover image sizing details
 3. **Find 3-5 inline images** from open-source platforms:
    - **Pixabay** (preferred): Search `site:pixabay.com [topic keywords]`
      - Extract image URL from page
@@ -96,7 +96,7 @@ Spawn a `blog-researcher` agent (or do inline research with WebSearch):
      - Build URL: `https://images.unsplash.com/photo-<id>?w=1200&h=630&fit=crop&q=80`
    - **Pexels** (fallback): Search `site:pexels.com [topic keywords]`
 4. **Plan 2-4 data visualizations** from researched statistics
-   - Select diverse chart types (see `references/visual-media.md`)
+   - Select diverse chart types (see `blog/references/visual-media.md`)
    - Map data points to chart formats
 
 ### Phase 3: Outline Generation
@@ -168,7 +168,7 @@ before/after comparisons):
 4. Target 2-4 charts per 2,000-word post
 5. Distribute charts evenly — never cluster them
 
-See `references/visual-media.md` for chart type selection and styling rules.
+See `blog/references/visual-media.md` for chart type selection and styling rules.
 
 ### Phase 5: Content Writing
 
@@ -248,7 +248,7 @@ Placement:
 - Minimum 2 per post, target 3 for comprehensive articles
 
 These markers map directly to the "Originality/unique value markers" criterion
-in the Content Quality scoring category (see `references/quality-scoring.md`).
+in the Content Quality scoring category (see `blog/references/quality-scoring.md`).
 
 #### 5e. Citation Capsules
 
@@ -270,7 +270,7 @@ for AI systems to extract and cite in their responses.
 ```
 
 Capsules map to the "AI Citation Readiness" scoring category (15 points) in
-`references/quality-scoring.md`.
+`blog/references/quality-scoring.md`.
 
 #### 5f. Internal Linking Zones
 
@@ -295,7 +295,7 @@ For a deeper dive into keyword clustering, see our
 ```
 
 Target 5-10 internal link zones per 2,000-word post. Use descriptive anchor text
-(never "click here" or "read more"). See `references/internal-linking.md` for
+(never "click here" or "read more"). See `blog/references/internal-linking.md` for
 anchor text rules and linking strategy.
 
 #### 5g. Paragraph Rules
@@ -450,3 +450,5 @@ Present the completed article with a summary:
 - Add internal links to your existing content
 - Run `/blog analyze <file>` to verify quality score
 ```
+
+

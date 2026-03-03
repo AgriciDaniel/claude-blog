@@ -26,9 +26,9 @@ Generates comprehensive content briefs that guide blog writing for maximum
 impact on both Google rankings and AI citation platforms.
 
 Reference documents:
-- `references/content-templates.md` -- template selection criteria
-- `references/distribution-playbook.md` -- channel-specific distribution tactics
-- `references/internal-linking.md` -- link architecture patterns
+- `blog/references/content-templates.md` -- template selection criteria
+- `blog/references/distribution-playbook.md` -- channel-specific distribution tactics
+- `blog/references/internal-linking.md` -- link architecture patterns
 
 ## Workflow
 
@@ -54,7 +54,7 @@ Using WebSearch:
 ### Step 2.5: Template Recommendation
 
 Analyze the topic, search intent, and competitive landscape to recommend one
-of 12 content templates. Load `references/content-templates.md` for selection
+of 12 content templates. Load `blog/references/content-templates.md` for selection
 criteria.
 
 **Available templates:**
@@ -264,3 +264,5 @@ claim that can stand alone when quoted.
 
 Save to the user's project as `briefs/[slug]-brief.md` or to a location
 they specify. Confirm the brief is ready for `/blog write`.
+
+

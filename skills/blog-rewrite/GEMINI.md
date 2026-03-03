@@ -28,17 +28,17 @@ and AI citation platforms. Preserves the author's voice while applying the
 6 pillars of optimization.
 
 **Key references:**
-- `references/quality-scoring.md` — 5-category scoring (Content 30, SEO 25, E-E-A-T 15, Technical 15, AI Citation 15)
-- `references/eeat-signals.md` — Experience, expertise, authority, trust markers
-- `references/internal-linking.md` — Linking strategy and anchor text rules
-- `references/visual-media.md` — Image sourcing and chart styling
+- `blog/references/quality-scoring.md` — 5-category scoring (Content 30, SEO 25, E-E-A-T 15, Technical 15, AI Citation 15)
+- `blog/references/eeat-signals.md` — Experience, expertise, authority, trust markers
+- `blog/references/internal-linking.md` — Linking strategy and anchor text rules
+- `blog/references/visual-media.md` — Image sourcing and chart styling
 
 ## Workflow
 
 ### Phase 1: Audit (Read-Only)
 
 1. **Read the blog post** — Detect format (MDX, markdown, HTML)
-2. **Run the quality checklist** against `references/quality-scoring.md`:
+2. **Run the quality checklist** against `blog/references/quality-scoring.md`:
    - Count fabricated vs sourced statistics
    - Check answer-first formatting (H2 -> stat in first sentence?)
    - Count images and charts (type diversity?)
@@ -105,7 +105,7 @@ When the post needs more visual elements, invoke the `blog-chart` sub-skill:
 3. Embed the returned SVG directly within a `<figure>` wrapper
 4. Target 2-4 charts per 2,000-word post
 
-See `references/visual-media.md` for chart type selection and styling rules.
+See `blog/references/visual-media.md` for chart type selection and styling rules.
 
 ### Phase 4: Content Rewrite
 
@@ -177,7 +177,7 @@ for AI systems to extract and cite in their responses.
 ```
 
 Capsules map to the "AI Citation Readiness" category (15 points) in
-`references/quality-scoring.md`.
+`blog/references/quality-scoring.md`.
 
 #### 4k. Anti-AI-Detection Patterns
 Apply these transformations to reduce AI-detectable writing patterns:
@@ -313,3 +313,5 @@ When invoked as `/blog update <file>`, focus on freshness:
 4. Update `lastUpdated` in frontmatter
 5. Preserve the existing structure — minimize rewrites
 6. Target: at least 30% content change to register as "fresh" for AI crawlers
+
+
