@@ -1,6 +1,6 @@
-# gemini-blog
+﻿# gemini-blog
 
-![Gemini Blog — AI-Powered Blog Creation](assets/header.jpeg)
+![Gemini Blog вЂ” AI-Powered Blog Creation](assets/header.jpeg)
 
 ![Gemini CLI Skill](https://img.shields.io/badge/Gemini_Code-Skill-blueviolet)
 ![License: MIT](https://img.shields.io/badge/License-MIT-green)
@@ -9,7 +9,7 @@
 
 **The most comprehensive blog creation skill for Gemini CLI.**
 
-Strategy, briefs, calendars, writing, optimization, schema, repurposing, and full-site audits — all from slash commands. Dual-optimized for Google rankings and AI citation platforms (ChatGPT, Perplexity, AI Overviews).
+Strategy, briefs, calendars, writing, optimization, schema, repurposing, and full-site audits вЂ” all from slash commands. Dual-optimized for Google rankings and AI citation platforms (ChatGPT, Perplexity, AI Overviews).
 
 ### [Watch the Demo](https://www.youtube.com/watch?v=AeLC4iutG8w)
 
@@ -93,75 +93,75 @@ Next.js/MDX, Astro, Hugo, Jekyll, WordPress, Ghost, 11ty, Gatsby, and static HTM
 
 ```
 gemini-blog/
-├── blog/
-│   ├── SKILL.md                        # Main orchestrator (12 commands)
-│   ├── references/                     # 12 on-demand reference docs
-│   │   ├── google-landscape-2026.md
-│   │   ├── geo-optimization.md
-│   │   ├── content-rules.md
-│   │   ├── visual-media.md
-│   │   ├── quality-scoring.md
-│   │   ├── platform-guides.md
-│   │   ├── distribution-playbook.md
-│   │   ├── content-templates.md
-│   │   ├── eeat-signals.md
-│   │   ├── ai-crawler-guide.md
-│   │   ├── schema-stack.md
-│   │   └── internal-linking.md
-│   └── templates/                      # 12 content type templates
-│       ├── how-to-guide.md
-│       ├── listicle.md
-│       ├── case-study.md
-│       ├── comparison.md
-│       ├── pillar-page.md
-│       ├── product-review.md
-│       ├── thought-leadership.md
-│       ├── roundup.md
-│       ├── tutorial.md
-│       ├── news-analysis.md
-│       ├── data-research.md
-│       └── faq-knowledge.md
-├── skills/                             # 13 sub-skills
-│   ├── blog-write/SKILL.md
-│   ├── blog-rewrite/SKILL.md
-│   ├── blog-analyze/SKILL.md
-│   ├── blog-brief/SKILL.md
-│   ├── blog-calendar/SKILL.md
-│   ├── blog-strategy/SKILL.md
-│   ├── blog-outline/SKILL.md
-│   ├── blog-seo-check/SKILL.md
-│   ├── blog-schema/SKILL.md
-│   ├── blog-repurpose/SKILL.md
-│   ├── blog-geo/SKILL.md
-│   ├── blog-audit/SKILL.md
-│   └── blog-chart/SKILL.md            # Internal: SVG chart generation
-├── agents/                             # 4 specialized agents
-│   ├── blog-researcher.md
-│   ├── blog-writer.md
-│   ├── blog-seo.md
-│   └── blog-reviewer.md
-├── scripts/
-│   └── analyze_blog.py                 # Python quality analysis (5-category scoring)
-├── docs/                               # 6 documentation files
-│   ├── INSTALLATION.md
-│   ├── COMMANDS.md
-│   ├── ARCHITECTURE.md
-│   ├── TEMPLATES.md
-│   ├── TROUBLESHOOTING.md
-│   └── MCP-INTEGRATION.md
-├── assets/                             # Images and demo GIFs
-│   ├── header.jpeg
-│   ├── blog-write-demo.gif
-│   └── blog-command-demo.gif
-├── install.sh                          # Unix/macOS installer
-├── install.ps1                         # Windows PowerShell installer
-├── uninstall.sh                        # Unix/macOS uninstaller
-├── uninstall.ps1                       # Windows PowerShell uninstaller
-├── requirements.txt                    # Python dependencies
-├── CHANGELOG.md
-├── TODO.md
-├── LICENSE
-└── README.md
+в”њв”Ђв”Ђ blog/
+в”‚   в”њв”Ђв”Ђ GEMINI.md                        # Main orchestrator (12 commands)
+в”‚   в”њв”Ђв”Ђ references/                     # 12 on-demand reference docs
+в”‚   в”‚   в”њв”Ђв”Ђ google-landscape-2026.md
+в”‚   в”‚   в”њв”Ђв”Ђ geo-optimization.md
+в”‚   в”‚   в”њв”Ђв”Ђ content-rules.md
+в”‚   в”‚   в”њв”Ђв”Ђ visual-media.md
+в”‚   в”‚   в”њв”Ђв”Ђ quality-scoring.md
+в”‚   в”‚   в”њв”Ђв”Ђ platform-guides.md
+в”‚   в”‚   в”њв”Ђв”Ђ distribution-playbook.md
+в”‚   в”‚   в”њв”Ђв”Ђ content-templates.md
+в”‚   в”‚   в”њв”Ђв”Ђ eeat-signals.md
+в”‚   в”‚   в”њв”Ђв”Ђ ai-crawler-guide.md
+в”‚   в”‚   в”њв”Ђв”Ђ schema-stack.md
+в”‚   в”‚   в””в”Ђв”Ђ internal-linking.md
+в”‚   в””в”Ђв”Ђ templates/                      # 12 content type templates
+в”‚       в”њв”Ђв”Ђ how-to-guide.md
+в”‚       в”њв”Ђв”Ђ listicle.md
+в”‚       в”њв”Ђв”Ђ case-study.md
+в”‚       в”њв”Ђв”Ђ comparison.md
+в”‚       в”њв”Ђв”Ђ pillar-page.md
+в”‚       в”њв”Ђв”Ђ product-review.md
+в”‚       в”њв”Ђв”Ђ thought-leadership.md
+в”‚       в”њв”Ђв”Ђ roundup.md
+в”‚       в”њв”Ђв”Ђ tutorial.md
+в”‚       в”њв”Ђв”Ђ news-analysis.md
+в”‚       в”њв”Ђв”Ђ data-research.md
+в”‚       в””в”Ђв”Ђ faq-knowledge.md
+в”њв”Ђв”Ђ skills/                             # 13 sub-skills
+в”‚   в”њв”Ђв”Ђ blog-write/GEMINI.md
+в”‚   в”њв”Ђв”Ђ blog-rewrite/GEMINI.md
+в”‚   в”њв”Ђв”Ђ blog-analyze/GEMINI.md
+в”‚   в”њв”Ђв”Ђ blog-brief/GEMINI.md
+в”‚   в”њв”Ђв”Ђ blog-calendar/GEMINI.md
+в”‚   в”њв”Ђв”Ђ blog-strategy/GEMINI.md
+в”‚   в”њв”Ђв”Ђ blog-outline/GEMINI.md
+в”‚   в”њв”Ђв”Ђ blog-seo-check/GEMINI.md
+в”‚   в”њв”Ђв”Ђ blog-schema/GEMINI.md
+в”‚   в”њв”Ђв”Ђ blog-repurpose/GEMINI.md
+в”‚   в”њв”Ђв”Ђ blog-geo/GEMINI.md
+в”‚   в”њв”Ђв”Ђ blog-audit/GEMINI.md
+в”‚   в””в”Ђв”Ђ blog-chart/GEMINI.md            # Internal: SVG chart generation
+в”њв”Ђв”Ђ agents/                             # 4 specialized agents
+в”‚   в”њв”Ђв”Ђ blog-researcher.md
+в”‚   в”њв”Ђв”Ђ blog-writer.md
+в”‚   в”њв”Ђв”Ђ blog-seo.md
+в”‚   в””в”Ђв”Ђ blog-reviewer.md
+в”њв”Ђв”Ђ scripts/
+в”‚   в””в”Ђв”Ђ analyze_blog.py                 # Python quality analysis (5-category scoring)
+в”њв”Ђв”Ђ docs/                               # 6 documentation files
+в”‚   в”њв”Ђв”Ђ INSTALLATION.md
+в”‚   в”њв”Ђв”Ђ COMMANDS.md
+в”‚   в”њв”Ђв”Ђ ARCHITECTURE.md
+в”‚   в”њв”Ђв”Ђ TEMPLATES.md
+в”‚   в”њв”Ђв”Ђ TROUBLESHOOTING.md
+в”‚   в””в”Ђв”Ђ MCP-INTEGRATION.md
+в”њв”Ђв”Ђ assets/                             # Images and demo GIFs
+в”‚   в”њв”Ђв”Ђ header.jpeg
+в”‚   в”њв”Ђв”Ђ blog-write-demo.gif
+в”‚   в””в”Ђв”Ђ blog-command-demo.gif
+в”њв”Ђв”Ђ install.sh                          # Unix/macOS installer
+в”њв”Ђв”Ђ install.ps1                         # Windows PowerShell installer
+в”њв”Ђв”Ђ uninstall.sh                        # Unix/macOS uninstaller
+в”њв”Ђв”Ђ uninstall.ps1                       # Windows PowerShell uninstaller
+в”њв”Ђв”Ђ requirements.txt                    # Python dependencies
+в”њв”Ђв”Ђ CHANGELOG.md
+в”њв”Ђв”Ђ TODO.md
+в”њв”Ђв”Ђ LICENSE
+в””в”Ђв”Ђ README.md
 ```
 
 ## Requirements
@@ -184,7 +184,7 @@ Windows (PowerShell):
 
 ## Integration
 
-Chart generation is built-in — no external dependencies required for full functionality.
+Chart generation is built-in вЂ” no external dependencies required for full functionality.
 
 **Optional companion skills** (for deeper analysis of published pages):
 
@@ -221,3 +221,4 @@ MIT License. See [LICENSE](LICENSE) for details.
 Built by [imitry](https://github.com/imitry) with Gemini CLI.
 
 Original author: [AgriciDaniel](https://github.com/AgriciDaniel). English version for Claude Code.
+

@@ -1,7 +1,7 @@
-# Command Reference
+﻿# Command Reference
 
 Complete reference for all 12 `/blog` slash commands. Every command is invoked
-through the main orchestrator (`blog/SKILL.md`), which routes to the appropriate
+through the main orchestrator (`blog/GEMINI.md`), which routes to the appropriate
 sub-skill.
 
 ## Command Overview
@@ -28,7 +28,7 @@ sub-skill.
 
 ---
 
-## /blog write
+## /blog:write
 
 Write a new blog post from scratch, fully optimized for Google rankings and
 AI citation platforms.
@@ -65,13 +65,13 @@ A complete blog post in the detected format (Markdown, MDX, or HTML) with:
 
 ### Related Commands
 
-- `/blog brief` -- Generate a brief first, then feed it to `/blog write`
-- `/blog analyze` -- Score the finished post
-- `/blog seo-check` -- Validate SEO after writing
+- `/blog:brief` -- Generate a brief first, then feed it to `/blog:write`
+- `/blog:analyze` -- Score the finished post
+- `/blog:seo-check` -- Validate SEO after writing
 
 ---
 
-## /blog rewrite
+## /blog:rewrite
 
 Optimize an existing blog post for rankings and AI citations while preserving
 the author's voice and unique perspective.
@@ -107,12 +107,12 @@ The rewritten file in its original format with:
 
 ### Related Commands
 
-- `/blog analyze` -- Audit before rewriting to see the starting score
-- `/blog update` -- Alias for freshness-focused rewrite
+- `/blog:analyze` -- Audit before rewriting to see the starting score
+- `/blog:update` -- Alias for freshness-focused rewrite
 
 ---
 
-## /blog analyze
+## /blog:analyze
 
 Audit a blog post's quality with a 0-100 score across 6 categories, with
 prioritized improvement recommendations.
@@ -172,12 +172,12 @@ python3 ~/.gemini/skills/blog/scripts/analyze_blog.py post.md -o report.json
 
 ### Related Commands
 
-- `/blog rewrite` -- Apply the recommended fixes automatically
-- `/blog audit` -- Full-site assessment (broader than single-file analyze)
+- `/blog:rewrite` -- Apply the recommended fixes automatically
+- `/blog:audit` -- Full-site assessment (broader than single-file analyze)
 
 ---
 
-## /blog brief
+## /blog:brief
 
 Generate a comprehensive content brief with keywords, competitive analysis,
 statistics research, visual element planning, and a structured outline.
@@ -216,13 +216,13 @@ A detailed brief document saved to `briefs/[slug]-brief.md` containing:
 
 ### Related Commands
 
-- `/blog write` -- Write the article using the generated brief
-- `/blog strategy` -- Higher-level planning before individual briefs
-- `/blog outline` -- Lighter-weight outline without full research
+- `/blog:write` -- Write the article using the generated brief
+- `/blog:strategy` -- Higher-level planning before individual briefs
+- `/blog:outline` -- Lighter-weight outline without full research
 
 ---
 
-## /blog calendar
+## /blog:calendar
 
 Generate an editorial calendar with topic clusters, publishing schedules,
 freshness update plans, and seasonal opportunities.
@@ -254,12 +254,12 @@ content velocity targets, quarterly goals, and distribution plan.
 
 ### Related Commands
 
-- `/blog strategy` -- Define pillars and positioning before calendar planning
-- `/blog brief` -- Create briefs for calendar items
+- `/blog:strategy` -- Define pillars and positioning before calendar planning
+- `/blog:brief` -- Create briefs for calendar items
 
 ---
 
-## /blog strategy
+## /blog:strategy
 
 Develop a comprehensive blog strategy with content pillars, audience mapping,
 competitive landscape analysis, and distribution planning.
@@ -297,12 +297,12 @@ A full strategy document with:
 
 ### Related Commands
 
-- `/blog calendar` -- Operationalize the strategy into a publishing schedule
-- `/blog brief` -- Create briefs for strategy-identified topics
+- `/blog:calendar` -- Operationalize the strategy into a publishing schedule
+- `/blog:brief` -- Create briefs for strategy-identified topics
 
 ---
 
-## /blog outline
+## /blog:outline
 
 Generate a SERP-informed content outline by analyzing what currently ranks for
 the target keyword.
@@ -326,12 +326,12 @@ A structured outline with:
 
 ### Related Commands
 
-- `/blog brief` -- Full brief with research (outline is a subset)
-- `/blog write` -- Write from the outline directly
+- `/blog:brief` -- Full brief with research (outline is a subset)
+- `/blog:write` -- Write from the outline directly
 
 ---
 
-## /blog seo-check
+## /blog:seo-check
 
 Post-writing SEO validation that checks technical SEO elements beyond content
 quality.
@@ -357,12 +357,12 @@ quality.
 
 ### Related Commands
 
-- `/blog analyze` -- Full quality audit (content + SEO + citations)
-- `/blog schema` -- Generate missing schema markup
+- `/blog:analyze` -- Full quality audit (content + SEO + citations)
+- `/blog:schema` -- Generate missing schema markup
 
 ---
 
-## /blog schema
+## /blog:schema
 
 Generate JSON-LD structured data markup for a blog post.
 
@@ -397,12 +397,12 @@ not execute JavaScript.
 
 ### Related Commands
 
-- `/blog seo-check` -- Validates schema presence and correctness
-- `/blog analyze` -- Checks schema as part of the full quality audit
+- `/blog:seo-check` -- Validates schema presence and correctness
+- `/blog:analyze` -- Checks schema as part of the full quality audit
 
 ---
 
-## /blog repurpose
+## /blog:repurpose
 
 Repurpose a blog post into content for other platforms and formats.
 
@@ -426,12 +426,12 @@ Repurpose a blog post into content for other platforms and formats.
 
 ### Related Commands
 
-- `/blog strategy` -- Identifies distribution channels for repurposing
-- `/blog write` -- Create the original post to repurpose
+- `/blog:strategy` -- Identifies distribution channels for repurposing
+- `/blog:write` -- Create the original post to repurpose
 
 ---
 
-## /blog geo
+## /blog:geo
 
 AI citation optimization audit. Analyzes a blog post specifically for
 visibility on AI platforms (ChatGPT, Perplexity, Google AI Overviews).
@@ -456,12 +456,12 @@ visibility on AI platforms (ChatGPT, Perplexity, Google AI Overviews).
 
 ### Related Commands
 
-- `/blog analyze` -- Full quality audit including GEO metrics
-- `/blog rewrite` -- Apply GEO optimizations automatically
+- `/blog:analyze` -- Full quality audit including GEO metrics
+- `/blog:rewrite` -- Apply GEO optimizations automatically
 
 ---
 
-## /blog audit
+## /blog:audit
 
 Full-site blog health assessment. Scans an entire directory of blog posts
 and produces a comprehensive report.
@@ -485,15 +485,15 @@ and produces a comprehensive report.
 
 ### Related Commands
 
-- `/blog analyze` -- Single-file audit (audit is the batch version)
-- `/blog calendar` -- Plan content based on audit findings
-- `/blog rewrite` -- Fix posts identified by the audit
+- `/blog:analyze` -- Single-file audit (audit is the batch version)
+- `/blog:calendar` -- Plan content based on audit findings
+- `/blog:rewrite` -- Fix posts identified by the audit
 
 ---
 
-## /blog update
+## /blog:update
 
-Alias for `/blog rewrite` with a freshness-focused mode. Minimizes structural
+Alias for `/blog:rewrite` with a freshness-focused mode. Minimizes structural
 changes and focuses on updating data and signals.
 
 ### Usage
@@ -514,14 +514,14 @@ changes and focuses on updating data and signals.
 
 ### Related Commands
 
-- `/blog rewrite` -- Full rewrite (more aggressive than update)
-- `/blog audit` -- Find posts that need updating
+- `/blog:rewrite` -- Full rewrite (more aggressive than update)
+- `/blog:audit` -- Find posts that need updating
 
 ---
 
 ## Command Routing
 
-The main orchestrator (`blog/SKILL.md`) parses user input and routes to
+The main orchestrator (`blog/GEMINI.md`) parses user input and routes to
 the correct sub-skill:
 
 ```
@@ -547,3 +547,4 @@ User Input                        Routes To
 
 If no sub-command is provided, the orchestrator asks which action the user
 needs.
+

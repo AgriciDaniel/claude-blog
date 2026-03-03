@@ -1,8 +1,8 @@
-# Tutorial: The `gemini-blog` 7-Phase Workflow
+﻿# Tutorial: The `gemini-blog` 7-Phase Workflow
 
 This tutorial breaks down the entire lifecycle of how the `gemini-blog` engine operates, from your first idea to a fully optimized, published post.
 
-The engine uses a combination of an Orchestrator (`blog/SKILL.md`), 12 specific templates, 4 subagents, and Python safety metrics to ensure your content ranks on Google and is cited by AI engines like ChatGPT.
+The engine uses a combination of an Orchestrator (`blog/GEMINI.md`), 12 specific templates, 4 subagents, and Python safety metrics to ensure your content ranks on Google and is cited by AI engines like ChatGPT.
 
 ---
 
@@ -64,4 +64,5 @@ The engine uses a combination of an Orchestrator (`blog/SKILL.md`), 12 specific 
 **Commands to use:** `/blog repurpose <file>`
 
 * **What happens:** The finished article is passed back to the writer/marketer tools.
-* **The output:** The content is chopped up into Twitter threads, LinkedIn thought-leadership posts, Reddit submissions, or YouTube scripts—completing the lifecycle and driving traffic back to your blog.
+* **The output:** The content is chopped up into Twitter threads, LinkedIn thought-leadership posts, Reddit submissions, or YouTube scriptsвЂ”completing the lifecycle and driving traffic back to your blog.
+

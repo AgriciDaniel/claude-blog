@@ -1,4 +1,4 @@
-# Troubleshooting
+﻿# Troubleshooting
 
 Common issues, their causes, and fixes for `gemini-blog`. Issues are grouped
 by category and ordered from most to least common.
@@ -224,7 +224,7 @@ blog-writer, etc.), and instead tries to do everything inline.
 2. **Missing `Task` in allowed-tools**: The sub-skill's YAML frontmatter must
    include `Task` in its `allowed-tools` list. Check the sub-skill file:
    ```bash
-   head -20 ~/.gemini/skills/blog-write/SKILL.md
+   head -20 ~/.gemini/skills/blog-write/GEMINI.md
    ```
    The `allowed-tools` section should include `Task`.
 
@@ -377,7 +377,7 @@ If your issue is not listed here:
 
 2. **Verify file integrity**: Compare installed files with the repository:
    ```bash
-   diff ~/.gemini/skills/blog/SKILL.md blog/SKILL.md
+   diff ~/.gemini/skills/blog/GEMINI.md blog/GEMINI.md
    ```
 
 3. **Reset installation**: Remove and reinstall:
@@ -386,3 +386,4 @@ If your issue is not listed here:
    ```
 
 4. **Open an issue**: https://github.com/imitry/gemini-blog/issues
+

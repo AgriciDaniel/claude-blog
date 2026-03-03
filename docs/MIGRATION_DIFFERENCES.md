@@ -1,4 +1,4 @@
-# Gemini CLI vs Claude Code: Migration Differences
+﻿# Gemini CLI vs Claude Code: Migration Differences
 
 This document outlines key differences you should be aware of when migrating skills, agents, or usage patterns from Anthropic's `claude` CLI to the `gemini` CLI.
 
@@ -15,8 +15,8 @@ This document outlines key differences you should be aware of when migrating ski
 
 ## File System & Configuration
 
-- **Directories**: Claude Code skills and agents are typically located in `~/.claude/skills/` and `~/.claude/agents/`. For the Gemini CLI, this has been mapped to `~/.gemini/skills/` and `~/.gemini/agents/`. Updates to `install.sh` and `install.ps1` reflect this change.
-- **Skills Definition**: Both CLIs use a robust file-based markdown system (e.g., `SKILL.md`) with YAML frontmatter. The underlying syntax and capabilities are very similar as both read `SKILL.md` to load tool/agent definitions.
+- **Directories**: Claude Code skills and agents are typically located in `~/.gemini/skills/` and `~/.gemini/agents/`. For the Gemini CLI, this has been mapped to `~/.gemini/skills/` and `~/.gemini/agents/`. Updates to `install.sh` and `install.ps1` reflect this change.
+- **Skills Definition**: Both CLIs use a robust file-based markdown system (e.g., `GEMINI.md`) with YAML frontmatter. The underlying syntax and capabilities are very similar as both read `GEMINI.md` to load tool/agent definitions.
 
 ## Prompting Sensibilities
 
@@ -26,3 +26,4 @@ This document outlines key differences you should be aware of when migrating ski
 ## Tool Execution
 
 Be aware that Gemini CLI aggressively utilizes parallelism for tool calls when it deems safe, which can speed up workflows but requires you to ensure your environment scripts (like `install.sh`) or data-gathering steps do not suffer from race conditions.
+

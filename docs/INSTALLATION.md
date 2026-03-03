@@ -1,4 +1,4 @@
-# Installation Guide
+﻿# Installation Guide
 
 This guide covers all installation methods for `gemini-blog`, a Gemini CLI skill
 ecosystem for blog content creation, optimization, and management.
@@ -87,36 +87,36 @@ If you prefer not to run the installer, copy files to these paths manually.
 
 ```
 ~/.gemini/
-├── skills/
-│   ├── blog/
-│   │   ├── SKILL.md                          # Main orchestrator
-│   │   ├── references/
-│   │   │   ├── content-rules.md
-│   │   │   ├── geo-optimization.md
-│   │   │   ├── google-landscape-2026.md
-│   │   │   ├── quality-scoring.md
-│   │   │   └── visual-media.md
-│   │   ├── templates/                        # 12 content type templates
-│   │   │   └── *.md
-│   │   └── scripts/
-│   │       └── analyze_blog.py
-│   ├── blog-write/SKILL.md
-│   ├── blog-rewrite/SKILL.md
-│   ├── blog-analyze/SKILL.md
-│   ├── blog-brief/SKILL.md
-│   ├── blog-calendar/SKILL.md
-│   ├── blog-strategy/SKILL.md
-│   ├── blog-outline/SKILL.md
-│   ├── blog-seo-check/SKILL.md
-│   ├── blog-schema/SKILL.md
-│   ├── blog-repurpose/SKILL.md
-│   ├── blog-geo/SKILL.md
-│   └── blog-audit/SKILL.md
-└── agents/
-    ├── blog-researcher.md
-    ├── blog-writer.md
-    ├── blog-seo.md
-    └── blog-reviewer.md
+в”њв”Ђв”Ђ skills/
+в”‚   в”њв”Ђв”Ђ blog/
+в”‚   в”‚   в”њв”Ђв”Ђ GEMINI.md                          # Main orchestrator
+в”‚   в”‚   в”њв”Ђв”Ђ references/
+в”‚   в”‚   в”‚   в”њв”Ђв”Ђ content-rules.md
+в”‚   в”‚   в”‚   в”њв”Ђв”Ђ geo-optimization.md
+в”‚   в”‚   в”‚   в”њв”Ђв”Ђ google-landscape-2026.md
+в”‚   в”‚   в”‚   в”њв”Ђв”Ђ quality-scoring.md
+в”‚   в”‚   в”‚   в””в”Ђв”Ђ visual-media.md
+в”‚   в”‚   в”њв”Ђв”Ђ templates/                        # 12 content type templates
+в”‚   в”‚   в”‚   в””в”Ђв”Ђ *.md
+в”‚   в”‚   в””в”Ђв”Ђ scripts/
+в”‚   в”‚       в””в”Ђв”Ђ analyze_blog.py
+в”‚   в”њв”Ђв”Ђ blog-write/GEMINI.md
+в”‚   в”њв”Ђв”Ђ blog-rewrite/GEMINI.md
+в”‚   в”њв”Ђв”Ђ blog-analyze/GEMINI.md
+в”‚   в”њв”Ђв”Ђ blog-brief/GEMINI.md
+в”‚   в”њв”Ђв”Ђ blog-calendar/GEMINI.md
+в”‚   в”њв”Ђв”Ђ blog-strategy/GEMINI.md
+в”‚   в”њв”Ђв”Ђ blog-outline/GEMINI.md
+в”‚   в”њв”Ђв”Ђ blog-seo-check/GEMINI.md
+в”‚   в”њв”Ђв”Ђ blog-schema/GEMINI.md
+в”‚   в”њв”Ђв”Ђ blog-repurpose/GEMINI.md
+в”‚   в”њв”Ђв”Ђ blog-geo/GEMINI.md
+в”‚   в””в”Ђв”Ђ blog-audit/GEMINI.md
+в””в”Ђв”Ђ agents/
+    в”њв”Ђв”Ђ blog-researcher.md
+    в”њв”Ђв”Ђ blog-writer.md
+    в”њв”Ђв”Ђ blog-seo.md
+    в””в”Ђв”Ђ blog-reviewer.md
 ```
 
 ### Copy Commands (Unix)
@@ -128,7 +128,7 @@ mkdir -p ~/.gemini/skills/blog-{write,rewrite,analyze,brief,calendar,strategy,ou
 mkdir -p ~/.gemini/agents
 
 # Main skill
-cp blog/SKILL.md ~/.gemini/skills/blog/SKILL.md
+cp blog/GEMINI.md ~/.gemini/skills/blog/GEMINI.md
 
 # References
 cp blog/references/*.md ~/.gemini/skills/blog/references/
@@ -139,7 +139,7 @@ cp blog/templates/*.md ~/.gemini/skills/blog/templates/
 # Sub-skills
 for d in skills/blog-*/; do
     name=$(basename "$d")
-    cp "$d/SKILL.md" ~/.gemini/skills/$name/SKILL.md
+    cp "$d/GEMINI.md" ~/.gemini/skills/$name/GEMINI.md
 done
 
 # Agents
@@ -160,10 +160,10 @@ After installation, verify everything is in place:
 
 ```bash
 # Main skill
-ls ~/.gemini/skills/blog/SKILL.md
+ls ~/.gemini/skills/blog/GEMINI.md
 
 # Sub-skills (should list 12)
-ls ~/.gemini/skills/blog-*/SKILL.md | wc -l
+ls ~/.gemini/skills/blog-*/GEMINI.md | wc -l
 
 # Agents (should list 4)
 ls ~/.gemini/agents/blog-*.md | wc -l
@@ -279,3 +279,4 @@ Restart Gemini CLI after uninstalling to complete removal.
 | Files not in `~/.gemini/` | Wrong install location | Verify `$HOME` points to your home directory |
 
 For additional issues, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md).
+
