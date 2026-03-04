@@ -7,21 +7,21 @@ The engine uses a combination of an Orchestrator (`blog/GEMINI.md`), 12 specific
 ---
 
 ## Phase 1: Strategy & Ideation
-**Commands to use:** `/blog strategy <niche>`, `/blog calendar`
+**Commands to use:** `/blog:strategy <niche>`, `/blog:calendar`
 
 * **What happens:** You provide a niche or general topic.
 * **Behind the scenes:** The engine loads `google-landscape-2026.md` and `geo-optimization.md` to ensure the strategy aligns with the latest Search and AI algorithms.
 * **The output:** It groups topics into semantic "clusters" and builds an editorial calendar, focusing on a 60/30/10 content mix and plotting out decay detection.
 
 ## Phase 2: Outlining & Briefing
-**Commands to use:** `/blog brief <topic>`, `/blog outline <topic>`
+**Commands to use:** `/blog:brief <topic>`, `/blog:outline <topic>`
 
 * **What happens:** The **Research Agent** (`blog-researcher`) is spawned. It uses WebSearch and WebFetch tools to scrape current SERPs, identifying competitive gaps.
 * **Behind the scenes:** The system auto-selects 1 of 12 internal templates (e.g., `listicle.md`, `case-study.md`, `pillar-page.md`) based on the target search intent.
 * **The output:** You receive a skeletal structure requiring H2s to be phrased as questions (target: 60-70% question-based subheadings).
 
 ## Phase 3: Content Generation (Writing/Rewriting)
-**Commands to use:** `/blog write <topic>`, `/blog rewrite <file>`
+**Commands to use:** `/blog:write <topic>`, `/blog:rewrite <file>`
 
 * **What happens:** The heavy lifting begins.
 * **Behind the scenes:** 
@@ -35,14 +35,14 @@ The engine uses a combination of an Orchestrator (`blog/GEMINI.md`), 12 specific
 * **The output:** A complete draft with a "TL;DR Box" and "Citation Capsules" optimized for AI web crawlers to instantly extract answers.
 
 ## Phase 4: On-Page Optimization
-**Commands to use:** `/blog seo-check <file>`
+**Commands to use:** `/blog:seo-check <file>`
 
 * **What happens:** The **SEO Agent** (`blog-seo`) conducts a validation pass on the final draft.
 * **Behind the scenes:** It checks title length (50-60 chars), meta descriptions (150-160 chars, must include a stat), and asserts there are no skipped heading levels (H1 -> H2 -> H3).
 * **The output:** A checklist ensuring target keywords are distributed naturally without stuffing.
 
 ## Phase 5: Verification & Scoring
-**Commands to use:** `/blog analyze <file>`, `/blog audit [directory]`
+**Commands to use:** `/blog:analyze <file>`, `/blog:audit [directory]`
 
 * **What happens:** The **Reviewer Agent** OR the **Python Script** (`analyze_blog.py`) is invoked to audit the post.
 * **Behind the scenes:** It triggers the **5-Category, 100-Point Quality Rubric**:
@@ -54,14 +54,14 @@ The engine uses a combination of an Orchestrator (`blog/GEMINI.md`), 12 specific
 * **The output:** If the score is below 60, the post is flagged for a "Rewrite". If >80, it is flagged as "Strong" or "Exceptional".
 
 ## Phase 6: Technical Injection
-**Commands to use:** `/blog schema <file>`, `/blog geo <file>`
+**Commands to use:** `/blog:schema <file>`, `/blog:geo <file>`
 
 * **What happens:** The system creates structural data for web crawlers (like Googlebot, ClaudeBot, Google-Extended).
 * **Behind the scenes:** It uses HTML/JSON-LD insertion to embed structured `BlogPosting`, `Person` (author trust for E-E-A-T), and `FAQSchema` markup.
 * **The output:** Rich schema directly embedded into your detected platform (MDX, Hugo, WordPress, etc.).
 
 ## Phase 7: Off-Site Distribution
-**Commands to use:** `/blog repurpose <file>`
+**Commands to use:** `/blog:repurpose <file>`
 
 * **What happens:** The finished article is passed back to the writer/marketer tools.
 * **The output:** The content is chopped up into Twitter threads, LinkedIn thought-leadership posts, Reddit submissions, or YouTube scripts--completing the lifecycle and driving traffic back to your blog.

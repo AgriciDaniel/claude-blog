@@ -22,7 +22,7 @@ always detected until the CLI is restarted.
 
 ### Python script errors
 
-**Symptom**: `/blog analyze` fails when running `analyze_blog.py`, or the
+**Symptom**: `/blog:analyze` fails when running `analyze_blog.py`, or the
 script exits with an import error.
 
 **Cause**: Python dependencies are not installed.
@@ -82,7 +82,7 @@ gemini extensions install https://github.com/imitry/gemini-blog
 
 ### Low quality scores (below 60)
 
-**Symptom**: `/blog analyze` returns a score below 60 ("Poor" rating).
+**Symptom**: `/blog:analyze` returns a score below 60 ("Poor" rating).
 
 **Common Causes and Fixes**:
 
@@ -157,7 +157,7 @@ CTR declined 61%. Source: Seer Interactive [1]       # Footnote style
 
 ### Template not loading
 
-**Symptom**: `/blog write` does not follow the expected template structure
+**Symptom**: `/blog:write` does not follow the expected template structure
 for the content type.
 
 **Causes and fixes**:
@@ -171,17 +171,17 @@ for the content type.
 
 ### Wrong template selected
 
-**Symptom**: `/blog write` picks a how-to template when you wanted a listicle.
+**Symptom**: `/blog:write` picks a how-to template when you wanted a listicle.
 
 **Fix**: Specify the content type explicitly:
 ```
-/blog write listicle: "10 Best Monitoring Tools for 2026"
-/blog write --type comparison "Datadog vs Grafana"
+/blog:write listicle: "10 Best Monitoring Tools for 2026"
+/blog:write --type comparison "Datadog vs Grafana"
 ```
 
 Or state the type in natural language:
 ```
-/blog write a comparison post about Datadog vs Grafana
+/blog:write a comparison post about Datadog vs Grafana
 ```
 
 ---
@@ -232,7 +232,7 @@ gemini extensions install https://github.com/imitry/gemini-blog
 
 ### Schema detection failing
 
-**Symptom**: `/blog seo-check` or `/blog analyze` reports "No schema detected"
+**Symptom**: `/blog:seo-check` or `/blog:analyze` reports "No schema detected"
 even though the post has JSON-LD markup.
 
 **Causes**:
@@ -261,7 +261,7 @@ even though the post has JSON-LD markup.
 
 ### JSON-LD validation errors
 
-**Symptom**: `/blog schema` generates markup that fails validation.
+**Symptom**: `/blog:schema` generates markup that fails validation.
 
 **Fix**: Test the generated JSON-LD at:
 - https://validator.schema.org/
@@ -296,7 +296,7 @@ automatically use JSX-compatible syntax. If errors persist, specify the
 platform explicitly:
 
 ```
-/blog write "topic" --format mdx
+/blog:write "topic" --format mdx
 ```
 
 ### Hugo front matter format mismatch
@@ -317,7 +317,7 @@ Hugo site uses YAML (`---` delimiters), add to `hugo.toml`:
 
 ### Commands running slowly
 
-**Symptom**: `/blog write` or `/blog brief` takes a long time to complete.
+**Symptom**: `/blog:write` or `/blog:brief` takes a long time to complete.
 
 **Causes**:
 - **Research phase**: WebSearch calls for statistics and images can take
@@ -326,8 +326,8 @@ Hugo site uses YAML (`---` delimiters), add to `hugo.toml`:
 - **Large context**: Loading many reference files increases processing time
 
 **Mitigation**:
-- Provide a brief first (`/blog brief`) to pre-do research, then use
-  `/blog write` with the brief (skips research phase)
+- Provide a brief first (`/blog:brief`) to pre-do research, then use
+  `/blog:write` with the brief (skips research phase)
 - For analysis, use `analyze_blog.py` directly for faster automated metrics
 
 ### analyze_blog.py batch mode slow on large directories
