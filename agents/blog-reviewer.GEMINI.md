@@ -1,4 +1,4 @@
-﻿---
+---
 name: blog-reviewer
 description: >
   Quality assessment specialist for blog posts. Runs the full 5-category,

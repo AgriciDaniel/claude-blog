@@ -1,4 +1,4 @@
-﻿# Blog Rewriter -- Optimize Existing Posts
+# Blog Rewriter -- Optimize Existing Posts
 
 Rewrites and optimizes existing blog posts for dual ranking: Google search
 and AI citation platforms. Preserves the author's voice while applying the

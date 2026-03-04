@@ -1,4 +1,4 @@
-﻿# Template: Roundup
+# Template: Roundup
 
 **Description:** Curated collection of expert quotes, insights, and strategies organized around a specific topic. Roundup posts leverage external authority, provide diverse perspectives, and are highly shareable because each featured expert has an incentive to promote the piece. They also build relationships with industry leaders.
 

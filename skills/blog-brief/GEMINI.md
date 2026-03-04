@@ -1,4 +1,4 @@
-﻿# Blog Brief Generator -- Content Planning
+# Blog Brief Generator -- Content Planning
 
 Generates comprehensive content briefs that guide blog writing for maximum
 impact on both Google rankings and AI citation platforms.

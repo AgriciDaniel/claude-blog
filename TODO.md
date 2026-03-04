@@ -1,4 +1,4 @@
-﻿# TODO ------ gemini-blog Roadmap
+# TODO ------ gemini-blog Roadmap
 
 ## Phase 2 (Next)
 - [ ] AI Citation Probability Scoring (0-100 per post for ChatGPT/Perplexity/AI Overview citation likelihood)

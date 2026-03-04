@@ -1,4 +1,4 @@
-﻿# Template: FAQ / Knowledge Base
+# Template: FAQ / Knowledge Base
 
 **Template ID:** faq-knowledge
 **Target Length:** 1,500-2,000 words

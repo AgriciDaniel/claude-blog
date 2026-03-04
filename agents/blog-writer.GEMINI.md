@@ -1,4 +1,4 @@
-﻿---
+---
 name: blog-writer
 description: >
   Content generation specialist for blog posts. Writes optimized articles

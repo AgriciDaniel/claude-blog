@@ -1,4 +1,4 @@
-﻿# Template: Product Review
+# Template: Product Review
 
 **Description:** First-hand product assessment based on real testing and hands-on experience. Product reviews build trust through transparency, detailed observations, and honest verdicts. They target high-intent commercial search queries where readers are close to a purchase decision.
 

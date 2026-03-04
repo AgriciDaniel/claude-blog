@@ -1,4 +1,4 @@
-﻿# Platform-Specific Output Formatting
+# Platform-Specific Output Formatting
 
 Adapt blog output to each platform's requirements. Detect the platform
 from project structure (see `SKILL.md` Platform Detection table) and apply

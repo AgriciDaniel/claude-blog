@@ -1,4 +1,4 @@
-﻿# Content Distribution Strategy -- Playbook for AI Visibility
+# Content Distribution Strategy -- Playbook for AI Visibility
 
 88-92% of AI citations come from off-site signals, not on-page optimization
 alone (Seer Interactive, 2025). This playbook covers channel-by-channel

@@ -1,4 +1,4 @@
-﻿# Blog Writer -- New Article Generation
+# Blog Writer -- New Article Generation
 
 Writes complete blog articles from a topic, brief, or outline. Every article
 follows the 6 pillars of dual optimization (Google rankings + AI citations).

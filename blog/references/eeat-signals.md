@@ -1,4 +1,4 @@
-﻿# Author E-E-A-T Requirements
+# Author E-E-A-T Requirements
 
 ## Named Author Attribution
 

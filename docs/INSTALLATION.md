@@ -1,4 +1,4 @@
-﻿# Installation Guide
+# Installation Guide
 
 This guide covers the installation methods for `gemini-blog`, a native Gemini CLI extension ecosystem for blog content creation, optimization, and management.
 

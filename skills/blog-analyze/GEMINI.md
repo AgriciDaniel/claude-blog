@@ -1,4 +1,4 @@
-﻿# Blog Analyzer -- Quality Audit & Scoring
+# Blog Analyzer -- Quality Audit & Scoring
 
 Scores blog posts on a 0-100 scale across 5 categories and provides prioritized
 improvement recommendations. Includes AI content detection analysis. Works with

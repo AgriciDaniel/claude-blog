@@ -1,4 +1,4 @@
-﻿# Content Structure Rules -- Dual Optimization
+# Content Structure Rules -- Dual Optimization
 
 ## Answer-First Formatting (+340% AI Citation Improvement)
 

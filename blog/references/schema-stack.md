@@ -1,4 +1,4 @@
-﻿# Complete Blog Schema Reference
+# Complete Blog Schema Reference
 
 ## Why Schema Matters
 

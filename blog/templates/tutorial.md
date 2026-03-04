@@ -1,4 +1,4 @@
-﻿# Template: Tutorial (Code/Tool Walkthrough)
+# Template: Tutorial (Code/Tool Walkthrough)
 
 **Template ID:** tutorial
 **Target Length:** 2,000-3,000 words

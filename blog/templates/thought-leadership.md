@@ -1,4 +1,4 @@
-﻿# Template: Thought Leadership
+# Template: Thought Leadership
 
 **Description:** Opinion and analysis piece that challenges conventional wisdom with a data-backed contrarian angle. Thought leadership content positions the author as an independent thinker, generates discussion and backlinks, and attracts an engaged audience that values original perspectives.
 

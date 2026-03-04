@@ -1,4 +1,4 @@
-﻿# Template: Pillar Page
+# Template: Pillar Page
 
 **Description:** Comprehensive topic authority guide that serves as the central hub for a topic cluster. Pillar pages provide broad, thorough coverage of a subject and link out to supporting articles that dive deeper into sub-topics.
 

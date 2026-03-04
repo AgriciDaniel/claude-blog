@@ -1,4 +1,4 @@
-﻿# Template: News Analysis (Timely Event Commentary)
+# Template: News Analysis (Timely Event Commentary)
 
 **Template ID:** news-analysis
 **Target Length:** 800-1,200 words

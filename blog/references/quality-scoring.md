@@ -1,4 +1,4 @@
-﻿# Blog Quality Scoring Checklist
+# Blog Quality Scoring Checklist
 
 Score each blog post against this checklist. Used by `/blog analyze`.
 

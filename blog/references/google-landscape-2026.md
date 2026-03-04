@@ -1,4 +1,4 @@
-﻿# SEO Landscape 2026 -- Google Updates & E-E-A-T
+# SEO Landscape 2026 -- Google Updates & E-E-A-T
 
 ## December 2025 Core Update
 

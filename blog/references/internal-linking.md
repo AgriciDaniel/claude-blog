@@ -1,4 +1,4 @@
-﻿# Internal Link Architecture
+# Internal Link Architecture
 
 ## Why Internal Links Matter
 

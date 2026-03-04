@@ -1,4 +1,4 @@
-﻿# Blog Strategy -- Positioning & Content Architecture
+# Blog Strategy -- Positioning & Content Architecture
 
 Develops comprehensive blog strategies that build topical authority for
 Google rankings while establishing brand presence for AI citation platforms.

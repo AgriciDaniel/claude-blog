@@ -1,4 +1,4 @@
-﻿# Command Reference
+# Command Reference
 
 Complete reference for all 12 `/blog` slash commands. Every command is invoked
 through the main orchestrator (`GEMINI.md`), which routes to the appropriate

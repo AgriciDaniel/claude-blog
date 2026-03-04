@@ -1,4 +1,4 @@
-﻿# Tutorial: The `gemini-blog` 7-Phase Workflow
+# Tutorial: The `gemini-blog` 7-Phase Workflow
 
 This tutorial breaks down the entire lifecycle of how the `gemini-blog` engine operates, from your first idea to a fully optimized, published post.
 

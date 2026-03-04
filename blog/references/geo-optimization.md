@@ -1,4 +1,4 @@
-﻿# GEO/AEO Optimization -- AI Citation Strategies
+# GEO/AEO Optimization -- AI Citation Strategies
 
 ## Core GEO Research
 

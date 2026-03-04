@@ -1,4 +1,4 @@
-﻿# Blog -- Content Engine for Rankings & AI Citations
+# Blog -- Content Engine for Rankings & AI Citations
 
 Full-lifecycle blog management: strategy, briefs, outlines, writing, analysis,
 optimization, schema generation, repurposing, and editorial planning. Dual-optimized

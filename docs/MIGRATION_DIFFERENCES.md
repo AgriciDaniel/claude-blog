@@ -1,4 +1,4 @@
-﻿# Gemini CLI vs Claude Code: Migration Differences
+# Gemini CLI vs Claude Code: Migration Differences
 
 This document outlines key differences you should be aware of when migrating skills, agents, or usage patterns from Anthropic's `claude` CLI to the `gemini` CLI.
 

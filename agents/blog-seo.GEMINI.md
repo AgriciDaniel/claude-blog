@@ -1,4 +1,4 @@
-﻿---
+---
 name: blog-seo
 description: >
   SEO optimization specialist for blog posts. Validates on-page SEO

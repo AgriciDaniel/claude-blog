@@ -1,4 +1,4 @@
-﻿# Editorial Calendar: March 2026
+# Editorial Calendar: March 2026
 
 ## Publishing Cadence: 2 posts/week
 ## Content Mix: 6 new / 1 refresh / 1 repurposed

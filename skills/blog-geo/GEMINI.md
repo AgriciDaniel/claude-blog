@@ -1,4 +1,4 @@
-﻿# Blog GEO -- AI Citation Optimization Audit
+# Blog GEO -- AI Citation Optimization Audit
 
 Scores blog posts for AI citation readiness across ChatGPT, Perplexity, and
 Google AI Overviews. Generates citation capsules and a 0-100 AI Citation

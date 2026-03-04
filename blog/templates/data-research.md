@@ -1,4 +1,4 @@
-﻿# Template: Data Research (Original Data Study)
+# Template: Data Research (Original Data Study)
 
 **Template ID:** data-research
 **Target Length:** 2,000-3,000 words

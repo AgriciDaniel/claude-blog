@@ -1,4 +1,4 @@
-﻿# Troubleshooting
+# Troubleshooting
 
 Common issues, their causes, and fixes for `gemini-blog`. Issues are grouped
 by category and ordered from most to least common.

@@ -1,4 +1,4 @@
-﻿---
+---
 title: "How Can You Automate Your Engineering Workflow in 2026? 10 Gemini CLI Use Cases"
 description: "Discover 10 high-impact Gemini CLI use cases to reclaim 40+ hours per month. Developers using AI agents see a 75% reduction in Pull Request cycle times."
 coverImage: "https://cdn.pixabay.com/photo/2018/09/27/09/22/artificial-intelligence-3706562_1280.jpg"

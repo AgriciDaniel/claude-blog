@@ -1,4 +1,4 @@
-﻿---
+---
 name: blog-researcher
 description: >
   Research specialist for blog content. Finds current statistics (2025-2026),

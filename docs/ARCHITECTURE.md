@@ -1,4 +1,4 @@
-﻿# Architecture
+# Architecture
 
 System design documentation for `gemini-blog`, covering component types,
 data flow, scoring methodology, file conventions, and extension points.

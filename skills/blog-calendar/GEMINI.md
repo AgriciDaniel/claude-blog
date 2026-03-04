@@ -1,4 +1,4 @@
-﻿# Blog Calendar -- Editorial Planning
+# Blog Calendar -- Editorial Planning
 
 Generates editorial calendars with topic clusters, publishing cadence,
 freshness update schedules, content decay detection, template recommendations,

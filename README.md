@@ -1,4 +1,4 @@
-﻿# gemini-blog
+# gemini-blog
 
 ![Gemini Blog -- AI-Powered Blog Creation](assets/header.jpeg)
 

@@ -1,4 +1,4 @@
-﻿# Blog Audit -- Full-Site Health Assessment
+# Blog Audit -- Full-Site Health Assessment
 
 Performs a comprehensive blog health assessment across all posts in the project.
 Scans for quality scores, orphan pages, topic cannibalization, stale content,
