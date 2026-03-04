@@ -10,7 +10,7 @@ data flow, scoring methodology, file conventions, and extension points.
 ```
                         +-----------------------------+
                         |         User Input          |
-                        |   /blog <command> [args]    |
+                        |   /blog:<command> [args]    |
                         +-------------+---------------+
                                       |
                                       v

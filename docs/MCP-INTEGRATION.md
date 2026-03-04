@@ -59,7 +59,7 @@ platforms.
 
 ### Enhanced Workflows
 
-**`/blog audit` with GSC data**:
+**`/blog:audit` with GSC data**:
 
 Instead of scoring posts only on content quality, the audit can incorporate
 actual performance data:
@@ -74,7 +74,7 @@ Blog Audit: 47 Posts Analyzed
 | react-patterns     | 91/100  | -5%           | 4.2%   | Monitor         |
 ```
 
-**`/blog calendar` with GSC data**:
+**`/blog:calendar` with GSC data**:
 
 Editorial calendars can prioritize updates based on actual traffic decay
 rather than arbitrary 30-day cycles:
@@ -90,7 +90,7 @@ Freshness Update Queue (Data-Driven)
 
 ### Configuration
 
-Add the GSC MCP server to your Gemini CLI settings (`~/.gemini/settings.json`):
+Add the GSC MCP server to your Gemini CLI settings (`settings.json`):
 
 ```json
 {
@@ -127,7 +127,7 @@ Add the GSC MCP server to your Gemini CLI settings (`~/.gemini/settings.json`):
 
 ### Enhanced Workflows
 
-**`/blog brief` with Ahrefs data**:
+**`/blog:brief` with Ahrefs data**:
 
 Content briefs can include precise keyword metrics:
 
@@ -145,7 +145,7 @@ Competitor Content Gap
 | k8s monitoring best practices | #1       | #4          | #12  |
 ```
 
-**`/blog strategy` with Ahrefs data**:
+**`/blog:strategy` with Ahrefs data**:
 
 Strategy documents gain competitive intelligence with actual metrics:
 
@@ -195,7 +195,7 @@ Opportunity: 234 keywords where competitors rank but you don't
 
 ### Enhanced Workflows
 
-**`/blog strategy` with Semrush data**:
+**`/blog:strategy` with Semrush data**:
 
 Topic research backed by Semrush's keyword clustering:
 
@@ -240,7 +240,7 @@ Content Pillar: Kubernetes Monitoring
 
 ### Enhanced Workflows
 
-**`/blog geo` with PageSpeed data**:
+**`/blog:geo` with PageSpeed data**:
 
 AI citation audits can include technical performance checks:
 
@@ -353,13 +353,13 @@ Combine Google Search Console data with `gemini-blog`'s quality scoring to
 identify posts that need immediate attention:
 
 ```
-1. /blog audit content/blog/        # Quality scores for all posts
+1. /blog:audit content/blog/        # Quality scores for all posts
 2. GSC MCP provides traffic data    # QoQ traffic changes
 3. Combined report identifies:
    - High quality but declining traffic  --> needs freshness update
    - Low quality and declining traffic   --> needs full rewrite
    - Low quality but stable traffic      --> optimize for AI citations
-4. /blog calendar                    # Auto-prioritized update schedule
+4. /blog:calendar                    # Auto-prioritized update schedule
 ```
 
 ### Competitor-Informed Content Strategy (Ahrefs + Strategy)
@@ -367,7 +367,7 @@ identify posts that need immediate attention:
 Use Ahrefs data to ground your content strategy in competitive intelligence:
 
 ```
-1. /blog strategy "your-niche"      # Base strategy from analysis
+1. /blog:strategy "your-niche"      # Base strategy from analysis
 2. Ahrefs MCP provides:
    - Competitor keyword rankings
    - Content gap keywords
@@ -376,7 +376,7 @@ Use Ahrefs data to ground your content strategy in competitive intelligence:
    - Data-backed pillar topics
    - Specific keyword targets with volume/difficulty
    - Competitor weakness mapping
-4. /blog calendar                    # Execution plan with keyword targets
+4. /blog:calendar                    # Execution plan with keyword targets
 ```
 
 ### Performance-Optimized GEO Audit (PSI + GEO)
@@ -384,7 +384,7 @@ Use Ahrefs data to ground your content strategy in competitive intelligence:
 Validate both content quality and technical readiness for AI crawlers:
 
 ```
-1. /blog geo content/blog/post.mdx  # Content-level GEO audit
+1. /blog:geo content/blog/post.mdx  # Content-level GEO audit
 2. PageSpeed MCP provides:
    - TTFB measurement (must be < 200ms)
    - JavaScript rendering check

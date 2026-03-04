@@ -96,18 +96,18 @@ VISUAL: [Chart type or image suggestion]
 
 ---
 
-## How /blog write Selects Templates
+## How /blog:write Selects Templates
 
-When `/blog write` is invoked, the orchestrator selects a template based on:
+When `/blog:write` is invoked, the orchestrator selects a template based on:
 
 ### 1. Explicit User Request
 
 If the user specifies a content type, that template is used directly:
 
 ```
-/blog write "10 Best CI/CD Tools for 2026"      --> listicle.md
-/blog write "How to Set Up Kubernetes Monitoring" --> how-to.md
-/blog write case study: Acme Corp migration       --> case-study.md
+/blog:write "10 Best CI/CD Tools for 2026"      --> listicle.md
+/blog:write "How to Set Up Kubernetes Monitoring" --> how-to.md
+/blog:write case study: Acme Corp migration       --> case-study.md
 ```
 
 ### 2. Topic Analysis
@@ -386,22 +386,18 @@ Schema: FAQPage schema critical for this type
 
 ### Modifying an Existing Template
 
-1. Navigate to `~/.gemini/skills/blog/templates/`
-2. Open the template file you want to modify
-3. Adjust section structure, word counts, or guidance
-4. Changes take effect immediately (no restart needed)
+1. If you are developing locally, navigate to the `blog/templates/` directory.
+2. Open the template file you want to modify.
+3. Adjust section structure, word counts, or guidance.
+4. Changes take effect on the next run.
 
 ### Creating a New Template
 
-1. Copy an existing template as a starting point:
-   ```bash
-   cp ~/.gemini/skills/blog/templates/how-to.md \
-      ~/.gemini/skills/blog/templates/my-custom-type.md
-   ```
-2. Define the section structure for your content type
-3. Add `ANSWER-FIRST:`, `VISUAL:`, and `INFO-GAIN:` markers
-4. Set appropriate word count targets
-5. Add a topic signal entry in the template selection logic
+1. Copy an existing template as a starting point.
+2. Define the section structure for your content type.
+3. Add `ANSWER-FIRST:`, `VISUAL:`, and `INFO-GAIN:` markers.
+4. Set appropriate word count targets.
+5. Add a topic signal entry in the template selection logic in `GEMINI.md`.
 
 ### Template Best Practices
 

@@ -9,16 +9,16 @@ by category and ordered from most to least common.
 
 ### "Command not found" after installation
 
-**Symptom**: Running `/blog write` produces no response or a "skill not found"
+**Symptom**: Running `/blog:write` produces no response or a "skill not found"
 error.
 
-**Cause**: Gemini CLI caches skill definitions at startup. New skills are not
-detected until the CLI is restarted.
+**Cause**: Gemini CLI caches extension definitions at startup. New extensions are not
+always detected until the CLI is restarted.
 
 **Fix**:
-1. Close Gemini CLI completely (exit the CLI or close the terminal)
+1. Exit Gemini CLI
 2. Reopen Gemini CLI
-3. Try `/blog write <topic>` again
+3. Try `/blog:write <topic>` again
 
 ### Python script errors
 
@@ -66,25 +66,14 @@ pip install -r requirements.txt  # Core deps
 pip install spacy sentence-transformers scikit-learn language-tool-python
 ```
 
-### Permission denied on install.sh
+### Extension verification fails
 
-**Symptom**: `./install.sh` returns "Permission denied".
+**Symptom**: `gemini extensions list` does not show `gemini-blog`.
 
 **Fix**:
+Re-install directly from GitHub:
 ```bash
-chmod +x install.sh
-./install.sh
-```
-
-### Windows: PowerShell execution policy blocks install
-
-**Symptom**: `install.ps1` fails with "running scripts is disabled on this
-system."
-
-**Fix**:
-```powershell
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-irm https://raw.githubusercontent.com/imitry/gemini-blog/main/install.ps1 | iex
+gemini extensions install https://github.com/imitry/gemini-blog
 ```
 
 ---
@@ -110,9 +99,9 @@ irm https://raw.githubusercontent.com/imitry/gemini-blog/main/install.ps1 | iex
 
 **Quick fix workflow**:
 ```
-1. /blog analyze <file>           # Get the score and issues
-2. /blog rewrite <file>           # Auto-fix most issues
-3. /blog analyze <file>           # Verify improvement
+1. /blog:analyze <file>           # Get the score and issues
+2. /blog:rewrite <file>           # Auto-fix most issues
+3. /blog:analyze <file>           # Verify improvement
 ```
 
 ### Answer-first formatting not detected
@@ -173,20 +162,12 @@ for the content type.
 
 **Causes and fixes**:
 
-1. **Templates not installed**: Verify the templates directory exists:
+1. **Templates missing from extension**: Re-install the extension to ensure all files are fetched correctly:
    ```bash
-   ls ~/.gemini/skills/blog/templates/
+   gemini extensions install https://github.com/imitry/gemini-blog
    ```
-   If empty or missing, re-run `./install.sh`.
 
-2. **Wrong install path**: Templates must be in
-   `~/.gemini/skills/blog/templates/`, not in the repository's
-   `blog/templates/` directory.
-
-3. **Template file corrupted**: Re-copy from the repository:
-   ```bash
-   cp blog/templates/*.md ~/.gemini/skills/blog/templates/
-   ```
+2. **Template file corrupted**: If you are developing locally, ensure the `blog/templates/` directory contains all 12 markdown files.
 
 ### Wrong template selected
 
@@ -237,17 +218,13 @@ blog-writer, etc.), and instead tries to do everything inline.
 answer-first formatting or other rules.
 
 **Fix**: This typically means the agent did not load the relevant reference
-files. Run the command again -- the orchestrator should load references
-before spawning the agent. If the issue persists:
+files. Run the command again. If the issue persists, verify the reference files
+exist in the `blog/references/` directory of your installation.
 
-1. Verify reference files exist:
-   ```bash
-   ls ~/.gemini/skills/blog/references/
-   ```
-2. Re-install references:
-   ```bash
-   cp blog/references/*.md ~/.gemini/skills/blog/references/
-   ```
+You can force a clean update with:
+```bash
+gemini extensions install https://github.com/imitry/gemini-blog
+```
 
 ---
 
@@ -370,19 +347,15 @@ python3 analyze_blog.py posts/drafts/ --batch  # Only drafts
 
 If your issue is not listed here:
 
-1. **Check the version**: Ensure you have the latest `gemini-blog` installed:
+1. **Check the version**: Ensure you have the latest `gemini-blog` extension:
    ```bash
-   cd gemini-blog && git pull && ./install.sh
+   gemini extensions list
    ```
 
-2. **Verify file integrity**: Compare installed files with the repository:
+2. **Reset installation**: Remove and reinstall:
    ```bash
-   diff ~/.gemini/skills/blog/GEMINI.md blog/GEMINI.md
-   ```
-
-3. **Reset installation**: Remove and reinstall:
-   ```bash
-   ./uninstall.sh && ./install.sh
+   gemini extensions uninstall gemini-blog
+   gemini extensions install https://github.com/imitry/gemini-blog
    ```
 
 4. **Open an issue**: https://github.com/imitry/gemini-blog/issues

@@ -1,30 +1,30 @@
 ﻿# Command Reference
 
 Complete reference for all 12 `/blog` slash commands. Every command is invoked
-through the main orchestrator (`blog/GEMINI.md`), which routes to the appropriate
+through the main orchestrator (`GEMINI.md`), which routes to the appropriate
 sub-skill.
 
 ## Command Overview
 
 ```
-/blog <command> [arguments]
+/blog:<command> [arguments]
 ```
 
 | Command | Sub-Skill | Description |
 |---------|-----------|-------------|
-| `write <topic>` | blog-write | Write a new blog post from scratch |
-| `rewrite <file>` | blog-rewrite | Optimize an existing blog post |
-| `analyze <file-or-url>` | blog-analyze | Audit blog quality with 0-100 score |
-| `brief <topic>` | blog-brief | Generate a detailed content brief |
-| `calendar [monthly\|quarterly]` | blog-calendar | Generate an editorial calendar |
-| `strategy <niche>` | blog-strategy | Blog strategy and topic ideation |
-| `outline <topic>` | blog-outline | SERP-informed outline generation |
-| `seo-check <file>` | blog-seo-check | Post-writing SEO validation |
-| `schema <file>` | blog-schema | Generate JSON-LD schema markup |
-| `repurpose <file>` | blog-repurpose | Repurpose content for other platforms |
-| `geo <file>` | blog-geo | AI citation optimization audit |
-| `audit [directory]` | blog-audit | Full-site blog health assessment |
-| `update <file>` | blog-rewrite | Freshness update (alias for rewrite) |
+| `/blog:write <topic>` | blog-write | Write a new blog post from scratch |
+| `/blog:rewrite <file>` | blog-rewrite | Optimize an existing blog post |
+| `/blog:analyze <file-or-url>` | blog-analyze | Audit blog quality with 0-100 score |
+| `/blog:brief <topic>` | blog-brief | Generate a detailed content brief |
+| `/blog:calendar [monthly\|quarterly]` | blog-calendar | Generate an editorial calendar |
+| `/blog:strategy <niche>` | blog-strategy | Blog strategy and topic ideation |
+| `/blog:outline <topic>` | blog-outline | SERP-informed outline generation |
+| `/blog:seo-check <file>` | blog-seo-check | Post-writing SEO validation |
+| `/blog:schema <file>` | blog-schema | Generate JSON-LD schema markup |
+│ `/blog:repurpose <file>` | blog-repurpose | Repurpose content for other platforms |
+| `/blog:geo <file>` | blog-geo | AI citation optimization audit |
+| `/blog:audit [directory]` | blog-audit | Full-site blog health assessment |
+| `/blog:update <file>` | blog-rewrite | Freshness update (alias for rewrite) |
 
 ---
 
@@ -36,9 +36,9 @@ AI citation platforms.
 ### Usage
 
 ```
-/blog write <topic>
-/blog write "How to Optimize for AI Search in 2026"
-/blog write kubernetes monitoring --format mdx --words 3000
+/blog:write <topic>
+/blog:write "How to Optimize for AI Search in 2026"
+/blog:write kubernetes monitoring --format mdx --words 3000
 ```
 
 ### Workflow
@@ -79,9 +79,9 @@ the author's voice and unique perspective.
 ### Usage
 
 ```
-/blog rewrite <file>
-/blog rewrite content/blog/my-post.mdx
-/blog rewrite posts/old-article.md
+/blog:rewrite <file>
+/blog:rewrite content/blog/my-post.mdx
+/blog:rewrite posts/old-article.md
 ```
 
 ### Workflow
@@ -120,9 +120,9 @@ prioritized improvement recommendations.
 ### Usage
 
 ```
-/blog analyze <file>
-/blog analyze <url>
-/blog analyze content/blog/ --batch
+/blog:analyze <file>
+/blog:analyze <url>
+/blog:analyze content/blog/ --batch
 ```
 
 ### Input Types
@@ -165,9 +165,9 @@ priority queue for optimization.
 The `analyze_blog.py` script provides automated metrics:
 
 ```bash
-python3 ~/.gemini/skills/blog/scripts/analyze_blog.py post.md
-python3 ~/.gemini/skills/blog/scripts/analyze_blog.py posts/ --batch
-python3 ~/.gemini/skills/blog/scripts/analyze_blog.py post.md -o report.json
+python3 blog/scripts/analyze_blog.py post.md
+python3 blog/scripts/analyze_blog.py posts/ --batch
+python3 blog/scripts/analyze_blog.py post.md -o report.json
 ```
 
 ### Related Commands
@@ -185,9 +185,9 @@ statistics research, visual element planning, and a structured outline.
 ### Usage
 
 ```
-/blog brief <topic>
-/blog brief "cloud cost optimization for startups"
-/blog brief ai-search-optimization --audience "marketing managers"
+/blog:brief <topic>
+/blog:brief "cloud cost optimization for startups"
+/blog:brief ai-search-optimization --audience "marketing managers"
 ```
 
 ### Workflow
@@ -230,10 +230,10 @@ freshness update plans, and seasonal opportunities.
 ### Usage
 
 ```
-/blog calendar
-/blog calendar monthly
-/blog calendar quarterly
-/blog calendar --niche "devops tooling" --cadence 3
+/blog:calendar
+/blog:calendar monthly
+/blog:calendar quarterly
+/blog:calendar --niche "devops tooling" --cadence 3
 ```
 
 ### Output Formats
@@ -267,9 +267,9 @@ competitive landscape analysis, and distribution planning.
 ### Usage
 
 ```
-/blog strategy <niche>
-/blog strategy "B2B SaaS marketing"
-/blog strategy ecommerce --competitors "shopify,bigcommerce,woocommerce"
+/blog:strategy <niche>
+/blog:strategy "B2B SaaS marketing"
+/blog:strategy ecommerce --competitors "shopify,bigcommerce,woocommerce"
 ```
 
 ### Workflow
@@ -310,8 +310,8 @@ the target keyword.
 ### Usage
 
 ```
-/blog outline <topic>
-/blog outline "react server components best practices"
+/blog:outline <topic>
+/blog:outline "react server components best practices"
 ```
 
 ### Output
@@ -339,8 +339,8 @@ quality.
 ### Usage
 
 ```
-/blog seo-check <file>
-/blog seo-check content/blog/new-post.mdx
+/blog:seo-check <file>
+/blog:seo-check content/blog/new-post.mdx
 ```
 
 ### Checks Performed
@@ -369,8 +369,8 @@ Generate JSON-LD structured data markup for a blog post.
 ### Usage
 
 ```
-/blog schema <file>
-/blog schema content/blog/my-post.mdx
+/blog:schema <file>
+/blog:schema content/blog/my-post.mdx
 ```
 
 ### Generated Schema Types
@@ -409,8 +409,8 @@ Repurpose a blog post into content for other platforms and formats.
 ### Usage
 
 ```
-/blog repurpose <file>
-/blog repurpose content/blog/ai-search-guide.mdx
+/blog:repurpose <file>
+/blog:repurpose content/blog/ai-search-guide.mdx
 ```
 
 ### Output Formats
@@ -439,8 +439,8 @@ visibility on AI platforms (ChatGPT, Perplexity, Google AI Overviews).
 ### Usage
 
 ```
-/blog geo <file>
-/blog geo content/blog/my-post.mdx
+/blog:geo <file>
+/blog:geo content/blog/my-post.mdx
 ```
 
 ### Checks Performed
@@ -469,9 +469,9 @@ and produces a comprehensive report.
 ### Usage
 
 ```
-/blog audit
-/blog audit content/blog/
-/blog audit posts/ --format markdown
+/blog:audit
+/blog:audit content/blog/
+/blog:audit posts/ --format markdown
 ```
 
 ### Output
@@ -499,8 +499,8 @@ changes and focuses on updating data and signals.
 ### Usage
 
 ```
-/blog update <file>
-/blog update content/blog/old-post.mdx
+/blog:update <file>
+/blog:update content/blog/old-post.mdx
 ```
 
 ### What It Does
@@ -521,28 +521,28 @@ changes and focuses on updating data and signals.
 
 ## Command Routing
 
-The main orchestrator (`blog/GEMINI.md`) parses user input and routes to
+The main orchestrator (`GEMINI.md`) parses user input and routes to
 the correct sub-skill:
 
 ```
 User Input                        Routes To
 -----------                       ---------
-/blog write <topic>           --> blog-write
-/blog rewrite <file>          --> blog-rewrite
-/blog analyze <file-or-url>   --> blog-analyze
-/blog audit <file-or-url>     --> blog-analyze
-/blog brief <topic>           --> blog-brief
-/blog calendar [period]       --> blog-calendar
-/blog plan [period]           --> blog-calendar
-/blog strategy <niche>        --> blog-strategy
-/blog ideation <niche>        --> blog-strategy
-/blog outline <topic>         --> blog-outline
-/blog seo-check <file>        --> blog-seo-check
-/blog schema <file>           --> blog-schema
-/blog repurpose <file>        --> blog-repurpose
-/blog geo <file>              --> blog-geo
-/blog audit [directory]       --> blog-audit
-/blog update <file>           --> blog-rewrite (freshness mode)
+/blog:write <topic>           --> blog-write
+/blog:rewrite <file>          --> blog-rewrite
+/blog:analyze <file-or-url>   --> blog-analyze
+/blog:audit <file-or-url>     --> blog-analyze
+/blog:brief <topic>           --> blog-brief
+/blog:calendar [period]       --> blog-calendar
+/blog:plan [period]           --> blog-calendar
+/blog:strategy <niche>        --> blog-strategy
+/blog:ideation <niche>        --> blog-strategy
+/blog:outline <topic>         --> blog-outline
+/blog:seo-check <file>        --> blog-seo-check
+/blog:schema <file>           --> blog-schema
+/blog:repurpose <file>        --> blog-repurpose
+/blog:geo <file>              --> blog-geo
+/blog:audit [directory]       --> blog-audit
+/blog:update <file>           --> blog-rewrite (freshness mode)
 ```
 
 If no sub-command is provided, the orchestrator asks which action the user

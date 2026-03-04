@@ -15,8 +15,8 @@ This document outlines key differences you should be aware of when migrating ski
 
 ## File System & Configuration
 
-- **Directories**: Claude Code skills and agents are typically located in `~/.gemini/skills/` and `~/.gemini/agents/`. For the Gemini CLI, this has been mapped to `~/.gemini/skills/` and `~/.gemini/agents/`. Updates to `install.sh` and `install.ps1` reflect this change.
-- **Skills Definition**: Both CLIs use a robust file-based markdown system (e.g., `GEMINI.md`) with YAML frontmatter. The underlying syntax and capabilities are very similar as both read `GEMINI.md` to load tool/agent definitions.
+- **Directories**: Claude Code skills and agents are typically located in `~/.claude/skills/` and `~/.claude/agents/`. For the Gemini CLI, extensions are installed via `gemini extensions install <url-or-path>`.
+- **Skills Definition**: Both CLIs use a robust file-based markdown system (e.g., `GEMINI.md`) with YAML frontmatter. Gemini CLI uses `gemini-extension.json` for extension discovery and `commands/*.toml` for slash command definitions.
 
 ## Prompting Sensibilities
 
