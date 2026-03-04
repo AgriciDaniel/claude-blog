@@ -5,16 +5,16 @@ and AI citation platforms. Preserves the author's voice while applying the
 6 pillars of optimization.
 
 **Key references:**
-- `blog/references/quality-scoring.md` вЂ” 5-category scoring (Content 30, SEO 25, E-E-A-T 15, Technical 15, AI Citation 15)
-- `blog/references/eeat-signals.md` вЂ” Experience, expertise, authority, trust markers
-- `blog/references/internal-linking.md` вЂ” Linking strategy and anchor text rules
-- `blog/references/visual-media.md` вЂ” Image sourcing and chart styling
+- `blog/references/quality-scoring.md` ------ 5-category scoring (Content 30, SEO 25, E-E-A-T 15, Technical 15, AI Citation 15)
+- `blog/references/eeat-signals.md` ------ Experience, expertise, authority, trust markers
+- `blog/references/internal-linking.md` ------ Linking strategy and anchor text rules
+- `blog/references/visual-media.md` ------ Image sourcing and chart styling
 
 ## Workflow
 
 ### Phase 1: Audit (Read-Only)
 
-1. **Read the blog post** вЂ” Detect format (MDX, markdown, HTML)
+1. **Read the blog post** ------ Detect format (MDX, markdown, HTML)
 2. **Run the quality checklist** against `blog/references/quality-scoring.md`:
    - Count fabricated vs sourced statistics
    - Check answer-first formatting (H2 -> stat in first sentence?)
@@ -26,20 +26,20 @@ and AI citation platforms. Preserves the author's voice while applying the
    - Assess self-promotion level
    - Evaluate citation tier quality
 3. **AI content detection scan**:
-   - **Burstiness score** вЂ” Measure sentence length variance across the post. Low
+   - **Burstiness score** ------ Measure sentence length variance across the post. Low
      variance (most sentences within 3-5 words of each other) is a strong AI signal.
      Calculate: standard deviation of sentence word counts. Target SD > 6.
-   - **Known AI phrase scan** вЂ” Check for these high-frequency AI phrases:
+   - **Known AI phrase scan** ------ Check for these high-frequency AI phrases:
      - "in today's digital landscape", "it's important to note", "dive into"
      - "game-changer", "navigate the landscape", "revolutionize", "seamlessly"
      - "cutting-edge", "harness the power of", "leverage" (as verb)
      - "delve", "crucial", "elevate", "foster", "landscape" (overused)
      - "multifaceted", "robust", "tapestry", "embark"
      - Full list in `agents/blog-writer.md`
-   - **Vocabulary diversity** вЂ” Calculate Type-Token Ratio (TTR): unique words /
+   - **Vocabulary diversity** ------ Calculate Type-Token Ratio (TTR): unique words /
      total words. Low TTR (< 0.40) suggests AI-generated repetitive phrasing.
      Target TTR > 0.50 for natural prose.
-   - **AI content percentage estimate** вЂ” Based on burstiness, phrase density, and
+   - **AI content percentage estimate** ------ Based on burstiness, phrase density, and
      TTR, estimate what percentage of the content reads as AI-generated (0-100%).
      Report as: "AI content estimate: ~X%"
 4. **Cannibalization check**:
@@ -55,7 +55,7 @@ and AI citation platforms. Preserves the author's voice while applying the
    - Score across 5 categories (Content Quality 30, SEO Optimization 25, E-E-A-T Signals 15, Technical Elements 15, AI Citation Readiness 15)
    - Total: 0-100
 6. **Present audit summary** with specific findings, AI detection results, cannibalization status, and score
-7. **Enter plan mode** вЂ” Present section-by-section optimization plan
+7. **Enter plan mode** ------ Present section-by-section optimization plan
 
 Wait for user approval before proceeding.
 
@@ -158,7 +158,7 @@ Capsules map to the "AI Citation Readiness" category (15 points) in
 
 #### 4k. Anti-AI-Detection Patterns
 Apply these transformations to reduce AI-detectable writing patterns:
-- **Replace flagged phrases** вЂ” Swap every detected AI phrase (from the scan in
+- **Replace flagged phrases** ------ Swap every detected AI phrase (from the scan in
   Phase 1 step 3) with a natural alternative. Examples:
   - "it's important to note" -> "worth noting" or "keep in mind"
   - "in today's digital landscape" -> "right now" or "in [specific year]"
@@ -166,15 +166,15 @@ Apply these transformations to reduce AI-detectable writing patterns:
   - "delve" -> "look at", "explore", "dig into"
   - "robust" -> "strong", "solid", "reliable"
   - "crucial" -> "key", "essential", "critical" (or restructure the sentence)
-- **Vary sentence length deliberately** вЂ” After rewriting, scan each paragraph.
+- **Vary sentence length deliberately** ------ After rewriting, scan each paragraph.
   Inject short punchy sentences (5-10 words) between longer ones (18-25 words).
   Target: no more than 3 consecutive sentences within 5 words of each other's length.
-- **Inject rhetorical questions** вЂ” Add at least one rhetorical question every
+- **Inject rhetorical questions** ------ Add at least one rhetorical question every
   200-300 words to break up declarative monotony.
-- **Use contractions naturally** вЂ” Replace formal constructions with contractions
+- **Use contractions naturally** ------ Replace formal constructions with contractions
   where they sound natural: "it is" -> "it's", "we have" -> "we've",
   "do not" -> "don't", "is not" -> "isn't".
-- **Include hedging language** вЂ” Sprinkle first-person hedges that signal real
+- **Include hedging language** ------ Sprinkle first-person hedges that signal real
   experience: "in our experience", "we've found that", "from what we've seen",
   "this tends to", "it depends on".
 
@@ -182,7 +182,7 @@ Apply these transformations to reduce AI-detectable writing patterns:
 If the post lacks a TL;DR box, add one immediately after the introduction:
 ```markdown
 > **TL;DR:** [40-60 word standalone summary. Contains the key finding or
-> recommendation plus 1 statistic with source. Self-contained вЂ” reader gets
+> recommendation plus 1 statistic with source. Self-contained ------ reader gets
 > the core value without reading the full article.]
 ```
 If a TL;DR already exists, verify it meets the 40-60 word requirement and
@@ -190,10 +190,10 @@ contains a statistic with source attribution.
 
 #### 4m. Information Gain Marker Injection
 Review the post for original value and tag it:
-- `[ORIGINAL DATA]` вЂ” Any proprietary data, survey results, experiments, or
+- `[ORIGINAL DATA]` ------ Any proprietary data, survey results, experiments, or
   case study metrics the author collected first-hand
-- `[PERSONAL EXPERIENCE]` вЂ” First-hand observations, lessons learned
-- `[UNIQUE INSIGHT]` вЂ” Novel analysis, contrarian perspectives backed by data
+- `[PERSONAL EXPERIENCE]` ------ First-hand observations, lessons learned
+- `[UNIQUE INSIGHT]` ------ Novel analysis, contrarian perspectives backed by data
 
 If the post lacks original value markers:
 - Ask the author for first-hand data or experience to include
@@ -288,7 +288,8 @@ When invoked as `/blog update <file>`, focus on freshness:
 2. Add new developments since last update
 3. Refresh images if older than 1 year
 4. Update `lastUpdated` in frontmatter
-5. Preserve the existing structure вЂ” minimize rewrites
+5. Preserve the existing structure ------ minimize rewrites
 6. Target: at least 30% content change to register as "fresh" for AI crawlers
+
 
 

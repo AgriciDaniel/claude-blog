@@ -1,4 +1,4 @@
-# Template: Tutorial (Code/Tool Walkthrough)
+﻿# Template: Tutorial (Code/Tool Walkthrough)
 
 **Template ID:** tutorial
 **Target Length:** 2,000-3,000 words
@@ -54,7 +54,7 @@ Do NOT use this template for:
 > [concrete deliverable]. No prior experience with [tool] is required beyond [minimum prerequisite].
 ```
 
-[INFO-GAIN: state what makes this tutorial different from existing ones — unique approach, updated method, or real-world context]
+[INFO-GAIN: state what makes this tutorial different from existing ones ------ unique approach, updated method, or real-world context]
 
 ---
 
@@ -179,7 +179,7 @@ Each step is an H2 heading. Follow this structure for every step:
 
 [ANSWER-FIRST] In this step, you'll [what this step accomplishes] so that [why it matters for the final outcome].
 
-[Brief explanation of the concept behind this step — 2-3 sentences max]
+[Brief explanation of the concept behind this step ------ 2-3 sentences max]
 
 \`\`\`[language]
 // [filename where this code goes]
@@ -199,7 +199,7 @@ Each step is an H2 heading. Follow this structure for every step:
 [terminal output or browser result]
 \`\`\`
 
-[INFO-GAIN: optimization tips from experience — what to tweak, performance considerations, or real-world adjustments you've discovered]
+[INFO-GAIN: optimization tips from experience ------ what to tweak, performance considerations, or real-world adjustments you've discovered]
 
 > **Watch out:** [Common mistake at this step and how to avoid it]
 
@@ -212,7 +212,7 @@ Each step is an H2 heading. Follow this structure for every step:
 - Include the filename where code should be placed
 - Show expected output so readers can verify they're on track
 - Address the most common error for each step inline
-- Each step builds on the previous one — never skip dependencies
+- Each step builds on the previous one ------ never skip dependencies
 
 ---
 
@@ -291,8 +291,8 @@ Expected result:
 [ANSWER-FIRST] Now that you have a working [project], here's how to take it further.
 
 **Extend this project:**
-- [Enhancement 1]: [Brief description] — [INTERNAL-LINK to related tutorial]
-- [Enhancement 2]: [Brief description] — [INTERNAL-LINK to related tutorial]
+- [Enhancement 1]: [Brief description] ------ [INTERNAL-LINK to related tutorial]
+- [Enhancement 2]: [Brief description] ------ [INTERNAL-LINK to related tutorial]
 - [Enhancement 3]: [Brief description]
 
 **Related tutorials:**
@@ -314,7 +314,7 @@ Expected result:
 ```markdown
 ## Frequently Asked Questions
 
-### [Question 1 — phrased as users would search it]?
+### [Question 1 ------ phrased as users would search it]?
 
 [ANSWER-FIRST] [Direct answer in 1-2 sentences]. [Supporting detail or example].
 
@@ -333,7 +333,7 @@ Expected result:
 
 **FAQ Rules:**
 - Phrase questions exactly as users would type them into a search engine
-- Answer in the first sentence — no throat-clearing
+- Answer in the first sentence ------ no throat-clearing
 - Include code snippets in answers when relevant
 - Target Google Featured Snippet extraction (40-60 word answers)
 
@@ -379,3 +379,4 @@ Before publishing, verify:
 - [ ] [INTERNAL-LINK] zones placed in Prerequisites, Steps, Next Steps, and FAQ
 - [ ] Full source code is included at the end
 - [ ] All code tested and verified before publishing
+

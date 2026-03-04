@@ -1,4 +1,4 @@
-# Complete Blog Schema Reference
+﻿# Complete Blog Schema Reference
 
 ## Why Schema Matters
 
@@ -237,12 +237,12 @@ question-answer pairs for citation. Continue using it for AI visibility.
 
 ```
 FAQPage
-  └── mainEntity (array)
-        └── Question
-              ├── name (the question text)
-              └── acceptedAnswer
-                    └── Answer
-                          └── text (the answer text, 40-60 words)
+  ------------------ mainEntity (array)
+        ------------------ Question
+              ------------------ name (the question text)
+              ------------------ acceptedAnswer
+                    ------------------ Answer
+                          ------------------ text (the answer text, 40-60 words)
 ```
 
 ### Complete FAQPage Example
@@ -591,3 +591,4 @@ multiple schema types.
 - **Google Rich Results Test**: https://search.google.com/test/rich-results
 - **Schema.org Validator**: https://validator.schema.org
 - **JSON-LD Playground**: https://json-ld.org/playground/
+

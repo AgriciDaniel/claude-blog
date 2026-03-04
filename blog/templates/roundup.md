@@ -1,4 +1,4 @@
-# Template: Roundup
+﻿# Template: Roundup
 
 **Description:** Curated collection of expert quotes, insights, and strategies organized around a specific topic. Roundup posts leverage external authority, provide diverse perspectives, and are highly shareable because each featured expert has an incentive to promote the piece. They also build relationships with industry leaders.
 
@@ -43,19 +43,19 @@
 # [N] Experts Share Their [Topic] Strategies for [Year]
 ```
 
-[IMAGE] Collage or grid of expert headshots, or a branded graphic with the article title and expert count. Alt text: "[N] experts featured in [Topic] roundup — headshots and names."
+[IMAGE] Collage or grid of expert headshots, or a branded graphic with the article title and expert count. Alt text: "[N] experts featured in [Topic] roundup ------ headshots and names."
 
 ---
 
 ### Introduction (100-150 words)
 
-[ANSWER-FIRST] State the key consensus finding or most surprising insight from the experts in the first sentence. Do not begin with "We reached out to experts..." — lead with the value.
+[ANSWER-FIRST] State the key consensus finding or most surprising insight from the experts in the first sentence. Do not begin with "We reached out to experts..." ------ lead with the value.
 
 **Structure:**
-1. **Key finding** (1-2 sentences): The single most important takeaway from across all expert responses — what is the through-line?
+1. **Key finding** (1-2 sentences): The single most important takeaway from across all expert responses ------ what is the through-line?
    - [STAT: supporting data point that frames why this topic matters now]
 2. **Why expert perspectives matter** (1-2 sentences): What do these practitioners know that generalist articles miss?
-3. **Preview of diversity** (1-2 sentences): Highlight the range of perspectives — "From [context A] to [context B], these experts bring [X years] of combined experience"
+3. **Preview of diversity** (1-2 sentences): Highlight the range of perspectives ------ "From [context A] to [context B], these experts bring [X years] of combined experience"
 4. **What the reader will get** (1 sentence): Set expectations for actionable takeaways
 
 [INFO-GAIN: unique analysis] Your editorial synthesis is what makes this more than a list of quotes. Signal early that you have analyzed and organized these perspectives into actionable themes.
@@ -66,7 +66,7 @@
 
 ### Expert Sections (5-8 experts, 150-200 words each)
 
-Each expert gets their own H2 section. Order experts strategically — lead with the most recognizable name or the most compelling insight, not alphabetically.
+Each expert gets their own H2 section. Order experts strategically ------ lead with the most recognizable name or the most compelling insight, not alphabetically.
 
 **For each expert section, use this structure:**
 
@@ -78,7 +78,7 @@ Each expert gets their own H2 section. Order experts strategically — lead with
 
 **Structure per section:**
 
-1. **Expert context** (1 sentence): Brief credential or context that establishes why this person's perspective matters for this specific topic. Do not copy their full bio — focus on the relevant qualification.
+1. **Expert context** (1 sentence): Brief credential or context that establishes why this person's perspective matters for this specific topic. Do not copy their full bio ------ focus on the relevant qualification.
 
 2. **Key insight** (direct quote, 2-4 sentences): The expert's core advice or perspective in their own words. Direct quotes are strongly preferred over paraphrasing.
 
@@ -86,7 +86,7 @@ Each expert gets their own H2 section. Order experts strategically — lead with
 > "[Direct quote from the expert providing their key insight or strategy.]"
 ```
 
-3. **Your analysis** (3-5 sentences): This is where YOU add value. Do not just present the quote — analyze it:
+3. **Your analysis** (3-5 sentences): This is where YOU add value. Do not just present the quote ------ analyze it:
    - What makes this advice noteworthy or different from conventional wisdom?
    - How does this connect to or contrast with what other experts in this roundup said?
    - What is the practical implication for the reader?
@@ -125,12 +125,12 @@ Each expert gets their own H2 section. Order experts strategically — lead with
 
 2. **Contrasting opinions** (50-75 words): Where did experts disagree? Highlight 1-2 areas of divergence and explain what accounts for the different perspectives (different contexts, industries, experience levels, etc.)
 
-3. **What consensus tells us** (50-75 words): Step back and offer a meta-observation — what does the overall pattern of agreement and disagreement reveal about the current state of this topic?
+3. **What consensus tells us** (50-75 words): Step back and offer a meta-observation ------ what does the overall pattern of agreement and disagreement reveal about the current state of this topic?
    - [STAT: data point that supports the consensus finding]
 
-[INFO-GAIN: unique analysis] The synthesis is your original contribution. Anyone can collect quotes — your ability to identify patterns and draw non-obvious conclusions is the information gain.
+[INFO-GAIN: unique analysis] The synthesis is your original contribution. Anyone can collect quotes ------ your ability to identify patterns and draw non-obvious conclusions is the information gain.
 
-[VISUAL: chart-type] Consider a simple visualization of expert consensus — a matrix showing which experts agree on which themes, a spectrum chart showing the range of opinions, or a Venn diagram of overlapping advice.
+[VISUAL: chart-type] Consider a simple visualization of expert consensus ------ a matrix showing which experts agree on which themes, a spectrum chart showing the range of opinions, or a Venn diagram of overlapping advice.
 
 ---
 
@@ -145,19 +145,19 @@ Present 5-7 bullet points combining the best advice from across all experts. Eac
 - Framed as an action the reader can take
 
 ```
-1. **[Action verb] [specific advice]** — Based on [Expert Name]'s insight about [topic]. [One sentence expanding on how to implement this.]
+1. **[Action verb] [specific advice]** ------ Based on [Expert Name]'s insight about [topic]. [One sentence expanding on how to implement this.]
 
-2. **[Action verb] [specific advice]** — [Expert Name] and [Expert Name] both emphasized this. [One sentence on implementation.]
+2. **[Action verb] [specific advice]** ------ [Expert Name] and [Expert Name] both emphasized this. [One sentence on implementation.]
 
-3. **[Action verb] [specific advice]** — [Expert Name] recommends this because [brief reason]. [One sentence on getting started.]
+3. **[Action verb] [specific advice]** ------ [Expert Name] recommends this because [brief reason]. [One sentence on getting started.]
 
-4. **[Action verb] [specific advice]** — This emerged as a common theme across [N] experts. [One sentence on why it matters.]
+4. **[Action verb] [specific advice]** ------ This emerged as a common theme across [N] experts. [One sentence on why it matters.]
 
-5. **[Action verb] [specific advice]** — [Expert Name]'s contrarian take suggests [brief insight]. [One sentence on when to apply this.]
+5. **[Action verb] [specific advice]** ------ [Expert Name]'s contrarian take suggests [brief insight]. [One sentence on when to apply this.]
 
-6. **[Action verb] [specific advice]** — [Attribution and brief context.]
+6. **[Action verb] [specific advice]** ------ [Attribution and brief context.]
 
-7. **[Action verb] [specific advice]** — [Attribution and brief context.]
+7. **[Action verb] [specific advice]** ------ [Attribution and brief context.]
 ```
 
 [INTERNAL-LINK] Link each takeaway to relevant supporting content (how-to guides, tool reviews, etc.) that helps the reader implement it.
@@ -173,16 +173,16 @@ Organize resources into 2-3 categories based on what experts mentioned or recomm
 
 ```
 **Tools:**
-- [Tool Name] — [One-line description]. Recommended by [Expert Name].
-- [Tool Name] — [One-line description]. Mentioned by [Expert Name] and [Expert Name].
+- [Tool Name] ------ [One-line description]. Recommended by [Expert Name].
+- [Tool Name] ------ [One-line description]. Mentioned by [Expert Name] and [Expert Name].
 
 **Books & Courses:**
-- [Resource Name] by [Author] — [One-line description]. Recommended by [Expert Name].
-- [Resource Name] — [One-line description].
+- [Resource Name] by [Author] ------ [One-line description]. Recommended by [Expert Name].
+- [Resource Name] ------ [One-line description].
 
 **Communities & Further Reading:**
-- [Resource Name] — [One-line description].
-- [Resource Name] — [One-line description].
+- [Resource Name] ------ [One-line description].
+- [Resource Name] ------ [One-line description].
 ```
 
 **Guidelines:**
@@ -206,7 +206,7 @@ Organize resources into 2-3 categories based on what experts mentioned or recomm
 ```
 ### How do I choose which expert advice to follow first?
 
-[ANSWER-FIRST] [Direct 1-sentence answer.] [2-3 sentences on prioritization criteria based on the reader's context — team size, budget, experience level, etc.]
+[ANSWER-FIRST] [Direct 1-sentence answer.] [2-3 sentences on prioritization criteria based on the reader's context ------ team size, budget, experience level, etc.]
 
 ### Does this advice apply to [specific industry/size/context]?
 
@@ -240,16 +240,16 @@ Organize resources into 2-3 categories based on what experts mentioned or recomm
 4. **Transparency** (1 sentence): Note any experts who were invited but declined, or any potential conflicts of interest
 
 **Guidelines:**
-- This section builds trust — be transparent about your process
+- This section builds trust ------ be transparent about your process
 - If you sourced quotes from published materials (conference talks, podcasts, articles) rather than direct outreach, say so
-- Keep it factual and brief — this is not the place for editorial commentary
+- Keep it factual and brief ------ this is not the place for editorial commentary
 
 ---
 
 ## Pre-Publish Checklist
 
 - [ ] Total word count is 1,500-2,000 words
-- [ ] All [ANSWER-FIRST] prompts have been fulfilled — every section leads with the answer
+- [ ] All [ANSWER-FIRST] prompts have been fulfilled ------ every section leads with the answer
 - [ ] All [STAT] markers replaced with real, cited statistics (with source and year)
 - [ ] All [IMAGE] markers replaced with actual expert headshots (with permission) or branded graphics
 - [ ] All [VISUAL] markers replaced with actual charts or diagrams
@@ -265,3 +265,4 @@ Organize resources into 2-3 categories based on what experts mentioned or recomm
 - [ ] Experts have been notified of publication (for sharing)
 - [ ] Meta title includes the number of experts and topic
 - [ ] Meta description is 150-160 characters with key finding and CTA
+

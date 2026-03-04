@@ -1,4 +1,4 @@
-# Internal Link Architecture
+﻿# Internal Link Architecture
 
 ## Why Internal Links Matter
 
@@ -140,20 +140,20 @@ linking architecture for topical authority.
 ### Structure
 
 ```
-                    ┌──────────────────┐
-                    │   Pillar Page    │
-                    │   (Hub)          │
-                    │   /topic-guide   │
-                    └────────┬─────────┘
-                             │
-           ┌─────────────────┼──────────────────┐
-           │                 │                   │
-    ┌──────▼──────┐   ┌─────▼──────┐   ┌───────▼──────┐
-    │  Spoke #1   │   │  Spoke #2  │   │   Spoke #3   │
-    │  Subtopic   │   │  Subtopic  │   │   Subtopic   │
-    └──────┬──────┘   └─────┬──────┘   └───────┬──────┘
-           │                │                   │
-           └────────────────┼───────────────────┘
+                    ------------------------------------------------------------------------------------------------------------------------
+                    ------   Pillar Page    ------
+                    ------   (Hub)          ------
+                    ------   /topic-guide   ------
+                    ------------------------------------------------------------------------------------------------------------------------
+                             ------
+           ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+           ------                 ------                   ------
+    ------------------------------------------------------------------------------------------   ------------------------------------------------------------------------------------   ------------------------------------------------------------------------------------------------
+    ------  Spoke #1   ------   ------  Spoke #2  ------   ------   Spoke #3   ------
+    ------  Subtopic   ------   ------  Subtopic  ------   ------   Subtopic   ------
+    ------------------------------------------------------------------------------------------   ------------------------------------------------------------------------------------   ------------------------------------------------------------------------------------------------
+           ------                ------                   ------
+           ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
                     (cross-links between spokes)
 ```
 
@@ -163,9 +163,9 @@ linking architecture for topical authority.
 |---------|--------------|
 | Pillar page | 3,000-4,000 words, covers topic broadly |
 | Supporting articles (spokes) | 8-12 articles, each covers a subtopic in depth |
-| Pillar → Spoke links | Pillar links to ALL supporting articles |
-| Spoke → Pillar links | Every supporting article links back to pillar |
-| Spoke ↔ Spoke links | Cross-link between related subtopics (where natural) |
+| Pillar ------ Spoke links | Pillar links to ALL supporting articles |
+| Spoke ------ Pillar links | Every supporting article links back to pillar |
+| Spoke ------ Spoke links | Cross-link between related subtopics (where natural) |
 | Anchor text to pillar | Varied -- use different anchor text from each spoke |
 
 ### Example Topic Cluster: "Technical SEO"
@@ -322,3 +322,4 @@ This tracking helps identify:
 - Under-linked pages (valuable content with few inbound links)
 - Stale anchor text that needs updating after content refreshes
 - Broken links after URL changes or content deletion
+

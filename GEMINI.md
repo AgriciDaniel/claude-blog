@@ -1,4 +1,4 @@
-# Blog -- Content Engine for Rankings & AI Citations
+﻿# Blog -- Content Engine for Rankings & AI Citations
 
 Full-lifecycle blog management: strategy, briefs, outlines, writing, analysis,
 optimization, schema generation, repurposing, and editorial planning. Dual-optimized
@@ -9,19 +9,19 @@ Perplexity, Google AI Overviews, Gemini).
 
 | Command | What it does |
 |---------|-------------|
-| `/blog write <topic>` | Write a new blog post from scratch |
-| `/blog rewrite <file>` | Rewrite/optimize an existing blog post |
-| `/blog analyze <file-or-url>` | Audit blog quality with 0-100 score |
-| `/blog brief <topic>` | Generate a detailed content brief |
-| `/blog calendar [monthly\|quarterly]` | Generate an editorial calendar |
-| `/blog strategy <niche>` | Blog strategy and topic ideation |
-| `/blog outline <topic>` | Generate SERP-informed content outline |
-| `/blog seo-check <file>` | Post-writing SEO validation checklist |
-| `/blog schema <file>` | Generate JSON-LD schema markup |
-| `/blog repurpose <file>` | Repurpose content for other platforms |
-| `/blog geo <file>` | AI citation readiness audit |
-| `/blog audit [directory]` | Full-site blog health assessment |
-| `/blog update <file>` | Update existing post with fresh stats (routes to rewrite) |
+| `/blog:write <topic>` | Write a new blog post from scratch |
+| `/blog:rewrite <file>` | Rewrite/optimize an existing blog post |
+| `/blog:analyze <file-or-url>` | Audit blog quality with 0-100 score |
+| `/blog:brief <topic>` | Generate a detailed content brief |
+| `/blog:calendar [monthly\|quarterly]` | Generate an editorial calendar |
+| `/blog:strategy <niche>` | Blog strategy and topic ideation |
+| `/blog:outline <topic>` | Generate SERP-informed content outline |
+| `/blog:seo-check <file>` | Post-writing SEO validation checklist |
+| `/blog:schema <file>` | Generate JSON-LD schema markup |
+| `/blog:repurpose <file>` | Repurpose content for other platforms |
+| `/blog:geo <file>` | AI citation readiness audit |
+| `/blog:audit [directory]` | Full-site blog health assessment |
+| `/blog:update <file>` | Update existing post with fresh stats (routes to rewrite) |
 
 ## Orchestration Logic
 
@@ -30,19 +30,19 @@ Perplexity, Google AI Overviews, Gemini).
 1. Parse the user's command to determine the sub-skill
 2. If no sub-command given, ask which action they need
 3. Route to the appropriate sub-skill:
-   - `write` → `blog-write` (new articles from scratch)
-   - `rewrite` → `blog-rewrite` (optimize existing posts)
-   - `analyze` → `blog-analyze` (quality scoring)
-   - `brief` → `blog-brief` (content briefs)
-   - `calendar` / `plan` → `blog-calendar` (editorial calendars)
-   - `strategy` / `ideation` → `blog-strategy` (positioning and topics)
-   - `outline` → `blog-outline` (SERP-informed outlines)
-   - `seo-check` / `seo` → `blog-seo-check` (SEO validation)
-   - `schema` → `blog-schema` (JSON-LD generation)
-   - `repurpose` → `blog-repurpose` (cross-platform content)
-   - `geo` / `aeo` / `citation` → `blog-geo` (AI citation audit)
-   - `audit` / `health` → `blog-audit` (site-wide assessment)
-   - `update` → `blog-rewrite` (with freshness-update mode)
+   - `write` ------ `blog-write` (new articles from scratch)
+   - `rewrite` ------ `blog-rewrite` (optimize existing posts)
+   - `analyze` ------ `blog-analyze` (quality scoring)
+   - `brief` ------ `blog-brief` (content briefs)
+   - `calendar` / `plan` ------ `blog-calendar` (editorial calendars)
+   - `strategy` / `ideation` ------ `blog-strategy` (positioning and topics)
+   - `outline` ------ `blog-outline` (SERP-informed outlines)
+   - `seo-check` / `seo` ------ `blog-seo-check` (SEO validation)
+   - `schema` ------ `blog-schema` (JSON-LD generation)
+   - `repurpose` ------ `blog-repurpose` (cross-platform content)
+   - `geo` / `aeo` / `citation` ------ `blog-geo` (AI citation audit)
+   - `audit` / `health` ------ `blog-audit` (site-wide assessment)
+   - `update` ------ `blog-rewrite` (with freshness-update mode)
 
 ### Platform Detection
 
@@ -83,7 +83,7 @@ These are hard rules. Never ship content that violates them:
 |------|-----------|--------|
 | Fabricated statistics | Zero tolerance | Every number must have a named source |
 | Paragraph length | Never > 150 words | Split or trim |
-| Heading hierarchy | Never skip levels | H1 → H2 → H3 only |
+| Heading hierarchy | Never skip levels | H1 ------ H2 ------ H3 only |
 | Source tier | Tier 1-3 only | Never cite content mills or affiliate sites |
 | Image alt text | Required on all images | Descriptive, includes topic keywords naturally |
 | Self-promotion | Max 1 brand mention | Author bio context only |
@@ -219,12 +219,12 @@ Users do not need to call it directly.
 
 ## Integration
 
-Chart generation is built-in — no external dependencies required for full functionality.
+Chart generation is built-in ------ no external dependencies required for full functionality.
 
 **Optional companion skills** (for deeper analysis of published pages):
-- `/seo` — Full SEO audit of published blog pages
-- `/seo-schema` — Schema markup validation and generation
-- `/seo-geo` — AI citation optimization audit
+- `/seo` ------ Full SEO audit of published blog pages
+- `/seo-schema` ------ Schema markup validation and generation
+- `/seo-geo` ------ AI citation optimization audit
 
 ## Anti-Patterns (Never Do These)
 
@@ -238,5 +238,6 @@ Chart generation is built-in — no external dependencies required for full func
 | Use tier 4-5 sources | Low authority hurts E-E-A-T |
 | Generate without research | AI-generated consensus content is penalized |
 | Skip visual elements entirely | Blogs with images get 94% more views |
+
 
 

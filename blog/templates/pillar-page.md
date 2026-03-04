@@ -1,4 +1,4 @@
-# Template: Pillar Page
+﻿# Template: Pillar Page
 
 **Description:** Comprehensive topic authority guide that serves as the central hub for a topic cluster. Pillar pages provide broad, thorough coverage of a subject and link out to supporting articles that dive deeper into sub-topics.
 
@@ -36,7 +36,7 @@
 # The Complete Guide to [Topic] in [Year]
 ```
 
-[IMAGE] Hero image that visually represents the topic. Use a custom graphic or high-quality photo — not a generic stock image. Alt text should include the primary keyword.
+[IMAGE] Hero image that visually represents the topic. Use a custom graphic or high-quality photo ------ not a generic stock image. Alt text should include the primary keyword.
 
 ---
 
@@ -81,8 +81,8 @@ Auto-generated from H2 headings. Use anchor links for jump navigation. This impr
 1. **Opening hook** (1-2 sentences): Lead with a compelling statistic or trend that creates urgency
    - [STAT: current year statistic showing the scale or growth of this topic]
 2. **Topic overview** (2-3 sentences): Define the topic clearly for someone encountering it for the first time
-3. **Relevance statement** (1-2 sentences): Why this matters right now — what has changed recently?
-4. **What the reader will learn** (2-3 sentences): Preview the guide's coverage — set expectations so the reader commits to reading
+3. **Relevance statement** (1-2 sentences): Why this matters right now ------ what has changed recently?
+4. **What the reader will learn** (2-3 sentences): Preview the guide's coverage ------ set expectations so the reader commits to reading
 5. **Credibility indicator** (1 sentence): Why should the reader trust this guide? (experience, data sources, methodology)
 
 [INFO-GAIN: personal experience] Include a brief mention of your direct experience or research that qualifies this guide.
@@ -97,7 +97,7 @@ Auto-generated from H2 headings. Use anchor links for jump navigation. This impr
 
 **Structure:**
 1. **Clear definition** (1-2 sentences): Simple, authoritative definition of the topic
-2. **Context and scope** (2-3 sentences): Where this fits in the broader landscape — what category does it belong to?
+2. **Context and scope** (2-3 sentences): Where this fits in the broader landscape ------ what category does it belong to?
 3. **Key components** (3-5 bullet points): Break the topic into its essential parts or characteristics
 4. **Common misconceptions** (1-2 sentences): Address what this topic is NOT to prevent confusion
 5. **Brief history or evolution** (2-3 sentences): How the topic has developed to its current state
@@ -125,7 +125,7 @@ Auto-generated from H2 headings. Use anchor links for jump navigation. This impr
 
 [VISUAL: chart-type] Bar chart or line graph showing growth trend, adoption curve, or impact data over time.
 
-[INFO-GAIN: unique analysis] Include a data point or trend observation that is not commonly cited — something from your own research or analysis.
+[INFO-GAIN: unique analysis] Include a data point or trend observation that is not commonly cited ------ something from your own research or analysis.
 
 [INTERNAL-LINK] Link to case studies or data-driven articles that expand on the impact claims.
 
@@ -138,7 +138,7 @@ Each core section covers a major sub-topic within the pillar. These sections sho
 **For each core section, use this structure:**
 
 ```
-## [Sub-topic as H2 — written as a clear, keyword-rich heading]
+## [Sub-topic as H2 ------ written as a clear, keyword-rich heading]
 ```
 
 [ANSWER-FIRST] Open with a 1-2 sentence answer or definition of this sub-topic before elaborating.
@@ -203,7 +203,7 @@ Each core section covers a major sub-topic within the pillar. These sections sho
 [ANSWER-FIRST] Give the reader their very first action step in the opening sentence. Remove all friction to starting.
 
 **Structure:**
-1. **Step 1** (2-3 sentences): The lowest-friction first action — what can someone do in the next 5 minutes?
+1. **Step 1** (2-3 sentences): The lowest-friction first action ------ what can someone do in the next 5 minutes?
 2. **Step 2** (2-3 sentences): The next logical step that builds on Step 1
 3. **Step 3** (2-3 sentences): A step that creates momentum and leads to ongoing engagement
 4. **Encouragement** (1 sentence): Address the most common hesitation and counter it
@@ -218,37 +218,37 @@ Each core section covers a major sub-topic within the pillar. These sections sho
 
 **Guidelines for FAQ questions:**
 - Source questions from People Also Ask, forums, and comment sections
-- Each answer should be 40-80 words — concise and direct
+- Each answer should be 40-80 words ------ concise and direct
 - The first sentence of each answer should be a standalone answer (featured snippet format)
 - Include [STAT: supporting statistic] in at least 2 answers
 - Cover a range: basic definitions, practical how-tos, comparisons, and cost/time questions
 
 ```
-### [Question 1 — basic definition or "what is" question]?
+### [Question 1 ------ basic definition or "what is" question]?
 
 [ANSWER-FIRST] [Direct 1-sentence answer.] [2-3 sentences of supporting detail.] [STAT: relevant statistic if applicable.]
 
-### [Question 2 — "how to" or process question]?
+### [Question 2 ------ "how to" or process question]?
 
 [ANSWER-FIRST] [Direct 1-sentence answer.] [2-3 sentences of supporting detail.]
 
-### [Question 3 — comparison or "vs" question]?
+### [Question 3 ------ comparison or "vs" question]?
 
 [ANSWER-FIRST] [Direct 1-sentence answer.] [2-3 sentences of supporting detail.]
 
-### [Question 4 — cost, time, or effort question]?
+### [Question 4 ------ cost, time, or effort question]?
 
 [ANSWER-FIRST] [Direct 1-sentence answer.] [2-3 sentences of supporting detail.] [STAT: relevant statistic if applicable.]
 
-### [Question 5 — common misconception or "is it worth" question]?
+### [Question 5 ------ common misconception or "is it worth" question]?
 
 [ANSWER-FIRST] [Direct 1-sentence answer.] [2-3 sentences of supporting detail.]
 
-### [Question 6 — advanced or edge-case question]?
+### [Question 6 ------ advanced or edge-case question]?
 
 [ANSWER-FIRST] [Direct 1-sentence answer.] [2-3 sentences of supporting detail.]
 
-### [Question 7 — future-looking or trend question]?
+### [Question 7 ------ future-looking or trend question]?
 
 [ANSWER-FIRST] [Direct 1-sentence answer.] [2-3 sentences of supporting detail.]
 ```
@@ -295,7 +295,7 @@ List all supporting articles in the topic cluster, organized by category:
 ## Pre-Publish Checklist
 
 - [ ] Total word count is 3,000-4,000 words
-- [ ] All [ANSWER-FIRST] prompts have been fulfilled — every section leads with the answer
+- [ ] All [ANSWER-FIRST] prompts have been fulfilled ------ every section leads with the answer
 - [ ] All [STAT] markers replaced with real, cited statistics (with source and year)
 - [ ] All [VISUAL] markers replaced with actual charts or diagrams
 - [ ] All [IMAGE] markers replaced with relevant, optimized images with alt text
@@ -307,3 +307,4 @@ List all supporting articles in the topic cluster, organized by category:
 - [ ] Meta description is 150-160 characters with primary keyword and CTA
 - [ ] At least 6 supporting articles exist (or are planned) for the internal link hub
 - [ ] Content has been reviewed for E-E-A-T signals (experience, expertise, authority, trust)
+

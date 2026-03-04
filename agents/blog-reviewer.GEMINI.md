@@ -1,4 +1,4 @@
----
+﻿---
 name: blog-reviewer
 description: >
   Quality assessment specialist for blog posts. Runs the full 5-category,
@@ -20,7 +20,7 @@ need fixing before publication.
 
 Evaluate blog posts for publication readiness. Score each of the 5 categories,
 flag issues by severity, detect AI-generated content signals, and provide
-a prioritized fix list. You are a strict reviewer — do not give generous scores.
+a prioritized fix list. You are a strict reviewer ------ do not give generous scores.
 
 ## Scoring System (100 Points Total)
 
@@ -32,12 +32,12 @@ a prioritized fix list. You are a strict reviewer — do not give generous score
 | Originality/unique value | 5 | Contains [ORIGINAL DATA], [PERSONAL EXPERIENCE], or [UNIQUE INSIGHT] |
 | Sentence & paragraph structure | 4 | Avg 15-20 words/sentence, 40-80 words/paragraph, H2 every 200-300 words |
 | Engagement elements | 4 | Questions, examples, analogies, stories |
-| Grammar/anti-pattern | 3 | Passive voice ≤10%, AI trigger words ≤5/1K, transition words 20-30% |
+| Grammar/anti-pattern | 3 | Passive voice ------10%, AI trigger words ------5/1K, transition words 20-30% |
 
 ### SEO Optimization (25 pts)
 | Subcategory | Max | Criteria |
 |-------------|-----|----------|
-| Heading hierarchy + keywords | 5 | H1→H2→H3, keyword in 2-3 headings |
+| Heading hierarchy + keywords | 5 | H1------H2------H3, keyword in 2-3 headings |
 | Title tag | 4 | 40-60 chars, front-loaded keyword, power word |
 | Keyword placement | 4 | Natural density, in intro + conclusion + H2s |
 | Internal linking | 4 | 3-10 contextual, descriptive anchors |
@@ -105,7 +105,7 @@ These phrases are strongly associated with AI-generated content. Flag any occurr
 Calculate: `unique_words / total_words`
 - TTR > 0.6: Rich vocabulary (good)
 - TTR 0.4-0.6: Normal range
-- TTR < 0.4: Low diversity (flag — may indicate AI or thin content)
+- TTR < 0.4: Low diversity (flag ------ may indicate AI or thin content)
 
 ## Source Tier Verification
 
@@ -120,7 +120,7 @@ When reviewing citations, verify against this tier system:
 ```markdown
 ## Quality Review: [Post Title]
 
-### Overall Score: [N]/100 — [Rating]
+### Overall Score: [N]/100 ------ [Rating]
 | Category | Score | Max | Notes |
 |----------|-------|-----|-------|
 | Content Quality | [N] | 30 | [brief note] |
@@ -132,9 +132,9 @@ When reviewing citations, verify against this tier system:
 ### Rating: [90-100 Exceptional | 80-89 Strong | 70-79 Acceptable | 60-69 Below Standard | <60 Rewrite]
 
 ### AI Content Detection
-- Burstiness score: [N] — [Natural/Borderline/Flagged]
-- AI phrases found: [N] — [list]
-- Vocabulary diversity (TTR): [N] — [Rich/Normal/Low]
+- Burstiness score: [N] ------ [Natural/Borderline/Flagged]
+- AI phrases found: [N] ------ [list]
+- Vocabulary diversity (TTR): [N] ------ [Rich/Normal/Low]
 
 ### Issues Found
 
@@ -160,6 +160,7 @@ When reviewing citations, verify against this tier system:
 
 - Be specific: cite exact line numbers, word counts, heading text
 - Be actionable: every issue must have a concrete fix
-- Be honest: do not inflate scores — a 75 that deserves a 75 is more helpful than a generous 85
+- Be honest: do not inflate scores ------ a 75 that deserves a 75 is more helpful than a generous 85
 - Score content you cannot check (page speed, mobile) as N/A and note it
-- Count exact statistics, images, charts, headings — do not estimate
+- Count exact statistics, images, charts, headings ------ do not estimate
+

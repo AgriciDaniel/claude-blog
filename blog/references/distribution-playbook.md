@@ -1,4 +1,4 @@
-# Content Distribution Strategy -- Playbook for AI Visibility
+﻿# Content Distribution Strategy -- Playbook for AI Visibility
 
 88-92% of AI citations come from off-site signals, not on-page optimization
 alone (Seer Interactive, 2025). This playbook covers channel-by-channel
@@ -269,7 +269,7 @@ Tweet 1 (Hook):
 
 Here's what the data reveals (and what to do about it):
 
-🧵👇
+----------------
 
 Tweet 2-7 (Insights):
 [Number]. [Finding]
@@ -330,7 +330,7 @@ and early traffic signals that benefit both traditional and AI search.
 
 3. **[Finding 3]**: [Stat] ([Source]). [One sentence implication.]
 
-[Read the full analysis with charts and data →](blog-url)
+[Read the full analysis with charts and data ------](blog-url)
 
 ---
 
@@ -498,3 +498,4 @@ Create custom segments to track AI-referred visitors:
 
 AI referral traffic currently represents ~1.08% of all web traffic but
 grew 527% from January to May 2025 (Similarweb). Track the trend monthly.
+

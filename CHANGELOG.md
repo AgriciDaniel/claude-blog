@@ -1,4 +1,4 @@
-# Changelog
+﻿# Changelog
 
 All notable changes to this project will be documented in this file.
 
@@ -40,15 +40,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.1.0] - 2026-02-18
 
 ### Added
-- **Built-in SVG chart generation** (`blog-chart` sub-skill) — eliminates external `/svg` dependency
+- **Built-in SVG chart generation** (`blog-chart` sub-skill) ------ eliminates external `/svg` dependency
   - Supports 7 chart types: horizontal bar, grouped bar, donut, line, lollipop, area, radar
   - Dark-mode compatible, accessible (WCAG), platform-aware (HTML/JSX auto-detection)
-- **Image URL verification** in researcher agent — validates HTTP 200 before embedding
-- **Mid-writing readability check** in writer agent — self-checks Flesch targets before returning
+- **Image URL verification** in researcher agent ------ validates HTTP 200 before embedding
+- **Mid-writing readability check** in writer agent ------ self-checks Flesch targets before returning
 - **Image density guidelines** by content type in visual-media.md
 
 ### Changed
-- gemini-blog is now fully self-contained — no external skill dependencies required
+- gemini-blog is now fully self-contained ------ no external skill dependencies required
 - Integration section updated to list companion skills as optional
 - Installer scripts updated for 13 sub-skills
 
@@ -86,3 +86,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Corrected phantom "January 2026 Authenticity Update" references to verified **December 2025 Core Update** (Dec 11-29, 2025)
+

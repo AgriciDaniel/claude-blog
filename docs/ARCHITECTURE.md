@@ -1,4 +1,4 @@
-# Architecture
+﻿# Architecture
 
 System design documentation for `gemini-blog`, covering component types,
 data flow, scoring methodology, file conventions, and extension points.
@@ -144,21 +144,21 @@ Structural templates for different content types.
 
 ```
 gemini-blog/
-├── gemini-extension.json               # Extension manifest
-├── GEMINI.md                           # Main orchestrator
-├── blog/
-│   ├── references/                     # Knowledge base
-│   ├── templates/                      # Content templates
-│   └── scripts/
-│       └── analyze_blog.py
-├── skills/
-│   ├── blog-write/GEMINI.md            # Sub-skill
-│   ├── blog-rewrite/GEMINI.md          # Sub-skill
-│   └── ... (10 more)
-└── agents/
-    ├── blog-researcher.GEMINI.md        # Subagent
-    ├── blog-writer.GEMINI.md            # Subagent
-    └── ... (2 more)
+------------------ gemini-extension.json               # Extension manifest
+------------------ GEMINI.md                           # Main orchestrator
+------------------ blog/
+------   ------------------ references/                     # Knowledge base
+------   ------------------ templates/                      # Content templates
+------   ------------------ scripts/
+------       ------------------ analyze_blog.py
+------------------ skills/
+------   ------------------ blog-write/GEMINI.md            # Sub-skill
+------   ------------------ blog-rewrite/GEMINI.md          # Sub-skill
+------   ------------------ ... (10 more)
+------------------ agents/
+    ------------------ blog-researcher.GEMINI.md        # Subagent
+    ------------------ blog-writer.GEMINI.md            # Subagent
+    ------------------ ... (2 more)
 ```
 
 ---
@@ -173,3 +173,4 @@ Tools must be specified in the correct `snake_case` format corresponding to the 
 - **Web & URLs:** `web_fetch`, `google_web_search`
 
 Failing to use these canonical names will result in "Invalid tool name" validation errors when the Gemini CLI tries to load the agent.
+

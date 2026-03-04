@@ -81,73 +81,73 @@ Next.js/MDX, Astro, Hugo, Jekyll, WordPress, Ghost, 11ty, Gatsby, and static HTM
 
 ```
 gemini-blog/
-├── gemini-extension.json               # Extension manifest
-├── GEMINI.md                           # Main orchestrator (12 commands)
-├── blog/
-│   ├── references/                     # 12 on-demand reference docs
-│   │   ├── google-landscape-2026.md
-│   │   ├── geo-optimization.md
-│   │   ├── content-rules.md
-│   │   ├── visual-media.md
-│   │   ├── quality-scoring.md
-│   │   ├── platform-guides.md
-│   │   ├── distribution-playbook.md
-│   │   ├── content-templates.md
-│   │   ├── eeat-signals.md
-│   │   ├── ai-crawler-guide.md
-│   │   ├── schema-stack.md
-│   │   └── internal-linking.md
-│   ├── templates/                      # 12 content type templates
-│   │   ├── how-to-guide.md
-│   │   ├── listicle.md
-│   │   ├── case-study.md
-│   │   ├── comparison.md
-│   │   ├── pillar-page.md
-│   │   ├── product-review.md
-│   │   ├── thought-leadership.md
-│   │   ├── roundup.md
-│   │   ├── tutorial.md
-│   │   ├── news-analysis.md
-│   │   ├── data-research.md
-│   │   └── faq-knowledge.md
-│   └── scripts/
-│       └── analyze_blog.py             # Python quality analysis
-├── skills/                             # 13 sub-skills
-│   ├── blog-write/GEMINI.md
-│   ├── blog-rewrite/GEMINI.md
-│   ├── blog-analyze/GEMINI.md
-│   ├── blog-brief/GEMINI.md
-│   ├── blog-calendar/GEMINI.md
-│   ├── blog-strategy/GEMINI.md
-│   ├── blog-outline/GEMINI.md
-│   ├── blog-seo-check/GEMINI.md
-│   ├── blog-schema/GEMINI.md
-│   ├── blog-repurpose/GEMINI.md
-│   ├── blog-geo/GEMINI.md
-│   ├── blog-audit/GEMINI.md
-│   └── blog-chart/GEMINI.md            # Internal: SVG chart generation
-├── agents/                             # 4 specialized agents
-│   ├── blog-researcher.GEMINI.md
-│   ├── blog-writer.GEMINI.md
-│   ├── blog-seo.GEMINI.md
-│   └── blog-reviewer.GEMINI.md
-├── commands/blog/                      # 12 Gemini CLI slash commands
-│   ├── write.toml
-│   ├── analyze.toml
-│   └── ... (10 more)
-├── docs/                               # 7 documentation files
-│   ├── INSTALLATION.md
-│   ├── WORKFLOW-TUTORIAL.md
-│   ├── COMMANDS.md
-│   ├── ARCHITECTURE.md
-│   ├── TEMPLATES.md
-│   ├── TROUBLESHOOTING.md
-│   └── MCP-INTEGRATION.md
-├── assets/                             # Images and demo GIFs
-├── requirements.txt                    # Python dependencies
-├── CHANGELOG.md
-├── LICENSE
-└── README.md
+------ gemini-extension.json               # Extension manifest
+------ GEMINI.md                           # Main orchestrator (12 commands)
+------ blog/
+--   ------ references/                     # 12 on-demand reference docs
+--   --   ------ google-landscape-2026.md
+--   --   ------ geo-optimization.md
+--   --   ------ content-rules.md
+--   --   ------ visual-media.md
+--   --   ------ quality-scoring.md
+--   --   ------ platform-guides.md
+--   --   ------ distribution-playbook.md
+--   --   ------ content-templates.md
+--   --   ------ eeat-signals.md
+--   --   ------ ai-crawler-guide.md
+--   --   ------ schema-stack.md
+--   --   ------ internal-linking.md
+--   ------ templates/                      # 12 content type templates
+--   --   ------ how-to-guide.md
+--   --   ------ listicle.md
+--   --   ------ case-study.md
+--   --   ------ comparison.md
+--   --   ------ pillar-page.md
+--   --   ------ product-review.md
+--   --   ------ thought-leadership.md
+--   --   ------ roundup.md
+--   --   ------ tutorial.md
+--   --   ------ news-analysis.md
+--   --   ------ data-research.md
+--   --   ------ faq-knowledge.md
+--   ------ scripts/
+--       ------ analyze_blog.py             # Python quality analysis
+------ skills/                             # 13 sub-skills
+--   ------ blog-write/GEMINI.md
+--   ------ blog-rewrite/GEMINI.md
+--   ------ blog-analyze/GEMINI.md
+--   ------ blog-brief/GEMINI.md
+--   ------ blog-calendar/GEMINI.md
+--   ------ blog-strategy/GEMINI.md
+--   ------ blog-outline/GEMINI.md
+--   ------ blog-seo-check/GEMINI.md
+--   ------ blog-schema/GEMINI.md
+--   ------ blog-repurpose/GEMINI.md
+--   ------ blog-geo/GEMINI.md
+--   ------ blog-audit/GEMINI.md
+--   ------ blog-chart/GEMINI.md            # Internal: SVG chart generation
+------ agents/                             # 4 specialized agents
+--   ------ blog-researcher.GEMINI.md
+--   ------ blog-writer.GEMINI.md
+--   ------ blog-seo.GEMINI.md
+--   ------ blog-reviewer.GEMINI.md
+------ commands/blog/                      # 12 Gemini CLI slash commands
+--   ------ write.toml
+--   ------ analyze.toml
+--   ------ ... (10 more)
+------ docs/                               # 7 documentation files
+--   ------ INSTALLATION.md
+--   ------ WORKFLOW-TUTORIAL.md
+--   ------ COMMANDS.md
+--   ------ ARCHITECTURE.md
+--   ------ TEMPLATES.md
+--   ------ TROUBLESHOOTING.md
+--   ------ MCP-INTEGRATION.md
+------ assets/                             # Images and demo GIFs
+------ requirements.txt                    # Python dependencies
+------ CHANGELOG.md
+------ LICENSE
+------ README.md
 ```
 
 ## Requirements
@@ -210,4 +210,5 @@ MIT License. See [LICENSE](LICENSE) for details.
 Built by [imitry](https://github.com/imitry) with Gemini CLI.
 
 Original author: [AgriciDaniel](https://github.com/AgriciDaniel). English version for Claude Code.
+
 

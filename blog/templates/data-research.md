@@ -1,4 +1,4 @@
-# Template: Data Research (Original Data Study)
+﻿# Template: Data Research (Original Data Study)
 
 **Template ID:** data-research
 **Target Length:** 2,000-3,000 words
@@ -27,16 +27,16 @@ Do NOT use this template for:
 ## Title Format
 
 ```
-[Study Title]: We Analyzed [N] [Things] — Here's What We Found
+[Study Title]: We Analyzed [N] [Things] ------ Here's What We Found
 ```
 
 **Examples:**
-- "AI Code Review Study: We Analyzed 10,000 Pull Requests — Here's What We Found"
-- "Blog SEO Benchmark: We Analyzed 500 Technical Blogs — Here's What We Found"
-- "Developer Tooling Survey: We Asked 2,000 Engineers — Here's What We Found"
+- "AI Code Review Study: We Analyzed 10,000 Pull Requests ------ Here's What We Found"
+- "Blog SEO Benchmark: We Analyzed 500 Technical Blogs ------ Here's What We Found"
+- "Developer Tooling Survey: We Asked 2,000 Engineers ------ Here's What We Found"
 
 **Title Rules:**
-- Include the specific sample size (N) — this is your credibility signal
+- Include the specific sample size (N) ------ this is your credibility signal
 - Name what was analyzed (pull requests, blogs, engineers, etc.)
 - "We Analyzed/Studied/Surveyed" establishes original research
 - "Here's What We Found" signals actionable insights
@@ -67,7 +67,7 @@ Do NOT use this template for:
 - Every sentence must contain a data point (number, percentage, comparison)
 - Lead with the most surprising or impactful finding
 - Include "most surprisingly" or equivalent to hook readers
-- This box will be the most-cited part of the study — make it quotable
+- This box will be the most-cited part of the study ------ make it quotable
 
 ---
 
@@ -92,10 +92,10 @@ Do NOT use this template for:
 ```
 
 **Rules:**
-- Each bullet must be self-contained — citable without context
+- Each bullet must be self-contained ------ citable without context
 - Bold the data point, follow with one sentence of context
 - Order by magnitude of impact or surprise, not by study order
-- Include the visual chart immediately — readers want the overview first
+- Include the visual chart immediately ------ readers want the overview first
 
 ---
 
@@ -112,7 +112,7 @@ Do NOT use this template for:
 
 [Where the data came from, how it was collected, any selection criteria]
 
-[INFO-GAIN: proprietary data source or unique collection method — this is what makes the study unreproducible and therefore valuable]
+[INFO-GAIN: proprietary data source or unique collection method ------ this is what makes the study unreproducible and therefore valuable]
 
 ### Sample
 
@@ -126,7 +126,7 @@ Do NOT use this template for:
 
 ### Analysis Approach
 
-[1-2 paragraphs on how the data was analyzed — tools used, statistical methods, categorization approach]
+[1-2 paragraphs on how the data was analyzed ------ tools used, statistical methods, categorization approach]
 
 ### Limitations
 
@@ -136,10 +136,10 @@ Do NOT use this template for:
 ```
 
 **Rules:**
-- Be transparent about limitations — this builds credibility
+- Be transparent about limitations ------ this builds credibility
 - The [INFO-GAIN] here is your unique data source or method
 - Include enough detail that another researcher could evaluate (not necessarily reproduce) the study
-- State exclusion criteria explicitly — readers will ask about selection bias
+- State exclusion criteria explicitly ------ readers will ask about selection bias
 
 ---
 
@@ -156,7 +156,7 @@ Each finding is an H2 phrased as a question. Follow this structure for each:
 
 **The data:**
 
-[VISUAL: chart appropriate to the finding — vary chart types across findings]
+[VISUAL: chart appropriate to the finding ------ vary chart types across findings]
 
 Suggested chart types per finding:
 - Finding 1: Horizontal bar chart (comparison)
@@ -164,7 +164,7 @@ Suggested chart types per finding:
 - Finding 3: Scatter plot (correlation)
 - Finding 4: Stacked bar chart (composition)
 
-**What this means:** [Interpretation of the data — what pattern does this reveal?]
+**What this means:** [Interpretation of the data ------ what pattern does this reveal?]
 
 **How this compares:** [Comparison to industry benchmarks, prior research, or conventional wisdom]
 
@@ -180,17 +180,17 @@ Suggested chart types per finding:
 ```
 
 **Rules for finding sections:**
-- Always open with the data point — never bury the lead
+- Always open with the data point ------ never bury the lead
 - Each finding must have its own visualization (vary chart types)
 - Compare to a benchmark or prior research for context
-- End with a practical implication — "so what?" for the reader
-- Vary chart types across findings — don't use the same chart 4 times
+- End with a practical implication ------ "so what?" for the reader
+- Vary chart types across findings ------ don't use the same chart 4 times
 
 ---
 
 ### Surprises & Outliers (150-200 words)
 
-[ANSWER-FIRST] Highlight findings that were unexpected or that challenge common assumptions. This section builds credibility — it shows you followed the data rather than confirming a narrative.
+[ANSWER-FIRST] Highlight findings that were unexpected or that challenge common assumptions. This section builds credibility ------ it shows you followed the data rather than confirming a narrative.
 
 ```markdown
 ## Surprises & Outliers
@@ -203,7 +203,7 @@ We expected [expected result], but the data showed [actual result]. [Brief expla
 **Surprise 2: [Outlier or anomaly]**
 [Description of the outlier and what it might indicate]
 
-[INFO-GAIN: honest reflection on what was unexpected — this demonstrates intellectual rigor and makes the study more trustworthy]
+[INFO-GAIN: honest reflection on what was unexpected ------ this demonstrates intellectual rigor and makes the study more trustworthy]
 
 > **What this tells us:** [1-2 sentence meta-insight about what the surprises reveal]
 ```
@@ -238,7 +238,7 @@ We expected [expected result], but the data showed [actual result]. [Brief expla
 ```
 
 **Rules:**
-- This section builds trust — be genuinely transparent
+- This section builds trust ------ be genuinely transparent
 - Distinguish between limitations (things that weaken the findings) and scope boundaries (things outside the study's intent)
 - Suggest specific future research directions (you may write those follow-ups)
 
@@ -364,3 +364,4 @@ Before publishing, verify:
 - [ ] FAQ includes methodology and citation questions
 - [ ] Data appendix with summary table and citation format
 - [ ] All data verified and calculations double-checked
+

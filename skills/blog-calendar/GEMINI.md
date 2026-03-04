@@ -22,12 +22,12 @@ Design 3-5 topic clusters (pillar + supporting content):
 
 ```
 Cluster: [Pillar Topic]
-в”њв”Ђв”Ђ Pillar Page: [Comprehensive guide вЂ” 3,000+ words]
-в”њв”Ђв”Ђ Supporting: [Subtopic 1 вЂ” 2,000 words]
-в”њв”Ђв”Ђ Supporting: [Subtopic 2 вЂ” 2,000 words]
-в”њв”Ђв”Ђ Supporting: [Subtopic 3 вЂ” 1,500 words]
-в”њв”Ђв”Ђ Comparison: [X vs Y вЂ” 1,500 words]
-в””в”Ђв”Ђ FAQ: [Common questions вЂ” 1,500 words]
+------------------ Pillar Page: [Comprehensive guide ------ 3,000+ words]
+------------------ Supporting: [Subtopic 1 ------ 2,000 words]
+------------------ Supporting: [Subtopic 2 ------ 2,000 words]
+------------------ Supporting: [Subtopic 3 ------ 1,500 words]
+------------------ Comparison: [X vs Y ------ 1,500 words]
+------------------ FAQ: [Common questions ------ 1,500 words]
 ```
 
 Each cluster should:
@@ -275,5 +275,6 @@ Save the calendar and suggest:
 4. Re-run `/blog calendar` next month/quarter for the next plan
 5. Review the Content Decay Report weekly and address Critical items first
 6. Track Topic Cluster Progress monthly to ensure clusters reach completion
+
 
 

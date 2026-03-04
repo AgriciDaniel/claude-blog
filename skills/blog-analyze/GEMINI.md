@@ -43,9 +43,9 @@ Load `blog/references/quality-scoring.md` for the full checklist. Score each:
 | Depth/comprehensiveness | 7 | Covers topic thoroughly, no major gaps |
 | Readability (Flesch 60-70) | 7 | Flesch 60-70 ideal, 55-75 acceptable; Grade 7-8; Gunning Fog 7-8 |
 | Originality/unique value markers | 5 | Original data, case studies, first-hand experience |
-| Sentence & paragraph structure | 4 | Avg sentence 15-20 words, в‰¤25% over 20; paragraphs 40-80 words; H2 every 200-300 words |
+| Sentence & paragraph structure | 4 | Avg sentence 15-20 words, ------25% over 20; paragraphs 40-80 words; H2 every 200-300 words |
 | Engagement elements | 4 | TL;DR box, callouts, varied content blocks |
-| Grammar/anti-pattern | 3 | Passive voice в‰¤10%, AI trigger words в‰¤5/1K, transition words 20-30%, clean prose |
+| Grammar/anti-pattern | 3 | Passive voice ------10%, AI trigger words ------5/1K, transition words 20-30%, clean prose |
 
 #### SEO Optimization (25 points)
 | Check | Points | Pass Criteria |
@@ -257,5 +257,6 @@ summary table. Use `--sort score` to order by score (ascending by default).
 
 Run `/blog rewrite <file>` on each, starting from lowest score.
 ```
+
 
 

@@ -1,4 +1,4 @@
-# Visual Media Integration -- Images, Charts & Cover Images
+﻿# Visual Media Integration -- Images, Charts & Cover Images
 
 ## Cover Images & OG Images
 
@@ -61,7 +61,7 @@ date: "YYYY-MM-DD"
 ## Image Sourcing
 
 ### Pixabay (Preferred)
-- **License**: Pixabay Content License — free for commercial use, no attribution required
+- **License**: Pixabay Content License ------ free for commercial use, no attribution required
 - **URL**: https://pixabay.com
 - **Hotlinking**: Allowed via CDN URLs
 
@@ -69,25 +69,25 @@ date: "YYYY-MM-DD"
 1. WebSearch: `site:pixabay.com [topic keywords]`
 2. Visit the image page to get the direct CDN URL
 3. Direct URL pattern: `https://cdn.pixabay.com/photo/YYYY/MM/DD/HH/MM/filename.jpg`
-4. Verify: `curl -sI "<url>" | head -1` — must return HTTP 200
+4. Verify: `curl -sI "<url>" | head -1` ------ must return HTTP 200
 
 **Sizing**: Append query params for optimization:
 - Blog hero: original size (typically 1920px wide)
 - Inline images: use as-is (most are 1280px+)
 
 ### Unsplash (Alternative)
-- **License**: Unsplash License — free for commercial use, no attribution required
+- **License**: Unsplash License ------ free for commercial use, no attribution required
 - **URL**: https://unsplash.com
-- **Hotlinking**: Required — must use their CDN
+- **Hotlinking**: Required ------ must use their CDN
 
 **Finding images:**
 1. WebSearch: `site:unsplash.com [topic keywords]`
 2. Extract photo ID from URL (e.g., `photo-1234567890123-abcdef`)
 3. Build direct URL: `https://images.unsplash.com/photo-<id>?w=1200&h=630&fit=crop&q=80`
-4. Verify: `curl -sI "<url>" | head -1` — must return HTTP 200
+4. Verify: `curl -sI "<url>" | head -1` ------ must return HTTP 200
 
 ### Pexels (Fallback)
-- **License**: Pexels License — free for commercial use, no attribution required
+- **License**: Pexels License ------ free for commercial use, no attribution required
 - **URL**: https://pexels.com
 - **Finding**: WebSearch `site:pexels.com [topic keywords]`
 
@@ -95,9 +95,9 @@ date: "YYYY-MM-DD"
 
 | Rule | Requirement |
 |------|-------------|
-| Alt text | Required on ALL images — full descriptive sentence |
+| Alt text | Required on ALL images ------ full descriptive sentence |
 | Placement | After H2 headings, before body text |
-| Distribution | Spread evenly — never cluster images |
+| Distribution | Spread evenly ------ never cluster images |
 | Count | 3-5 images per 2,000-word post |
 | Relevance | Must relate to adjacent content |
 | Format | AVIF preferred, WebP fallback, JPEG last resort |
@@ -114,7 +114,7 @@ Optimal image frequency varies by post format (THM SEO Agency data):
 | Case studies | 1 image per 307 words | ~6-7 images |
 
 Articles with an image every 75-100 words get 2x more social shares (BuzzSumo).
-Balance density against page weight — use optimized formats (AVIF/WebP) to keep
+Balance density against page weight ------ use optimized formats (AVIF/WebP) to keep
 total image payload under 500KB.
 
 ### SVG Impact on Engagement
@@ -128,7 +128,7 @@ D.C. Thomson case study results after replacing raster images with contextual SV
 - Full descriptive sentence including topic keywords naturally
 - Describe what the image shows AND its relevance to the content
 - 10-125 characters
-- No keyword stuffing — natural language only
+- No keyword stuffing ------ natural language only
 
 Good: `Marketing team analyzing AI search traffic data on a dashboard showing citation metrics`
 Bad: `SEO AI marketing blog optimization image`
@@ -265,7 +265,7 @@ data during the writing process and delegates chart generation internally.
 | Distribution / range | Area chart |
 | Multi-dimensional scoring | Radar chart |
 
-**Diversity is mandatory** — never use the same chart type twice in one post.
+**Diversity is mandatory** ------ never use the same chart type twice in one post.
 Target 2-4 charts per 2,000-word post.
 
 ### Dark-Mode Compatible Styling
@@ -367,7 +367,7 @@ For text inside colored elements: `fill="white"` with `fontWeight="800"`.
 ### Invoking blog-chart
 
 When generating charts, pass to the `blog-chart` sub-skill:
-1. **Chart type** (ensure diversity — never repeat within a post)
+1. **Chart type** (ensure diversity ------ never repeat within a post)
 2. **Title** for the chart
 3. **Exact data values** with sources
 4. **Source attribution** (name and year)
@@ -390,3 +390,4 @@ The sub-skill returns complete SVG wrapped in a `<figure>`. Verify before embedd
 | Same chart type twice | Visual monotony | Enforce chart diversity |
 | No `role="img"` | Accessibility failure | Always include |
 | No source attribution | Trust issue | Always cite data source |
+

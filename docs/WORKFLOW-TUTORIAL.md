@@ -64,7 +64,7 @@ The engine uses a combination of an Orchestrator (`blog/GEMINI.md`), 12 specific
 **Commands to use:** `/blog repurpose <file>`
 
 * **What happens:** The finished article is passed back to the writer/marketer tools.
-* **The output:** The content is chopped up into Twitter threads, LinkedIn thought-leadership posts, Reddit submissions, or YouTube scripts—completing the lifecycle and driving traffic back to your blog.
+* **The output:** The content is chopped up into Twitter threads, LinkedIn thought-leadership posts, Reddit submissions, or YouTube scripts--completing the lifecycle and driving traffic back to your blog.
 
 ---
 
@@ -86,3 +86,4 @@ To install and run the `gemini-blog` extension:
    echo "analyze the blog post at ./sample-post.md using the blog-analyze skill and give me the quality score" | gemini -y
    ```
    The engine will spin up the necessary components, apply the quality rubric (including SGE optimization logic), and return a highly detailed grading report representing true end-to-end task fulfillment.
+

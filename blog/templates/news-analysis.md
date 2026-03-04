@@ -1,4 +1,4 @@
-# Template: News Analysis (Timely Event Commentary)
+﻿# Template: News Analysis (Timely Event Commentary)
 
 **Template ID:** news-analysis
 **Target Length:** 800-1,200 words
@@ -39,7 +39,7 @@ Do NOT use this template for:
 - Name the event explicitly (people search for event names)
 - Specify the audience who should care
 - Keep under 60 characters for full SERP display when possible
-- Avoid clickbait — the event itself is the hook
+- Avoid clickbait ------ the event itself is the hook
 
 **Alternative Title Formats:**
 - "[N] Things [Audience] Should Know About [Event]"
@@ -63,7 +63,7 @@ Do NOT use this template for:
 ```
 
 **Rules:**
-- Assume the reader already saw the headline — don't just restate the news
+- Assume the reader already saw the headline ------ don't just restate the news
 - Lead with implications, not with what happened
 - Include one actionable recommendation
 
@@ -71,7 +71,7 @@ Do NOT use this template for:
 
 ### What Happened (100-150 words)
 
-[ANSWER-FIRST] State the facts of the event concisely. This is the objective section — save opinion for later.
+[ANSWER-FIRST] State the facts of the event concisely. This is the objective section ------ save opinion for later.
 
 ```markdown
 ## What Happened
@@ -84,27 +84,27 @@ Do NOT use this template for:
 - [Fact 2 with source attribution]
 - [Fact 3 with source attribution]
 
-> "[Direct quote from announcement or key figure]" — [Attribution]
+> "[Direct quote from announcement or key figure]" ------ [Attribution]
 
-[STAT: one data point that establishes scale or significance — user count, market size, adoption rate]
+[STAT: one data point that establishes scale or significance ------ user count, market size, adoption rate]
 ```
 
 **Rules:**
 - Cite sources for every factual claim
 - Include at least one direct quote from a primary source
-- Keep this section objective — no analysis yet
+- Keep this section objective ------ no analysis yet
 - Include dates and specific version numbers
 
 ---
 
 ### Why This Matters (200-300 words)
 
-[ANSWER-FIRST] Open with a clear statement of why this event is significant — not just what it is, but why the reader should care right now.
+[ANSWER-FIRST] Open with a clear statement of why this event is significant ------ not just what it is, but why the reader should care right now.
 
 ```markdown
 ## Why This Matters
 
-[ANSWER-FIRST] [Event] matters because [core reason — be specific and opinionated].
+[ANSWER-FIRST] [Event] matters because [core reason ------ be specific and opinionated].
 
 [2-3 paragraphs of analysis covering:]
 
@@ -114,7 +114,7 @@ Do NOT use this template for:
 
 **Significance:** What makes this different from routine updates or announcements? What threshold does it cross?
 
-[INFO-GAIN: your expert analysis or prediction — this is where you earn the reader's attention over generic coverage]
+[INFO-GAIN: your expert analysis or prediction ------ this is where you earn the reader's attention over generic coverage]
 
 **Comparison:**
 | Before [Event] | After [Event] |
@@ -125,10 +125,10 @@ Do NOT use this template for:
 ```
 
 **Rules:**
-- Be opinionated — "this matters because" not "this might matter"
+- Be opinionated ------ "this matters because" not "this might matter"
 - Compare to a previous event or baseline so readers understand scale
 - Include at least one data point for context
-- The [INFO-GAIN] here is your unique perspective — make it count
+- The [INFO-GAIN] here is your unique perspective ------ make it count
 
 ---
 
@@ -153,7 +153,7 @@ Do NOT use this template for:
 
 [2-3 sentences explaining the implication with concrete examples]
 
-[INFO-GAIN: prediction or non-obvious implication based on expertise — "What most coverage is missing is..."]
+[INFO-GAIN: prediction or non-obvious implication based on expertise ------ "What most coverage is missing is..."]
 
 [INTERNAL-LINK: link to your existing content that helps readers understand the underlying concepts]
 ```
@@ -175,9 +175,9 @@ Do NOT use this template for:
 
 [ANSWER-FIRST] Here are [N] steps to take in response to [event], ordered by urgency.
 
-1. **[Immediate — today/this week]:** [Specific action with brief explanation]
-2. **[Short-term — this month]:** [Specific action with brief explanation]
-3. **[Medium-term — this quarter]:** [Specific action with brief explanation]
+1. **[Immediate ------ today/this week]:** [Specific action with brief explanation]
+2. **[Short-term ------ this month]:** [Specific action with brief explanation]
+3. **[Medium-term ------ this quarter]:** [Specific action with brief explanation]
 4. **[If applicable]:** [Specific action with brief explanation]
 5. **[If applicable]:** [Specific action with brief explanation]
 
@@ -189,7 +189,7 @@ Do NOT use this template for:
 ```
 
 **Rules:**
-- Order by urgency — what should they do today vs. this quarter?
+- Order by urgency ------ what should they do today vs. this quarter?
 - Be specific enough that the reader can act without further research
 - Include "do NOT" items to prevent overreaction (shows credibility)
 - Link to your own content that helps them take action
@@ -217,7 +217,7 @@ Do NOT use this template for:
 
 **Rules:**
 - This section is where you demonstrate strategic thinking
-- Connect to 1-2 broader trends maximum — don't overextend
+- Connect to 1-2 broader trends maximum ------ don't overextend
 - End with a forward-looking statement (prediction or question to watch)
 
 ---
@@ -229,17 +229,17 @@ Do NOT use this template for:
 ```markdown
 ## Frequently Asked Questions
 
-### [Question 1 — the most obvious question about the event]?
+### [Question 1 ------ the most obvious question about the event]?
 
 [ANSWER-FIRST] [Direct answer in 1-2 sentences]. [Brief supporting detail].
 
-### [Question 2 — practical question about what to do]?
+### [Question 2 ------ practical question about what to do]?
 
 [ANSWER-FIRST] [Direct answer in 1-2 sentences]. [Brief supporting detail].
 
 [INTERNAL-LINK: link to detailed how-to content if relevant]
 
-### [Question 3 — forward-looking question about what happens next]?
+### [Question 3 ------ forward-looking question about what happens next]?
 
 [ANSWER-FIRST] [Direct answer in 1-2 sentences]. [Brief supporting detail].
 
@@ -250,7 +250,7 @@ Do NOT use this template for:
 - Use questions people are actually searching for right now
 - Answers must be self-contained and extractable for Featured Snippets
 - Keep answers to 40-60 words for snippet optimization
-- Only 3 questions — speed over comprehensiveness for this template
+- Only 3 questions ------ speed over comprehensiveness for this template
 
 ---
 
@@ -259,10 +259,10 @@ Do NOT use this template for:
 ```markdown
 ## Sources
 
-- [Source 1 title]([URL]) — [Organization], [Date]
-- [Source 2 title]([URL]) — [Organization], [Date]
-- [Source 3 title]([URL]) — [Organization], [Date]
-- [Source 4 title]([URL]) — [Organization], [Date]
+- [Source 1 title]([URL]) ------ [Organization], [Date]
+- [Source 2 title]([URL]) ------ [Organization], [Date]
+- [Source 3 title]([URL]) ------ [Organization], [Date]
+- [Source 4 title]([URL]) ------ [Organization], [Date]
 ```
 
 **Rules:**
@@ -291,3 +291,4 @@ Before publishing, verify:
 - [ ] Analysis is opinionated and differentiated from generic coverage
 - [ ] "Do NOT" section included to prevent overreaction
 - [ ] Content is under 1,200 words (resist the urge to over-explain)
+

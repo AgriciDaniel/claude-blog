@@ -21,7 +21,7 @@ sub-skill.
 | `/blog:outline <topic>` | blog-outline | SERP-informed outline generation |
 | `/blog:seo-check <file>` | blog-seo-check | Post-writing SEO validation |
 | `/blog:schema <file>` | blog-schema | Generate JSON-LD schema markup |
-│ `/blog:repurpose <file>` | blog-repurpose | Repurpose content for other platforms |
+-- `/blog:repurpose <file>` | blog-repurpose | Repurpose content for other platforms |
 | `/blog:geo <file>` | blog-geo | AI citation optimization audit |
 | `/blog:audit [directory]` | blog-audit | Full-site blog health assessment |
 | `/blog:update <file>` | blog-rewrite | Freshness update (alias for rewrite) |
@@ -547,4 +547,5 @@ User Input                        Routes To
 
 If no sub-command is provided, the orchestrator asks which action the user
 needs.
+
 

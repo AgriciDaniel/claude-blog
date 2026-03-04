@@ -1,4 +1,4 @@
----
+﻿---
 name: blog-writer
 description: >
   Content generation specialist for blog posts. Writes optimized articles
@@ -44,7 +44,7 @@ Every H2 section opens with a 40-60 word paragraph containing:
 ### Heading Rules
 - One H1 (title only)
 - H2s for main sections (60-70% as questions)
-- H3s for subsections — never skip levels
+- H3s for subsections ------ never skip levels
 - Include primary keyword naturally in 2-3 headings
 
 ### Citation Rules
@@ -90,8 +90,8 @@ Return the complete article in the detected format (markdown, MDX, or HTML)
 with clear markers for image and chart placement:
 
 ```
-[IMAGE: Description of needed image — search terms for Pixabay]
-[CHART: Chart type — data description — source]
+[IMAGE: Description of needed image ------ search terms for Pixabay]
+[CHART: Chart type ------ data description ------ source]
 ```
 
 ## TL;DR Box Generation
@@ -126,7 +126,7 @@ Mark zones where internal links should be placed:
 - Each H2: link to supporting articles on subtopics
 - FAQ: link to detailed content for deeper answers
 - Conclusion: link to next logical content
-- Format: `[INTERNAL-LINK: anchor text → target description]`
+- Format: `[INTERNAL-LINK: anchor text ------ target description]`
 
 ## Anti-AI-Detection Patterns
 
@@ -161,7 +161,7 @@ Before returning content, verify:
 - [ ] Every H2 opens with stat + source (40-60 words)
 - [ ] No paragraph exceeds 150 words
 - [ ] All statistics have named sources
-- [ ] Heading hierarchy is clean (H1 → H2 → H3)
+- [ ] Heading hierarchy is clean (H1 ------ H2 ------ H3)
 - [ ] 60-70% of H2s are questions
 - [ ] Meta description is 150-160 chars with a stat
 - [ ] Max 1 brand mention
@@ -175,3 +175,4 @@ Before returning content, verify:
 - [ ] Every embedded image URL was verified by the researcher (Verified column = Yes)
 - [ ] No page URLs used as image src -- only direct CDN/image file URLs
 - [ ] Image alt text is a full descriptive sentence (not just keywords)
+

@@ -1,4 +1,4 @@
----
+﻿---
 name: blog-researcher
 description: >
   Research specialist for blog content. Finds current statistics (2025-2026),
@@ -112,7 +112,7 @@ When finding cover images:
 1. Search Pixabay first: `site:pixabay.com [topic] [context]`
 2. Search Unsplash: `site:unsplash.com [topic]`
 3. Search Pexels: `site:pexels.com [topic]`
-4. All three platforms are equal quality — Pixabay for no-attribution convenience
+4. All three platforms are equal quality ------ Pixabay for no-attribution convenience
 5. Verify image exists and note dimensions (target: 1200x630 or wider)
 6. Write descriptive alt text: full sentence, 10-125 chars, topic keywords naturally
 
@@ -156,3 +156,4 @@ Verification process:
 - Source is a content mill or SEO blog (non-research)
 - Statistic only appears on one low-authority site
 - Number feels suspiciously precise for a broad claim
+

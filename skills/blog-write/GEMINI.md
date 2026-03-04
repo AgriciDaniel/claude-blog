@@ -4,22 +4,22 @@ Writes complete blog articles from a topic, brief, or outline. Every article
 follows the 6 pillars of dual optimization (Google rankings + AI citations).
 
 **Key references:**
-- `blog/references/content-templates.md` вЂ” Template selection guide and usage
-- `blog/references/quality-scoring.md` вЂ” 5-category scoring (Content 30, SEO 25, E-E-A-T 15, Technical 15, AI Citation 15)
-- `blog/references/eeat-signals.md` вЂ” Experience, expertise, authority, trust markers
-- `blog/references/internal-linking.md` вЂ” Linking strategy and anchor text rules
-- `blog/references/visual-media.md` вЂ” Image sourcing and chart styling
+- `blog/references/content-templates.md` ------ Template selection guide and usage
+- `blog/references/quality-scoring.md` ------ 5-category scoring (Content 30, SEO 25, E-E-A-T 15, Technical 15, AI Citation 15)
+- `blog/references/eeat-signals.md` ------ Experience, expertise, authority, trust markers
+- `blog/references/internal-linking.md` ------ Linking strategy and anchor text rules
+- `blog/references/visual-media.md` ------ Image sourcing and chart styling
 
 ## Workflow
 
 ### Phase 1: Topic Understanding
 
-1. **Clarify the topic** вЂ” If the user provides just a topic, ask:
+1. **Clarify the topic** ------ If the user provides just a topic, ask:
    - Target audience (who is this for?)
    - Primary keyword / search intent
    - Desired word count (default: 2,000-2,500 words)
-   - Platform/format (MDX, markdown, HTML вЂ” auto-detect if in a project)
-2. **If a brief exists** вЂ” Load it and skip to Phase 1.5
+   - Platform/format (MDX, markdown, HTML ------ auto-detect if in a project)
+2. **If a brief exists** ------ Load it and skip to Phase 1.5
 
 ### Phase 1.5: Template Selection
 
@@ -41,10 +41,10 @@ Select the appropriate content template from the 12 templates in `blog/templates
    | Survey results, experiment, original data | `data-research` |
    | Q&A, knowledge base, "What is X" | `faq-knowledge` |
 
-2. **Load the matching template** вЂ” Read from `blog/templates/<type>.md`
-3. **Adapt the outline** вЂ” Use the template's section structure, heading patterns,
+2. **Load the matching template** ------ Read from `blog/templates/<type>.md`
+3. **Adapt the outline** ------ Use the template's section structure, heading patterns,
    and word count guidance to shape Phase 3's outline
-4. **Fallback** вЂ” If no template clearly fits, use the generic outline structure
+4. **Fallback** ------ If no template clearly fits, use the generic outline structure
    in Phase 3 below. Inform the user which template was selected (or that none matched).
 
 See `blog/references/content-templates.md` for detailed selection criteria and intent mapping.
@@ -82,14 +82,14 @@ Create a structured outline before writing. If a template was loaded in Phase 1.
 adapt this skeleton to match the template's section structure:
 
 ```
-# [Title as Question вЂ” Include Primary Keyword]
+# [Title as Question ------ Include Primary Keyword]
 
 ## Introduction (100-150 words)
 - Hook with surprising statistic
 - Problem/opportunity statement
 - What the reader will learn
 
-> **TL;DR:** [40-60 word standalone summary вЂ” placeholder]
+> **TL;DR:** [40-60 word standalone summary ------ placeholder]
 
 ## H2: [Question Format] (300-400 words)
 - Answer-first paragraph (40-60 words with stat + source)
@@ -97,14 +97,14 @@ adapt this skeleton to match the template's section structure:
 - [Image placement]
 - Practical advice
 - [CITATION CAPSULE placeholder]
-- [INTERNAL-LINK: anchor text в†’ target description]
+- [INTERNAL-LINK: anchor text ------ target description]
 
 ## H2: [Question Format] (300-400 words)
 - Answer-first paragraph
 - [Chart: type + data description]
 - Analysis and implications
 - [CITATION CAPSULE placeholder]
-- [INTERNAL-LINK: anchor text в†’ target description]
+- [INTERNAL-LINK: anchor text ------ target description]
 
 ## H2: [Statement for Variety] (300-400 words)
 - Answer-first paragraph
@@ -117,19 +117,19 @@ adapt this skeleton to match the template's section structure:
 - [Chart: type + data description]
 - Step-by-step guidance
 - [CITATION CAPSULE placeholder]
-- [INTERNAL-LINK: anchor text в†’ target description]
+- [INTERNAL-LINK: anchor text ------ target description]
 
 ## H2: [Question Format] (200-300 words)
 - Answer-first paragraph
 - Forward-looking analysis
 
 ## FAQ Section (3-5 questions, 40-60 words each answer)
-- [INTERNAL-LINK: anchor text в†’ detailed content]
+- [INTERNAL-LINK: anchor text ------ detailed content]
 
 ## Conclusion (100-150 words)
 - Key takeaways (bulleted)
 - Call to action
-- [INTERNAL-LINK: anchor text в†’ next logical content]
+- [INTERNAL-LINK: anchor text ------ next logical content]
 ```
 
 Present the outline to the user for approval before writing.
@@ -143,7 +143,7 @@ before/after comparisons):
 2. Invoke `blog-chart` sub-skill with: chart type, title, data values, source, platform format
 3. Embed the returned SVG directly in the post within a `<figure>` wrapper
 4. Target 2-4 charts per 2,000-word post
-5. Distribute charts evenly вЂ” never cluster them
+5. Distribute charts evenly ------ never cluster them
 
 See `blog/references/visual-media.md` for chart type selection and styling rules.
 
@@ -181,7 +181,7 @@ Immediately after the introduction (before the first H2 body section), add a TL;
 
 Requirements:
 - 40-60 words, no more
-- Must be self-contained вЂ” understandable without reading the article
+- Must be self-contained ------ understandable without reading the article
 - Include 1 specific statistic with source name
 - State the key finding, recommendation, or answer
 - Place as a blockquote directly after the introduction paragraph
@@ -208,11 +208,11 @@ not available elsewhere.
 
 Tag each with a comment or visible marker:
 
-- `[ORIGINAL DATA]` вЂ” Proprietary surveys, experiments, A/B test results, case
+- `[ORIGINAL DATA]` ------ Proprietary surveys, experiments, A/B test results, case
   study metrics the author collected first-hand
-- `[PERSONAL EXPERIENCE]` вЂ” First-hand observations, lessons learned from direct
+- `[PERSONAL EXPERIENCE]` ------ First-hand observations, lessons learned from direct
   involvement, "when we tried X, Y happened" narratives
-- `[UNIQUE INSIGHT]` вЂ” Analysis others haven't made, contrarian perspectives
+- `[UNIQUE INSIGHT]` ------ Analysis others haven't made, contrarian perspectives
   backed by data, novel connections between existing research
 
 Placement:
@@ -229,7 +229,7 @@ in the Content Quality scoring category (see `blog/references/quality-scoring.md
 
 #### 5e. Citation Capsules
 
-For each major H2 section, generate a citation capsule вЂ” a 40-60 word self-contained
+For each major H2 section, generate a citation capsule ------ a 40-60 word self-contained
 passage designed so AI systems can extract and quote it directly.
 
 Requirements per capsule:
@@ -255,20 +255,20 @@ Mark internal linking opportunities throughout the article using placeholder
 notation. The user (or a follow-up pass) will resolve these to actual URLs.
 
 Zone placement:
-- **Introduction** вЂ” Link to related pillar content or topic hub
-- **Each H2 section** вЂ” Link to supporting articles, deeper dives, related tools
-- **FAQ section** вЂ” Link answers to detailed content that expands on the answer
-- **Conclusion** вЂ” Link to the next logical piece of content the reader should consume
+- **Introduction** ------ Link to related pillar content or topic hub
+- **Each H2 section** ------ Link to supporting articles, deeper dives, related tools
+- **FAQ section** ------ Link answers to detailed content that expands on the answer
+- **Conclusion** ------ Link to the next logical piece of content the reader should consume
 
 Format:
 ```markdown
-[INTERNAL-LINK: anchor text в†’ target description]
+[INTERNAL-LINK: anchor text ------ target description]
 ```
 
 Example:
 ```markdown
 For a deeper dive into keyword clustering, see our
-[INTERNAL-LINK: complete guide to keyword clustering в†’ pillar page on keyword research methodology].
+[INTERNAL-LINK: complete guide to keyword clustering ------ pillar page on keyword research methodology].
 ```
 
 Target 5-10 internal link zones per 2,000-word post. Use descriptive anchor text
@@ -284,19 +284,19 @@ anchor text rules and linking strategy.
 #### 5h. Heading Rules
 - One H1 (title only)
 - H2s for main sections (60-70% as questions)
-- H3s for subsections only вЂ” never skip levels
+- H3s for subsections only ------ never skip levels
 - Include primary keyword naturally in 2-3 headings
 
 #### 5i. Image Embedding
 
 Standard markdown:
 ```markdown
-![Descriptive alt text вЂ” topic keywords naturally](https://cdn.pixabay.com/photo/...)
+![Descriptive alt text ------ topic keywords naturally](https://cdn.pixabay.com/photo/...)
 ```
 
 MDX with Next.js Image (if detected):
 ```mdx
-![Descriptive alt text вЂ” topic keywords naturally](https://cdn.pixabay.com/photo/...)
+![Descriptive alt text ------ topic keywords naturally](https://cdn.pixabay.com/photo/...)
 ```
 
 - Place images after H2 headings, before body text
@@ -373,16 +373,16 @@ Before delivering, verify:
 14. No AI-detectable phrases from banned list (see `agents/blog-writer.md`)
 
 #### Burstiness and Naturalness Check
-15. **Sentence length variance** вЂ” Verify a mix of short (8-word) and long (25-word) sentences. Uniform sentence length signals AI authorship.
-16. **Banned AI phrase scan** вЂ” Check for and remove:
+15. **Sentence length variance** ------ Verify a mix of short (8-word) and long (25-word) sentences. Uniform sentence length signals AI authorship.
+16. **Banned AI phrase scan** ------ Check for and remove:
     - "in today's digital landscape", "it's important to note", "dive into"
     - "game-changer", "navigate the landscape", "revolutionize", "seamlessly"
     - "cutting-edge", "harness the power of", "leverage" (as verb)
     - "delve", "crucial", "elevate", "foster", "landscape" (overused)
     - "multifaceted", "robust", "tapestry", "embark"
     - Full list in `agents/blog-writer.md`
-17. **Contractions** вЂ” Verify natural use of contractions ("it's", "we've", "don't", "isn't"). Formal AI prose avoids contractions; natural writing uses them.
-18. **Rhetorical questions** вЂ” Verify at least one rhetorical question every 200-300 words to break up declarative patterns.
+17. **Contractions** ------ Verify natural use of contractions ("it's", "we've", "don't", "isn't"). Formal AI prose avoids contractions; natural writing uses them.
+18. **Rhetorical questions** ------ Verify at least one rhetorical question every 200-300 words to break up declarative patterns.
 
 ### Phase 7: Delivery
 
@@ -392,14 +392,14 @@ Present the completed article with a summary:
 ## Blog Post Complete: [Title]
 
 ### Template Used
-- [Template name] (or "generic outline вЂ” no template matched")
+- [Template name] (or "generic outline ------ no template matched")
 
 ### Statistics
 - [N] sourced statistics from tier 1-3 sources
 - [N] unique sources cited
 
 ### Visual Elements
-- Cover image: [source вЂ” Pixabay/Unsplash/Pexels or generated SVG]
+- Cover image: [source ------ Pixabay/Unsplash/Pexels or generated SVG]
 - [N] inline images (Pixabay/Unsplash/Pexels)
 - [N] SVG charts (types: bar, lollipop, donut, line)
 
@@ -427,5 +427,6 @@ Present the completed article with a summary:
 - Add internal links to your existing content
 - Run `/blog analyze <file>` to verify quality score
 ```
+
 
 

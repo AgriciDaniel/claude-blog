@@ -21,7 +21,7 @@ Chart Request:
 
 ## Chart Type Selection
 
-Select based on the data pattern. Diversity is mandatory вЂ” never repeat a
+Select based on the data pattern. Diversity is mandatory ------ never repeat a
 type within one post.
 
 | Data Pattern | Best Chart Type |
@@ -231,5 +231,6 @@ Wrap every chart in a `<figure>` element:
 - [ ] Data values match the source data exactly
 - [ ] Color palette uses only approved colors
 - [ ] ViewBox is `0 0 560 380` (standard) or justified alternative
+
 
 

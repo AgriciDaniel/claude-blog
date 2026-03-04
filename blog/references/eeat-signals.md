@@ -1,4 +1,4 @@
-# Author E-E-A-T Requirements
+﻿# Author E-E-A-T Requirements
 
 ## Named Author Attribution
 
@@ -255,8 +255,8 @@ Trust is evaluated FIRST. If trust is low, the overall E-E-A-T score is capped
 regardless of how strong the other three signals are.
 
 ```
-Trust Assessment → If Low → Cap at "Low E-E-A-T"
-                 → If Adequate → Evaluate E + E + A → Combined Score
+Trust Assessment ------ If Low ------ Cap at "Low E-E-A-T"
+                 ------ If Adequate ------ Evaluate E + E + A ------ Combined Score
 ```
 
 ---
@@ -299,3 +299,4 @@ first-hand testing, original photography, and trust signals all matter.
 | How-To Guide | Author's own screenshots, tested steps, last-updated date |
 | News Article | Named journalist, 2+ sources, publication editorial policy |
 | Opinion/Editorial | Author credentials for topic, "Opinion" label, evidence |
+

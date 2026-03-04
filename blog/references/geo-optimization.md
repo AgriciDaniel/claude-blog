@@ -1,4 +1,4 @@
-# GEO/AEO Optimization -- AI Citation Strategies
+﻿# GEO/AEO Optimization -- AI Citation Strategies
 
 ## Core GEO Research
 
@@ -18,11 +18,11 @@ Traditional keyword stuffing performs **worse than baseline** in generative engi
 ### Cross-Platform Citation Divergence
 
 - Only 12% of sources cited match across ChatGPT, Perplexity, and AI Overviews
-  (Digital Bloom, 2025) — each platform has distinct citation preferences
-- 80% of LLM citations don't rank in Google's top 100 (Ahrefs, Aug 2025) — traditional
+  (Digital Bloom, 2025) ------ each platform has distinct citation preferences
+- 80% of LLM citations don't rank in Google's top 100 (Ahrefs, Aug 2025) ------ traditional
   SEO rankings are a poor predictor of AI citation
 - Brands are 6.5x more likely to be cited through third-party sources than their own
-  domains (AirOps, Oct 2025) — earned media dominates AI visibility
+  domains (AirOps, Oct 2025) ------ earned media dominates AI visibility
 
 ### Kevin Indig's AI Search Pipeline (Jan 5, 2026)
 Three critical stages:
@@ -62,7 +62,7 @@ Each AI platform has distinct content preferences:
 | AI Overviews | Google properties | 23% of citations favor Google-owned sources |
 
 **Perplexity content decay**: Citation relevance begins declining 2-3 days
-post-publication — Perplexity heavily weights recency, making it the most
+post-publication ------ Perplexity heavily weights recency, making it the most
 freshness-dependent platform. Content older than 1 week sees sharp citation drops.
 
 ## Content Freshness Requirements
@@ -93,7 +93,7 @@ freshness-dependent platform. Content older than 1 week sees sharp citation drop
 - Optimization: keywords in titles/transcripts, Q&A-style, 10+ min, public transcripts
 
 **Reddit**:
-- Citations surged 1.30% → 7.15% (450% growth)
+- Citations surged 1.30% ------ 7.15% (450% growth)
 - Google's $60M annual API deal
 - 2.2-21% of AI Overview citations by query type
 - Strategy: Authentic participation in 3-5 subreddits BEFORE any promotional content
@@ -110,7 +110,7 @@ freshness-dependent platform. Content older than 1 week sees sharp citation drop
 
 ### Budget Allocation
 Recommended: **40% owned content / 60% earned media**
-(Most companies allocate 90/10 — this is wrong for GEO)
+(Most companies allocate 90/10 ------ this is wrong for GEO)
 
 88-92% of AI citations come from off-site signals, not on-page optimization alone.
 
@@ -134,13 +134,13 @@ Use SSR, SSG, or ISR. Test by disabling JS and reloading.
 - GPTBot traffic grew 305% YoY
 - PerplexityBot traffic grew 157,490% YoY (from near-zero baseline)
 - 65% of AI bot hits target content published within the past year (Seer Interactive)
-  — freshness is a retrieval signal, not just a citation signal
+  ------ freshness is a retrieval signal, not just a citation signal
 
 ### Performance Requirements for AI Retrieval
 - Server response time under 200ms TTFB (Kevin Indig pipeline)
 - Maximum 600ms TTFB before AI crawlers time out and skip the page
 - Crawlers implement 3-5 second hard timeouts (Getpassionfruit)
-- Core Web Vitals are a constraint, not a growth lever — good CWV doesn't reliably
+- Core Web Vitals are a constraint, not a growth lever ------ good CWV doesn't reliably
   outperform, but severe LCP failure creates disadvantage (Search Engine Land, 107,352 pages)
 - 46% of AI agent visits begin in reading mode (text-only, no JS/CSS)
 - Slow pages are excluded from AI citation candidate pools entirely
@@ -171,7 +171,7 @@ Keep under 10KB, plain URLs with brief comments.
 - 92% of Gemini answers provide no clickable citations
 - Perplexity visits ~10 pages per query but cites only 3-4
 
-**Implication**: Optimizing for retrieval is critical — content must enter the
+**Implication**: Optimizing for retrieval is critical ------ content must enter the
 candidate set before citation is possible.
 
 ## GEO Case Study Results
@@ -203,10 +203,10 @@ band receives significantly more AI citations across all major platforms.
 
 ### Flesch Score & AI Citation Rates
 - **Flesch 60-75 = 31% more AI citations** (Spotlight, 18,000 monitored prompts)
-- Teams improving Flesch from 52→68 saw parallel citation lifts within two
+- Teams improving Flesch from 52------68 saw parallel citation lifts within two
   crawl windows
 - Content that is too complex (Flesch <50) or too simple (Flesch >80) gets
-  fewer citations — AI systems prefer fluent, authoritative writing
+  fewer citations ------ AI systems prefer fluent, authoritative writing
 
 ### Citation Position Bias
 - **44.2% of all LLM citations come from the first 30% of text** (Growth Memo,
@@ -244,3 +244,4 @@ cited by ChatGPT, Perplexity, AND Copilot rank in Google's top 10.
 - **44%** of AI Overview citations come from 2025 content specifically
 - **50%** of Perplexity citations come from 2025 alone
 - Content older than 3 months sees 3x fewer citations
+

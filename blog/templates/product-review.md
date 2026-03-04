@@ -1,4 +1,4 @@
-# Template: Product Review
+﻿# Template: Product Review
 
 **Description:** First-hand product assessment based on real testing and hands-on experience. Product reviews build trust through transparency, detailed observations, and honest verdicts. They target high-intent commercial search queries where readers are close to a purchase decision.
 
@@ -37,7 +37,7 @@
 # [Product Name] Review ([Year]): [Key Verdict]
 ```
 
-[IMAGE] Hero image of the product in use (your own photo or screenshot, not a press image). Alt text: "[Product Name] — [brief description of what the image shows]."
+[IMAGE] Hero image of the product in use (your own photo or screenshot, not a press image). Alt text: "[Product Name] ------ [brief description of what the image shows]."
 
 ---
 
@@ -67,11 +67,11 @@
 
 **Structure:**
 1. **What the product does** (1-2 sentences): Clear, plain-language explanation of the product's core function
-2. **Why you are reviewing it** (1 sentence): What prompted the review — a common question, reader request, or personal need?
+2. **Why you are reviewing it** (1 sentence): What prompted the review ------ a common question, reader request, or personal need?
 3. **Testing context** (2-3 sentences): How long you used it, in what environment, and for what purpose
 4. **Preview of verdict** (1 sentence): A hint at your overall conclusion to keep the reader engaged
 
-[INFO-GAIN: personal experience] Establish credibility by specifying your exact testing conditions — duration, use case, team size, comparison products, etc.
+[INFO-GAIN: personal experience] Establish credibility by specifying your exact testing conditions ------ duration, use case, team size, comparison products, etc.
 
 [INTERNAL-LINK] If this product fits within a broader category you have covered (e.g., a roundup or pillar page), link to it here.
 
@@ -84,7 +84,7 @@ A quick-scan visual reference before the reader dives into details. This section
 ```
 | Pros | Cons |
 |------|------|
-| [Pro 1 — specific, not generic] | [Con 1 — specific, not generic] |
+| [Pro 1 ------ specific, not generic] | [Con 1 ------ specific, not generic] |
 | [Pro 2] | [Con 2] |
 | [Pro 3] | [Con 3] |
 | [Pro 4] | [Con 4 (if applicable)] |
@@ -104,7 +104,7 @@ A quick-scan visual reference before the reader dives into details. This section
 
 **Structure:**
 1. **Testing duration** (1 sentence): How long you used the product (e.g., "I used [Product] daily for 6 weeks")
-2. **Testing environment** (1-2 sentences): Your setup — device, OS, team size, workflow context
+2. **Testing environment** (1-2 sentences): Your setup ------ device, OS, team size, workflow context
 3. **What you tested** (2-3 sentences): Which features you focused on and why
 4. **Comparison baseline** (1 sentence): What you compared against (previous tool, competitor, manual process)
 
@@ -127,7 +127,7 @@ Each feature gets its own H2 section, framed as a question the reader is likely 
 **Structure per section:**
 1. **Feature verdict** (1 sentence): Is this feature good, great, mediocre, or lacking?
 2. **What it does** (1-2 sentences): Brief explanation for readers who may not know the feature
-3. **First-hand observation** (3-5 sentences): Your specific experience using this feature — what worked, what did not, what surprised you
+3. **First-hand observation** (3-5 sentences): Your specific experience using this feature ------ what worked, what did not, what surprised you
 4. **Comparison point** (1-2 sentences): How this compares to an alternative product's version of the same feature
 5. **Who cares about this** (1 sentence): Which type of user would weigh this feature most heavily?
 
@@ -205,7 +205,7 @@ List 2-3 alternatives, each with:
 3. **Weaknesses summary** (1-2 sentences): The 1-2 most significant shortcomings
 4. **Clear recommendation** (2-3 sentences): State exactly who should buy this and who should not. Use conditional language: "If you [specific need], [Product] is [verdict]. If you [different need], consider [Alternative] instead."
 
-[INFO-GAIN: personal experience] End with a personal note — would YOU continue using this product? Why or why not?
+[INFO-GAIN: personal experience] End with a personal note ------ would YOU continue using this product? Why or why not?
 
 ---
 
@@ -214,7 +214,7 @@ List 2-3 alternatives, each with:
 [FAQ] Source questions from People Also Ask results, product forums, Reddit threads, and common pre-purchase questions.
 
 **Guidelines:**
-- Focus on purchase-decision questions (not general category questions — save those for the pillar page)
+- Focus on purchase-decision questions (not general category questions ------ save those for the pillar page)
 - Each answer should be 40-80 words and lead with a direct answer
 - Include at least one pricing question and one comparison question
 
@@ -247,7 +247,7 @@ List 2-3 alternatives, each with:
 ## Pre-Publish Checklist
 
 - [ ] Total word count is 1,500-2,000 words
-- [ ] All [ANSWER-FIRST] prompts have been fulfilled — every section leads with the answer
+- [ ] All [ANSWER-FIRST] prompts have been fulfilled ------ every section leads with the answer
 - [ ] All [STAT] markers replaced with real, cited statistics or measured data from testing
 - [ ] All [IMAGE] markers replaced with your own screenshots or product photos (not press images)
 - [ ] All [INFO-GAIN] markers replaced with specific, first-hand observations from real testing
@@ -261,3 +261,4 @@ List 2-3 alternatives, each with:
 - [ ] Affiliate disclosures (if applicable) are clearly visible
 - [ ] Meta title includes "[Product Name] Review [Year]"
 - [ ] Meta description is 150-160 characters with verdict hint and CTA
+

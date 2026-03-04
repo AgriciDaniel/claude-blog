@@ -68,8 +68,8 @@ Author schema with stable &#64;id for cross-referencing:
 ```
 
 Optional properties (include when available):
-- `alumniOf` вЂ” Educational institution (Organization type)
-- `worksFor` вЂ” Employer (reference to Organization &#64;id if same entity)
+- `alumniOf` ------ Educational institution (Organization type)
+- `worksFor` ------ Employer (reference to Organization &#64;id if same entity)
 
 ### Step 4: Generate Organization Schema
 
@@ -187,12 +187,12 @@ Image requirements:
 Check for deprecated schema types and apply validation rules:
 
 **NEVER use these deprecated types:**
-- **HowTo** вЂ” Deprecated September 2023 (Google no longer shows rich results)
-- **SpecialAnnouncement** вЂ” Deprecated July 2025
-- **Practice Problem** вЂ” Deprecated (education markup)
-- **Dataset** вЂ” Deprecated for general use
-- **Sitelinks Search Box** вЂ” Deprecated
-- **Q&A** вЂ” Deprecated January 2026 (distinct from FAQPage)
+- **HowTo** ------ Deprecated September 2023 (Google no longer shows rich results)
+- **SpecialAnnouncement** ------ Deprecated July 2025
+- **Practice Problem** ------ Deprecated (education markup)
+- **Dataset** ------ Deprecated for general use
+- **Sitelinks Search Box** ------ Deprecated
+- **Q&A** ------ Deprecated January 2026 (distinct from FAQPage)
 
 **Validation checks:**
 1. All &#64;id references resolve to entities within the &#64;graph
@@ -230,17 +230,18 @@ Combine all schemas into a single `<script>` tag using the &#64;graph pattern:
 ```
 
 **&#64;graph pattern benefits:**
-- Single script tag instead of multiple вЂ” cleaner HTML
+- Single script tag instead of multiple ------ cleaner HTML
 - Entity linking via stable &#64;id references (e.g., author references Person by &#64;id)
 - Google and AI systems parse &#64;graph arrays correctly
 - Easier to maintain and update as a single block
 
 **Output options:**
-- **Embedded HTML** вЂ” Ready to paste into `<head>` or before `</body>`
-- **Standalone JSON** вЂ” For CMS schema fields or API injection
-- **MDX component** вЂ” If the project uses MDX, wrap in a component
+- **Embedded HTML** ------ Ready to paste into `<head>` or before `</body>`
+- **Standalone JSON** ------ For CMS schema fields or API injection
+- **MDX component** ------ If the project uses MDX, wrap in a component
 
 Save the generated schema to the blog post file or to a separate schema file
 as the user prefers.
+
 
 

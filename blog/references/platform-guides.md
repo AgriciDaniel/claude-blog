@@ -1,4 +1,4 @@
-# Platform-Specific Output Formatting
+﻿# Platform-Specific Output Formatting
 
 Adapt blog output to each platform's requirements. Detect the platform
 from project structure (see `SKILL.md` Platform Detection table) and apply
@@ -553,7 +553,7 @@ Use the Custom HTML block:
 | Focus keyword | SEO panel below editor | Primary target keyword |
 | SEO title | SEO panel | Title tag (if different from H1) |
 | Meta description | SEO panel | 150-160 chars, fact-dense |
-| Canonical URL | SEO panel → Advanced | Prevents duplicate content |
+| Canonical URL | SEO panel ------ Advanced | Prevents duplicate content |
 | OG image | Social tab in SEO panel | Social sharing preview |
 | OG title | Social tab | Title for social shares |
 | OG description | Social tab | Description for social shares |
@@ -1110,3 +1110,4 @@ Place in `<head>` for FAQPage:
 5. **Sitemap at /sitemap.xml** -- helps all crawlers discover content
 6. **OG meta tags** -- required for social sharing previews
 7. **dateModified in schema** -- critical for freshness signals
+

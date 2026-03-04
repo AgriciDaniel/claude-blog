@@ -1,4 +1,4 @@
-# Template: Thought Leadership
+﻿# Template: Thought Leadership
 
 **Description:** Opinion and analysis piece that challenges conventional wisdom with a data-backed contrarian angle. Thought leadership content positions the author as an independent thinker, generates discussion and backlinks, and attracts an engaged audience that values original perspectives.
 
@@ -34,7 +34,7 @@
 - "[Number] Reasons [Popular Belief] Is Holding You Back"
 
 **Guidelines:**
-- The title must clearly signal a contrarian position — ambiguity kills click-through
+- The title must clearly signal a contrarian position ------ ambiguity kills click-through
 - Include the conventional wisdom being challenged so the reader knows the stakes
 - Parenthetical or colon structure works well to deliver both the problem and the promise
 - Keep under 65 characters for full SERP display (the parenthetical can extend slightly)
@@ -49,7 +49,7 @@
 
 ### Hook (100-150 words)
 
-[ANSWER-FIRST] Open with your bold contrarian statement in the very first sentence. Do not build up to it — lead with the punch. The reader should know exactly what you are arguing within 10 seconds.
+[ANSWER-FIRST] Open with your bold contrarian statement in the very first sentence. Do not build up to it ------ lead with the punch. The reader should know exactly what you are arguing within 10 seconds.
 
 **Structure:**
 1. **Bold contrarian statement** (1-2 sentences): State your position clearly and without hedging. Be specific about what you disagree with.
@@ -64,13 +64,13 @@
 
 ### The Conventional View (200-300 words)
 
-[ANSWER-FIRST] Fairly and accurately summarize the mainstream position in the first two sentences. Do not strawman — the stronger you present the opposing view, the more credible your critique will be.
+[ANSWER-FIRST] Fairly and accurately summarize the mainstream position in the first two sentences. Do not strawman ------ the stronger you present the opposing view, the more credible your critique will be.
 
 **Structure:**
 1. **The mainstream position** (2-3 sentences): State what most experts, articles, or practitioners recommend. Cite specific sources if possible.
    - [STAT: data or source supporting the conventional view]
-2. **Why it is popular** (2-3 sentences): Explain the logic behind the conventional wisdom — there are usually good historical reasons it became dominant
-3. **Where it comes from** (2-3 sentences): Trace the origins — is it based on outdated research, a specific context that has changed, or a misinterpretation of data?
+2. **Why it is popular** (2-3 sentences): Explain the logic behind the conventional wisdom ------ there are usually good historical reasons it became dominant
+3. **Where it comes from** (2-3 sentences): Trace the origins ------ is it based on outdated research, a specific context that has changed, or a misinterpretation of data?
 4. **Who advocates for it** (1-2 sentences): Name specific thought leaders, publications, or institutions associated with this view (respectfully)
 
 [INFO-GAIN: unique analysis] Demonstrate that you understand the conventional position deeply. Your critique is only as strong as your representation of what you are critiquing.
@@ -98,9 +98,9 @@
    - **Evidence** (2-3 sentences): The most compelling evidence saved for last
 5. **Synthesis** (1-2 sentences): Tie the three problems together into a coherent critique
 
-[INFO-GAIN: unique analysis] At least one of the three problems MUST be based on original observation — your own data, a pattern you noticed firsthand, or an insight from direct experience. Aggregating other people's arguments is not thought leadership.
+[INFO-GAIN: unique analysis] At least one of the three problems MUST be based on original observation ------ your own data, a pattern you noticed firsthand, or an insight from direct experience. Aggregating other people's arguments is not thought leadership.
 
-[IMAGE] Include a visual that illustrates one of the problems — a failed example, a misleading chart corrected, or a before/after comparison.
+[IMAGE] Include a visual that illustrates one of the problems ------ a failed example, a misleading chart corrected, or a before/after comparison.
 
 ---
 
@@ -112,7 +112,7 @@
 1. **Reframed data** (2-3 sentences): Present the same (or better) data with your alternative interpretation
 2. **Counter-examples** (100-150 words): 2-3 specific examples where the conventional approach failed or the alternative approach succeeded
    - [INFO-GAIN: unique analysis] Include at least one example from your own experience or original research
-3. **Alternative framework** (100-150 words): Propose a new way of thinking about this topic — a mental model, framework, or decision tree that replaces the conventional one
+3. **Alternative framework** (100-150 words): Propose a new way of thinking about this topic ------ a mental model, framework, or decision tree that replaces the conventional one
 4. **Supporting evidence** (50-75 words): Additional data points that validate your framework
    - [STAT: original or underreported statistic]
 
@@ -130,13 +130,13 @@
 [ANSWER-FIRST] Name your alternative approach in the first sentence and state the core principle that makes it different.
 
 **Structure:**
-1. **The alternative** (1-2 sentences): Clear statement of what to do instead — be prescriptive, not vague
+1. **The alternative** (1-2 sentences): Clear statement of what to do instead ------ be prescriptive, not vague
 2. **Core principles** (3-5 bullet points): The key tenets of your approach, each in 1-2 sentences
 3. **Why it works** (2-3 sentences): Connect the principles back to the evidence presented in the previous section
-4. **Proof point** (2-3 sentences): A specific result achieved using this approach — ideally your own
+4. **Proof point** (2-3 sentences): A specific result achieved using this approach ------ ideally your own
    - [STAT: result or outcome metric]
 
-[INFO-GAIN: unique analysis] The alternative approach should be original — not just the inverse of the conventional wisdom but a genuinely different way of thinking about the problem.
+[INFO-GAIN: unique analysis] The alternative approach should be original ------ not just the inverse of the conventional wisdom but a genuinely different way of thinking about the problem.
 
 [INTERNAL-LINK] Link to how-to guides or tutorials that walk the reader through implementing your approach.
 
@@ -155,7 +155,7 @@
 3. **Measurement** (1-2 sentences): How will the reader know if the new approach is working? What metrics should they track?
 4. **Timeline** (1 sentence): Set realistic expectations for when they will see results
 
-[INFO-GAIN: personal experience] Share a specific detail from when you implemented this approach yourself — what was the first thing you changed and what happened?
+[INFO-GAIN: personal experience] Share a specific detail from when you implemented this approach yourself ------ what was the first thing you changed and what happened?
 
 [INTERNAL-LINK] Link to tactical how-to articles, tools, or templates that support implementation.
 
@@ -172,7 +172,7 @@
 4. **Nuance** (1 sentence): A bridging statement that acknowledges complexity without abandoning your core position
 
 **Guidelines:**
-- Do not hedge so much that your entire argument collapses — this section should be honest but bounded
+- Do not hedge so much that your entire argument collapses ------ this section should be honest but bounded
 - Readers respect intellectual honesty more than false certainty
 - This section differentiates genuine thought leadership from clickbait hot takes
 
@@ -211,18 +211,18 @@
 
 **Structure:**
 1. **Core argument restated** (1 sentence): The single most important takeaway, stated with conviction
-2. **What needs to change** (2-3 sentences): The broader shift you are calling for — not just individual behavior but industry or community norms
+2. **What needs to change** (2-3 sentences): The broader shift you are calling for ------ not just individual behavior but industry or community norms
 3. **Vision of the future** (1-2 sentences): What does the world look like if your approach gains adoption?
-4. **Final call to action** (1 sentence): Invite discussion, sharing, or action — end with energy, not a whimper
+4. **Final call to action** (1 sentence): Invite discussion, sharing, or action ------ end with energy, not a whimper
 
-[INTERNAL-LINK] Link to your most relevant related content — the piece you want this audience to read next.
+[INTERNAL-LINK] Link to your most relevant related content ------ the piece you want this audience to read next.
 
 ---
 
 ## Pre-Publish Checklist
 
 - [ ] Total word count is 1,500-2,500 words
-- [ ] All [ANSWER-FIRST] prompts have been fulfilled — every section leads with the answer
+- [ ] All [ANSWER-FIRST] prompts have been fulfilled ------ every section leads with the answer
 - [ ] All [STAT] markers replaced with real, cited statistics (with source and year)
 - [ ] All [VISUAL] markers replaced with actual charts or diagrams (especially the "What the Data Shows" chart)
 - [ ] All [IMAGE] markers replaced with relevant visuals
@@ -233,7 +233,8 @@
 - [ ] The contrarian position is supported by evidence, not just opinion
 - [ ] The caveats section is honest without undermining the core argument
 - [ ] The alternative approach is specific and actionable (not just "do the opposite")
-- [ ] The tone is confident but respectful — persuade, do not antagonize
+- [ ] The tone is confident but respectful ------ persuade, do not antagonize
 - [ ] At least one piece of original data, analysis, or experience is included
 - [ ] Meta title signals the contrarian angle and includes primary keyword
 - [ ] Meta description is 150-160 characters with the hook and a CTA
+

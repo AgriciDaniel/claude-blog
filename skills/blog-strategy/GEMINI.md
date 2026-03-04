@@ -83,7 +83,7 @@ For each pillar, build the full hub-and-spoke cluster model.
 - **Content types**: Pillar guide, supporting posts, comparisons, FAQ
 - **Unique angle**: [What first-hand experience/data can you provide?]
 - **Estimated posts**: [N] to achieve topic coverage
-- **AI citation potential**: [High/Medium/Low] вЂ” [why]
+- **AI citation potential**: [High/Medium/Low] ------ [why]
 ```
 
 #### Cluster Architecture Design
@@ -93,19 +93,19 @@ For each pillar, design the complete hub-and-spoke structure:
 ```
 ### Cluster Architecture: [Pillar Topic]
 
-                    в”Њв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”ђ
-                    в”‚   Pillar Page    в”‚
-                    в”‚   3,000-4,000w   в”‚
-                    в””в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”¬в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”
-                             в”‚
-           в”Њв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”јв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”ђ
-           в”‚                 в”‚                   в”‚
-    в”Њв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв–јв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”ђ   в”Њв”Ђв”Ђв”Ђв”Ђв”Ђв–јв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”ђ   в”Њв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв–јв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”ђ
-    в”‚  Spoke #1   в”‚   в”‚  Spoke #2  в”‚   в”‚   Spoke #3   в”‚
-    в”‚  1,500-2,500в”‚   в”‚  1,500-2,500в”‚  в”‚  1,500-2,500 в”‚
-    в””в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”¬в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”   в””в”Ђв”Ђв”Ђв”Ђв”Ђв”¬в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”   в””в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”¬в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”
-           в”‚                в”‚                   в”‚
-           в””в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”јв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”
+                    ------------------------------------------------------------------------------------------------------------------------
+                    ------   Pillar Page    ------
+                    ------   3,000-4,000w   ------
+                    ------------------------------------------------------------------------------------------------------------------------
+                             ------
+           ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+           ------                 ------                   ------
+    ------------------------------------------------------------------------------------------   ------------------------------------------------------------------------------------   ------------------------------------------------------------------------------------------------
+    ------  Spoke #1   ------   ------  Spoke #2  ------   ------   Spoke #3   ------
+    ------  1,500-2,500------   ------  1,500-2,500------  ------  1,500-2,500 ------
+    ------------------------------------------------------------------------------------------   ------------------------------------------------------------------------------------   ------------------------------------------------------------------------------------------------
+           ------                ------                   ------
+           ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
                     (cross-links between spokes)
 ```
 
@@ -284,7 +284,7 @@ Output format:
 [Template assignments for each piece]
 
 ## Competitive Positioning
-[How we differentiate вЂ” what unique value we bring]
+[How we differentiate ------ what unique value we bring]
 [Competitive AI Citation Map showing gaps to exploit]
 
 ## AI Citation Surface Strategy
@@ -325,13 +325,13 @@ Output format:
 - [ ] Adjust strategy based on data
 
 ## Measurement
-[KPIs and tracking approach вЂ” traditional SEO + AI citation metrics]
+[KPIs and tracking approach ------ traditional SEO + AI citation metrics]
 
 ## Reference Documents
-- `blog/references/internal-linking.md` вЂ” Hub-and-spoke model, anchor text rules
-- `blog/references/distribution-playbook.md` вЂ” Channel tactics and templates
-- `blog/references/geo-optimization.md` вЂ” GEO platform-specific optimization
-- `blog/references/content-templates.md` вЂ” 12 content templates with structures
+- `blog/references/internal-linking.md` ------ Hub-and-spoke model, anchor text rules
+- `blog/references/distribution-playbook.md` ------ Channel tactics and templates
+- `blog/references/geo-optimization.md` ------ GEO platform-specific optimization
+- `blog/references/content-templates.md` ------ 12 content templates with structures
 
 ## Next Steps
 1. Run `/blog calendar` to create the first month's editorial calendar
@@ -339,5 +339,6 @@ Output format:
 3. Run `/blog write` to generate the first article
 4. Set up AI citation monitoring for target queries
 ```
+
 
 

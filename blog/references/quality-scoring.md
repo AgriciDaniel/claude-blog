@@ -1,4 +1,4 @@
-# Blog Quality Scoring Checklist
+﻿# Blog Quality Scoring Checklist
 
 Score each blog post against this checklist. Used by `/blog analyze`.
 
@@ -9,15 +9,15 @@ Score each blog post against this checklist. Used by `/blog analyze`.
 | Depth/comprehensiveness | 7 | Covers topic thoroughly, no major gaps |
 | Readability (Flesch 60-70) | 7 | Flesch 60-70 ideal, 55-75 acceptable; Grade 7-8; Gunning Fog 7-8 |
 | Originality/unique value markers | 5 | Original data, case studies, first-hand experience |
-| Sentence & paragraph structure | 4 | Avg sentence 15-20 words, ≤25% over 20; paragraphs 40-80 words; H2 every 200-300 words |
+| Sentence & paragraph structure | 4 | Avg sentence 15-20 words, ------25% over 20; paragraphs 40-80 words; H2 every 200-300 words |
 | Engagement elements | 4 | TL;DR box, callouts, varied content blocks |
-| Grammar/anti-pattern | 3 | Passive voice ≤10%, AI trigger words ≤5/1K, transition words 20-30%, clean prose |
+| Grammar/anti-pattern | 3 | Passive voice ------10%, AI trigger words ------5/1K, transition words 20-30%, clean prose |
 
 ## SEO Optimization (25 points)
 
 | Check | Points | Pass Criteria |
 |-------|--------|---------------|
-| Heading hierarchy with keywords | 5 | H1 → H2 → H3, no skips, keyword in 2-3 headings, H2 every 200-300 words |
+| Heading hierarchy with keywords | 5 | H1 ------ H2 ------ H3, no skips, keyword in 2-3 headings, H2 every 200-300 words |
 | Title tag (40-60 chars, keyword, power word) | 4 | Front-loaded keyword, positive sentiment, brackets if applicable |
 | Keyword placement/density | 4 | Natural integration (0.5-2%), no stuffing, present in first 100 words |
 | Internal linking (3-10 contextual) | 4 | Descriptive anchor text, bidirectional, related content |
@@ -29,7 +29,7 @@ Score each blog post against this checklist. Used by `/blog analyze`.
 
 | Check | Points | Pass Criteria |
 |-------|--------|---------------|
-| Author attribution (named, with bio) | 4 | Real name, credentials, E-E-A-T bio — not a sales pitch |
+| Author attribution (named, with bio) | 4 | Real name, credentials, E-E-A-T bio ------ not a sales pitch |
 | Source citations (tier 1-3, inline format) | 4 | `([Source](url), year)` format, 8+ unique stats, zero fabricated |
 | Trust indicators (contact, about, transparency) | 4 | Site has contact page, about page, editorial policy |
 | Experience signals (first-person markers) | 3 | "When we tested...", "In our experience...", original photos/data |
@@ -42,7 +42,7 @@ Score each blog post against this checklist. Used by `/blog analyze`.
 | Image optimization (alt text, format, lazy load) | 3 | AVIF/WebP, descriptive alt text, lazy except LCP |
 | Structured data elements | 2 | Tables, lists, comparison blocks for AI extraction |
 | Page speed signals (no render-blocking) | 2 | LCP < 2.5s, no render-blocking JS, fetchpriority on hero |
-| Mobile-friendliness | 2 | Responsive, tap targets 48px+, no horizontal scroll, paragraphs ≤100 words |
+| Mobile-friendliness | 2 | Responsive, tap targets 48px+, no horizontal scroll, paragraphs ------100 words |
 | OG/social meta tags | 2 | og:title, og:description, og:image (1200x630), twitter:card |
 
 ## AI Citation Readiness (15 points)
@@ -73,7 +73,7 @@ When reporting issues, classify by priority:
 
 ### Critical (Must Fix Before Publishing)
 - Fabricated statistics (zero tolerance)
-- Broken heading hierarchy (H1 → H3 skip)
+- Broken heading hierarchy (H1 ------ H3 skip)
 - Paragraphs > 200 words (Yoast red)
 - No source attribution on claims
 - Missing author attribution
@@ -159,3 +159,4 @@ These can be detected programmatically:
 31. FAQ presence (search for "FAQ" or "Frequently Asked")
 32. Table presence with `<thead>` (for AI extraction)
 33. robots.txt AI bot allowance (site-level check)
+

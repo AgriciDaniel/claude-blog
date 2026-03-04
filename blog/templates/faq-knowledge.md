@@ -1,4 +1,4 @@
-# Template: FAQ / Knowledge Base
+﻿# Template: FAQ / Knowledge Base
 
 **Template ID:** faq-knowledge
 **Target Length:** 1,500-2,000 words
@@ -61,22 +61,22 @@ Do NOT use this template for:
 
 [ANSWER-FIRST] [Topic] is [one-sentence definition or description]. [Why it matters in 1 sentence].
 
-[STAT: data point about the topic's relevance — adoption rate, search volume, market size, or frequency of these questions]
+[STAT: data point about the topic's relevance ------ adoption rate, search volume, market size, or frequency of these questions]
 
 This FAQ covers the [N] most common questions about [topic], organized into [N] categories:
 
-1. **[Category 1 Name]** — [What these questions cover]
-2. **[Category 2 Name]** — [What these questions cover]
-3. **[Category 3 Name]** — [What these questions cover]
-4. **[Category 4 Name]** — [What these questions cover]
+1. **[Category 1 Name]** ------ [What these questions cover]
+2. **[Category 2 Name]** ------ [What these questions cover]
+3. **[Category 3 Name]** ------ [What these questions cover]
+4. **[Category 4 Name]** ------ [What these questions cover]
 
-[INFO-GAIN: why this FAQ exists — what gap it fills vs. existing resources, or what unique perspective it brings]
+[INFO-GAIN: why this FAQ exists ------ what gap it fills vs. existing resources, or what unique perspective it brings]
 
 > **Last updated:** [Date]. [How often this page is updated].
 ```
 
 **Rules:**
-- The introduction should be skimmable — readers will jump to their question
+- The introduction should be skimmable ------ readers will jump to their question
 - Include a table of contents via the category list
 - State when the page was last updated (trust signal)
 - Include a stat to establish the topic's relevance
@@ -123,7 +123,7 @@ Foundational questions for newcomers. Each question is an H2.
 
 ### How much does [topic/tool] cost?
 
-[ANSWER-FIRST] [Topic/tool] [pricing summary — free, freemium, paid tiers in one sentence]. [One sentence about what the free tier includes or what the pricing is based on].
+[ANSWER-FIRST] [Topic/tool] [pricing summary ------ free, freemium, paid tiers in one sentence]. [One sentence about what the free tier includes or what the pricing is based on].
 
 [STAT: pricing comparison or value benchmark if relevant]
 
@@ -179,7 +179,7 @@ Functional questions about mechanics and capabilities.
 2. **[Limitation 2]:** [Brief explanation]
 3. **[Limitation 3]:** [Brief explanation]
 
-[INFO-GAIN: honest assessment based on hands-on experience — what the marketing doesn't tell you]
+[INFO-GAIN: honest assessment based on hands-on experience ------ what the marketing doesn't tell you]
 ```
 
 ---
@@ -256,7 +256,7 @@ Questions from experienced users looking for deeper understanding.
 
 [ANSWER-FIRST] To [advanced use case], [approach in one sentence]. This requires [prerequisite knowledge/setup].
 
-[Brief technical explanation — 2-3 sentences]
+[Brief technical explanation ------ 2-3 sentences]
 
 ```[language]
 # Example implementation
@@ -277,7 +277,7 @@ Questions from experienced users looking for deeper understanding.
 2. **[Practice 2]:** [Brief explanation with rationale]
 3. **[Practice 3]:** [Brief explanation with rationale]
 
-[STAT: data point about the impact of following these practices — error reduction, performance improvement, etc.]
+[STAT: data point about the impact of following these practices ------ error reduction, performance improvement, etc.]
 
 ---
 
@@ -304,16 +304,16 @@ Questions from experienced users looking for deeper understanding.
 
 Explore these resources for deeper coverage of [topic]:
 
-- **[Detailed guide title]** — [One-sentence description] [INTERNAL-LINK]
-- **[Tutorial title]** — [One-sentence description] [INTERNAL-LINK]
-- **[Comparison/review title]** — [One-sentence description] [INTERNAL-LINK]
-- **[Official documentation]** — [One-sentence description with external link]
-- **[Community/forum]** — [One-sentence description with external link]
+- **[Detailed guide title]** ------ [One-sentence description] [INTERNAL-LINK]
+- **[Tutorial title]** ------ [One-sentence description] [INTERNAL-LINK]
+- **[Comparison/review title]** ------ [One-sentence description] [INTERNAL-LINK]
+- **[Official documentation]** ------ [One-sentence description with external link]
+- **[Community/forum]** ------ [One-sentence description with external link]
 ```
 
 **Rules:**
 - Mix internal links (your content) with external links (official docs, communities)
-- Prioritize internal links — this is a hub page
+- Prioritize internal links ------ this is a hub page
 - Keep descriptions to one sentence each
 
 ---
@@ -323,7 +323,7 @@ Explore these resources for deeper coverage of [topic]:
 ```markdown
 ## Still Have Questions?
 
-Didn't find what you're looking for? [Contact method — e.g., "Leave a comment below," "Join our community at [link]," "Reach out on [platform]"]. We update this FAQ [frequency — monthly/quarterly] based on reader questions.
+Didn't find what you're looking for? [Contact method ------ e.g., "Leave a comment below," "Join our community at [link]," "Reach out on [platform]"]. We update this FAQ [frequency ------ monthly/quarterly] based on reader questions.
 
 [IMAGE: optional call-to-action graphic or community badge]
 ```
@@ -344,7 +344,7 @@ This template requires FAQPage schema markup. When generating the final HTML:
       "name": "[Question text]",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "[Answer text — use the ANSWER-FIRST sentence + supporting detail]"
+        "text": "[Answer text ------ use the ANSWER-FIRST sentence + supporting detail]"
       }
     }
   ]
@@ -380,3 +380,4 @@ Before publishing, verify:
 - [ ] FAQPage structured data schema prepared for all questions
 - [ ] No answer references another answer (each must stand alone)
 - [ ] All answers pass the "would this make sense as a Google Featured Snippet?" test
+
