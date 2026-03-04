@@ -264,15 +264,15 @@ Automation recommendations:
 - Prioritize refresh order by traffic/importance
 - After each refresh, update the `lastUpdated` frontmatter field
 - Track refresh history to measure freshness impact on rankings/citations
-- Suggest running `/blog rewrite` for each scheduled refresh
+- Suggest running `/blog:rewrite` for each scheduled refresh
 
 ### Step 6: Save & Next Steps
 
 Save the calendar and suggest:
-1. Start with `/blog brief <first-topic>` to create the first content brief
-2. Use `/blog write` to generate articles from briefs
-3. Use `/blog rewrite` for freshness updates on existing content
-4. Re-run `/blog calendar` next month/quarter for the next plan
+1. Start with `/blog:brief <first-topic>` to create the first content brief
+2. Use `/blog:write` to generate articles from briefs
+3. Use `/blog:rewrite` for freshness updates on existing content
+4. Re-run `/blog:calendar` next month/quarter for the next plan
 5. Review the Content Decay Report weekly and address Critical items first
 6. Track Topic Cluster Progress monthly to ensure clusters reach completion
 

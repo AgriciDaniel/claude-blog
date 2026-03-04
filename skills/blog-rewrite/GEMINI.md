@@ -277,13 +277,13 @@ After rewriting, verify all quality gates pass:
 - Images: [count]
 
 ### Ready for
-- `/blog analyze <file>` to verify final score
+- `/blog:analyze <file>` to verify final score
 - Publishing / deploying
 ```
 
 ## Update Mode
 
-When invoked as `/blog update <file>`, focus on freshness:
+When invoked as `/blog:update <file>`, focus on freshness:
 1. Update statistics to latest available data (2025-2026)
 2. Add new developments since last update
 3. Refresh images if older than 1 year

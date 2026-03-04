@@ -187,9 +187,9 @@ Set quality standards that all blog content must meet:
 ### Content Quality Standards
 | Metric | Target | Measured By |
 |--------|--------|-------------|
-| Blog quality score | 80+ | `/blog analyze` |
+| Blog quality score | 80+ | `/blog:analyze` |
 | E-E-A-T compliance | Named author + 8+ tier 1-3 sources | Manual review |
-| AI citation readiness | Answer-first + FAQ + citation capsules | `/blog analyze` |
+| AI citation readiness | Answer-first + FAQ + citation capsules | `/blog:analyze` |
 | Visual minimum | 2+ charts + 3+ images per post | Asset count |
 | Internal links | 5+ per post (within cluster) | Link audit |
 | Schema markup | Article + FAQ + relevant type | Structured data test |
@@ -254,7 +254,7 @@ Reference: `blog/references/distribution-playbook.md` for detailed channel tacti
 - Brand mention volume (branded search + web mentions)
 
 #### Content Quality
-- Blog quality score via `/blog analyze` (target: 80+)
+- Blog quality score via `/blog:analyze` (target: 80+)
 - Content freshness (% of posts updated within 30 days)
 - Visual element coverage (charts + images per post)
 - Citation tier quality (% tier 1-3 sources)
@@ -318,7 +318,7 @@ Output format:
 - [ ] Launch off-site presence on review platforms
 
 ### Month 3: Optimization
-- [ ] Audit all posts with `/blog analyze` (target: 80+ score)
+- [ ] Audit all posts with `/blog:analyze` (target: 80+ score)
 - [ ] Optimize lowest-scoring posts
 - [ ] Publish [Pillar 3] guide
 - [ ] Review AI citation metrics across all platforms
@@ -334,9 +334,9 @@ Output format:
 - `blog/references/content-templates.md` ------ 12 content templates with structures
 
 ## Next Steps
-1. Run `/blog calendar` to create the first month's editorial calendar
-2. Run `/blog brief` for the first pillar page
-3. Run `/blog write` to generate the first article
+1. Run `/blog:calendar` to create the first month's editorial calendar
+2. Run `/blog:brief` for the first pillar page
+3. Run `/blog:write` to generate the first article
 4. Set up AI citation monitoring for target queries
 ```
 

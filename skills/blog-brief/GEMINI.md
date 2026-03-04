@@ -241,6 +241,6 @@ claim that can stand alone when quoted.
 ### Step 6: Save the Brief
 
 Save to the user's project as `briefs/[slug]-brief.md` or to a location
-they specify. Confirm the brief is ready for `/blog write`.
+they specify. Confirm the brief is ready for `/blog:write`.
 
 

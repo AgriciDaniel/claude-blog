@@ -191,7 +191,7 @@ Default output format (Markdown):
 2. [Second most impactful]
 3. [Third]
 
-Run `/blog rewrite <file>` to apply these optimizations automatically.
+Run `/blog:rewrite <file>` to apply these optimizations automatically.
 ```
 
 ## Export Formats
@@ -255,7 +255,7 @@ summary table. Use `--sort score` to order by score (ascending by default).
 2. post-3.md (71) -- Answer-first formatting + stats needed
 3. post-1.md (85) -- Add OG tags, minor polish
 
-Run `/blog rewrite <file>` on each, starting from lowest score.
+Run `/blog:rewrite <file>` on each, starting from lowest score.
 ```
 
 
