@@ -198,7 +198,7 @@ prioritized improvement recommendations.
 
 ## Execution Flow
 
-Standard execution order for `/blog write`:
+Standard execution order for `/blog:write`:
 
 1. **Parse** -- Identify topic, detect platform, select template
 2. **Research** -- Spawn `blog-researcher` agent for statistics, sources, SERP data
@@ -208,8 +208,8 @@ Standard execution order for `/blog write`:
 6. **Score** -- Spawn `blog-reviewer` agent for 100-point quality audit
 7. **Deliver** -- Output final content with scorecard and improvement notes
 
-For `/blog analyze`, only steps 1 and 6 run (read + score).
-For `/blog audit`, step 6 runs in parallel across all posts in the directory.
+For `/blog:analyze`, only steps 1 and 6 run (read + score).
+For `/blog:audit`, step 6 runs in parallel across all posts in the directory.
 
 ### Internal Workflows (Not User-Facing Commands)
 

@@ -2,8 +2,8 @@
 
 ## Phase 2 (Next)
 - [ ] AI Citation Probability Scoring (0-100 per post for ChatGPT/Perplexity/AI Overview citation likelihood)
-- [ ] Writing Style Learning (`/blog style learn` ------ analyze 5-10 posts to extract author voice profile)
-- [ ] Content Decay Detection (`/blog decay` ------ GSC MCP integration to flag 20%+ QoQ decline)
+- [ ] Writing Style Learning (`/blog:style learn` ------ analyze 5-10 posts to extract author voice profile)
+- [ ] Content Decay Detection (`/blog:decay` ------ GSC MCP integration to flag 20%+ QoQ decline)
 - [ ] Pre-commit hooks for quality gates (block commits with score < 70)
 - [ ] CI/CD workflows (.github/workflows/ for automated quality checks)
 

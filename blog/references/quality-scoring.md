@@ -1,6 +1,6 @@
 # Blog Quality Scoring Checklist
 
-Score each blog post against this checklist. Used by `/blog analyze`.
+Score each blog post against this checklist. Used by `/blog:analyze`.
 
 ## Content Quality (30 points)
 

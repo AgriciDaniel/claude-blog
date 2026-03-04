@@ -1,7 +1,7 @@
 # Content Type Template Reference
 
 Index and guide to the 12 content templates in `blog/templates/`. These
-templates are structural blueprints that `/blog write` uses to generate
+templates are structural blueprints that `/blog:write` uses to generate
 consistently optimized content. This reference explains when to use each
 template, how the template system works, and how to customize it.
 
@@ -61,7 +61,7 @@ Use this table to select the right template based on content goals.
 ## Template Structure Anatomy
 
 Every template follows a consistent internal structure using markers that
-guide the writer (and `/blog write`) on what content each section needs.
+guide the writer (and `/blog:write`) on what content each section needs.
 
 ### Section Markers
 
@@ -440,11 +440,11 @@ and AI citation rates (+28%).
 
 ---
 
-## How `/blog write` Uses Templates
+## How `/blog:write` Uses Templates
 
 ### Auto-Detection Logic
 
-When the user invokes `/blog write [topic]` without specifying a content type,
+When the user invokes `/blog:write [topic]` without specifying a content type,
 the system analyzes the topic to select the best template:
 
 | Topic Signal | Template Selected |
@@ -466,9 +466,9 @@ the system analyzes the topic to select the best template:
 
 Users can specify the template directly:
 ```
-/blog write case study: Acme Corp migration results
-/blog write listicle: "10 Best CI/CD Tools for 2026"
-/blog write tutorial: "Building a RAG Pipeline with LangChain"
+/blog:write case study: Acme Corp migration results
+/blog:write listicle: "10 Best CI/CD Tools for 2026"
+/blog:write tutorial: "Building a RAG Pipeline with LangChain"
 ```
 
 ### Default Behavior
@@ -509,7 +509,7 @@ Changes take effect immediately -- no restart needed.
 
 1. Open the template file you want to modify
 2. Adjust section structure, word count targets, or marker placement
-3. Test by running `/blog write` with a topic that matches the template
+3. Test by running `/blog:write` with a topic that matches the template
 
 ### Creating a New Template
 
@@ -545,7 +545,7 @@ Changes take effect immediately -- no restart needed.
 | Use `[INFO-GAIN]` liberally | These sections differentiate from AI consensus |
 | Set realistic word counts | Over-padding dilutes quality scores |
 | Always include `[FAQ]` zone and conclusion | Both are scoring elements |
-| Test with `/blog analyze` after writing | Validates template effectiveness |
+| Test with `/blog:analyze` after writing | Validates template effectiveness |
 
 ---
 
