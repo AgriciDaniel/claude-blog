@@ -194,11 +194,20 @@ Chart generation is built-in вЂ” no external dependencies required for full 
 | `/seo-schema` | Schema markup validation and generation |
 | `/seo-geo` | AI citation optimization audit |
 
+## GitHub Artifacts
+
+This repository utilizes standard GitHub features to manage project lifecycle and delivery:
+
+- **Releases**: Official stable versions of the `gemini-blog` extension. Use releases to download specific versioned snapshots instead of the latest (potentially unstable) code from the `main` branch.
+- **Deployments**: Tracks the status of the engine's integration environments and automated validation runs.
+- **Packages**: Hosts ready-to-use distribution assets for seamless integration into other AI workflows.
+
 ## Documentation
 
 Detailed documentation is available in [docs/](docs/):
 
-- [Installation Guide](docs/INSTALLATION.md) -- Unix, macOS, Windows, manual install
+- [Installation Guide](docs/INSTALLATION.md) -- Get started with the native extension installer
+- [Workflow Tutorial](docs/WORKFLOW-TUTORIAL.md) -- Step-by-step guide to the blog creation lifecycle
 - [Command Reference](docs/COMMANDS.md) -- Full 12-command reference with examples
 - [Architecture](docs/ARCHITECTURE.md) -- System design and component overview
 - [Templates](docs/TEMPLATES.md) -- Template reference and customization
