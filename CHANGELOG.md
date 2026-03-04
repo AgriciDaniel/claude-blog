@@ -25,11 +25,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated `docs/MIGRATION_DIFFERENCES.md` for the extension format
 - Updated `docs/TROUBLESHOOTING.md` with current file references
 
+### Fixed
+- **Tool Compatibility**: Updated `allowed-tools` in SKILL.md and `tools` in agent definitions to align with Gemini CLI cross-platform naming conventions (e.g., `read_file`, `run_shell_command`, `replace`, `grep_search`).
+- **Agent Loading**: Resolved "Invalid tool name" errors during extension installation by standardizing on `snake_case` tool names.
+
 ### Removed
 - `manifest.excludeTools` block from `gemini-extension.json` (GitHub tool exclusions irrelevant to blog extension)
 
-## [1.1.0] - 2026-02-18
+## [1.1.1] - 2026-03-03
 
+### Fixed
+- **Tool Compatibility**: Initial standardization of tool names for Gemini CLI environment.
+
+## [1.1.0] - 2026-02-18
 
 ### Added
 - **Built-in SVG chart generation** (`blog-chart` sub-skill) — eliminates external `/svg` dependency

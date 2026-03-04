@@ -125,7 +125,7 @@ before inlining SVG. Use project components when they exist.
 
 ### generateStaticParams for SSG (Critical for AI Crawlers)
 
-AI crawlers (GPTBot, GeminiBot, PerplexityBot) cannot execute JavaScript.
+AI crawlers (GPTBot, ClaudeBot, GeminiBot, PerplexityBot) cannot execute JavaScript.
 Pages must be statically generated or server-rendered. Never use client-only
 rendering for blog content.
 
