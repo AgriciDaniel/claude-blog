@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - **Converted to native Gemini CLI extension format** -- project now installs via `gemini extensions install .`
 - Stripped Claude-only YAML frontmatter from `GEMINI.md` (main orchestrator)
-- Stripped Claude-only `tools:` frontmatter from 4 agent `.GEMINI.md` files
+- Stripped Claude-only `tools:` frontmatter from 4 agent `.md` files
 - Stripped Claude-only `allowed-tools:` frontmatter from 13 skill `GEMINI.md` files
 - Updated `docs/INSTALLATION.md` to reflect extension install method
 - Updated `docs/ARCHITECTURE.md` with correct file naming conventions
@@ -79,7 +79,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Architecture
 - Main orchestrator: `GEMINI.md` (routes all 12 commands)
 - 12 sub-skills in `skills/blog-*/GEMINI.md`
-- 4 subagents in `agents/blog-*.GEMINI.md`
+- 4 subagents in `agents/blog-*.md`
 - 12 reference docs in `blog/references/` (loaded on-demand)
 - 12 content templates in `blog/templates/`
 - 12 slash commands in `commands/blog/*.toml`

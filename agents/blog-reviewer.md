@@ -5,6 +5,7 @@ description: >
   100-point scoring system, identifies issues by severity, checks for AI
   content detection signals, validates source tier quality, and flags known
   AI-detectable phrases. Invoked for quality review tasks during blog workflows.
+kind: local
 tools:
   - read_file
   - run_shell_command

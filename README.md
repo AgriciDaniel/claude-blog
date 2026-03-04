@@ -127,10 +127,10 @@ gemini-blog/
 --   ------ blog-audit/GEMINI.md
 --   ------ blog-chart/GEMINI.md            # Internal: SVG chart generation
 ------ agents/                             # 4 specialized agents
---   ------ blog-researcher.GEMINI.md
---   ------ blog-writer.GEMINI.md
---   ------ blog-seo.GEMINI.md
---   ------ blog-reviewer.GEMINI.md
+--   ------ blog-researcher.md
+--   ------ blog-writer.md
+--   ------ blog-seo.md
+--   ------ blog-reviewer.md
 ------ commands/blog/                      # 12 Gemini CLI slash commands
 --   ------ write.toml
 --   ------ analyze.toml

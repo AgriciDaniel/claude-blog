@@ -97,7 +97,7 @@ Each sub-skill is a standalone Gemini CLI skill with its own:
 
 ### 3. Subagents (4)
 
-**Location**: `agents/blog-*.GEMINI.md`
+**Location**: `agents/blog-*.md`
 
 Specialized agents spawned by sub-skills via Gemini CLI's `Task` tool.
 Each agent has a focused role with a restricted tool set.
@@ -133,7 +133,7 @@ Structural templates for different content types.
 |-----------|----------|--------|
 | Main context | `GEMINI.md` | Fixed name |
 | Sub-skills | `skills/blog-<command>/GEMINI.md` | Prefix `blog-` + command name |
-| Agents | `agents/blog-<role>.GEMINI.md` | Prefix `blog-` + role name |
+| Agents | `agents/blog-<role>.md` | Prefix `blog-` + role name |
 | References | `blog/references/<topic>.md` | Kebab-case topic name |
 | Templates | `blog/templates/<type>.md` | Kebab-case content type |
 | Scripts | `scripts/<name>.py` | Snake-case script name |
@@ -156,8 +156,8 @@ gemini-blog/
 ------   ------------------ blog-rewrite/GEMINI.md          # Sub-skill
 ------   ------------------ ... (10 more)
 ------------------ agents/
-    ------------------ blog-researcher.GEMINI.md        # Subagent
-    ------------------ blog-writer.GEMINI.md            # Subagent
+    ------------------ blog-researcher.md        # Subagent
+    ------------------ blog-writer.md            # Subagent
     ------------------ ... (2 more)
 ```
 

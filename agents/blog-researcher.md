@@ -5,6 +5,7 @@ description: >
   verifies sources against tier 1-3 quality standards, discovers Pixabay/Unsplash/Pexels
   images, and identifies competitive content gaps. Invoked for statistic research,
   image discovery, and competitive analysis tasks during blog writing workflows.
+kind: local
 tools:
   - google_web_search
   - web_fetch

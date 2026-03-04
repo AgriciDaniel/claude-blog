@@ -109,7 +109,7 @@ pip uninstall textstat beautifulsoup4 lxml jsonschema
 
 | Symptom | Cause | Fix |
 |---------|-------|-----|
-| `Invalid tool name` errors | Agent files have outdated tool names | Ensure `agents/*.GEMINI.md` use canonical snake_case tool names (`read_file`, `write_file`, `replace`, etc.) |
+| `Invalid tool name` errors | Agent files have outdated tool names | Ensure `agents/*.md` use canonical snake_case tool names (`read_file`, `write_file`, `replace`, etc.) |
 | `gemini: command not found` | Gemini CLI is not installed | Install the Gemini CLI globally via npm/yarn |
 | `python3: command not found` | Python not installed or not in PATH | Install Python 3.12+ via your package manager |
 | `pip install` fails | Missing pip or wrong Python version | Run `python3 -m ensurepip --upgrade` |
