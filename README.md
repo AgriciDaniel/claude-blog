@@ -2,10 +2,13 @@
 
 ![Gemini Blog -- AI-Powered Blog Creation](assets/header.jpeg)
 
-![Gemini CLI Skill](https://img.shields.io/badge/Gemini_Code-Skill-blueviolet)
-![License: MIT](https://img.shields.io/badge/License-MIT-green)
-![Python 3.12+](https://img.shields.io/badge/Python-3.12%2B-blue)
-![Sub-Skills](https://img.shields.io/badge/Sub--Skills-13-orange)
+![Gemini CLI Extension](https://img.shields.io/badge/Gemini_CLI-Extension-blue?logo=google&logoColor=white)
+![Powered by Gemini](https://img.shields.io/badge/Powered_by-Gemini_AI-7432f4?logo=google-gemini&logoColor=white)
+![GEO & SEO Optimized](https://img.shields.io/badge/GEO_%26_SEO-Optimized-success)
+![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey)
+![GitHub Release](https://img.shields.io/github/v/release/imitry/gemini-blog?color=blue)
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+
 
 **The most comprehensive blog creation skill for Gemini CLI.**
 
