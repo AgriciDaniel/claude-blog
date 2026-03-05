@@ -15,7 +15,8 @@ follows the 6 pillars of dual optimization (Google rankings + AI citations).
 ### Phase 1: Topic Understanding
 
 1. **Clarify the topic** ------ If the user provides just a topic, use the `ask_user` tool to gather required details!
-   You MUST invoke the `ask_user` tool using the following JSON structure:
+   You MUST invoke the `ask_user` tool TWICE to gather all details without hitting the 4-question limit.
+   First, invoke `ask_user` with the following JSON structure for content direction:
 
 ```json
 {
@@ -45,7 +46,18 @@ follows the 6 pillars of dual optimization (Google rankings + AI citations).
       "header": "Intent",
       "question": "What is the primary keyword or search intent?",
       "type": "text"
-    },
+    }
+  ]
+}
+```
+
+   Wait for the tool execution response before proceeding.
+   
+   Next, invoke the `ask_user` tool a **SECOND TIME** for format details:
+
+```json
+{
+  "questions": [
     {
       "header": "Length",
       "question": "What word count are you targeting?",
@@ -70,7 +82,8 @@ follows the 6 pillars of dual optimization (Google rankings + AI citations).
   ]
 }
 ```
-   Wait for the tool execution response before proceeding. If the user provided all required details in their initial prompt, skip this step.
+
+   Wait for the second tool execution response before proceeding. If the user provided all required details in their initial prompt, skip these steps.
 2. **If a brief exists** ------ Load it and skip to Phase 1.5
 
 ### Phase 1.5: Template Selection

@@ -29,7 +29,18 @@ You MUST invoke the `ask_user` tool using this exact format:
       "header": "Competitors",
       "question": "Who are your 3-5 main competitors?",
       "type": "text"
-    },
+    }
+  ]
+}
+```
+
+Wait for the tool execution response before proceeding. If the user provided all required details in their initial prompt, skip this step. Also scan for existing blog content (Glob for *.md, *.mdx, *.html) if a project is available.
+
+Next, invoke the `ask_user` tool a **SECOND TIME** for the remaining details:
+
+```json
+{
+  "questions": [
     {
       "header": "Differentiator",
       "question": "What unique expertise or original data do you have?",
@@ -44,7 +55,7 @@ You MUST invoke the `ask_user` tool using this exact format:
 }
 ```
 
-Wait for the tool execution response before proceeding. If the user provided all required details in their initial prompt, skip this step. Also scan for existing blog content (Glob for *.md, *.mdx, *.html) if a project is available.
+Wait for the second tool execution response before proceeding.
 
 ### Step 2: Competitive Landscape
 
