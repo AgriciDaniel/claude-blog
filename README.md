@@ -1,6 +1,6 @@
 # gemini-blog
 
-![Gemini Blog -- AI-Powered Blog Creation](assets/header.jpeg)
+![Gemini Blog -- AI-Powered Blog Creation](assets/header.png)
 
 ![Gemini CLI Extension](https://img.shields.io/badge/Gemini_CLI-Extension-blue?logo=google&logoColor=white)
 ![Powered by Gemini](https://img.shields.io/badge/Powered_by-Gemini_AI-7432f4?logo=google-gemini&logoColor=white)
