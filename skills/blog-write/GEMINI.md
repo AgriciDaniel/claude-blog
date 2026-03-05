@@ -21,6 +21,15 @@ follows the 6 pillars of dual optimization (Google rankings + AI citations).
 {
   "questions": [
     {
+      "header": "Topic",
+      "question": "What topic should the blog post cover? (Type your topic in 'Other')",
+      "type": "choice",
+      "allowOther": true,
+      "options": [
+        { "label": "I have a brief/outline", "description": "I already have a content brief or outline to work from" }
+      ]
+    },
+    {
       "header": "Audience",
       "question": "Who is the target audience (who is this for)?",
       "type": "text"
