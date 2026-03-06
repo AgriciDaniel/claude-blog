@@ -140,13 +140,13 @@ mkdir -p ~/.claude/skills/blog-{write,rewrite,analyze,brief,calendar,strategy,ou
 mkdir -p ~/.claude/agents
 
 # Main skill
-cp skills/blog/SKILL.md ~/.claude/skills/skills/blog/SKILL.md
+cp skills/blog/SKILL.md ~/.claude/skills/blog/SKILL.md
 
 # References
-cp skills/blog/references/*.md ~/.claude/skills/skills/blog/references/
+cp skills/blog/references/*.md ~/.claude/skills/blog/references/
 
 # Templates
-cp skills/blog/templates/*.md ~/.claude/skills/skills/blog/templates/
+cp skills/blog/templates/*.md ~/.claude/skills/blog/templates/
 
 # Sub-skills
 for d in skills/blog-*/; do
@@ -172,7 +172,7 @@ After installation, verify everything is in place:
 
 ```bash
 # Main skill
-ls ~/.claude/skills/skills/blog/SKILL.md
+ls ~/.claude/skills/blog/SKILL.md
 
 # Sub-skills (should list 12)
 ls ~/.claude/skills/blog-*/SKILL.md | wc -l
@@ -181,7 +181,7 @@ ls ~/.claude/skills/blog-*/SKILL.md | wc -l
 ls ~/.claude/agents/blog-*.md | wc -l
 
 # References (should list 5+)
-ls ~/.claude/skills/skills/blog/references/*.md | wc -l
+ls ~/.claude/skills/blog/references/*.md | wc -l
 
 # Python script
 ls ~/.claude/skills/blog/scripts/analyze_blog.py

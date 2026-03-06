@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-03-06
+
+### Added
+- **Plugin ecosystem support**: `.claude-plugin/plugin.json` for `/plugin install` compatibility
+- **44 pytest unit tests** for `analyze_blog.py` — covers frontmatter, headings, paragraphs, images, AI detection, citations, FAQ, freshness, readability, links, schema, and integration tests
+- **GitHub Actions CI**: 3 jobs — Python tests (3.11 + 3.12), SKILL.md frontmatter validation, plugin.json validation
+- **DataForSEO MCP integration** documentation — recommended primary MCP server for live SEO data (SERP, keywords, backlinks, on-page, domain analytics, content analysis, AI optimization)
+- `pyproject.toml` with dependency groups (core, advanced, dev)
+- `CONTRIBUTING.md` with development guidelines
+- `.mcp.json` for optional MCP server configuration
+- Skill evaluation scenarios (7 trigger test cases)
+
+### Changed
+- **Directory restructure**: `blog/` → `skills/blog/` (official Anthropic plugin layout)
+- Updated all internal path references across skills, docs, and install scripts
+- README updated with plugin install as primary method
+- MCP-INTEGRATION.md updated with DataForSEO as recommended integration
+
+### Fixed
+- **install.sh**: Restored `TEMP_DIR` global scope fix (lost during restructure)
+- **install.sh**: Removed `--break-system-packages` pip flag (security concern)
+- **install.sh**: Removed redundant `mkdir` and double-copy of `skills/blog/`
+- **CI**: Fixed lint-markdown grep matching legitimate `skills/blog/references/` paths
+- **Docs**: Fixed 11 instances of double `skills/skills/` paths in INSTALLATION.md and TROUBLESHOOTING.md
+
+### Removed
+- `--break-system-packages` pip install flag
+
 ## [1.1.0] - 2026-02-18
 
 ### Added

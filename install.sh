@@ -7,11 +7,13 @@ set -euo pipefail
 # One-command install:
 #   curl -sL https://raw.githubusercontent.com/AgriciDaniel/claude-blog/main/install.sh | bash
 
+# Declared outside main() so the EXIT trap can access it after main() returns
+TEMP_DIR=""
+
 main() {
     local SKILL_DIR="${HOME}/.claude/skills"
     local AGENT_DIR="${HOME}/.claude/agents"
     local SCRIPT_DIR
-    local TEMP_DIR=""
 
     echo ""
     echo "  ╔══════════════════════════════════════╗"
@@ -43,7 +45,6 @@ main() {
     mkdir -p "${SKILL_DIR}/blog/references"
     mkdir -p "${SKILL_DIR}/blog/templates"
     mkdir -p "${SKILL_DIR}/blog/scripts"
-    mkdir -p "${SKILL_DIR}/blog"
     for skill in blog-write blog-rewrite blog-analyze blog-brief blog-calendar blog-strategy blog-outline blog-seo-check blog-schema blog-repurpose blog-geo blog-audit blog-chart; do
         mkdir -p "${SKILL_DIR}/${skill}"
     done
@@ -69,6 +70,7 @@ main() {
     echo "→ Installing sub-skills..."
     for skill_dir in "${SCRIPT_DIR}/skills/"*/; do
         skill_name="$(basename "${skill_dir}")"
+        [ "$skill_name" = "blog" ] && continue
         if [ -f "${skill_dir}SKILL.md" ]; then
             cp "${skill_dir}SKILL.md" "${SKILL_DIR}/${skill_name}/SKILL.md"
             echo "  + ${skill_name}"
@@ -95,7 +97,7 @@ main() {
         echo "→ Installing Python dependencies..."
         pip3 install --quiet -r "${SCRIPT_DIR}/requirements.txt" 2>/dev/null || \
         echo "  Skipped: Install manually with 'pip3 install -r requirements.txt'"
-        echo "  Tip: Use a virtual environment: python3 -m venv .venv && source .venv/bin/activate"
+        echo "  Tip: Consider using a virtual environment: python3 -m venv .venv && source .venv/bin/activate"
     fi
 
     echo ""

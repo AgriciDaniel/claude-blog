@@ -81,13 +81,13 @@ jobs:
         run: |
           echo "Checking for stale blog/ path references..."
           errors=0
-          # Check that no SKILL.md or doc references the old blog/ path for references/templates
+          # Check that no SKILL.md or doc references the old bare blog/ path (not skills/blog/)
           for file in $(find skills docs -name "*.md"); do
-            if grep -n "blog/references/" "$file" 2>/dev/null; then
+            if grep -Pn '(?<!skills/)blog/references/' "$file" 2>/dev/null; then
               echo "WARNING: $file still references old 'blog/references/' path"
               errors=$((errors + 1))
             fi
-            if grep -n "blog/templates/" "$file" 2>/dev/null; then
+            if grep -Pn '(?<!skills/)blog/templates/' "$file" 2>/dev/null; then
               echo "WARNING: $file still references old 'blog/templates/' path"
               errors=$((errors + 1))
             fi
