@@ -1,0 +1,71 @@
+[
+  {
+    "name": "write-command-triggers",
+    "skills": ["blog"],
+    "query": "/blog write How to Use AI for Content Marketing",
+    "expected_behavior": [
+      "Routes to blog-write sub-skill",
+      "Asks clarifying questions about audience and keywords",
+      "Selects appropriate content template"
+    ]
+  },
+  {
+    "name": "analyze-command-triggers",
+    "skills": ["blog"],
+    "query": "/blog analyze ./posts/my-blog-post.md",
+    "expected_behavior": [
+      "Routes to blog-analyze sub-skill",
+      "Reads the specified file",
+      "Returns 5-category 100-point score"
+    ]
+  },
+  {
+    "name": "rewrite-command-triggers",
+    "skills": ["blog"],
+    "query": "/blog rewrite ./content/old-post.mdx",
+    "expected_behavior": [
+      "Routes to blog-rewrite sub-skill",
+      "Reads the existing post",
+      "Preserves author voice while optimizing"
+    ]
+  },
+  {
+    "name": "natural-language-trigger",
+    "skills": ["blog"],
+    "query": "Can you write a blog post about remote work productivity?",
+    "expected_behavior": [
+      "Activates blog skill from natural language",
+      "Routes to blog-write sub-skill",
+      "Treats input as topic for new article"
+    ]
+  },
+  {
+    "name": "should-not-trigger-unrelated",
+    "skills": ["blog"],
+    "query": "Help me debug this Python function",
+    "expected_behavior": [
+      "Blog skill should NOT activate",
+      "Claude handles as general programming task"
+    ]
+  },
+  {
+    "name": "strategy-command",
+    "skills": ["blog"],
+    "query": "/blog strategy SaaS marketing",
+    "expected_behavior": [
+      "Routes to blog-strategy sub-skill",
+      "Generates positioning analysis",
+      "Includes content pillar recommendations"
+    ]
+  },
+  {
+    "name": "calendar-command",
+    "skills": ["blog"],
+    "query": "/blog calendar quarterly",
+    "expected_behavior": [
+      "Routes to blog-calendar sub-skill",
+      "Generates editorial calendar",
+      "Includes content mix recommendations"
+    ]
+  }
+]
