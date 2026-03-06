@@ -1,7 +1,10 @@
 {
   "name": "claude-blog",
   "description": "AI-powered blog creation and optimization skill with 12 commands, 5-category 100-point scoring, and 4 specialized agents. Optimized for Google rankings (December 2025 Core Update, E-E-A-T) and AI citations (GEO/AEO). Writes, rewrites, analyzes, outlines, audits, and repurposes blog content.",
+  "version": "1.3.1",
   "author": {
     "name": "AgriciDaniel"
-  }
+  },
+  "homepage": "https://github.com/AgriciDaniel/claude-blog",
+  "license": "MIT"
 }

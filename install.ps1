@@ -55,22 +55,23 @@ function Main {
 
     # Copy main skill
     Write-Color White "Installing main skill: blog..."
-    Copy-Item (Join-Path $ScriptDir "blog" "SKILL.md") (Join-Path $SkillDir "blog" "SKILL.md") -Force
+    Copy-Item (Join-Path $ScriptDir "skills" "blog" "SKILL.md") (Join-Path $SkillDir "blog" "SKILL.md") -Force
 
     # Copy references
     Write-Color White "Installing reference files..."
-    Copy-Item (Join-Path $ScriptDir "blog" "references" "*.md") (Join-Path $SkillDir "blog" "references") -Force
+    Copy-Item (Join-Path $ScriptDir "skills" "blog" "references" "*.md") (Join-Path $SkillDir "blog" "references") -Force
 
     # Copy templates
-    if (Test-Path (Join-Path $ScriptDir "blog" "templates")) {
+    if (Test-Path (Join-Path $ScriptDir "skills" "blog" "templates")) {
         Write-Color White "Installing content templates..."
-        Copy-Item (Join-Path $ScriptDir "blog" "templates" "*.md") (Join-Path $SkillDir "blog" "templates") -Force
+        Copy-Item (Join-Path $ScriptDir "skills" "blog" "templates" "*.md") (Join-Path $SkillDir "blog" "templates") -Force
     }
 
     # Copy sub-skills
     Write-Color White "Installing sub-skills..."
     Get-ChildItem -Directory (Join-Path $ScriptDir "skills") | ForEach-Object {
         $skillName = $_.Name
+        if ($skillName -eq "blog") { return }
         $src = Join-Path $_.FullName "SKILL.md"
         $dst = Join-Path $SkillDir $skillName "SKILL.md"
         if (Test-Path $src) {
