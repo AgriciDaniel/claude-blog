@@ -7,11 +7,13 @@ set -euo pipefail
 # One-command install:
 #   curl -sL https://raw.githubusercontent.com/AgriciDaniel/claude-blog/main/install.sh | bash
 
+# Declared outside main() so the EXIT trap can access it after main() returns
+TEMP_DIR=""
+
 main() {
     local SKILL_DIR="${HOME}/.claude/skills"
     local AGENT_DIR="${HOME}/.claude/agents"
     local SCRIPT_DIR
-    local TEMP_DIR=""
 
     echo ""
     echo "  ╔══════════════════════════════════════╗"
