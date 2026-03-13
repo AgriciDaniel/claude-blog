@@ -1,0 +1,24 @@
+# Normalize line endings to LF on all platforms
+* text=auto eol=lf
+
+# Windows-specific files keep CRLF
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+
+# Binary assets — no diff, no line ending conversion
+*.jpeg binary
+*.jpg  binary
+*.png  binary
+*.gif  binary
+*.webp binary
+*.pdf  binary
+
+# Markdown files are documentation, not source code
+# This keeps Python as the primary language in GitHub's language bar
+*.md linguist-documentation=true
+
+# Agent prompts and templates are documentation
+agents/**     linguist-documentation=true
+skills/**/references/** linguist-documentation=true
+skills/**/templates/**  linguist-documentation=true
+docs/**       linguist-documentation=true

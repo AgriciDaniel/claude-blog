@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+title: claude-blog
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - name: AgriciDaniel
+    alias: AgriciDaniel
+    website: "https://github.com/AgriciDaniel"
+repository-code: "https://github.com/AgriciDaniel/claude-blog"
+url: "https://rankenstein.pro"
+license: MIT
+version: 1.3.1
+date-released: "2026-03-06"
+keywords:
+  - claude-code
+  - blog
+  - seo
+  - ai-citations
+  - content-optimization
+  - e-e-a-t
+  - skill

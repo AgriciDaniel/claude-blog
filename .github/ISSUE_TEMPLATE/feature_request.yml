@@ -1,0 +1,63 @@
+name: Feature Request
+description: Suggest a new feature or improvement for claude-blog
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting an improvement! Please fill out the form below.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or use case
+      description: What problem does this feature solve? What workflow is missing?
+      placeholder: "Currently, /blog write doesn't support... I often need to..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Proposed solution
+      description: Describe the feature you'd like. How would it work?
+      placeholder: "A new /blog X command that..."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Which part of claude-blog does this affect?
+      options:
+        - Writing (/blog write)
+        - Rewriting (/blog rewrite)
+        - Analysis (/blog analyze)
+        - SEO (/blog seo-check)
+        - Schema (/blog schema)
+        - Briefs (/blog brief)
+        - Calendar (/blog calendar)
+        - Strategy (/blog strategy)
+        - Repurposing (/blog repurpose)
+        - AI Citations (/blog geo)
+        - Audit (/blog audit)
+        - Charts (blog-chart)
+        - Installer / setup
+        - Documentation
+        - New command / skill
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Any workarounds you've tried or alternative approaches you considered.
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Any other context, screenshots, or examples that would help.

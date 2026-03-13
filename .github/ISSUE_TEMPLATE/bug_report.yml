@@ -1,0 +1,83 @@
+name: Bug Report
+description: Report a bug in claude-blog
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug! Please fill out the form below.
+
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: Describe the bug
+      description: A clear and concise description of what the bug is.
+      placeholder: "When I run /blog write ..., the following error appears..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: command-used
+    attributes:
+      label: Command used
+      description: The exact command that triggered the bug.
+      render: shell
+      placeholder: "/blog write 'how to use claude code'"
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected behavior
+      description: What did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: Actual behavior
+      description: What actually happened? Include any error messages.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      options:
+        - macOS
+        - Linux
+        - Windows
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: claude-code-version
+    attributes:
+      label: Claude Code version
+      placeholder: "e.g. 1.0.0"
+    validations:
+      required: true
+
+  - type: input
+    id: python-version
+    attributes:
+      label: Python version
+      placeholder: "e.g. 3.12.1"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: install-method
+    attributes:
+      label: Install method
+      options:
+        - curl | bash (one-command installer)
+        - Manual clone
+        - Windows PowerShell installer
+        - Other
+    validations:
+      required: true

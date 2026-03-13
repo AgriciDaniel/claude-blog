@@ -1,19 +1,36 @@
-# claude-blog
+# claude-blog — AI Blog Creation Skill for Claude Code
 
 ![Claude Blog — AI-Powered Blog Creation](assets/header.jpeg)
 
+[![CI](https://github.com/AgriciDaniel/claude-blog/actions/workflows/ci.yml/badge.svg)](https://github.com/AgriciDaniel/claude-blog/actions/workflows/ci.yml)
+[![GitHub release](https://img.shields.io/github/v/release/AgriciDaniel/claude-blog)](https://github.com/AgriciDaniel/claude-blog/releases/latest)
 ![Claude Code Skill](https://img.shields.io/badge/Claude_Code-Skill-blueviolet)
 ![License: MIT](https://img.shields.io/badge/License-MIT-green)
 ![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-blue)
 ![Sub-Skills](https://img.shields.io/badge/Sub--Skills-13-orange)
 
-**The most comprehensive blog creation skill for Claude Code.**
+claude-blog is a Claude Code skill ecosystem for creating, optimizing, and managing blog content at scale. It generates complete articles, briefs, calendars, and schemas — dual-optimized for Google rankings and AI citation platforms (ChatGPT, Perplexity, AI Overviews).
 
-Strategy, briefs, calendars, writing, optimization, schema, repurposing, and full-site audits — all from slash commands. Dual-optimized for Google rankings and AI citation platforms (ChatGPT, Perplexity, AI Overviews).
+## Table of Contents
 
-### [Watch the Demo](https://www.youtube.com/watch?v=AeLC4iutG8w)
+- [Demo](#demo)
+- [Quick Start](#quick-start)
+- [Commands](#commands)
+- [Features](#features)
+- [Architecture](#architecture)
+- [Requirements](#requirements)
+- [Uninstall](#uninstall)
+- [Integration](#integration)
+- [Documentation](#documentation)
+- [Contributing](#contributing)
+- [License](#license)
+
+## Demo
+
+[Watch the Demo on YouTube](https://www.youtube.com/watch?v=AeLC4iutG8w)
 
 ![Blog commands demo](assets/blog-command-demo.gif)
+
 ---
 
 ## Quick Start
