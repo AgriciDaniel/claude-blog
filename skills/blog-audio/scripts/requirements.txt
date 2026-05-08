@@ -6,4 +6,4 @@
 # Closes audit VULN-006 supply-chain detection gap.
 
 # Google Gemini SDK for TTS generation
-google-genai>=1.0.0
+google-genai>=2.0.0
