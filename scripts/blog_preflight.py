@@ -159,7 +159,13 @@ def _gate_result(gate: int, name: str, passed: bool, violations: Optional[list] 
 
 
 def _has_module(name: str) -> bool:
-    return importlib.util.find_spec(name) is not None
+    # find_spec raises ImportError/ValueError for a dotted name whose parent
+    # package is absent (e.g. "google.genai" when "google" isn't installed),
+    # instead of returning None. Treat any resolution failure as "not present".
+    try:
+        return importlib.util.find_spec(name) is not None
+    except (ImportError, ValueError):
+        return False
 
 
 def _project_root() -> Path:
