@@ -9,4 +9,4 @@
 # Upper bound prevents v2.x breaking changes from silently breaking the build.
 # Lock file pins to the exact tested version; this range is the negotiation
 # window for dependabot.
-google-genai>=1.0.0,<2.0.0
+google-genai>=2.10.0,<3.0.0
