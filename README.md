@@ -142,13 +142,13 @@ chmod +x install.sh && ./install.sh
 **One-Command Install (Unix/macOS):**
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/AI-Marketing-Hub/claude-blog/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/AgriciDaniel/claude-blog/main/install.sh | bash
 ```
 
 **One-Command Install (Windows PowerShell):**
 
 ```powershell
-irm https://raw.githubusercontent.com/AI-Marketing-Hub/claude-blog/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/AgriciDaniel/claude-blog/main/install.ps1 | iex
 ```
 
 > Piping `curl` or `irm` to a shell gives the script execution authority on your machine. The clone-then-checkout-tag flow is safer because you can inspect what runs. Both flows authenticate against the private repo using your existing `gh auth` / GitHub credentials.
@@ -157,7 +157,7 @@ irm https://raw.githubusercontent.com/AI-Marketing-Hub/claude-blog/main/install.
 
 ```bash
 # Download, verify SHA-256, then run if the hash matches.
-curl -fsSL -o install.sh https://raw.githubusercontent.com/AI-Marketing-Hub/claude-blog/main/install.sh
+curl -fsSL -o install.sh https://raw.githubusercontent.com/AgriciDaniel/claude-blog/main/install.sh
 echo "029388e448dd29bed259b130c2be42e2f6a16d4d5b6801a61bfb4f49b621fc04  install.sh" | sha256sum -c
 bash install.sh
 ```
