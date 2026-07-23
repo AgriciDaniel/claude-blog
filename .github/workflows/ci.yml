@@ -23,7 +23,7 @@ jobs:
         python-version: ["3.11", "3.12"]
 
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # SHA-pinned, closes VULN-503
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # SHA-pinned, closes VULN-503
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1  # SHA-pinned
@@ -47,7 +47,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # SHA-pinned
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # SHA-pinned
 
       - name: Set up Python 3.11
         uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1  # SHA-pinned
@@ -75,7 +75,7 @@ jobs:
   validate-skills:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # SHA-pinned, closes VULN-503
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # SHA-pinned, closes VULN-503
 
       - name: Set up Node.js 22
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020  # v4, SHA-pinned
@@ -165,7 +165,7 @@ jobs:
   lint-markdown:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # SHA-pinned, closes VULN-503
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # SHA-pinned, closes VULN-503
 
       - name: Check for broken internal references
         run: |
@@ -198,7 +198,7 @@ jobs:
     # The actual check is `scripts/lint_prose.py` (fence-aware + backtick-aware).
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # SHA-pinned
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # SHA-pinned
       - name: Set up Python 3.12
         uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1  # SHA-pinned
         with:
@@ -213,7 +213,7 @@ jobs:
     # said "1.8.0" while every other surface had moved to 1.8.3.
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # SHA-pinned
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # SHA-pinned
       - name: Set up Python 3.12
         uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1  # SHA-pinned
         with:
@@ -233,7 +233,7 @@ jobs:
     outputs:
       changed: ${{ steps.filter.outputs.changed }}
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # SHA-pinned
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # SHA-pinned
         with:
           fetch-depth: 0
 
@@ -266,7 +266,7 @@ jobs:
     if: ${{ needs.brain-changes.outputs.changed == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # SHA-pinned
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # SHA-pinned
 
       - name: Set up Python 3.12
         uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1  # SHA-pinned
