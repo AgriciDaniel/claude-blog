@@ -34,6 +34,9 @@ PUBLIC_PINNED_INSTALL_SH = (
 PUBLIC_DISCUSSIONS = f"{PUBLIC_REPOSITORY}/discussions"
 PUBLIC_SECURITY_ADVISORY = f"{PUBLIC_REPOSITORY}/security/advisories/new"
 PUBLIC_DOCUMENTATION = f"{PUBLIC_REPOSITORY}/tree/main/docs"
+SECURITY_CHECKOUT_RE = re.compile(
+    r"\bgit checkout v([0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?)\b"
+)
 SURFACES = (
     "README.md",
     "CLAUDE.md",
@@ -42,6 +45,7 @@ SURFACES = (
     ".claude-plugin/plugin.json",
     ".claude-plugin/marketplace.json",
     ".github/ISSUE_TEMPLATE/config.yml",
+    ".github/SECURITY.md",
     "install.sh",
     "install.ps1",
     "skills/blog/SKILL.md",
@@ -164,6 +168,18 @@ def validate(root: Path) -> dict:
                         "expected": expected,
                     }
                 )
+
+    security = contents.get(".github/SECURITY.md", "")
+    security_versions = sorted(set(SECURITY_CHECKOUT_RE.findall(security)))
+    if security_versions != [PUBLIC_VERSION]:
+        errors.append(
+            {
+                "kind": "invalid_public_security_version",
+                "file": ".github/SECURITY.md",
+                "expected": PUBLIC_VERSION,
+                "actual": security_versions,
+            }
+        )
 
     citation = contents.get("CITATION.cff", "")
     expected_citation_repository = f'repository-code: "{PUBLIC_REPOSITORY}"'

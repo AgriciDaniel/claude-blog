@@ -545,6 +545,11 @@ def _public_fixture(root: Path) -> None:
         ),
         encoding="utf-8",
     )
+    (root / ".github" / "SECURITY.md").write_text(
+        "Only the latest version is supported.\n"
+        f"Use `git checkout v{version}` before installation.\n",
+        encoding="utf-8",
+    )
     (root / "install.sh").write_text(
         f'{raw_sh}\nCLAUDE_BLOG_VERSION="{version}"\n'
         'repo="${CLAUDE_BLOG_REPO:-AgriciDaniel/claude-blog}"\n',
@@ -642,6 +647,28 @@ def test_public_release_validator_rejects_version_collision(
     assert any(
         error["kind"] == "invalid_public_release_version"
         and error["file"] == "pyproject.toml"
+        for error in report["errors"]
+    )
+
+
+def test_public_release_validator_rejects_stale_security_tag(
+    tmp_path: Path,
+) -> None:
+    module = _load_module(
+        "release_public_validator_security_version",
+        ROOT / "scripts" / "validate_public_release.py",
+    )
+    _public_fixture(tmp_path)
+    security = tmp_path / ".github" / "SECURITY.md"
+    security.write_text(
+        security.read_text(encoding="utf-8").replace("v2.1.1", "v1.7.0"),
+        encoding="utf-8",
+    )
+    report = module.validate(tmp_path)
+    assert report["status"] == "fail"
+    assert any(
+        error["kind"] == "invalid_public_security_version"
+        and error["file"] == ".github/SECURITY.md"
         for error in report["errors"]
     )
 

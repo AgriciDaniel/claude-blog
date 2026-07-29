@@ -7,7 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-_No unreleased changes._
+### Added
+
+- Document Xquik as an optional X research and approval-gated publishing
+  handoff for blog briefs and repurposed threads.
+
+### Fixed
+
+- Align security-policy checkout examples with the supported public release
+  and validate those examples during public-release checks.
 
 ## [2.1.1] - 2026-07-23
 

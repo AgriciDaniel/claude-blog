@@ -520,6 +520,10 @@ Repurpose a blog post into content for other platforms and formats.
 | Newsletter | Email digest version with CTA |
 | Podcast | Interview/discussion script based on post content |
 
+The Xquik `x-twitter-scraper` Skill is an optional handoff for current X
+research, structured exports, monitoring, and approval-gated publishing.
+`/blog repurpose` remains fully functional without Xquik.
+
 ### Related Commands
 
 - `/blog strategy`: Identifies distribution channels for repurposing
