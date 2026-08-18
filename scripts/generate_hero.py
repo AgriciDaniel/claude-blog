@@ -3,15 +3,16 @@
 
 Implements the v1.9.0 Blog Delivery Contract hero-image ladder. The
 orchestrator handles step 1 (Banana MCP) when available; this script
-handles steps 2-4 and produces the final `hero.<ext>` + `hero-credit.txt`
+handles steps 2-5 and produces the final `hero.<ext>` + `hero-credit.txt`
 in the requested output directory.
 
 Ladder:
   1. (Orchestrator only) Banana MCP via nanobanana-mcp
   2. Direct Gemini API via google-genai SDK (requires GOOGLE_AI_API_KEY)
-  3. Premium stock APIs: Unsplash, Pexels, Pixabay (any one key suffices)
-  4. Openverse public API (CC-licensed; no key required)
-  5. Exit nonzero with setup instructions
+  3. Atlas Cloud image API (requires ATLASCLOUD_API_KEY)
+  4. Premium stock APIs: Unsplash, Pexels, Pixabay (any one key suffices)
+  5. Openverse public API (CC-licensed; no key required)
+  6. Exit nonzero with setup instructions
 
 Usage:
     python3 scripts/generate_hero.py --topic "<title>" --tags "a,b,c" \\
@@ -33,6 +34,7 @@ import re
 import socket
 import sys
 import tempfile
+import time
 import urllib.parse
 import urllib.request
 from pathlib import Path
@@ -53,6 +55,14 @@ OUTPUT_FILE_PREFIX = "hero"
 DEFAULT_WIDTH = 1200
 DEFAULT_HEIGHT = 630
 DEFAULT_GEMINI_MODEL = os.environ.get("NANOBANANA_MODEL") or "gemini-3.1-flash-image"
+DEFAULT_ATLAS_MODEL = (
+    os.environ.get("ATLASCLOUD_IMAGE_MODEL")
+    or "google/nano-banana-2-lite/text-to-image"
+)
+ATLAS_API_BASE = os.environ.get(
+    "ATLASCLOUD_MEDIA_API_BASE", "https://api.atlascloud.ai/api/v1"
+).rstrip("/")
+ATLAS_POLL_DELAYS = (1, 2, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4)
 OPENVERSE_API = "https://api.openverse.engineering/v1/images/"
 UNSPLASH_API = "https://api.unsplash.com/search/photos"
 PEXELS_API = "https://api.pexels.com/v1/search"
@@ -369,6 +379,47 @@ def _http_get_json(url: str, headers: Optional[dict] = None) -> Optional[dict]:
         return None
 
 
+def _http_post_json(url: str, payload: dict, headers: Optional[dict] = None) -> Optional[dict]:
+    """POST JSON exactly once with the same URL and response guards as GET."""
+    ok, reason, host, port, infos = _resolve_public_url(url)
+    if not ok or host is None or port is None:
+        print(f"[http] refused (scheme/host policy): {_url_for_log(url)} ({reason})", file=sys.stderr)
+        return None
+    body = json.dumps(payload).encode("utf-8")
+    req = urllib.request.Request(
+        url,
+        data=body,
+        headers={
+            "User-Agent": USER_AGENT,
+            "Content-Type": "application/json",
+            **(headers or {}),
+        },
+        method="POST",
+    )
+    try:
+        with _PinnedDNS(host, port, infos):
+            with _NO_REDIRECT_OPENER.open(req, timeout=HTTP_TIMEOUT) as resp:
+                status = getattr(resp, "status", 200)
+                if 300 <= int(status) < 400:
+                    print(f"[http] redirect refused: {_url_for_log(url)}", file=sys.stderr)
+                    return None
+                raw = resp.read(MAX_IMAGE_BYTES + 1)
+                if len(raw) > MAX_IMAGE_BYTES:
+                    print(
+                        f"[http] response exceeds {MAX_IMAGE_BYTES} bytes; refusing",
+                        file=sys.stderr,
+                    )
+                    return None
+    except Exception as e:
+        print(f"[http] POST {_url_for_log(url)}: {e}", file=sys.stderr)
+        return None
+    try:
+        return json.loads(raw.decode("utf-8"))
+    except (json.JSONDecodeError, UnicodeDecodeError) as e:
+        print(f"[http] json decode failed: {e}", file=sys.stderr)
+        return None
+
+
 def _try_gemini(topic: str, tags: list[str], out_dir: Path, width: int, height: int, model: str) -> Optional[dict]:
     """Ladder step 2: direct Gemini API."""
     api_key = os.environ.get("GOOGLE_AI_API_KEY")
@@ -424,6 +475,83 @@ def _try_gemini(topic: str, tags: list[str], out_dir: Path, width: int, height: 
         f"AI-generated via {used_model}. No attribution required.\nPrompt: {prompt}\n",
     )
     return {"source": "gemini", "model": used_model, "path": str(hero_path)}
+
+
+def _try_atlas(
+    topic: str,
+    tags: list[str],
+    out_dir: Path,
+    width: int,
+    height: int,
+    model: str,
+) -> Optional[dict]:
+    """Ladder step 3: Atlas Cloud async image generation."""
+    api_key = os.environ.get("ATLASCLOUD_API_KEY")
+    if not api_key:
+        return None
+
+    prompt = _build_prompt(topic, tags, width, height)
+    headers = {"Authorization": f"Bearer {api_key}"}
+    submitted = _http_post_json(
+        f"{ATLAS_API_BASE}/model/generateImage",
+        {
+            "model": model,
+            "prompt": prompt,
+            "aspect_ratio": "16:9",
+            "resolution": "1k",
+        },
+        headers=headers,
+    )
+    if not submitted or str(submitted.get("code", "200")) != "200":
+        print("[atlas] image submission failed", file=sys.stderr)
+        return None
+
+    prediction = submitted.get("data") or submitted
+    prediction_id = prediction.get("id") if isinstance(prediction, dict) else None
+    if not prediction_id:
+        print("[atlas] image submission returned no prediction id", file=sys.stderr)
+        return None
+
+    output_url: Optional[str] = None
+    for delay in ATLAS_POLL_DELAYS:
+        time.sleep(delay)
+        polled = _http_get_json(
+            f"{ATLAS_API_BASE}/model/prediction/{urllib.parse.quote(str(prediction_id), safe='')}",
+            headers=headers,
+        )
+        if not polled or str(polled.get("code", "200")) != "200":
+            continue
+        result = polled.get("data") or polled
+        if not isinstance(result, dict):
+            continue
+        status = str(result.get("status") or "").lower()
+        if status in {"failed", "timeout", "canceled", "cancelled"}:
+            print(f"[atlas] prediction ended with status {status}", file=sys.stderr)
+            return None
+        if status in {"completed", "succeeded"}:
+            outputs = result.get("outputs") or []
+            if outputs and isinstance(outputs[0], str):
+                output_url = outputs[0]
+            break
+
+    if not output_url:
+        print("[atlas] prediction did not complete within the polling window", file=sys.stderr)
+        return None
+    img_bytes = _download_image(output_url)
+    if not img_bytes:
+        return None
+    try:
+        img_bytes = _fit_image_bytes(img_bytes, width, height)
+    except RuntimeError as e:
+        print(f"[image] {e}", file=sys.stderr)
+        return None
+    hero_path = out_dir / f"{OUTPUT_FILE_PREFIX}{_image_ext(img_bytes, '.png')}"
+    _atomic_write_bytes(hero_path, img_bytes)
+    _atomic_write_text(
+        out_dir / "hero-credit.txt",
+        f"AI-generated via Atlas Cloud model {model}. No attribution required.\nPrompt: {prompt}\n",
+    )
+    return {"source": "atlas", "model": model, "path": str(hero_path)}
 
 
 def _try_unsplash(query: str, out_dir: Path, width: int, height: int) -> Optional[dict]:
@@ -584,6 +712,11 @@ def main() -> int:
     parser.add_argument("--width", type=int, default=DEFAULT_WIDTH)
     parser.add_argument("--height", type=int, default=DEFAULT_HEIGHT)
     parser.add_argument("--model", default=DEFAULT_GEMINI_MODEL, help="Gemini image model name")
+    parser.add_argument(
+        "--atlas-model",
+        default=DEFAULT_ATLAS_MODEL,
+        help="Atlas Cloud image model name",
+    )
     parser.add_argument("--json", action="store_true", help="Emit JSON result to stdout")
     args = parser.parse_args()
 
@@ -625,6 +758,9 @@ def main() -> int:
 
     ladder: list[tuple[str, Callable[[], Optional[dict]]]] = [
         ("gemini", lambda: _try_gemini(args.topic, tags, out_dir, args.width, args.height, args.model)),
+        ("atlas", lambda: _try_atlas(
+            args.topic, tags, out_dir, args.width, args.height, args.atlas_model
+        )),
         ("premium-stock", lambda: _try_premium_stock(args.topic, tags, out_dir, args.width, args.height)),
         ("openverse", lambda: _try_openverse(args.topic, tags, out_dir, args.width, args.height)),
     ]
@@ -650,7 +786,8 @@ def main() -> int:
         "error": "no-image-gen-path",
         "message": (
             "Hero image required but no generation path available. Configure Banana MCP, "
-            "set GOOGLE_AI_API_KEY, set UNSPLASH_ACCESS_KEY / PEXELS_API_KEY / PIXABAY_API_KEY, "
+            "set GOOGLE_AI_API_KEY or ATLASCLOUD_API_KEY, set "
+            "UNSPLASH_ACCESS_KEY / PEXELS_API_KEY / PIXABAY_API_KEY, "
             "or place a 1200x630 hero.png in the draft folder manually."
         ),
     }

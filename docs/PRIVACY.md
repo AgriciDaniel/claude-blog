@@ -17,6 +17,7 @@ When you explicitly invoke certain commands, the plugin may interact with extern
 | Feature | Service | When |
 |---------|---------|------|
 | AI image generation | Google Gemini API (via nanobanana-mcp) | Only when you run `/blog image` and have configured your own API key |
+| Hero image generation | Atlas Cloud API | Only when `scripts/generate_hero.py` reaches the optional Atlas fallback and you have configured `ATLASCLOUD_API_KEY` |
 | Audio narration | Google Gemini TTS API | Only when you run `/blog audio` and have configured your own API key |
 | Web research and fetching | Search engines, public web pages | Used by most commands for research, SERP analysis, link verification, and source checking (`/blog write`, `/blog rewrite`, `/blog analyze`, `/blog brief`, `/blog outline`, `/blog strategy`, `/blog seo-check`, `/blog factcheck`, `/blog geo`, `/blog calendar`, `/blog persona`, `/blog cannibalization`) |
 | SERP and keyword data | DataForSEO API (~$0.01/call) | Only when you run `/blog cannibalization --api` with your own DataForSEO credentials. Local mode (default) requires no API |

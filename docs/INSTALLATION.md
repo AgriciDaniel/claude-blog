@@ -222,9 +222,10 @@ done
 
 ## Optional: AI Image Generation
 
-`claude-blog` can generate custom blog images via Gemini AI (hero images, inline
-illustrations, social cards). This requires the nanobanana-mcp server and a free
-Google AI API key.
+`claude-blog` can generate custom blog images via Gemini AI or Atlas Cloud
+(hero images, inline illustrations, social cards). Gemini uses the
+nanobanana-mcp server and a Google AI API key. Atlas Cloud is an optional
+fallback for the direct hero-image script.
 
 ### Setup
 
@@ -234,6 +235,11 @@ python3 skills/blog-image/scripts/setup_image_mcp.py --key YOUR_KEY
 
 # Verify setup
 python3 skills/blog-image/scripts/validate_image_setup.py
+
+# Optional Atlas Cloud fallback for scripts/generate_hero.py
+export ATLASCLOUD_API_KEY="your-atlas-key"
+# Optional model override
+export ATLASCLOUD_IMAGE_MODEL="google/nano-banana-2-lite/text-to-image"
 ```
 
 ### Requirements
@@ -242,6 +248,7 @@ python3 skills/blog-image/scripts/validate_image_setup.py
 |-------------|---------|---------|
 | Node.js | 18+ | Runs `npx @ycse/nanobanana-mcp` |
 | Google AI API key | Free tier | Image generation via Gemini |
+| Atlas Cloud API key | Optional | Image generation when Gemini is unavailable |
 
 Without this setup, all `/blog` commands work normally using stock photos from
 Pixabay/Unsplash/Pexels. AI image generation is an optional enhancement.

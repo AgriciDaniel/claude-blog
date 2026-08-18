@@ -206,7 +206,7 @@ docstring, JSON output, and stdlib-only or narrowly-pinned dependencies.
 | `cognitive_load.py` | Per-section concept-density analyzer (entities, numerics, jargon, forward refs, clause depth) | v1.8.0 |
 | `content_decay.py` | GSC content-decay detector: 20%+ QoQ decline | v1.10.0 |
 | `discourse_research.py` | Discourse-brief synthesis from SERP JSON; depth-bounded parsing; path-traversal guards | v1.8.0 |
-| `generate_hero.py` | Hero image ladder: Banana MCP -> Gemini API -> Unsplash/Pexels/Pixabay -> Openverse | v1.9.0 |
+| `generate_hero.py` | Hero image ladder: Banana MCP -> Gemini API -> Atlas Cloud -> Unsplash/Pexels/Pixabay -> Openverse | v1.9.0 |
 | `load_untrusted_root.py` | Code-enforced BRAND/VOICE/DISCOURSE fencing with CSPRNG nonces; O_NOFOLLOW + size cap | v1.8.3 |
 | `lint_prose.py` | Fence-aware prose-hygiene linter (no em-dash, en-dash, ` -- `); CI-enforced | v1.8.4 |
 | `quality_gate.py` | Pre-commit gate: block posts scoring < 70 | v1.10.0 |

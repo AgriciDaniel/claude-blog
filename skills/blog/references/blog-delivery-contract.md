@@ -23,7 +23,7 @@ Runs once at the start of `/blog write` or `/blog rewrite`. Enumerates the proje
 ### What gets enumerated
 
 - **MCP servers loaded**: `nanobanana-mcp`, `dataforseo-mcp`, others. Detected via tool availability, not by reading `.mcp.json` (the file may declare servers that failed to start).
-- **Env vars present**: `GOOGLE_AI_API_KEY`, `UNSPLASH_ACCESS_KEY`, `PEXELS_API_KEY`, `PIXABAY_API_KEY`. Key names only; values never read or logged.
+- **Env vars present**: `GOOGLE_AI_API_KEY`, `ATLASCLOUD_API_KEY`, `UNSPLASH_ACCESS_KEY`, `PEXELS_API_KEY`, `PIXABAY_API_KEY`. Key names only; values never read or logged.
 - **Optional Python deps**: `patchright`, `weasyprint`, `google-genai`, `requests`. Probed via `importlib.util.find_spec()`.
 - **Project-root context files**: `BRAND.md`, `VOICE.md`, `DISCOURSE.md`. Loaded only via the trusted installed `load_untrusted_root.py` helper.
 - **Agents available**: `blog-reviewer` is mandatory; `blog-researcher`, `blog-writer`, `blog-seo`, `blog-translator` are optional.
@@ -31,7 +31,7 @@ Runs once at the start of `/blog write` or `/blog rewrite`. Enumerates the proje
 
 ### Failure modes
 
-- **No hero path at all** (no valid local `hero.png` or `.jpg`, no Banana MCP, no Gemini key, no stock API key, and Openverse unreachable): BLOCK with explicit setup instructions.
+- **No hero path at all** (no valid local `hero.png` or `.jpg`, no Banana MCP, no Gemini or Atlas Cloud key, no stock API key, and Openverse unreachable): BLOCK with explicit setup instructions.
 - **Reviewer agent missing**: BLOCK. Cannot enforce Gate 4 without it.
 - **Capability declared but unused**: WARN (informational, not blocking). Example: `dataforseo-mcp` is loaded but the post topic doesn't need keyword research.
 
@@ -115,11 +115,12 @@ Tried in order. First success wins. Skip steps for capabilities not available pe
 
 1. **Banana MCP** (`nanobanana-mcp` loaded as a tool, not just declared in `.mcp.json`): call its `generate_image` tool with an optimized six-component prompt (Subject + Action + Context + Composition + Lighting + Style) targeting 1200×630.
 2. **Direct Gemini API** (`GOOGLE_AI_API_KEY` present, MCP not loaded): call the `google-genai` SDK with `gemini-3.1-flash-image` by default. Fallback, in order, to `gemini-3.1-flash-lite-image` and `gemini-3-pro-image`. See `https://ai.google.dev/gemini-api/docs/image-generation`.
-3. **Premium stock APIs** (`UNSPLASH_ACCESS_KEY`, `PEXELS_API_KEY`, or `PIXABAY_API_KEY` present): search via the official API using post title + top tags as query. Do not scrape or construct raw CDN URLs. Capture each source's license metadata and attribution requirements, download the asset locally, and write `hero-credit.txt`. Unsplash, Pexels, and Pixabay use their own licenses; do not treat them as CC sources.
-4. **Openverse public API** (no key required): `GET https://api.openverse.org/v1/images/?q=<query>&aspect_ratio=wide&license=cc0,by`. Pick the top relevance match with complete attribution. Always download to `hero.<ext>` plus `hero-credit.txt` for CC attribution.
-5. **Block with clear error**: "Hero image required but no generation path available. Configure Banana MCP, set GOOGLE_AI_API_KEY, set UNSPLASH/PEXELS/PIXABAY key, or place a 1200×630 hero.png in the draft folder manually."
+3. **Atlas Cloud API** (`ATLASCLOUD_API_KEY` present): submit one image task, poll the prediction endpoint with bounded delays, and download the completed output. `ATLASCLOUD_IMAGE_MODEL` may override the default model. Submission is never retried automatically.
+4. **Premium stock APIs** (`UNSPLASH_ACCESS_KEY`, `PEXELS_API_KEY`, or `PIXABAY_API_KEY` present): search via the official API using post title + top tags as query. Do not scrape or construct raw CDN URLs. Capture each source's license metadata and attribution requirements, download the asset locally, and write `hero-credit.txt`. Unsplash, Pexels, and Pixabay use their own licenses; do not treat them as CC sources.
+5. **Openverse public API** (no key required): `GET https://api.openverse.org/v1/images/?q=<query>&aspect_ratio=wide&license=cc0,by`. Pick the top relevance match with complete attribution. Always download to `hero.<ext>` plus `hero-credit.txt` for CC attribution.
+6. **Block with clear error**: "Hero image required but no generation path available. Configure Banana MCP, set GOOGLE_AI_API_KEY or ATLASCLOUD_API_KEY, set UNSPLASH/PEXELS/PIXABAY key, or place a 1200×630 hero.png in the draft folder manually."
 
-Implementation: `scripts/generate_hero.py`. Always writes `hero-credit.txt` next to `hero.<ext>` for attribution compliance, even when generation paths 1-2 (AI-generated, no attribution needed) are used. The file then contains "AI-generated; no attribution required."
+Implementation: `scripts/generate_hero.py`. Always writes `hero-credit.txt` next to `hero.<ext>` for attribution compliance, even when generation paths 1-3 (AI-generated, no attribution needed) are used. The file then contains "AI-generated; no attribution required."
 
 ## Iteration Loop
 

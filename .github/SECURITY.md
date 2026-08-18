@@ -73,7 +73,7 @@ plugin straddles. Findings against any of these are in scope:
 | ID | Boundary | Threats |
 |---|---|---|
 | T1 | CLI args / skill invocation prompts → Python scripts | shell injection, path traversal, DoS |
-| T2 | External API responses (Google APIs) → JSON parse → reports | response forgery, secret cache leak |
+| T2 | External API responses (Google and Atlas Cloud APIs) → JSON parse or image download → local artifacts | response forgery, secret leak, SSRF through output URLs |
 | T3 | NotebookLM browser session state → fs | session pickle tampering, credential leak |
 | T4 | Env vars (`GOOGLE_AI_API_KEY` etc.) → MCP subprocess (npx) | env leak in subprocess, MCP impersonation |
 | T5 | `SKILL.md` / `agents/*.md` → loaded by Claude as instructions | prompt injection, tool abuse |

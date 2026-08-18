@@ -7,7 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-_No unreleased changes._
+### Added
+
+- Added Atlas Cloud as an optional hero-image fallback with single-submit task
+  creation, bounded prediction polling, and exact output resizing.
 
 ## [2.1.1] - 2026-07-23
 

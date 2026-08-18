@@ -478,6 +478,7 @@ def gate_1_capability_discovery(draft_dir: Path, live_tools: list[str] | None = 
     live_tools = live_tools or []
     env_keys = {
         "GOOGLE_AI_API_KEY": bool(os.environ.get("GOOGLE_AI_API_KEY")),
+        "ATLASCLOUD_API_KEY": bool(os.environ.get("ATLASCLOUD_API_KEY")),
         "UNSPLASH_ACCESS_KEY": bool(os.environ.get("UNSPLASH_ACCESS_KEY")),
         "PEXELS_API_KEY": bool(os.environ.get("PEXELS_API_KEY")),
         "PIXABAY_API_KEY": bool(os.environ.get("PIXABAY_API_KEY")),
@@ -501,6 +502,7 @@ def gate_1_capability_discovery(draft_dir: Path, live_tools: list[str] | None = 
     configured_image_paths = (
         any("nanobanana" in tool.lower() or "banana" in tool.lower() for tool in live_tools)
         or env_keys["GOOGLE_AI_API_KEY"]
+        or env_keys["ATLASCLOUD_API_KEY"]
         or env_keys["UNSPLASH_ACCESS_KEY"]
         or env_keys["PEXELS_API_KEY"]
         or env_keys["PIXABAY_API_KEY"]
