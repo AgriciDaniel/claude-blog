@@ -22,7 +22,7 @@ claude-blog/
   CLAUDE.md                          # Project instructions (this file)
   docs/CONTRIBUTORS.md               # Pro Hub Challenge attribution and integration decisions
   CHANGELOG.md                       # Keep a Changelog format
-  .claude-plugin/plugin.json         # Plugin manifest (v2.1.1)
+  .claude-plugin/plugin.json         # Plugin manifest (v2.2.0)
   .claude-plugin/marketplace.json    # Marketplace catalog for distribution
   .mcp.example.json                  # MCP config example (tracked; .mcp.json is gitignored)
   pyproject.toml                     # Python packaging (3.11+)
@@ -178,9 +178,9 @@ Submit at: claude.ai/settings/plugins/submit or platform.claude.com/plugins/subm
 ### Standalone Install (no marketplace)
 ```bash
 curl -fsSLo install.sh \
-  https://raw.githubusercontent.com/AgriciDaniel/claude-blog/v2.1.1/install.sh
+  https://raw.githubusercontent.com/AgriciDaniel/claude-blog/v2.2.0/install.sh
 # Compare the SHA-256 digest with the value published in README.md.
-CLAUDE_BLOG_REF=v2.1.1 bash ./install.sh
+CLAUDE_BLOG_REF=v2.2.0 bash ./install.sh
 ```
 
 ## Release Blog Post

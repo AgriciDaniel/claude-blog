@@ -27,7 +27,7 @@ your report.
 ## Supported Versions
 
 Only the latest version receives security updates. Pin to a published
-release tag (`git checkout v2.1.1`) for reproducible installs; do not
+release tag (`git checkout v2.2.0`) for reproducible installs; do not
 track `main` for production usage.
 
 ## In Scope
@@ -280,7 +280,7 @@ The repo's `CHANGELOG.md` references the security commits.
 5. **Prefer git clone + checkout-tag over curl-pipe-bash**:
    ```
    git clone https://github.com/AgriciDaniel/claude-blog.git
-   cd claude-blog && git checkout v2.1.1
+   cd claude-blog && git checkout v2.2.0
    ./install.sh
    ```
    This lets you inspect the install script before it runs.

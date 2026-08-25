@@ -16,7 +16,7 @@ import sys
 from pathlib import Path
 
 PUBLIC_REPOSITORY = "https://github.com/AgriciDaniel/claude-blog"
-PUBLIC_VERSION = "2.1.1"
+PUBLIC_VERSION = "2.2.0"
 PUBLIC_SLUG = "claude-blog@agricidaniel-blog"
 PUBLIC_OWNER = "AgriciDaniel"
 PUBLIC_OWNER_URL = "https://github.com/AgriciDaniel"

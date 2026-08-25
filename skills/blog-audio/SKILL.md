@@ -14,7 +14,7 @@ argument-hint: "[generate|voices|setup] [file-or-text] [--mode summary|full|dial
 license: MIT
 metadata:
   author: AgriciDaniel
-  version: "2.1.1"
+  version: "2.2.0"
 ---
 
 # Blog Audio: Gemini TTS Narration for Blog Posts

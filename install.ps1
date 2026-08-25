@@ -7,7 +7,7 @@
 #   pwsh -File ./install.ps1
 
 $ErrorActionPreference = "Stop"
-$ClaudeBlogVersion = "2.1.1"
+$ClaudeBlogVersion = "2.2.0"
 
 function Write-Color($Color, $Text) {
     Write-Host $Text -ForegroundColor $Color
@@ -86,8 +86,8 @@ function Main {
     $TempDir = $null
 
     # Determine source directory (local clone or piped from irm)
-    if ($MyInvocation.MyCommand.Path -and (Test-Path (Join-Path (Join-Path (Split-Path -Parent $MyInvocation.MyCommand.Path) "skills") "blog"))) {
-        $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+    if ($PSScriptRoot -and (Test-Path (Join-Path (Join-Path $PSScriptRoot "skills") "blog"))) {
+        $ScriptDir = $PSScriptRoot
     } else {
         $Repo = if ($env:CLAUDE_BLOG_REPO) { $env:CLAUDE_BLOG_REPO } else { "AgriciDaniel/claude-blog" }
         $Ref = if ($env:CLAUDE_BLOG_REF) { $env:CLAUDE_BLOG_REF } else { "main" }

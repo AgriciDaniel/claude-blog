@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-08-26
+
 ### Added
 
 - Added a weekly read-only currentness check against Google's ranking-incident
@@ -60,10 +62,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   inspectable download, hash-verification, and explicit execution steps.
 - Corrected the stale security checkout tag and made release validation reject
   future tag drift.
+- Corrected local-checkout detection in the PowerShell installer so running
+  `install.ps1` from a clone uses those reviewed local files instead of
+  cloning the repository again.
 
 ### Verification
 
-- Passed 343 root tests with one intentional skip and 26 Brain tests.
+- Passed 344 root tests with one intentional skip and 26 Brain tests.
 - Passed live and offline Google-currentness checks, 125 Brain source-record
   checks, plugin validation, hash-locked dependency smoke tests, actionlint,
   prose hygiene, repository consistency, and public-release validation.

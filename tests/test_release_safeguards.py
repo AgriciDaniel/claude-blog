@@ -1,4 +1,4 @@
-"""Regression coverage for v2.1.1 release and repository safeguards."""
+"""Regression coverage for v2.2.0 release and repository safeguards."""
 
 from __future__ import annotations
 
@@ -104,6 +104,12 @@ def test_installer_hash_is_independent_of_checkout_line_endings() -> None:
 
     assert hashlib.sha256(normalized).hexdigest() == expected
     assert hashlib.sha256(normalized + b"# content drift\n").hexdigest() != expected
+
+
+def test_powershell_installer_detects_its_local_checkout() -> None:
+    installer = (ROOT / "install.ps1").read_text(encoding="utf-8")
+    assert "$PSScriptRoot" in installer
+    assert "$MyInvocation.MyCommand.Path" not in installer
 
 
 def test_docs_have_no_active_powershell_pipe_to_execution() -> None:
@@ -543,7 +549,7 @@ def test_consistency_checker_discovers_skill_relative_resources_and_agents(
 
 def _public_fixture(root: Path) -> None:
     public = "https://github.com/AgriciDaniel/claude-blog"
-    version = "2.1.1"
+    version = "2.2.0"
     raw_sh = (
         "https://raw.githubusercontent.com/AgriciDaniel/claude-blog/main/install.sh"
     )
@@ -669,7 +675,7 @@ def test_public_release_validator_rejects_stale_security_tag(
     _public_fixture(tmp_path)
     security = tmp_path / ".github" / "SECURITY.md"
     security.write_text(
-        security.read_text(encoding="utf-8").replace("v2.1.1", "v1.7.0"),
+        security.read_text(encoding="utf-8").replace("v2.2.0", "v1.7.0"),
         encoding="utf-8",
     )
     report = module.validate(tmp_path)
@@ -734,7 +740,7 @@ def test_public_release_validator_rejects_version_collision(
     _public_fixture(tmp_path)
     pyproject = tmp_path / "pyproject.toml"
     pyproject.write_text(
-        pyproject.read_text(encoding="utf-8").replace("2.1.1", "2.1.0"),
+        pyproject.read_text(encoding="utf-8").replace("2.2.0", "2.1.0"),
         encoding="utf-8",
     )
     report = module.validate(tmp_path)
