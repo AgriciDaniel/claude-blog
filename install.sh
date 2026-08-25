@@ -144,18 +144,23 @@ main() {
     # Copy sub-skills (auto-discovers all skill directories)
     echo "→ Installing sub-skills..."
     local sub_skill_count=0
+    local expected_sub_skill_count=0
     for skill_dir in "${SCRIPT_DIR}/skills/"*/; do
         skill_name="$(basename "${skill_dir}")"
         [ "$skill_name" = "blog" ] && continue
+        [ -f "${skill_dir}SKILL.md" ] && expected_sub_skill_count=$((expected_sub_skill_count + 1))
         # VULN-IAC-003 (v1.9.1): defense-in-depth name validation. The
         # repo is single-owner and a clean clone cannot produce odd names,
         # but a tampered repo with a symlink like `skills/../../etc` would
         # hand us '..' here. Refuse anything outside the expected charset
-        # rather than mkdir + cp into the parent.
-        if ! printf '%s' "$skill_name" | grep -Eq '^[a-z0-9-]+$'; then
-            echo "  ! refusing skill with unexpected name: ${skill_name}" >&2
-            continue
-        fi
+        # rather than mkdir + cp into the parent. Spell out the accepted
+        # characters instead of using a locale-sensitive regex range.
+        case "$skill_name" in
+            ''|*[!abcdefghijklmnopqrstuvwxyz0123456789-]*)
+                echo "  ! refusing skill with unexpected name: ${skill_name}" >&2
+                continue
+                ;;
+        esac
         mkdir -p "${SKILL_DIR}/${skill_name}"
         if [ -f "${skill_dir}SKILL.md" ]; then
             cp "${skill_dir}SKILL.md" "${SKILL_DIR}/${skill_name}/SKILL.md"
@@ -170,6 +175,11 @@ main() {
             find "${SKILL_DIR}/${skill_name}/scripts" -type f -name '*.py' -exec chmod +x {} +
         fi
     done
+    if [ "${sub_skill_count}" -ne "${expected_sub_skill_count}" ]; then
+        echo "ERROR: installed ${sub_skill_count} of ${expected_sub_skill_count} sub-skills." >&2
+        echo "       Installation is incomplete; review the refusal messages above." >&2
+        return 1
+    fi
 
     # Create personas directory for blog-persona
     mkdir -p "${SKILL_DIR}/blog/references/personas"

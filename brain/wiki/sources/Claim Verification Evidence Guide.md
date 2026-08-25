@@ -1,6 +1,6 @@
 ---
 type: spoke
-title: "Claim Verification Flow"
+title: "Claim Verification Evidence Guide"
 domain: "Source Evidence"
 status: active
 created: 2026-07-08
@@ -41,7 +41,7 @@ Bring one claim at a time. Do not submit a paragraph, a bundle of bullets, or a 
 6. If the source is too broad, narrow the claim or create a row in [[Evidence Gap Register]].
 7. Only after the limitation is clear, move the claim to [[Claim To Source Mapping]].
 
-## Claim Verification Flow Decision Table
+## Claim Verification Evidence Decision Table
 
 | Claim class | First source ID | What the source can confirm | Required limitation | Output destination |
 |---|---|---|---|---|

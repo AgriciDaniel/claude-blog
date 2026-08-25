@@ -5,7 +5,9 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
+import os
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -114,6 +116,31 @@ def test_docs_have_no_active_powershell_pipe_to_execution() -> None:
         if pattern.search(path.read_text(encoding="utf-8")):
             violations.append(path.relative_to(ROOT).as_posix())
     assert not violations, f"active PowerShell pipe-to-execution instructions: {violations}"
+
+
+def test_docs_have_no_active_shell_download_to_execution() -> None:
+    pattern = re.compile(
+        r"(?:\bcurl\b|\bwget\b)[^\n]*\|\s*(?:bash|sh)\b",
+        re.IGNORECASE,
+    )
+    violations = []
+    for path in sorted((ROOT / "docs").rglob("*.md")):
+        if pattern.search(path.read_text(encoding="utf-8")):
+            violations.append(path.relative_to(ROOT).as_posix())
+    assert not violations, f"active shell download-to-execution instructions: {violations}"
+
+
+def test_workflows_pin_reviewed_action_releases_by_sha() -> None:
+    workflows = tuple(sorted((ROOT / ".github" / "workflows").glob("*.yml")))
+    combined = "\n".join(path.read_text(encoding="utf-8") for path in workflows)
+
+    expected = {
+        "actions/checkout": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "actions/setup-python": "5fda3b95a4ea91299a34e894583c3862153e4b97",
+    }
+    for action, sha in expected.items():
+        refs = set(re.findall(rf"{re.escape(action)}@([^\s#]+)", combined))
+        assert refs == {sha}, f"unreviewed {action} refs: {sorted(refs)}"
 
 
 def test_editorial_guidance_has_no_stat_or_length_delivery_quotas() -> None:
@@ -316,6 +343,12 @@ def test_dependency_requirements_and_locks_are_coherent() -> None:
     notebook_lock = (
         ROOT / "skills" / "blog-notebooklm" / "scripts" / "requirements.lock"
     ).read_text(encoding="utf-8")
+    google_req = (
+        ROOT / "skills" / "blog-google" / "scripts" / "requirements.txt"
+    ).read_text(encoding="utf-8")
+    google_lock = (
+        ROOT / "skills" / "blog-google" / "scripts" / "requirements.lock"
+    ).read_text(encoding="utf-8")
     pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
     uv_lock = (ROOT / "uv.lock").read_text(encoding="utf-8")
 
@@ -327,6 +360,45 @@ def test_dependency_requirements_and_locks_are_coherent() -> None:
     assert '"patchright==1.61.2"' in pyproject
     assert 'name = "google-genai"\nversion = "2.14.0"' in uv_lock
     assert 'name = "patchright"\nversion = "1.61.2"' in uv_lock
+    assert "google-ads>=31.2.0,<32.0.0" in google_req
+    assert "google-ads==31.4.0" in google_lock
+    assert '"google-ads>=31.2.0,<32.0.0"' in pyproject
+    assert 'name = "google-ads"\nversion = "31.4.0"' in uv_lock
+
+
+def test_shell_installer_is_locale_safe_and_complete(tmp_path: Path) -> None:
+    fake_bin = tmp_path / "bin"
+    fake_bin.mkdir()
+    fake_pip = fake_bin / "pip3"
+    fake_pip.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    fake_pip.chmod(0o755)
+
+    env = os.environ.copy()
+    env.update({
+        "HOME": str(tmp_path / "home"),
+        "LANG": "tr_TR.UTF-8",
+        "LC_ALL": "tr_TR.UTF-8",
+        "PATH": f"{fake_bin}:{env['PATH']}",
+    })
+    result = subprocess.run(
+        ["bash", str(ROOT / "install.sh")],
+        cwd=ROOT,
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    expected = len([
+        path for path in (ROOT / "skills").glob("*/SKILL.md")
+        if path.parent.name != "blog"
+    ])
+    installed = len(list((tmp_path / "home" / ".claude" / "skills").glob("blog-*/SKILL.md")))
+
+    assert result.returncode == 0, result.stderr
+    assert "refusing skill" not in result.stderr
+    assert f"Sub-skills:   {expected} installed" in result.stdout
+    assert installed == expected
 
 
 def test_standalone_installers_ship_google_update_ledger() -> None:
@@ -545,6 +617,11 @@ def _public_fixture(root: Path) -> None:
         ),
         encoding="utf-8",
     )
+    (root / ".github" / "SECURITY.md").write_text(
+        "Only the latest version is supported.\n"
+        f"Use `git checkout v{version}` before installation.\n",
+        encoding="utf-8",
+    )
     (root / "install.sh").write_text(
         f'{raw_sh}\nCLAUDE_BLOG_VERSION="{version}"\n'
         'repo="${CLAUDE_BLOG_REPO:-AgriciDaniel/claude-blog}"\n',
@@ -579,6 +656,28 @@ def test_current_public_release_surfaces_pass_validator() -> None:
         ROOT / "scripts" / "validate_public_release.py",
     )
     assert module.validate(ROOT)["status"] == "pass"
+
+
+def test_public_release_validator_rejects_stale_security_tag(
+    tmp_path: Path,
+) -> None:
+    module = _load_module(
+        "release_public_validator_security_version",
+        ROOT / "scripts" / "validate_public_release.py",
+    )
+    _public_fixture(tmp_path)
+    security = tmp_path / ".github" / "SECURITY.md"
+    security.write_text(
+        security.read_text(encoding="utf-8").replace("v2.1.1", "v1.7.0"),
+        encoding="utf-8",
+    )
+    report = module.validate(tmp_path)
+    assert report["status"] == "fail"
+    assert any(
+        error["kind"] == "invalid_public_security_version"
+        and error["file"] == ".github/SECURITY.md"
+        for error in report["errors"]
+    )
 
 
 def test_public_release_validator_rejects_private_raw_url(tmp_path: Path) -> None:

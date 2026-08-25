@@ -1,9 +1,11 @@
 ---
 type: "deliverable"
 title: "Health Scorecard"
-created: "2026-07-07"
-updated: "2026-07-07"
+domain: "claude-blog-brain"
+created: "2026-08-25"
+updated: "2026-08-25"
 status: "draft"
+tags: ["deliverable"]
 ---
 
 # Health Scorecard
@@ -12,7 +14,7 @@ status: "draft"
 
 | Source | Hash | Retrieved |
 |---|---|---:|
-| `.raw/sources/sample-source.md` | `9927f31d6196` | 2026-07-07 |
+| `.raw/sources/sample-source.md` | `9927f31d6196` | 2026-08-25 |
 
 ## Current Read
 

@@ -816,7 +816,7 @@ Google SEO API Setup Instructions
 
    {
      "service_account_path": "/path/to/service_account.json",
-     "api_key": "AIzaSy...",
+     "api_key": "YOUR_GOOGLE_API_KEY",
      "oauth_client_path": "/path/to/oauth_client.json",
      "default_property": "sc-domain:example.com",
      "ga4_property_id": "properties/123456789",

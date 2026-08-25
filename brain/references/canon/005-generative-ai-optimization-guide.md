@@ -28,3 +28,9 @@ No verbatim quote included. This note paraphrases the source and routes exact cl
 ## Reinforces
 
 GEO, AEO, AI Mode, AI Overviews, llms.txt caveats, and no special AI schema promises.
+
+## Folded into the wiki
+
+- [[AI Citation Mechanics]]
+- [[AI Crawler Accessibility]]
+- [[AI Feature Preview Controls]]

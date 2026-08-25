@@ -3,8 +3,8 @@
   "status": "market-ready",
   "domain": "blog content creation, optimization, and management dual-optimized for Google rankings (E-E-A-T, the 2026 core updates) and AI citations (GEO/AEO), spanning writing, rewriting and freshness, SERP-informed briefs and outlines, editorial calendars and strategy, semantic topic clusters, schema and internal linking, multilingual publishing, the FLOW framework, factchecking, personas, distribution, and the blog delivery contract, grounded in the claude-blog skill",
   "generic_only": false,
-  "last_verified": "2026-07-09",
-  "release_note": "Blog post, topic cluster, and GEO citation audit JSON adapter paths are implemented, CLI-wired, and covered by subprocess tests. Top-level generic_only remains false; central maturity and status labels are not changed here.",
+  "last_verified": "2026-08-25",
+  "release_note": "Blog post, topic cluster, and GEO citation audit JSON adapter paths are implemented, CLI-wired, and covered by subprocess tests. Market-ready verification passed after all 118 due source-ledger entries received explicit content, manual, or corrected review decisions on 2026-08-25.",
   "raw_input_types": [
     "blog-post input JSON using schemas/blog-post-input.schema.json",
     "Markdown body supplied through blog-post input JSON",

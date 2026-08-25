@@ -6,9 +6,12 @@
 
 Claude Blog Brain is an evidence-gated Obsidian brain for blog content creation, optimization, and management dual-optimized for Google rankings (E-E-A-T, the 2026 core updates) and AI citations (GEO/AEO), spanning writing, rewriting and freshness, SERP-informed briefs and outlines, editorial calendars and strategy, semantic topic clusters, schema and internal linking, multilingual publishing, the FLOW framework, factchecking, personas, distribution, and the blog delivery contract, grounded in the claude-blog skill.
 
-**Current maturity: market-ready.** The domain adapters, immutable raw provenance,
-demo verification, source citations, audit, and release gates all pass under
-`python scripts/audit_brain.py --verify` (score 100, no critical failures).
+**Current maturity: market-ready.** Domain adapters, immutable raw provenance,
+demo determinism, source citations, public-projection safety, and executable
+release verification pass. On 2026-08-25, all 118 elapsed source reviews were
+resolved against 89 public URLs with explicit content, manual, or corrected
+decisions. Future dates still require rechecking the underlying source and
+claim.
 
 It ships two artifacts:
 
@@ -82,8 +85,8 @@ research notes do not satisfy the gate.
 ## Release
 
 ```bash
-python scripts/package_release.py --version 0.1.0
-python scripts/package_release.py --version 1.0.0 --release-type market-ready
+python scripts/package_release.py --version 0.2.0
+python scripts/package_release.py --version 0.2.0 --release-type market-ready
 ```
 
 Release packaging scans for secrets, local paths, symlinks, untracked drift,

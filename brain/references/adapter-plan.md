@@ -1,12 +1,15 @@
 # Claude Blog Brain Adapter Plan
 
-Status: market-ready. Domain code adapters are implemented, CLI-wired, and test-covered.
+Status: market-ready. Domain code adapters are implemented, CLI-wired,
+test-covered, and release-verified with current research evidence.
 
 ## Current Adapter Honesty
 
 `references/adapter-manifest.json` sets `generic_only` to false because domain
 importers, synthesis modules, and report renderers are implemented, CLI-wired,
-and covered by tests. The orchestrator has reconciled maturity to market-ready.
+and covered by tests. Adapter completion did not override the source-freshness
+gate. The due ledger entries were revalidated on 2026-08-25 before maturity was
+promoted.
 The adapter evidence now covers importers, synthesis modules, renderers,
 fixtures, package CLI, malformed-input envelopes, deterministic output,
 output-file assertions, and citation coverage for blog post, topic cluster, and

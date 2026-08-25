@@ -259,6 +259,12 @@ List 2-3 alternatives, each with:
 - [ ] Product or Review JSON-LD is used only when the page has visible review
       content for an eligible reviewed item
 - [ ] `reviewRating` matches the visible score and the rating scale is explained
+- [ ] Every quoted review is traceable to a genuine experience; no review,
+      reviewer, rating, or testimonial was generated or fabricated
+- [ ] Any review written for money, a discount, a voucher, free access, or a
+      free product has a clear and prominent incentive disclosure
+- [ ] Review and AggregateRating markup contains only review text and ratings
+      that users can see on the page and does not aggregate other websites
 - [ ] Affiliate, sponsorship, free-trial, or gifted-access disclosures appear
       before commercial links
 - [ ] At least one honest, meaningful con is included (not just nitpicking)

@@ -26,3 +26,9 @@ No verbatim quote included. This note paraphrases the source and routes exact cl
 ## Reinforces
 
 Measurement, GSC integration, AI feature reporting, and confidence tags.
+
+## Folded into the wiki
+
+- [[Generative AI Performance Reporting]]
+- [[Generative Search Measurement Plan]]
+- [[AI Referral Reporting]]

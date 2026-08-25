@@ -60,7 +60,7 @@ In March 2026, the AI Marketing Hub Pro community ran the first Pro Hub Challeng
 
 The cluster engine was the highest-scoring submission of the entire challenge. Lutfiya's design (Plan + Execute architecture with cluster-context injection into per-post writes) is preserved verbatim; we removed brand-specific styling and image prompts, hardened the HTML output against XSS, and routed through claude-blog's existing sub-skills.
 
-Chris's multilingual suite was the most blog-native submission: four user-facing skills explicitly designed for claude-blog. The audit flagged a `curl | bash` installer and credential handling; both are removed in this port. The shared `cultural-adaptation.md` reference is referenced (not duplicated) by `blog-localize`. The `blog-translator` agent ships without `Bash` access (per the v1.9.6 lesson from claude-seo: prompt-injection blast radius).
+Chris's multilingual suite was the most blog-native submission: four user-facing skills explicitly designed for claude-blog. The audit flagged a direct download-to-shell installer and credential handling; both are removed in this port. The shared `cultural-adaptation.md` reference is referenced (not duplicated) by `blog-localize`. The `blog-translator` agent ships without `Bash` access (per the v1.9.6 lesson from claude-seo: prompt-injection blast radius).
 
 ### Acknowledged (not integrated in claude-blog v1.7.0)
 

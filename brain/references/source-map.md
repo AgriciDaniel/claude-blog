@@ -8,7 +8,8 @@
   14 scripts, 22 references, 12 templates, plugin metadata, README, license,
   changelog, and top docs.
 - `.raw/sources/claude-blog-brain-data/google-updates.json`: immutable
-  snapshot of the repo's Google update ledger captured 2026-07-09.
+  historical snapshot of the repo's Google update ledger captured 2026-07-09.
+  It is provenance, not the current ledger.
 - Google Search Central docs; web.dev CWV; FLOW framework bibliography;
   GEO/AEO studies; content-marketing and copywriting research.
 
@@ -29,6 +30,9 @@
 - When a ledger entry relies on a captured raw file, record
   `raw_snapshot_path` and `raw_snapshot_sha256`.
 - Record implemented schemas and adapters in `references/adapter-manifest.json`.
+- Treat repository-root `data/google-updates.json` as canonical. Generate
+  `brain/data/google-updates.json` with `scripts/sync_google_updates.py`; never
+  edit the Brain projection independently.
 - Create a source note under `wiki/sources/`.
 - Link affected entities, workflows, and deliverables.
 

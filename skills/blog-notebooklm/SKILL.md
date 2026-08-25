@@ -228,6 +228,10 @@ All data stored inside the skill directory:
 
 **Security:** All data directories are gitignored. Never commit auth or browser state.
 
+Browser lifecycle and authenticated-context isolation are centralized in
+`scripts/browser_session.py`. Command scripts must use that helper instead of
+opening an additional persistent profile or copying cookies into another file.
+
 ## Error Handling
 
 | Error | Resolution |

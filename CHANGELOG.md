@@ -7,7 +7,64 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-_No unreleased changes._
+### Added
+
+- Added a weekly read-only currentness check against Google's ranking-incident
+  JSON and Search documentation RSS, with separate unavailable and
+  refresh-required results.
+- Added deterministic synchronization of the canonical Google update ledger
+  into the bundled Blog Brain.
+- Added an evidence-backed disposition of every open pull request and issue as
+  of 2026-08-25, with local fixes separated from external GitHub state.
+- Added source-review records for all 125 Brain ledger entries, plus offline
+  verification that rejects stale, incomplete, or availability-only reviews.
+- Added a fail-closed Brain public projection with sanitization tests,
+  publication boundaries, workflow notes, governance policies, and release
+  evidence.
+- Added adjudicated secret scanning to CI and expanded public-release coverage
+  to security documentation and exact checkout tags.
+
+### Changed
+
+- Updated Google guidance through 2026-08-25 for the August spam update,
+  Search Console reporting anomalies, Preferred Sources, platform properties,
+  review integrity, and Google Ads API v25.1.
+- Replaced unsupported market, recovery, and winner claims in the 2026 Google
+  landscape with Google-owned sources and explicit evidence boundaries.
+- Clarified paid-API and account-access boundaries for Cloud Natural Language
+  and Google Ads.
+- Aligned both Google Ads install surfaces and hash locks with the Python
+  client version required by Google Ads API v25.
+- Updated every CI and Google-currentness checkout to the official
+  `actions/checkout` v7.0.1 and `actions/setup-python` v7.0.0 commit SHAs.
+- Promoted the bundled Blog Brain to v0.2.0 market-ready status after its own
+  executable audit and the independent Brainstein strict rubric both scored
+  100 with no warnings or critical failures.
+
+### Fixed
+
+- Made Unix sub-skill installation locale-independent and fail loudly when an
+  incomplete skill set is copied.
+- Corrected analyzer false negatives for JSON-LD `@graph`, HTML image alt text,
+  and non-US government and academic source hosts.
+- Added a declared-language analysis profile for Turkish summaries, trust
+  links, supported first-hand evidence, and Ateşman readability scoring while
+  preserving the English Flesch path.
+- Removed tables, fenced code, scripts, styles, and SVG payloads from prose
+  readability and sentence statistics.
+- Restored PageSpeed audit detail extraction and optional dotted-module
+  discovery for missing parents and unset module specifications.
+- Removed active download-to-execution documentation and replaced it with
+  inspectable download, hash-verification, and explicit execution steps.
+- Corrected the stale security checkout tag and made release validation reject
+  future tag drift.
+
+### Verification
+
+- Passed 343 root tests with one intentional skip and 26 Brain tests.
+- Passed live and offline Google-currentness checks, 125 Brain source-record
+  checks, plugin validation, hash-locked dependency smoke tests, actionlint,
+  prose hygiene, repository consistency, and public-release validation.
 
 ## [2.1.1] - 2026-07-23
 

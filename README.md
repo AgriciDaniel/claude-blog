@@ -287,7 +287,7 @@ Verify installer integrity before running:
 
 ```bash
 curl -fsSL -o install.sh https://raw.githubusercontent.com/AgriciDaniel/claude-blog/main/install.sh
-echo "b4fcd5aa6767529bc8d11017699bd8211519c93b0d6c28c5cf032f76ada98381  install.sh" | sha256sum -c
+echo "e4bad027b572fb8cd6654f5356ca67011542fa717fd8bf3c1b671803fd71c92f  install.sh" | sha256sum -c
 CLAUDE_BLOG_REF=v2.1.1 bash install.sh
 ```
 
@@ -322,16 +322,18 @@ Installation details: [`docs/INSTALLATION.md`](docs/INSTALLATION.md).
 2. **Plugin validation**: `claude plugin validate .` plus manifest, marketplace, and frontmatter checks.
 3. **Stale-path lint**: catches drift in `references/`, `templates/`, command docs, and installer payloads.
 4. **Prose hygiene**: `scripts/lint_prose.py` enforces no em dash, no en dash, and no ASCII double-hyphen prose.
-5. **Version coherence**: canonical version surfaces must all match the release version.
-6. **Command coherence**: `skills/blog/SKILL.md` and [`docs/COMMANDS.md`](docs/COMMANDS.md) must declare the same command set.
-7. **Repository consistency**: validates local reference targets, FLOW prompt locks, and reports orphaned resources without blocking.
-8. **Hash-locked dependency smoke**: installs the audio and NotebookLM locks with `--require-hashes`, then initializes google-genai, Patchright, and preflight without API calls or a browser launch.
-9. **Brain validation**: changes under `brain/**` run its pytest suite, vault lint, and report-only audit.
+5. **Secret adjudication**: `scripts/check_secrets.py` fails on unapproved detector findings and credential-shaped values without printing raw values.
+6. **Version coherence**: canonical version surfaces must all match the release version.
+7. **Command coherence**: `skills/blog/SKILL.md` and [`docs/COMMANDS.md`](docs/COMMANDS.md) must declare the same command set.
+8. **Repository consistency**: validates local reference targets, FLOW prompt locks, and reports orphaned resources without blocking.
+9. **Hash-locked dependency smoke**: installs the audio and NotebookLM locks with `--require-hashes`, then initializes google-genai, Patchright, and preflight without API calls or a browser launch.
+10. **Brain validation**: changes under `brain/**` run its pytest suite, vault lint, and report-only audit.
 
 Run locally before pushing:
 
 ```bash
 python3 -m pytest tests/
+python3 scripts/check_secrets.py
 python3 scripts/lint_prose.py
 claude plugin validate .
 ```

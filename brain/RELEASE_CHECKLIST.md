@@ -31,7 +31,7 @@
 - [ ] Read-only: `python scripts/lint_vault.py`
 - [ ] Read-only: `python scripts/audit_brain.py --json`
 - [ ] Mutating fixture regeneration: `python scripts/build_demo_vault.py`
-- [ ] Mutating release artifact build: `python scripts/package_release.py --version 0.1.0`
+- [ ] Mutating release artifact build: `python scripts/package_release.py --version 0.2.0`
 - [ ] No secrets, private client data, or local absolute paths in artifacts.
 - [ ] Market-ready release is blocked unless audit score is at least 90 with no critical failures.
 - [ ] `references/adapter-manifest.json` names real schemas, importer paths,

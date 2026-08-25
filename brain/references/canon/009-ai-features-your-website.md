@@ -25,3 +25,9 @@ No verbatim quote included. This note paraphrases the source and routes exact cl
 ## Reinforces
 
 AI Overviews, AI Mode, preview controls, crawlability, and no citation guarantees.
+
+## Folded into the wiki
+
+- [[AI Overview Citation Review]]
+- [[AI Mode Citation Review]]
+- [[Search Visibility Versus Citation Exposure]]

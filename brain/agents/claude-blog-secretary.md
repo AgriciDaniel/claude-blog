@@ -47,8 +47,9 @@ Read `<brain-root>/AGENTS.md` (read order: `SKILL.md`, `README.md`, `docs/OPERAT
 ## Honest limits to always surface
 - **No live data by itself:** live SERP, GSC, GA4, PageSpeed, and CrUX data come from the `claude-blog` skill
   and its extensions (blog-google, MCP). The brain holds method and memory, not live account access.
-- **Freshness:** search changes fast. Check `refresh_due` and the [[Google Algorithm Update Ledger]]
-  (`data/google-updates.json`, verified through 2026-06-30) before a time-sensitive claim.
+- **Freshness:** search changes fast. Check `refresh_due` and the canonical
+  `data/google-updates.json` `last_verified` field before a time-sensitive
+  claim. Never preserve a verification date as static prose.
 - **GEO surfaces move:** AI Overviews and AI Mode are distinct and change often; verify against
   `developers.google.com/search/docs/fundamentals/ai-optimization-guide` before committing advice.
 

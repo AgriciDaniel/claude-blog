@@ -24,7 +24,9 @@ helpers may still run without Python, but production installs should include it.
 ### Linux / macOS
 
 ```bash
-curl -sL https://raw.githubusercontent.com/AgriciDaniel/claude-blog/main/install.sh | bash
+curl -fsSLo install.sh https://raw.githubusercontent.com/AgriciDaniel/claude-blog/main/install.sh
+chmod +x install.sh
+./install.sh
 ```
 
 ### Windows (PowerShell)
@@ -34,7 +36,10 @@ irm https://raw.githubusercontent.com/AgriciDaniel/claude-blog/main/install.ps1 
 pwsh -File ./install.ps1
 ```
 
-> Downloading the script and running it as a file (rather than piping it straight into the shell) lets you inspect it first and avoids a heuristic antivirus false positive some scanners raise on `iex (irm ...)` one-liners. See [SECURITY.md](../.github/SECURITY.md#antivirus-false-positives).
+> Downloading either script before running it lets you inspect the exact bytes
+> first and avoids direct download-to-execution pipelines. It also removes the
+> PowerShell pattern reported in issue #33. See
+> [SECURITY.md](../.github/SECURITY.md#antivirus-false-positives).
 
 Both installers automatically copy all skills, agents, references, templates,
 and scripts to the correct Claude Code configuration directories.

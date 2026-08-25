@@ -893,7 +893,7 @@ def check_release_verification(*, run_verification: bool) -> tuple[bool, int, li
                     sys.executable,
                     "scripts/package_release.py",
                     "--version",
-                    "0.1.0",
+                    "0.2.0",
                     "--dist-dir",
                     tmp,
                     "--allow-outside-dist",

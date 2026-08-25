@@ -26,3 +26,9 @@ No verbatim quote included. This note paraphrases the source and routes exact cl
 ## Reinforces
 
 Schema deprecation hygiene, Article priority, visible answers, and no deprecated advice.
+
+## Folded into the wiki
+
+- [[FAQPage Rich Result Policy]]
+- [[Visible Q And A Without FAQ Rich Results]]
+- [[Schema Deprecation Watch]]

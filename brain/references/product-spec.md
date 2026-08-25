@@ -1,6 +1,8 @@
 # Claude Blog Brain Product Spec
 
-Status: market-ready. Demo verification, source-cited reports, and release audits pass under `audit_brain --verify` (score 100).
+Status: market-ready. Implemented adapters, deterministic demo verification,
+source review, public-projection safety, and executable release verification
+pass as of 2026-08-25.
 
 ## Buyer
 
