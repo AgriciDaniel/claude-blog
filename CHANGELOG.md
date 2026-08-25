@@ -37,6 +37,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   client version required by Google Ads API v25.
 - Updated every CI and Google-currentness checkout to the official
   `actions/checkout` v7.0.1 and `actions/setup-python` v7.0.0 commit SHAs.
+- Updated `actions/setup-node` to the official v7.0.0 commit so CI runs on the
+  supported Node 24 action runtime without GitHub's Node 20 deprecation warning.
 - Promoted the bundled Blog Brain to v0.2.0 market-ready status after its own
   executable audit and the independent Brainstein strict rubric both scored
   100 with no warnings or critical failures.

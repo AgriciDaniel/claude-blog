@@ -137,6 +137,7 @@ def test_workflows_pin_reviewed_action_releases_by_sha() -> None:
     expected = {
         "actions/checkout": "3d3c42e5aac5ba805825da76410c181273ba90b1",
         "actions/setup-python": "5fda3b95a4ea91299a34e894583c3862153e4b97",
+        "actions/setup-node": "820762786026740c76f36085b0efc47a31fe5020",
     }
     for action, sha in expected.items():
         refs = set(re.findall(rf"{re.escape(action)}@([^\s#]+)", combined))

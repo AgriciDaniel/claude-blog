@@ -19,7 +19,7 @@ SHA_FIELD_RE = re.compile(
 )
 ACTION_PIN_RE = re.compile(r"uses:\s*[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+@[0-9a-f]{40}\b")
 ACTION_EXPECTATION_RE = re.compile(
-    r'"actions/(?:checkout|setup-python)"\s*:\s*"[0-9a-f]{40}"'
+    r'"actions/(?:checkout|setup-node|setup-python)"\s*:\s*"[0-9a-f]{40}"'
 )
 PLACEHOLDER_MARKERS = (
     "YOUR_",
