@@ -1,0 +1,36 @@
+# flow-prompts.lock. SHA-256 baseline for synced FLOW prompts.
+# Ref: HEAD | format: <sha256hex>  <rel_path> (sha256sum-compatible)
+
+48e7813662dd84a92b91fb5ef433a97da1e569f6f86e6959f3c2e59bbf85c924  skills/blog-flow/references/bibliography.md
+4e654aafe95e5a0e322cf18a01cc240c2f02a1154ac17e92add232872f78962f  skills/blog-flow/references/flow-framework.md
+4441433d01f810580313854721edca56a96492695f8c8c4403061ca7466b99cd  skills/blog-flow/references/prompts/README.md
+9b2aab25c21547167f4bb6badc8a7ef3d6411b7addccda5de42c5f102e295f9b  skills/blog-flow/references/prompts/find/content-planning-for-topical-relevance-prompt.md
+7f82500eee43f13c3b93f9f7f7b0270c8878e60177cda4f0ee288cfac4d3a655  skills/blog-flow/references/prompts/find/content-prioritization-prompt.md
+c5529e292663d95c155319d9decc43534814e718298d0190320a6e92c9a0ed18  skills/blog-flow/references/prompts/find/keyword-research-prompt.md
+b650ed30e94e7138b2b6e1457f8e0d28c6765fc97c9438ade2a340f632e8b517  skills/blog-flow/references/prompts/find/keyword-variations-for-topical-relevance-prompt.md
+62c5847878890a6b540012db0e29afda6cd511264e428242cb51a48e45ff03f1  skills/blog-flow/references/prompts/find/prompt-audience-avatar.md
+cb148a3d698152d98cb63fe0c15ce1caf8488d858afb822d54d972e7f25c1c21  skills/blog-flow/references/prompts/leverage/backlink-competition-prompt.md
+c749937b806da105e3514be11a3f0e6d98605d8ab5ad5d5beed4ef676d11021b  skills/blog-flow/references/prompts/optimize/ai-detector-test-follow-up-prompt.md
+462f4221ba7fd24a84ae732ee79d91eedd1c850f8eb312e8cf2b39d1f867138c  skills/blog-flow/references/prompts/optimize/ai-supporting-pages-rewrite-prompt.md
+d984730765d5276bf10084ad40e854fa9058c894249bd760338d1f12c4e951e2  skills/blog-flow/references/prompts/optimize/basic-prompt.md
+17b4dd82121f1914e0b08cfa14a483ff03ac49a0c03c351013c39cab8893e742  skills/blog-flow/references/prompts/optimize/blog-post-outline-prompt.md
+9a45d9765d98349d31b2961080e0222d9e41f90f062ca9eef6ebbcc3ee8c7a29  skills/blog-flow/references/prompts/optimize/blog-post-writing-prompt.md
+36bb200c02f31f29fdfd0791d4e9e76ec073eeafa4d49ab7a9440a0b09a35072  skills/blog-flow/references/prompts/optimize/claude-prompt-1.md
+ac5e96dfdf0a7a05c7aba648d6ed8eeecb215b1ff61215ba916907752aacfba5  skills/blog-flow/references/prompts/optimize/claude-prompt-2.md
+3ddb7665f720b6dddbaef4b4ce114ea5cf81d78fbdd960a6b0b9407afe2b60f5  skills/blog-flow/references/prompts/optimize/ctr-audit-prompt.md
+e314979fe161797349169606e7d22dd495bf4a857d5999f9e633028dae15acc7  skills/blog-flow/references/prompts/optimize/follow-up-prompt-1.md
+31b58c5ce1acd0fadf46d34c29959f81b88feb819a7d50fa630226fdfa0bf37c  skills/blog-flow/references/prompts/optimize/follow-up-prompt-2.md
+add172a3798a7108c9a5983474e74a88f0d675523a305dabb460b0c37c2cae60  skills/blog-flow/references/prompts/optimize/follow-up-prompt.md
+7efe4cc586725ffb229dafdb27673ce4e1818aa51f5317ebf9788c4921262474  skills/blog-flow/references/prompts/optimize/paa-question-rewording-prompt.md
+1c352400687d41c6f775e72f2ccd69a92cae2c4329c9080edf918e6eb9245084  skills/blog-flow/references/prompts/optimize/prompt-core-30-content-audit.md
+d60dcbe5899c15a991e242e11eec25175244a5f5514dfe524265d6eb21e84382  skills/blog-flow/references/prompts/optimize/property-content-with-authority-audit-prompt.md
+be3e1c0cada8cd1c8e161391657fb31cc6dce121d1cfd0fb1c7eca9f7e3ae545  skills/blog-flow/references/prompts/optimize/reddit-claude-prompt.md
+8301cc7ebe7b5ff56f2f33997dc0d1658faf926066ef08122025552f3e1ec000  skills/blog-flow/references/prompts/optimize/schema-prompt-1.md
+6bb1b93f145938bc137a0296d02abdb599d0a35b27c58e5a8a15be76088d778f  skills/blog-flow/references/prompts/optimize/step-1-the-chatgpt-discovery-prompt.md
+cc7a08cf4b62a973e18e62f1700017ac03fb68e2dde1d54335b73d04c76682e4  skills/blog-flow/references/prompts/optimize/step-2-the-follow-up-qualifying-prompt.md
+90e4a87501931f3bfe43ba54c2c91d45607da43c73df52305e391350de5cb90e  skills/blog-flow/references/prompts/optimize/technical-audit-prompt.md
+21c6a2d30a54b41fe9134f8c08d72d77a9a98cb3496d99285d17239dde4aef8b  skills/blog-flow/references/prompts/optimize/visibility-follow-up-prompt.md
+8dc3883a11fc46012dfe6d57dec13909f4b392992745b8b0001be4c0fc68993c  skills/blog-flow/references/prompts/optimize/visibility-prompt.md
+608fa79a2baecf4829f64b6ef699b5f0164c74e1d52973afa280cdb11054c31d  skills/blog-flow/references/prompts/win/bofu-page-brief-generator.md
+1ed348a1e364110161b5d89aef4fb8ae7d429e7ed836d6e0e306270cf7e80063  skills/blog-flow/references/prompts/win/conversion-audit-prompt.md
+9b8996cb72a1cd07ccd966e7402366a1a31483e07819d7093ef941f160824e28  skills/blog-flow/references/prompts/win/dual-surface-content-scorecard.md

@@ -1,0 +1,27 @@
+# Blog Google Skill Dependencies
+# Installed in the skill's local .venv via run.py
+#
+# For reproducible installs with hash verification, use the lock file:
+#   pip install --require-hashes -r requirements.lock
+# This requirements.txt declares acceptable version ranges; the lock file
+# pins exact versions + sha256 hashes for every transitive dep (closes
+# audit VULN-006 supply-chain detection gap).
+
+# Core Google API client
+google-api-python-client>=2.100.0,<3.0.0
+google-auth>=2.53.0,<3.0.0
+google-auth-oauthlib>=1.3.1,<2.0.0
+google-auth-httplib2>=0.2.0,<1.0.0
+
+# GA4 Data API
+google-analytics-data>=0.22.0,<1.0.0
+
+# Google Ads Keyword Planner
+google-ads>=28.0.0,<29.0.0
+
+# HTTP requests (PSI, CrUX, NLP)
+requests>=2.34.2,<3.0.0
+
+# Report generation (optional - graceful fallback if unavailable)
+matplotlib>=3.8.0,<4.0.0
+weasyprint>=61.0,<70.0

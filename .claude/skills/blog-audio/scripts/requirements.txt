@@ -1,0 +1,12 @@
+# Blog Audio Skill Dependencies
+# Installed in the skill's local .venv via run.py
+#
+# For reproducible installs with hash verification, use the lock file:
+#   pip install --require-hashes -r requirements.lock
+# Closes audit VULN-006 supply-chain detection gap.
+
+# Google Gemini SDK for TTS generation
+# Upper bound prevents v2.x breaking changes from silently breaking the build.
+# Lock file pins to the exact tested version; this range is the negotiation
+# window for dependabot.
+google-genai>=2.14.0,<3.0.0
