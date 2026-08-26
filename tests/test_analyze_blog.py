@@ -125,6 +125,19 @@ class TestAnalyzeImages:
         result = analyze_blog.analyze_images(content)
         assert result["without_alt_text"] >= 1
 
+    @pytest.mark.parametrize(
+        "tag",
+        [
+            '<img src="/a.webp" alt="Descriptive text" width="1200">',
+            "<IMG ALT='Descriptive text' SRC='/a.webp'>",
+        ],
+    )
+    def test_detects_html_alt_text_regardless_of_attribute_order(self, tag):
+        result = analyze_blog.analyze_images(tag)
+        assert result["count"] == 1
+        assert result["with_alt_text"] == 1
+        assert result["without_alt_text"] == 0
+
     def test_no_images(self):
         result = analyze_blog.analyze_images("No images here.")
         assert result["count"] == 0
@@ -184,6 +197,29 @@ class TestAnalyzeCitations:
         assert analyze_blog._classify_source_tier(attacker) == 3
         assert analyze_blog._classify_source_tier(trusted) == 1
 
+    @pytest.mark.parametrize(
+        "url",
+        [
+            "https://www.resmigazete.gov.tr/guidance",
+            "https://www.gov.uk/guidance",
+            "https://x.edu.au/research",
+            "https://y.ac.uk/research",
+        ],
+    )
+    def test_tier_one_includes_non_us_government_and_academic_hosts(self, url):
+        assert analyze_blog._classify_source_tier(url) == 1
+
+    @pytest.mark.parametrize(
+        "url",
+        [
+            "https://gov.example.com/post",
+            "https://agency.gov.com/post",
+            "https://academic.example.com/post?source=gov.uk",
+        ],
+    )
+    def test_tier_one_country_patterns_do_not_match_untrusted_positions(self, url):
+        assert analyze_blog._classify_source_tier(url) == 3
+
 
 # ---------------------------------------------------------------------------
 # FAQ analysis
@@ -235,6 +271,78 @@ class TestAnalyzeReadability:
         stripped = analyze_blog.strip_frontmatter(sample_blog_post)
         result = analyze_blog.analyze_readability(stripped)
         assert result["reading_time_minutes"] > 0
+
+    def test_turkish_uses_atesman_instead_of_flesch(self):
+        text = (
+            "Bu yazı açık ve anlaşılır bir yöntem sunar. "
+            "Okur her adımı kolayca izler ve sonucu değerlendirir. "
+            "Kısa örnekler uygulamayı daha anlaşılır hale getirir."
+        )
+        result = analyze_blog.analyze_readability(text, "tr")
+
+        assert result["reading_model"] == "atesman"
+        assert "atesman_reading_ease" in result
+        assert "flesch_reading_ease" not in result
+
+
+def test_plain_text_cleanup_excludes_non_prose_payloads():
+    content = """
+Visible sentence.
+
+| Header | Value |
+| --- | --- |
+| fake sentence with forty repeated repeated repeated repeated words | 10 |
+
+```json
+{"fake": "code sentence that must not count"}
+```
+
+<svg><title>Very long chart title that must not count</title></svg>
+
+- Useful visible list item.
+"""
+    cleaned = analyze_blog._plain_text_for_analysis(content)
+
+    assert "Visible sentence" in cleaned
+    assert "Useful visible list item" in cleaned
+    assert "fake sentence" not in cleaned
+    assert "code sentence" not in cleaned
+    assert "chart title" not in cleaned
+
+
+def test_turkish_profile_detects_summary_trust_and_supported_experience(tmp_path):
+    post = """---
+title: Kaynak İncelemesi
+description: Kaynak incelemesi doğrulama yöntemini açıklar.
+author: Ayşe Yılmaz
+lang: tr-TR
+---
+# Kaynak İncelemesi
+
+## Özet
+
+Bu inceleme karar vermeyi kolaylaştırır.
+
+## Yöntem
+
+Kendi kayıtlarımızdan derlediğimiz 120 sonucu sayım yöntemiyle karşılaştırdık.
+
+## Güven
+
+[Biz kimiz](/biz-kimiz) ve [İletişim](/iletisim) sayfalarını inceleyin.
+"""
+    path = tmp_path / "turkish.md"
+    path.write_text(post, encoding="utf-8")
+
+    result = analyze_blog.analyze_file(str(path))
+
+    assert result["language"] == "tr"
+    assert result["readability"]["reading_model"] == "atesman"
+    assert result["ai_citation_readiness"]["has_tldr"] is True
+    assert result["originality"]["first_person_count"] >= 1
+    assert result["originality"]["methodology_count"] >= 1
+    assert result["originality"]["unsupported_experience_claims"] == 0
+    assert result["score"]["category_details"]["eeat_signals"]["breakdown"]["trust"] == 3
 
 
 # ---------------------------------------------------------------------------
@@ -288,6 +396,43 @@ class TestAnalyzeSchema:
     def test_no_schema(self):
         result = analyze_blog.analyze_schema("# Simple post\n\nNo schema here.")
         assert result["schema_count"] == 0
+
+    def test_detects_graph_and_list_valued_schema_types(self):
+        content = """
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {"@type": "BlogPosting", "author": {"@type": "Person"}},
+    {"@type": ["BreadcrumbList", "Thing"]}
+  ]
+}
+</script>
+"""
+        result = analyze_blog.analyze_schema(content)
+
+        assert result["schemas_found"] == [
+            "BlogPosting",
+            "Person",
+            "BreadcrumbList",
+            "Thing",
+        ]
+        assert result["has_blogposting"] is True
+        assert result["has_person"] is True
+        assert result["has_breadcrumblist"] is True
+
+    def test_graph_detection_does_not_require_beautifulsoup(self, monkeypatch):
+        monkeypatch.setattr(analyze_blog, "HAS_BS4", False)
+        content = """
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[{"@type":"BlogPosting"}]}
+</script>
+"""
+
+        result = analyze_blog.analyze_schema(content)
+
+        assert result["schemas_found"] == ["BlogPosting"]
+        assert result["has_blogposting"] is True
 
     @pytest.mark.parametrize("schema_type", ["FAQPage", "HowTo", "SpecialAnnouncement"])
     def test_ineligible_schema_does_not_raise_technical_schema_score(

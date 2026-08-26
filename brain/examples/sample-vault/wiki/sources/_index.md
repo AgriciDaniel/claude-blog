@@ -1,9 +1,11 @@
 ---
 type: "hub"
 title: "Sources Hub"
-created: "2026-07-07"
-updated: "2026-07-07"
+created: "2026-08-25"
+updated: "2026-08-25"
 status: "active"
+domain: "Source Evidence"
+tags: [type-hub, sources, active]
 ---
 
 # Sources Hub

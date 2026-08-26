@@ -1,0 +1,327 @@
+{
+  "schema_version": 1,
+  "reviewed_on": "2026-08-25",
+  "methodology": "Every entry requiring review was resolved against its public HTTPS source. Content-confirmed entries must pass automated claim-token and numeric checks. Corrected entries record the exact claim or metadata change and a human review note. Manual review is reserved for source formats or claims where semantic support cannot be represented reliably by token matching.",
+  "confirmed_by_content": [
+    "ranking-august-2026-spam",
+    "gsc-reporting-anomalies-2026-08-13",
+    "search-console-platform-properties-2026-07-29",
+    "search-console-platform-help-2026-08-25",
+    "review-snippet-integrity-2026-07-24",
+    "preferred-sources-custom-button-2026-08-20",
+    "g-core-spam-2024-03",
+    "g-site-rep-abuse",
+    "g-helpful-content",
+    "g-intro-sd",
+    "g-product-sd",
+    "g-merchant-listing-sd",
+    "g-faqpage-sd",
+    "g-block-indexing",
+    "g-robots-intro",
+    "g-canonical",
+    "g-crawl-budget",
+    "g-js-seo",
+    "g-mobile-first",
+    "g-ai-features",
+    "g-google-images",
+    "g-video",
+    "g-localized",
+    "g-multiregional",
+    "g-gsc-api",
+    "chrome-crux-history",
+    "g-ads-kw",
+    "wd-lcp",
+    "wd-cls",
+    "wd-vitals",
+    "wd-opt-inp",
+    "wd-ttfb",
+    "schema-product",
+    "w3c-jsonld",
+    "dfs-api",
+    "dfs-labs",
+    "ahrefs-api",
+    "firecrawl",
+    "ahrefs-aio",
+    "seoclarity-chatgpt",
+    "pew-ai",
+    "semrush-aio",
+    "blog-io2026",
+    "g-qrg-full",
+    "g-genai-reports",
+    "g-back-button",
+    "g-spam-policies",
+    "g-ai-opt-guide",
+    "g-googlebot",
+    "g-qualify-links",
+    "chrome-crux-notes",
+    "ahrefs-aio-vs-aimode",
+    "gh-flow-framework",
+    "g-update-2024-03-05-march-2024-core-update-spam-updates",
+    "g-update-2024-06-20-june-2024-spam-update",
+    "g-update-2024-11-19-site-reputation-abuse-policy-clarified",
+    "g-update-2025-01-23-qrg-update-jan-2025",
+    "g-update-2025-03-05-ai-mode-experimental-launch",
+    "g-update-2025-05-20-ai-mode-general-rollout-us",
+    "g-update-2025-06-19-structured-data-deprecation",
+    "g-update-2025-06-30-june-2025-core-update",
+    "g-update-2025-09-11-qrg-update-sept-2025",
+    "g-update-2025-12-11-december-2025-core-update",
+    "g-update-2026-05-07-faq-rich-results-retired",
+    "g-update-2026-05-15-spam-policies-update-gen-ai-scaled-content",
+    "g-update-2026-05-19-google-i-o-2026-gemini-3-5-flash-powers-ai-mode",
+    "g-update-2026-05-20-hasadultconsideration-property-added",
+    "g-update-2026-06-03-search-console-search-generative-ai-performance-reports",
+    "g-update-2026-06-05-guidance-on-third-party-seo-tools-services-and-advice",
+    "g-update-2026-06-15-back-button-hijacking-spam-policy-in-effect",
+    "g-update-2026-06-15-llms-txt-clarified-as-unused-by-google-search",
+    "g-update-2026-06-30-merchant-center-product-videos-serving-eligible",
+    "seer-aio-impact-ctr-2026",
+    "se-ranking-ai-mode-research",
+    "semrush-ai-mode-comparison",
+    "niemanlab-subscribed-publications-aio-2026",
+    "ziptie-aio-source-selection",
+    "g-search-docs-updates-2026-07-07-product-structured-data"
+  ],
+  "confirmed_by_manual_review": [
+    "google-ads-api-v25-1-2026-08-19",
+    "g-ranking-history",
+    "g-sitemaps",
+    "g-qrg",
+    "g-urlinspect",
+    "chrome-crux",
+    "g-ga4-data",
+    "g-nlp",
+    "wd-inp",
+    "schema-full",
+    "sitemaps-org",
+    "bing-submit",
+    "statcounter",
+    "blog-aimode",
+    "g-status-dashboard",
+    "g-search-gallery",
+    "g-inside-googlebot",
+    "wd-inp-mar12",
+    "chrome-softnav-final",
+    "g-update-2024-03-05-inp-replaces-fid",
+    "g-update-2024-05-05-site-reputation-abuse-enforcement-begins",
+    "g-update-2024-08-15-august-2024-core-update",
+    "nng-editorial-heuristics"
+  ],
+  "corrected": {
+    "g-update-2026-05-15-new-generative-ai-optimization-guide": {
+      "claims": [
+        "Google announced a new AI-features optimization resource and said the same foundational SEO practices used for Search also apply to AI features."
+      ],
+      "supports_claims": [
+        "Google announced a new AI-features optimization resource and said the same foundational SEO practices used for Search also apply to AI features."
+      ],
+      "review_note": "Removed compound claims about later page updates and llms.txt that were not established by this announcement page."
+    },
+    "bing-wmt": {
+      "url": "https://www.bing.com/webmasters/help/webmaster-guidelines-30fba23a?afsrc=1",
+      "claims": [
+        "Bing Webmaster Guidelines cover discovery, crawling, indexing, ranking, Copilot grounding, and citation eligibility. Bing states that SEO and GEO do not guarantee rankings, traffic, grounding, or citations."
+      ],
+      "supports_claims": [
+        "Bing Webmaster Guidelines cover discovery, crawling, indexing, ranking, Copilot grounding, and citation eligibility. Bing states that SEO and GEO do not guarantee rankings, traffic, grounding, or citations."
+      ],
+      "review_note": "Added the official content-rendering query parameter and updated the claim to Bing's current Search and Copilot guidance."
+    },
+    "g-aug-2024-core": {
+      "claims": [
+        "Google said the August 2024 core update continued work to show more useful content from small and independent publishers and incorporated feedback collected since September 2023."
+      ],
+      "supports_claims": [
+        "Google said the August 2024 core update continued work to show more useful content from small and independent publishers and incorporated feedback collected since September 2023."
+      ],
+      "review_note": "Removed the unsupported claim that the update followed the 2023 helpful content update and retained Google's stated purpose."
+    },
+    "g-simplify-results": {
+      "claims": [
+        "Google phased out several structured-data visual enhancements because they were no longer providing significant value. Google said the change did not affect ranking and did not affect use of the same structured-data types outside Google Search."
+      ],
+      "supports_claims": [
+        "Google phased out several structured-data visual enhancements because they were no longer providing significant value. Google said the change did not affect ranking and did not affect use of the same structured-data types outside Google Search."
+      ],
+      "review_note": "Removed the unsupported JSON-LD parsing claim and retained only statements made on the cited Google page."
+    },
+    "g-psi": {
+      "claims": [
+        "The PageSpeed Insights API returns Lighthouse lab data. Google says CrUX real-world data in this API is planned for removal and recommends the CrUX API or CrUX History API for field data."
+      ],
+      "supports_claims": [
+        "The PageSpeed Insights API returns Lighthouse lab data. Google says CrUX real-world data in this API is planned for removal and recommends the CrUX API or CrUX History API for field data."
+      ],
+      "last_updated": "2026-07-10",
+      "review_note": "Updated the integration boundary to reflect Google's announced removal of CrUX data from PSI."
+    },
+    "chrome-soft-nav": {
+      "title": "Soft Navigations API",
+      "claims": [
+        "The Soft Navigations API attributes Core Web Vitals to same-document SPA navigations. Chrome documentation says rollout begins in Chrome 151."
+      ],
+      "supports_claims": [
+        "The Soft Navigations API attributes Core Web Vitals to same-document SPA navigations. Chrome documentation says rollout begins in Chrome 151."
+      ],
+      "last_updated": "2026-07-21",
+      "review_note": "Replaced the superseded Chrome 139 origin-trial statement with the current Chrome 151 launch statement."
+    },
+    "schema-org-type": {
+      "title": "Organization structured data",
+      "url": "https://developers.google.com/search/docs/appearance/structured-data/organization",
+      "source_type": "official",
+      "claims": [
+        "Organization structured data can help Google understand and disambiguate an organization. Google may use properties such as name, address, logo, contact points, and sameAs in Search experiences."
+      ],
+      "supports_claims": [
+        "Organization structured data can help Google understand and disambiguate an organization. Google may use properties such as name, address, logo, contact points, and sameAs in Search experiences."
+      ],
+      "evidence_tier": "EVIDENCE-BASED",
+      "review_note": "Replaced Schema.org as evidence for Google Search behavior with Google's Organization structured-data documentation."
+    },
+    "llmstxt": {
+      "claims": [
+        "llms.txt is a community proposal for providing LLM-friendly website content. The proposal does not establish support by Google Search or any other crawler."
+      ],
+      "supports_claims": [
+        "llms.txt is a community proposal for providing LLM-friendly website content. The proposal does not establish support by Google Search or any other crawler."
+      ],
+      "limitations": "Use g-ai-opt-guide for Google's explicit statement that Google Search does not use llms.txt.",
+      "last_updated": "2026-08-10",
+      "review_note": "Separated the proposal's own claims from Google's independent product guidance."
+    },
+    "rfc9309": {
+      "url": "https://www.rfc-editor.org/info/rfc9309",
+      "review_note": "Recorded the RFC Editor canonical information page while retaining the standards claim."
+    },
+    "g-common-crawlers": {
+      "last_updated": "2026-07-14",
+      "review_note": "Retained the documented Google-Extended scope and refreshed the page date."
+    },
+    "seer-aio-ctr": {
+      "source_type": "practitioner",
+      "review_note": "Classified Search Engine Land's report as practitioner evidence because it summarizes Seer's primary analysis."
+    },
+    "g-update-2024-11-11-november-2024-core-update": {
+      "claims": [
+        "The November 2024 core update ran for 23 days and 13 hours, from 2024-11-11 through 2024-12-05, according to Google's Search Status Dashboard."
+      ],
+      "supports_claims": [
+        "The November 2024 core update ran for 23 days and 13 hours, from 2024-11-11 through 2024-12-05, according to Google's Search Status Dashboard."
+      ],
+      "review_note": "Replaced the rounded 24-day duration with Google's recorded duration and dates."
+    },
+    "g-update-2024-12-12-december-2024-core-update": {
+      "claims": [
+        "The December 2024 core update ran for 6 days and 4 hours, from 2024-12-12 through 2024-12-18, according to Google's Search Status Dashboard."
+      ],
+      "supports_claims": [
+        "The December 2024 core update ran for 6 days and 4 hours, from 2024-12-12 through 2024-12-18, according to Google's Search Status Dashboard."
+      ],
+      "review_note": "Replaced the approximate duration with Google's recorded duration and dates."
+    },
+    "g-update-2024-12-19-december-2024-spam-update": {
+      "claims": [
+        "The December 2024 spam update ran for 7 days and 2 hours, from 2024-12-19 through 2024-12-26, according to Google's Search Status Dashboard."
+      ],
+      "supports_claims": [
+        "The December 2024 spam update ran for 7 days and 2 hours, from 2024-12-19 through 2024-12-26, according to Google's Search Status Dashboard."
+      ],
+      "review_note": "Removed the unsupported statement about targeting scaled content abuse and retained Google's recorded rollout."
+    },
+    "g-update-2025-03-13-march-2025-core-update": {
+      "claims": [
+        "The March 2025 core update ran for 13 days and 21 hours, from 2025-03-13 through 2025-03-27, according to Google's Search Status Dashboard."
+      ],
+      "supports_claims": [
+        "The March 2025 core update ran for 13 days and 21 hours, from 2025-03-13 through 2025-03-27, according to Google's Search Status Dashboard."
+      ],
+      "review_note": "Replaced the rounded 14-day duration with Google's recorded duration and dates."
+    },
+    "g-update-2025-08-21-ai-mode-expands-to-180-countries": {
+      "url": "https://blog.google/products-and-platforms/products/search/ai-mode-agentic-personalized/",
+      "claims": [
+        "Google expanded AI Mode in English to more than 180 countries and territories and began rolling out agentic capabilities for finding restaurant reservations."
+      ],
+      "supports_claims": [
+        "Google expanded AI Mode in English to more than 180 countries and territories and began rolling out agentic capabilities for finding restaurant reservations."
+      ],
+      "review_note": "Replaced the unrelated May 2025 URL with Google's August 2025 announcement and removed an unnecessary attributed characterization."
+    },
+    "g-update-2026-02-05-february-2026-discover-update": {
+      "claims": [
+        "The February 2026 Discover update began on 2026-02-05 and ran for 21 days and 17 hours according to Google's Search Status Dashboard."
+      ],
+      "supports_claims": [
+        "The February 2026 Discover update began on 2026-02-05 and ran for 21 days and 17 hours according to Google's Search Status Dashboard."
+      ],
+      "review_note": "Removed a stale verification date embedded in the claim and recorded Google's exact duration."
+    },
+    "g-update-2026-03-24-march-2026-spam-update": {
+      "claims": [
+        "The March 2026 spam update began on 2026-03-24 and ran for 19 hours and 30 minutes according to Google's Search Status Dashboard."
+      ],
+      "supports_claims": [
+        "The March 2026 spam update began on 2026-03-24 and ran for 19 hours and 30 minutes according to Google's Search Status Dashboard."
+      ],
+      "review_note": "Removed a stale verification date embedded in the claim and recorded Google's exact duration."
+    },
+    "g-update-2026-03-27-march-2026-core-update": {
+      "claims": [
+        "The March 2026 core update ran for 12 days and 4 hours, from 2026-03-27 through 2026-04-08, according to Google's Search Status Dashboard."
+      ],
+      "supports_claims": [
+        "The March 2026 core update ran for 12 days and 4 hours, from 2026-03-27 through 2026-04-08, according to Google's Search Status Dashboard."
+      ],
+      "review_note": "Removed internal process history from the claim and recorded Google's exact duration and dates."
+    },
+    "g-update-2026-05-21-may-2026-core-update": {
+      "claims": [
+        "The May 2026 core update ran from 2026-05-21 through 2026-06-02 according to Google's Search Status Dashboard."
+      ],
+      "supports_claims": [
+        "The May 2026 core update ran from 2026-05-21 through 2026-06-02 according to Google's Search Status Dashboard."
+      ],
+      "review_note": "Removed unsupported scope and descriptive language from the generic history page claim."
+    },
+    "g-update-2026-06-02-may-2026-core-update-complete": {
+      "claims": [
+        "Google's Search Status Dashboard records the May 2026 core update as starting on 2026-05-21 and completing on 2026-06-02."
+      ],
+      "supports_claims": [
+        "Google's Search Status Dashboard records the May 2026 core update as starting on 2026-05-21 and completing on 2026-06-02."
+      ],
+      "review_note": "Retained only the rollout dates documented on the official history page."
+    },
+    "g-update-2026-06-24-june-2026-spam-update": {
+      "url": "https://status.search.google.com/incidents/YUX1peHev5a4fkxLDiUQ",
+      "claims": [
+        "The June 2026 spam update applied globally and to all languages. Google recorded a rollout from 2026-06-24 through 2026-06-26."
+      ],
+      "supports_claims": [
+        "The June 2026 spam update applied globally and to all languages. Google recorded a rollout from 2026-06-24 through 2026-06-26."
+      ],
+      "review_note": "Replaced the generic history URL with the incident page and removed unsupported statements about specific spam techniques."
+    },
+    "sparktoro-zero-click-2026": {
+      "claims": [
+        "SparkToro reported a 68.01% US Google zero-click rate and a 0.34% AI Mode share for its January through April 2026 panel."
+      ],
+      "supports_claims": [
+        "SparkToro reported a 68.01% US Google zero-click rate and a 0.34% AI Mode share for its January through April 2026 panel."
+      ],
+      "review_note": "Removed the unsupported 276-click calculation and retained the two figures shown in the source."
+    },
+    "similarweb-gen-ai-stats-2026": {
+      "claims": [
+        "Similarweb reported ChatGPT's generative-AI traffic share falling from roughly 76% to roughly 53% while Gemini rose above one quarter in its current market view."
+      ],
+      "supports_claims": [
+        "Similarweb reported ChatGPT's generative-AI traffic share falling from roughly 76% to roughly 53% while Gemini rose above one quarter in its current market view."
+      ],
+      "limitations": "Vendor market analysis. The page is updated over time, so quote these shares only with the source date and do not treat them as stable market constants.",
+      "review_note": "Removed a no-longer-supported referral-growth claim and updated the traffic-share summary to the current page."
+    }
+  },
+  "retired": []
+}

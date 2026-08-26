@@ -17,7 +17,8 @@ google-auth-httplib2>=0.2.0,<1.0.0
 google-analytics-data>=0.22.0,<1.0.0
 
 # Google Ads Keyword Planner
-google-ads>=28.0.0,<29.0.0
+# Google Ads API v25 requires Python client 31.2.0 or newer.
+google-ads>=31.2.0,<32.0.0
 
 # HTTP requests (PSI, CrUX, NLP)
 requests>=2.34.2,<3.0.0

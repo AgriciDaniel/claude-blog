@@ -50,7 +50,8 @@ function Main {
                         "cognitive_load.py", "discourse_research.py", "generate_hero.py",
                         "load_untrusted_root.py", "lint_prose.py", "sync_flow.py",
                         "ai_citation_score.py", "content_decay.py", "quality_gate.py", "style_learn.py",
-                        "consistency_check.py", "dependency_smoke.py", "validate_public_release.py")
+                        "check_google_currentness.py", "check_secrets.py", "consistency_check.py", "dependency_smoke.py",
+                        "sync_google_updates.py", "validate_public_release.py")
     foreach ($s in $helperScripts) {
         $scriptPath = Join-Path $ClaudeScriptsDir $s
         if (Test-Path $scriptPath) {

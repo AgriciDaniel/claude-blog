@@ -4,13 +4,15 @@ title: "Monthly Source Refresh"
 domain: "Google Update Monitoring"
 status: active
 created: 2026-07-06
-updated: 2026-07-09
+updated: 2026-08-25
 tags: [monitoring, google-updates, active]
 source_urls:
   - "https://status.search.google.com/products/rGHU1u87FJnkP6W2GwMi/history"
   - "https://developers.google.com/search/docs/appearance/structured-data/search-gallery"
   - "https://developers.google.com/search/docs/fundamentals/ai-optimization-guide"
   - "https://guidelines.raterhub.com/searchqualityevaluatorguidelines.pdf"
+  - "https://developers.google.com/search/updates/search_docs_updates.rss"
+  - "https://status.search.google.com/incidents.json"
 ---
 
 # Monthly Source Refresh
@@ -22,6 +24,14 @@ This spoke defines the monthly monitoring routine for Search Central, the Search
 ## Source Types This Note Owns
 
 The refresh owns living sources and fast-moving official records: status history, Search Central documentation, structured-data support lists, spam-policy pages, AI guidance, and QRG files. It also checks whether source-ledger records have enough date precision and retrieval metadata for release use. If an item is market research rather than an official or standards source, the refresh can flag it but should not validate it alone.
+
+Run `python3 scripts/check_google_currentness.py --root . --json` before manual
+review. It compares the canonical ledger date with Google's ranking-incident
+JSON and Search documentation RSS and fails closed when a newer source date or
+an overdue review is found. It never writes guidance. Review the manual source
+watches in `data/google-updates.json` separately, then run
+`python3 scripts/sync_google_updates.py --root . --check` to detect projection
+drift.
 
 ## Claims This Note Must Not Validate Alone
 

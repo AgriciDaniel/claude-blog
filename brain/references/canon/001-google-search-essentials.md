@@ -26,3 +26,9 @@ No verbatim quote included. This note paraphrases the source and routes exact cl
 ## Reinforces
 
 E-E-A-T, quality gates, crawlability, indexability, and no guarantee language.
+
+## Folded into the wiki
+
+- [[Google Search Central]]
+- [[Blog Quality Score]]
+- [[Quality Gate Failure Modes]]

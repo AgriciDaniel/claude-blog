@@ -153,6 +153,54 @@ TIER2_DOMAINS = [
     'mckinsey.com', 'gartner.com', 'statista.com', 'pew', 'gallup.com',
 ]
 
+LANGUAGE_PROFILES: dict[str, dict[str, Any]] = {
+    'en': {
+        'summary_labels': (
+            r'TL;?DR', r'key takeaway', r'the bottom line',
+            r'what you.ll learn', r'at a glance', r'in brief',
+        ),
+        'about_patterns': (
+            r'\babout\s+(?:us|the author|me)\b', r'/about(?:[/?#]|$)',
+        ),
+        'contact_patterns': (r'\bcontact\b', r'/contact(?:[/?#]|$)'),
+        'first_person_patterns': (
+            r'\bI\s+(?:found|discovered|tested|built|created|noticed|learned|experienced)\b',
+            r'\b(?:we|our team)\s+(?:tested|built|ran|analyzed|measured|conducted|found|discovered)\b',
+            r'\bin (?:my|our) experience\b',
+            r'\bfrom (?:my|our) (?:testing|research|analysis|work)\b',
+        ),
+        'methodology_patterns': (
+            r'\b(?:methodology|sample size|test setup|testing method|research method)\b',
+            r'\b(?:we|I|our team)\s+(?:tested|measured|analyzed|conducted)\b[^.\n]{0,180}'
+            r'(?:\d|https?://|\[[^\]]+\]\(https?://)',
+        ),
+        'readability_model': 'flesch',
+    },
+    'tr': {
+        'summary_labels': (r'özet', r'özetle', r'kısaca'),
+        'about_patterns': (
+            r'/biz-kimiz(?:[/?#]|$)', r'/hakk[ıi]m[ıi]zda(?:[/?#]|$)',
+            r'\bbiz kimiz\b', r'\bhakk[ıi]m[ıi]zda\b',
+        ),
+        'contact_patterns': (
+            r'/ilet[iİ]ş[iİ]m(?:[/?#]|$)', r'\bilet[iİ]ş[iİ]m\b',
+        ),
+        'first_person_patterns': (
+            r'\b(?:biz|ekibimiz)\s+(?:test ettik|oluşturduk|inceledik|ölçtük|analiz ettik|derledik|bulduk)\b',
+            r'\b(?:kendi\s+)?(?:kayıtlarımızdan|verilerimizden|analizimizden)\s+'
+            r'(?:derlediğimiz|çıkardığımız|ölçtüğümüz)\b',
+            r'\bportfolyomuzun\b[^.\n]{0,120}\bsayımından çıkarıldı\b',
+            r'\b(?:deneyimimize|tecrübemize) göre\b',
+        ),
+        'methodology_patterns': (
+            r'\b(?:yöntem|metodoloji|örneklem|örneklem büyüklüğü|test düzeni|araştırma yöntemi|sayım|kayıt)\b',
+            r'\b(?:biz|ekibimiz)\s+(?:test ettik|ölçtük|analiz ettik)\b[^.\n]{0,180}'
+            r'(?:\d|https?://|\[[^\]]+\]\(https?://)',
+        ),
+        'readability_model': 'atesman',
+    },
+}
+
 
 def _read_safely(path: Path, max_bytes: int = MAX_INPUT_BYTES) -> str:
     """Read a regular non-symlink file with a size cap."""
@@ -212,7 +260,15 @@ def _hostname(url: str) -> str:
 def _host_matches_domain(host: str, domain: str) -> bool:
     domain = domain.lower().rstrip(".")
     if domain in {"gov", "edu"}:
-        return host == domain or host.endswith(f".{domain}")
+        if host == domain or host.endswith(f".{domain}"):
+            return True
+        labels = host.split(".")
+        country_suffix = len(labels[-1]) == 2 and labels[-1].isalpha()
+        if country_suffix and len(labels) >= 2 and labels[-2] == domain:
+            return True
+        if domain == "edu" and country_suffix and len(labels) >= 2 and labels[-2] == "ac":
+            return True
+        return False
     return host == domain or host.endswith(f".{domain}")
 
 # ---------------------------------------------------------------------------
@@ -239,6 +295,40 @@ def extract_frontmatter(content: str) -> dict[str, Any]:
 def strip_frontmatter(content: str) -> str:
     """Remove YAML frontmatter from content."""
     return re.sub(r'^---\s*\n.*?\n---\s*\n', '', content, count=1, flags=re.DOTALL)
+
+
+def _detect_language(frontmatter: dict[str, Any], body: str) -> str:
+    """Resolve a supported language profile without broad language guessing."""
+    declared = str(
+        frontmatter.get('lang')
+        or frontmatter.get('language')
+        or frontmatter.get('inLanguage')
+        or ''
+    ).strip().lower()
+    if declared:
+        primary = re.split(r'[-_]', declared, maxsplit=1)[0]
+        return primary if primary in LANGUAGE_PROFILES else 'en'
+
+    strong_turkish_markers = len(re.findall(r'[ığşİĞŞ]', body))
+    letters = len(re.findall(r'[^\W\d_]', body, re.UNICODE))
+    if strong_turkish_markers >= 2 and strong_turkish_markers / max(letters, 1) >= 0.002:
+        return 'tr'
+    return 'en'
+
+
+def _plain_text_for_analysis(content: str) -> str:
+    """Remove non-prose payloads while retaining reader-visible prose."""
+    text = re.sub(r'```.*?```', '', content, flags=re.DOTALL)
+    text = re.sub(r'<(?:script|style|svg)\b.*?</(?:script|style|svg)\s*>', '', text,
+                  flags=re.DOTALL | re.IGNORECASE)
+    text = re.sub(r'^\s*\|.*\|\s*$', '', text, flags=re.MULTILINE)
+    text = re.sub(r'<[^>]+>', '', text)
+    text = re.sub(r'!\[.*?\]\(.*?\)', '', text)
+    text = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', text)
+    text = re.sub(r'^#{1,6}\s+', '', text, flags=re.MULTILINE)
+    text = re.sub(r'^\s*(?:[-*+]|\d+\.)\s+', '', text, flags=re.MULTILINE)
+    text = re.sub(r'^\s*>\s?', '', text, flags=re.MULTILINE)
+    return re.sub(r'\n{3,}', '\n\n', text).strip()
 
 
 # ---------------------------------------------------------------------------
@@ -343,7 +433,16 @@ def analyze_paragraphs(content: str) -> dict[str, Any]:
 def analyze_images(content: str) -> dict[str, Any]:
     """Count images and check alt text, formats, optimization signals."""
     md_images = re.findall(r'!\[([^\]]*)\]\(([^)]+)\)', content)
-    html_images = re.findall(r'<img[^>]+src=["\']([^"\']+)["\'][^>]*>', content)
+    html_images: list[tuple[str, str]] = []
+    for tag in re.findall(r'<img\b[^>]*>', content, re.IGNORECASE):
+        src_match = re.search(r'\bsrc\s*=\s*["\']([^"\']+)["\']', tag, re.IGNORECASE)
+        if not src_match:
+            continue
+        alt_match = re.search(r'\balt\s*=\s*["\']([^"\']*)["\']', tag, re.IGNORECASE)
+        html_images.append((
+            alt_match.group(1) if alt_match else "",
+            src_match.group(1),
+        ))
 
     images: list[dict[str, Any]] = []
     for alt, src in md_images:
@@ -358,13 +457,13 @@ def analyze_images(content: str) -> dict[str, Any]:
                       'pexels' if 'pexels' in src else 'other',
         })
 
-    for src in html_images:
-        alt_match = re.search(r'alt=["\']([^"\']*)["\']', content[content.find(src) - 200:content.find(src) + len(src)])
-        has_alt = bool(alt_match and alt_match.group(1).strip()) if alt_match else False
+    for alt, src in html_images:
+        has_alt = bool(alt.strip())
         ext = Path(src.split('?')[0]).suffix.lower()
         images.append({
             'src': src,
             'has_alt': has_alt,
+            'alt_length': len(alt.strip()),
             'format': ext,
             'source': 'pixabay' if 'pixabay' in src else
                       'unsplash' if 'unsplash' in src else
@@ -526,13 +625,28 @@ def analyze_self_promotion(content: str, brand_name: str = '') -> dict[str, Any]
 # ---------------------------------------------------------------------------
 
 
-def analyze_readability(text: str) -> dict[str, Any]:
+def analyze_readability(text: str, language: str = 'en') -> dict[str, Any]:
     """Compute readability metrics using textstat if available, else estimate."""
-    words = text.split()
+    words = re.findall(r"[^\W\d_]+(?:['’][^\W\d_]+)?", text, re.UNICODE)
     word_count = len(words)
     sentences = re.findall(r'[.!?]+', text)
     sentence_count = len(sentences) if sentences else 1
     avg_sentence_len = word_count / sentence_count
+
+    if LANGUAGE_PROFILES.get(language, LANGUAGE_PROFILES['en'])["readability_model"] == 'atesman':
+        vowel_count = sum(len(re.findall(r'[aeıioöuü]', word.lower())) for word in words)
+        mean_syllables = vowel_count / max(word_count, 1)
+        score = 198.825 - 40.175 * mean_syllables - 2.610 * avg_sentence_len
+        score = max(0.0, min(100.0, score))
+        return {
+            'reading_model': 'atesman',
+            'reading_ease': round(score, 1),
+            'atesman_reading_ease': round(score, 1),
+            'reading_time_minutes': round(word_count / 238, 1),
+            'avg_sentence_length': round(avg_sentence_len, 1),
+            'mean_syllables_per_word': round(mean_syllables, 2),
+            'estimated': False,
+        }
 
     if HAS_TEXTSTAT:
         fre = textstat.flesch_reading_ease(text)
@@ -543,6 +657,8 @@ def analyze_readability(text: str) -> dict[str, Any]:
         except Exception:
             reading_time = round(word_count / 238, 1)
         return {
+            'reading_model': 'flesch',
+            'reading_ease': round(fre, 1),
             'flesch_reading_ease': round(fre, 1),
             'flesch_kincaid_grade': round(fkg, 1),
             'gunning_fog': round(fog, 1),
@@ -556,6 +672,8 @@ def analyze_readability(text: str) -> dict[str, Any]:
         est_syllable_ratio = avg_word_len / 4.7  # crude approximation
         fre = max(0, 206.835 - 1.015 * avg_sentence_len - 84.6 * est_syllable_ratio)
         return {
+            'reading_model': 'flesch-estimate',
+            'reading_ease': round(fre, 1),
             'flesch_reading_ease': round(fre, 1),
             'reading_time_minutes': round(word_count / 238, 1),
             'avg_sentence_length': round(avg_sentence_len, 1),
@@ -731,26 +849,43 @@ def analyze_schema(content: str) -> dict[str, Any]:
     """Detect JSON-LD schema markup in content."""
     schemas: list[str] = []
 
+    def collect_types(value: Any) -> None:
+        if isinstance(value, dict):
+            schema_type = value.get('@type')
+            if isinstance(schema_type, str):
+                schemas.append(schema_type)
+            elif isinstance(schema_type, list):
+                schemas.extend(item for item in schema_type if isinstance(item, str))
+            for child in value.values():
+                if isinstance(child, (dict, list)):
+                    collect_types(child)
+        elif isinstance(value, list):
+            for item in value:
+                collect_types(item)
+
     if HAS_BS4:
         try:
             soup = BeautifulSoup(content, 'html.parser')
             for script in soup.find_all('script', type='application/ld+json'):
                 try:
                     data = json.loads(script.string)
-                    if isinstance(data, dict):
-                        schemas.append(data.get('@type', 'Unknown'))
-                    elif isinstance(data, list):
-                        for item in data:
-                            if isinstance(item, dict):
-                                schemas.append(item.get('@type', 'Unknown'))
+                    collect_types(data)
                 except (json.JSONDecodeError, TypeError):
                     pass
         except Exception:
             pass
     else:
-        # Fallback: regex detection
-        for match in re.findall(r'"@type"\s*:\s*"([^"]+)"', content):
-            schemas.append(match)
+        # Fallback: parse JSON-LD script bodies without an HTML dependency.
+        for script_body in re.findall(
+            r'<script\b[^>]*type=["\']application/ld\+json["\'][^>]*>(.*?)</script\s*>',
+            content,
+            re.DOTALL | re.IGNORECASE,
+        ):
+            try:
+                collect_types(json.loads(script_body))
+            except (json.JSONDecodeError, TypeError):
+                for match in re.findall(r'"@type"\s*:\s*"([^"]+)"', script_body):
+                    schemas.append(match)
 
     return {
         'schemas_found': schemas,
@@ -798,7 +933,7 @@ def analyze_links(content: str) -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 
-def analyze_originality(content: str) -> dict[str, Any]:
+def analyze_originality(content: str, language: str = 'en') -> dict[str, Any]:
     """Detect distinctive evidence and first-hand claims without inferring truth."""
     markers: list[str] = []
 
@@ -809,23 +944,15 @@ def analyze_originality(content: str) -> dict[str, Any]:
     if re.search(r'(?:\[|<!--\s*)UNIQUE INSIGHT(?:\]|(?:\s*:.*)?-->)', content, re.IGNORECASE):
         markers.append('unique_insight_tag')
 
-    first_person_patterns = [
-        r'\bI\s+(?:found|discovered|tested|built|created|noticed|learned|experienced)\b',
-        r'\b(?:we|our team)\s+(?:tested|built|ran|analyzed|measured|conducted|found|discovered)\b',
-        r'\bin (?:my|our) experience\b',
-        r'\bfrom (?:my|our) (?:testing|research|analysis|work)\b',
-    ]
+    profile = LANGUAGE_PROFILES.get(language, LANGUAGE_PROFILES['en'])
+    first_person_patterns = profile['first_person_patterns']
     first_person_count = 0
     for pattern in first_person_patterns:
         first_person_count += len(re.findall(pattern, content, re.IGNORECASE))
     if first_person_count > 0:
         markers.append('first_person_experience')
 
-    methodology_patterns = [
-        r'\b(?:methodology|sample size|test setup|testing method|research method)\b',
-        r'\b(?:we|I|our team)\s+(?:tested|measured|analyzed|conducted)\b[^.\n]{0,180}'
-        r'(?:\d|https?://|\[[^\]]+\]\(https?://)',
-    ]
+    methodology_patterns = profile['methodology_patterns']
     methodology_count = sum(
         len(re.findall(pattern, content, re.IGNORECASE))
         for pattern in methodology_patterns
@@ -834,7 +961,19 @@ def analyze_originality(content: str) -> dict[str, Any]:
         1 for marker in markers
         if marker in {'original_data_tag', 'personal_experience_tag', 'unique_insight_tag'}
     )
-    unsupported_experience_claims = max(0, first_person_count - methodology_count)
+    unsupported_experience_claims = 0
+    for paragraph in re.split(r'\n\s*\n', content):
+        has_claim = any(re.search(pattern, paragraph, re.IGNORECASE)
+                        for pattern in first_person_patterns)
+        has_method = any(re.search(pattern, paragraph, re.IGNORECASE)
+                         for pattern in methodology_patterns)
+        has_support = bool(re.search(
+            r'(?:ORIGINAL DATA|PERSONAL EXPERIENCE|UNIQUE INSIGHT|\d|https?://)',
+            paragraph,
+            re.IGNORECASE,
+        ))
+        if has_claim and not (has_method or has_support):
+            unsupported_experience_claims += 1
 
     return {
         'markers': markers,
@@ -878,7 +1017,8 @@ def analyze_engagement(content: str) -> dict[str, Any]:
 
 
 def analyze_ai_citation_readiness(content: str, headings_info: dict[str, Any],
-                                  faq_info: dict[str, Any]) -> dict[str, Any]:
+                                  faq_info: dict[str, Any],
+                                  language: str = 'en') -> dict[str, Any]:
     """Assess evidence-backed reuse readiness without fixed passage lengths."""
     section_pattern = re.compile(
         r'^##\s+(.+?)\s*$\n(.*?)(?=^##\s+|\Z)',
@@ -923,9 +1063,9 @@ def analyze_ai_citation_readiness(content: str, headings_info: dict[str, Any],
     entity_definitions = len(re.findall(r'\*\*[^*]+\*\*\s*(?:is|are|refers to|means)', content))
 
     # Extraction-friendly structures
-    has_tldr = bool(re.search(
-        r'(?i)(?:TL;?DR|key takeaway|the bottom line|what you.ll learn|at a glance|in brief)',
-        content))
+    profile = LANGUAGE_PROFILES.get(language, LANGUAGE_PROFILES['en'])
+    summary_pattern = '|'.join(profile['summary_labels'])
+    has_tldr = bool(re.search(rf'(?i)(?:{summary_pattern})', content))
     table_count = len(re.findall(r'^\|.+\|$', content, re.MULTILINE))
     list_count = len(re.findall(r'^[\s]*[-*+]\s', content, re.MULTILINE))
 
@@ -1097,18 +1237,26 @@ def calculate_score(analysis: dict[str, Any]) -> dict[str, Any]:
     # Default band: Flesch Ease 60-70 (Grade 7-8)
     # Persona bands: Consumer 60-80, Professional 50-60, Technical 30-50
     readability = analysis['readability']
-    fre = readability.get('flesch_reading_ease', 50)
-    fkg = readability.get('flesch_kincaid_grade', 8)
-    if 60 <= fre <= 70:
+    reading_ease = readability.get(
+        'reading_ease', readability.get('flesch_reading_ease', 50)
+    )
+    reading_model = readability.get('reading_model', 'flesch')
+    if reading_model == 'atesman' and 50 <= reading_ease <= 69:
         read_score = 7
-    elif 55 <= fre <= 75:
+    elif reading_model == 'atesman' and 30 <= reading_ease <= 89:
         read_score = 5
-    elif 45 <= fre <= 80:
+    elif reading_model == 'atesman' and 0 <= reading_ease <= 100:
+        read_score = 3
+    elif 60 <= reading_ease <= 70:
+        read_score = 7
+    elif 55 <= reading_ease <= 75:
+        read_score = 5
+    elif 45 <= reading_ease <= 80:
         read_score = 3
     else:
         read_score = 1
         issues.append({'category': 'content', 'severity': 'medium',
-                       'issue': f'Flesch reading ease ({fre}) outside acceptable range (55-75)'})
+                       'issue': f'Flesch reading ease ({reading_ease}) outside acceptable range (55-75)'})
     cq += read_score
     cq_breakdown['readability'] = read_score
 
@@ -1364,9 +1512,13 @@ def calculate_score(analysis: dict[str, Any]) -> dict[str, Any]:
     # Trust indicators: 4 pts (about/contact links, editorial mentions)
     trust_score = 0
     body = analysis.get('_body_text', '')
-    if re.search(r'(?i)\babout\s+(?:us|the author|me)\b', body) or re.search(r'/about', body):
+    language = analysis.get('language', 'en')
+    profile = LANGUAGE_PROFILES.get(language, LANGUAGE_PROFILES['en'])
+    if any(re.search(pattern, body, re.IGNORECASE)
+           for pattern in profile['about_patterns']):
         trust_score += 2
-    if re.search(r'(?i)\bcontact\b', body) or re.search(r'/contact', body):
+    if any(re.search(pattern, body, re.IGNORECASE)
+           for pattern in profile['contact_patterns']):
         trust_score += 1
     if re.search(r'(?i)\b(?:editorial|reviewed by|fact.?check|editor)\b', body):
         trust_score += 1
@@ -1638,14 +1790,10 @@ def analyze_file(file_path: str) -> dict[str, Any]:
         return {'error': f'Could not analyze {file_path}: {exc}'}
     frontmatter = extract_frontmatter(content)
     body = strip_frontmatter(content)
+    language = _detect_language(frontmatter, body)
 
     # Strip markdown formatting for plain-text analysis
-    plain_text = re.sub(r'```.*?```', '', body, flags=re.DOTALL)
-    plain_text = re.sub(r'<[^>]+>', '', plain_text)
-    plain_text = re.sub(r'!\[.*?\]\(.*?\)', '', plain_text)
-    plain_text = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', plain_text)
-    plain_text = re.sub(r'^#{1,6}\s+', '', plain_text, flags=re.MULTILINE)
-    plain_text = re.sub(r'\n{3,}', '\n\n', plain_text).strip()
+    plain_text = _plain_text_for_analysis(body)
 
     headings_info = analyze_headings(body)
     sentences_info = analyze_sentences(plain_text)
@@ -1654,6 +1802,7 @@ def analyze_file(file_path: str) -> dict[str, Any]:
     analysis: dict[str, Any] = {
         'file': str(path),
         'format': path.suffix,
+        'language': language,
         'methodology': {
             'name': 'internal editorial readiness heuristic',
             'calibrated_probability': False,
@@ -1668,7 +1817,7 @@ def analyze_file(file_path: str) -> dict[str, Any]:
         'faq': faq_info,
         'freshness': analyze_freshness(frontmatter),
         'self_promotion': analyze_self_promotion(body),
-        'readability': analyze_readability(plain_text),
+        'readability': analyze_readability(plain_text, language),
         'sentences': sentences_info,
         'ai_signals': analyze_ai_signals(plain_text, sentences_info),
         'passive_voice': analyze_passive_voice(plain_text),
@@ -1676,9 +1825,11 @@ def analyze_file(file_path: str) -> dict[str, Any]:
         'ai_trigger_words': analyze_ai_trigger_words(plain_text),
         'schema': analyze_schema(content),
         'links': analyze_links(body),
-        'originality': analyze_originality(body),
+        'originality': analyze_originality(body, language),
         'engagement': analyze_engagement(body),
-        'ai_citation_readiness': analyze_ai_citation_readiness(body, headings_info, faq_info),
+        'ai_citation_readiness': analyze_ai_citation_readiness(
+            body, headings_info, faq_info, language
+        ),
         'social_meta': analyze_social_meta(content, frontmatter),
         'structured_data': analyze_structured_data(body),
         # Internal refs used by scoring (not included in output)

@@ -1,6 +1,6 @@
 # Claude Blog Workflow Coverage
 
-This matrix maps the claude-blog workflow surface to owned curator agents. It is advisory until the audit gate passes.
+This matrix maps the claude-blog workflow surface to owned curator agents. It is advisory until the audit gate passes. It is also the curator coverage contract: each workflow names an owner and support reviewer, cites current source evidence, records claim confidence, and remains read-only toward external systems.
 
 | Workflow | Primary owner | Support |
 |---|---|---|

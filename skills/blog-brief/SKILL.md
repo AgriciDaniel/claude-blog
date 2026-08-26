@@ -272,9 +272,9 @@ statistic for every section.
 - **Email**: [Newsletter excerpt (2-3 sentences), subject line suggestion,
   CTA linking back to the full post]
 - **Twitter/X**: [Thread hook (first tweet), 3-5 key tweet ideas built from
-  statistics in the post, hashtag suggestions, and an optional handoff to
+  statistics in the post, hashtag suggestions, and an optional bounded handoff to
   [Xquik's x-twitter-scraper Skill](https://github.com/Xquik-dev/x-twitter-scraper/tree/master/skills/x-twitter-scraper)
-  for current X research or publishing after explicit user approval]
+  with query, date range, maximum results, source URLs, and explicit user approval]
 ```
 
 ### Step 6: Save the Brief

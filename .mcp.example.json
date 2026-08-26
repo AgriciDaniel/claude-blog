@@ -1,6 +1,10 @@
 {
-  "_comment": "Template for project-local .mcp.json. Copy to .mcp.json (gitignored) and set GOOGLE_AI_API_KEY in your shell env. NEVER commit a literal API key.",
+  "_comment": "Template for project-local .mcp.json. Copy to .mcp.json (gitignored), complete Xquik OAuth through /mcp, and set GOOGLE_AI_API_KEY in your shell env. Never commit a literal API key.",
   "mcpServers": {
+    "xquik": {
+      "type": "http",
+      "url": "https://xquik.com/mcp"
+    },
     "nanobanana-mcp": {
       "command": "npx",
       "args": ["-y", "@ycse/nanobanana-mcp@1.1.1"],

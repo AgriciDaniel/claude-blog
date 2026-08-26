@@ -26,3 +26,9 @@ No verbatim quote included. This note paraphrases the source and routes exact cl
 ## Reinforces
 
 BlogPosting, Article, Person, Organization, BreadcrumbList, VideoObject, Product where relevant, and schema validation.
+
+## Folded into the wiki
+
+- [[Article Schema Baseline]]
+- [[Blog Schema Stack]]
+- [[Schema Validation Workflow]]

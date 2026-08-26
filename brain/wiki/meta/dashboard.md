@@ -3,7 +3,7 @@ type: meta
 title: "Dashboard"
 status: active
 created: 2026-07-06
-updated: 2026-07-09
+updated: 2026-08-25
 tags: [meta, dashboard, active]
 domain: "Blog Content Brain"
 confidence: verified
@@ -33,11 +33,11 @@ Status note for the Claude Blog Brain root vault navigation layer.
 
 | Measure | Count |
 |---|---:|
-| Navigable notes excluding folder hub `_index.md` files | 262 |
-| Folder notes | 258 |
+| Navigable notes excluding folder hub `_index.md` files | 275 |
+| Folder notes excluding hub indexes | 271 |
 | Root notes | 4 |
 | Folder hub indexes | 22 |
-| Total wiki Markdown files including hubs | 284 |
+| Total wiki Markdown files including hubs | 297 |
 
 ## Folder Set
 
@@ -52,15 +52,19 @@ Status note for the Claude Blog Brain root vault navigation layer.
 | [[wiki/distribution/_index|Distribution]] | 12 |
 | [[wiki/eeat/_index|E-E-A-T]] | 13 |
 | [[wiki/entities/_index|Entities]] | 1 |
+| Experiments | 1 |
 | [[wiki/flow/_index|FLOW]] | 12 |
+| Operational flows | 4 |
+| Evidence gaps | 1 |
 | [[wiki/geo-aeo/_index|GEO and AEO]] | 13 |
 | [[wiki/media/_index|Media]] | 13 |
-| [[wiki/meta/_index|Meta]] | 4 |
+| [[wiki/meta/_index|Meta]] | 9 |
 | [[wiki/monitoring/_index|Monitoring]] | 13 |
 | [[wiki/multilingual/_index|Multilingual]] | 13 |
 | [[wiki/personas/_index|Personas]] | 13 |
 | [[wiki/platforms/_index|Platforms]] | 1 |
 | [[wiki/quality/_index|Quality]] | 12 |
+| Research questions | 1 |
 | [[wiki/rewriting/_index|Rewriting]] | 13 |
 | [[wiki/schema/_index|Schema]] | 13 |
 | [[wiki/sources/_index|Sources]] | 15 |
@@ -79,7 +83,10 @@ The deliverables lane now contains 33 output-contract notes. Start at [[wiki/del
 - Source posture: review. Current claim routing should use [[Research Pack Index]], [[Source Ledger Reading Guide]], [[Claim To Source Mapping]], and [[Evidence Gap Register]].
 - Spoke notes: seed to active. Hub lists now match the actual current folder contents.
 - External systems: evergreen. Brain remains advisory and read-only.
-- Market readiness: market-ready. The audit computes market-ready with score 100; keep future status changes tied to `scripts/audit_brain.py`.
+- Market readiness: market-ready. All 118 source-ledger entries that were due
+  on 2026-08-25 have explicit review decisions, and both local and Brainstein
+  strict audits pass. Revalidate the source and claim before advancing any
+  future date.
 - Lint posture: seed. Run `python3 scripts/lint_vault.py` after each navigation or graph update.
 
 ## Related

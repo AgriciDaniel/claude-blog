@@ -1,0 +1,31 @@
+name: Google currentness
+
+on:
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-official-feeds:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1, SHA-pinned
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0, SHA-pinned
+        with:
+          python-version: "3.12"
+
+      - name: Check official Google source dates and ledger age
+        run: >-
+          python3 scripts/check_google_currentness.py
+          --root .
+          --max-age-days 31
+          --json
+
+      - name: Check generated ledger projections
+        run: python3 scripts/sync_google_updates.py --root . --check

@@ -1,8 +1,138 @@
 {
-  "schema_version": 1,
-  "last_verified": "2026-07-23",
-  "policy": "Only verified entries may inform guidance. Unverified entries are research leads and must never change scoring, gates, or recommendations.",
+  "schema_version": 2,
+  "last_verified": "2026-08-25",
+  "policy": "Only Google-supported facts in verified[] may inform guidance. Event timing never proves site impact. Product announcements never become ranking factors. Source conflicts remain explicit. Unverified entries are research leads and must never change scoring, gates, or recommendations.",
+  "source_watch": [
+    {
+      "id": "search-status",
+      "url": "https://status.search.google.com/incidents.json",
+      "review_mode": "automated",
+      "scope": "Latest Google Search ranking incidents"
+    },
+    {
+      "id": "search-docs-updates",
+      "url": "https://developers.google.com/search/updates/search_docs_updates.rss",
+      "review_mode": "automated",
+      "scope": "Latest Google Search Central documentation changes"
+    },
+    {
+      "id": "search-console-anomalies",
+      "url": "https://support.google.com/webmasters/answer/6211453?hl=en",
+      "review_mode": "manual",
+      "scope": "Search Console logging and reporting anomalies"
+    },
+    {
+      "id": "search-console-platform-help",
+      "url": "https://support.google.com/webmasters/answer/17148418?hl=en-GB",
+      "review_mode": "manual",
+      "scope": "Platform property availability and reporting"
+    },
+    {
+      "id": "google-ads-release-notes",
+      "url": "https://developers.google.com/google-ads/api/docs/release-notes",
+      "review_mode": "manual",
+      "scope": "Google Ads API releases"
+    },
+    {
+      "id": "google-ads-client-support",
+      "url": "https://developers.google.com/google-ads/api/docs/sunset-dates",
+      "review_mode": "manual",
+      "scope": "Supported Google Ads API and client-library versions"
+    }
+  ],
   "verified": [
+    {
+      "id": "ranking-august-2026-spam",
+      "event_date": "2026-08-18",
+      "title": "August 2026 spam update",
+      "source_url": "https://status.search.google.com/incidents/LEubPCm2octf2uMqCFKE",
+      "category": "ranking-update",
+      "applicability": "all-sites",
+      "affected_components": [
+        "blog-audit",
+        "blog-google"
+      ],
+      "evidence_status": "confirmed-event-pending-impact",
+      "summary": "Google reports a global, all-language spam update from August 18 to August 21. The event is confirmed, but its targets and any site-level impact are not. Wait through August 28 before making the first full-week comparison."
+    },
+    {
+      "id": "preferred-sources-custom-button-2026-08-20",
+      "event_date": "2026-08-20",
+      "title": "Preferred Sources custom button guidance",
+      "source_url": "https://developers.google.com/search/docs/appearance/preferred-sources",
+      "category": "search-appearance",
+      "applicability": "publishers-using-preferred-sources",
+      "affected_components": [
+        "blog-strategy",
+        "blog-repurpose"
+      ],
+      "evidence_status": "confirmed",
+      "summary": "Google documents standard and custom interactive buttons plus a deeplink for asking a reader to select a domain or subdomain as a Preferred Source. This is reader-controlled audience development, not a general ranking signal."
+    },
+    {
+      "id": "google-ads-api-v25-1-2026-08-19",
+      "event_date": "2026-08-19",
+      "title": "Google Ads API v25.1",
+      "source_url": "https://developers.google.com/google-ads/api/docs/release-notes",
+      "additional_source_urls": [
+        "https://developers.google.com/google-ads/api/docs/sunset-dates"
+      ],
+      "category": "api-currentness",
+      "applicability": "google-ads-keyword-planner-users",
+      "affected_components": [
+        "blog-google"
+      ],
+      "evidence_status": "confirmed",
+      "summary": "Google released Ads API v25.1 on August 19. Google lists Python client 31.2.0 as the minimum for v25; version and dependency changes still require offline compatibility tests before adoption."
+    },
+    {
+      "id": "gsc-reporting-anomalies-2026-08-13",
+      "event_date": "2026-08-13",
+      "title": "Search Console August reporting anomalies",
+      "source_url": "https://support.google.com/webmasters/answer/6211453?hl=en",
+      "category": "reporting-anomaly",
+      "applicability": "properties-with-discover-or-generative-ai-reports",
+      "affected_components": [
+        "blog-google",
+        "blog-audit",
+        "blog-geo"
+      ],
+      "evidence_status": "confirmed-data-anomaly",
+      "summary": "Google reports reduced Discover clicks and impressions for August 13 and reduced generative-AI Search impressions for August 13 through August 17 because of logging errors. These are reporting defects, not ranking events."
+    },
+    {
+      "id": "search-console-platform-properties-2026-07-29",
+      "event_date": "2026-07-29",
+      "title": "Search Console platform properties availability",
+      "source_url": "https://developers.google.com/search/blog/2026/07/platform-properties-social-video-guide",
+      "additional_source_urls": [
+        "https://support.google.com/webmasters/answer/17148418?hl=en-GB"
+      ],
+      "category": "search-console",
+      "applicability": "creators-on-supported-platforms",
+      "affected_components": [
+        "blog-google",
+        "blog-repurpose"
+      ],
+      "evidence_status": "confirmed-with-source-conflict",
+      "summary": "Search Central's July 29 announcement says Instagram, TikTok, X, and YouTube platform properties are globally available to everyone. The current Help Center still says gradual rollout. Verify availability in the actual account and do not promise API support."
+    },
+    {
+      "id": "review-snippet-integrity-2026-07-24",
+      "event_date": "2026-07-24",
+      "title": "Review snippet authenticity and disclosure guidance",
+      "source_url": "https://developers.google.com/search/docs/appearance/structured-data/review-snippet",
+      "category": "structured-data",
+      "applicability": "pages-with-review-or-aggregate-rating-markup",
+      "affected_components": [
+        "blog-schema",
+        "blog-seo-check",
+        "blog-write",
+        "blog-rewrite"
+      ],
+      "evidence_status": "confirmed",
+      "summary": "Google says pages and structured data must not include fake reviews or incentivized reviews without clear and prominent disclosure. Review content and ratings in markup must remain visible to users."
+    },
     {
       "id": "ranking-june-2026-spam",
       "event_date": "2026-06-24",
@@ -29,19 +159,6 @@
         "blog-multilingual"
       ],
       "summary": "Google may keep corrected pages in a duplicate cluster for up to two weeks; Request Indexing is quota-limited and should be reserved for important URLs."
-    },
-    {
-      "id": "search-console-platform-properties-2026-07-07",
-      "event_date": "2026-07-07",
-      "title": "Search Console platform properties",
-      "source_url": "https://developers.google.com/search/blog/2026/07/search-console-social-video-platforms",
-      "category": "search-console",
-      "applicability": "creators-on-supported-platforms",
-      "affected_components": [
-        "blog-google",
-        "blog-repurpose"
-      ],
-      "summary": "Instagram, TikTok, X, and YouTube platform properties are rolling out gradually with Search and Discover performance views. API support is not promised."
     },
     {
       "id": "amp-direct-publisher-host-2026-07-01",

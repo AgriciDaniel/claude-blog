@@ -18,7 +18,7 @@
   <img src="https://img.shields.io/badge/Tests-250%2B%20passing-brightgreen" alt="Tests: more than 250 passing">
 </p>
 
-**claude-blog is a Claude Code skill suite that writes, optimizes, audits, localizes, and refreshes blog content at scale.** Every article is evaluated for Google-aligned usefulness and internal AI citation readiness heuristics. Version 2.1.1 was prepared on 2026-07-23.
+**claude-blog is a Claude Code skill suite that writes, optimizes, audits, localizes, and refreshes blog content at scale.** Every article is evaluated for Google-aligned usefulness and internal AI citation readiness heuristics. Version 2.2.0 was prepared on 2026-08-26.
 
 The core promise is simple: the user is never the first reviewer. A 5-gate Blog Delivery Contract scores every draft against a 100-point rubric, blocks delivery below 90, verifies artifacts and links, and iterates up to 3 times before escalation.
 
@@ -49,7 +49,7 @@ The publishing workflow is documented in
 
 claude-blog is a full-lifecycle blog engine for strategy, briefs, outlines, writing, rewriting, analysis, schema, AI citation readiness, site audits, topic clusters, multilingual publishing, audio narration, and content decay detection.
 
-Current v2.1.1 shape: **32 skill directories = 1 orchestrator + 31 sub-skills; 30 user-facing /blog commands (`blog-chart` is internal, not a command).** It also includes 5 specialized agents, repository consistency and public-release validators, 22 core references, 12 templates, a 250+ test suite, and the bundled Claude Blog Brain at `./brain`.
+Current v2.2.0 shape: **32 skill directories = 1 orchestrator + 31 sub-skills; 30 user-facing /blog commands (`blog-chart` is internal, not a command).** It also includes 5 specialized agents, repository consistency and public-release validators, 22 core references, 12 templates, a 250+ test suite, and the bundled Claude Blog Brain at `./brain`.
 
 Every draft ships as an artifact folder with the markdown source, rendered HTML, PDF, real `hero.<ext>`, 3 viewport screenshots, `review.md`, and `preflight-report.json`. The renderer uses XSS-safe JSON-LD handling, dark-mode-aware CSS, and the same source for every output format.
 
@@ -264,7 +264,7 @@ Recommended clone, verify, then install flow:
 ```bash
 git clone https://github.com/AgriciDaniel/claude-blog.git
 cd claude-blog
-git checkout v2.1.1
+git checkout v2.2.0
 chmod +x install.sh
 ./install.sh
 ```
@@ -272,13 +272,13 @@ chmod +x install.sh
 One-command install on Unix and macOS:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/AgriciDaniel/claude-blog/main/install.sh | CLAUDE_BLOG_REF=v2.1.1 bash
+curl -fsSL https://raw.githubusercontent.com/AgriciDaniel/claude-blog/main/install.sh | CLAUDE_BLOG_REF=v2.2.0 bash
 ```
 
 One-command install on Windows PowerShell:
 
 ```powershell
-$env:CLAUDE_BLOG_REF = "v2.1.1"
+$env:CLAUDE_BLOG_REF = "v2.2.0"
 irm https://raw.githubusercontent.com/AgriciDaniel/claude-blog/main/install.ps1 -OutFile install.ps1
 pwsh -File ./install.ps1
 ```
@@ -287,11 +287,11 @@ Verify installer integrity before running:
 
 ```bash
 curl -fsSL -o install.sh https://raw.githubusercontent.com/AgriciDaniel/claude-blog/main/install.sh
-echo "b4fcd5aa6767529bc8d11017699bd8211519c93b0d6c28c5cf032f76ada98381  install.sh" | sha256sum -c
-CLAUDE_BLOG_REF=v2.1.1 bash install.sh
+echo "25f73e7efbe9e714d00af34d2c6b48bd59d60a14976e2eb032b8ad5c2f756ce4  install.sh" | sha256sum -c
+CLAUDE_BLOG_REF=v2.2.0 bash install.sh
 ```
 
-The SHA-256 above is for the current `install.sh` at HEAD on `main`; `CLAUDE_BLOG_REF` pins the repository clone performed by the installer. Verify against [the canonical file](https://github.com/AgriciDaniel/claude-blog/blob/main/install.sh) before running. The `install.ps1` companion hash is `9532d3014aa24468d8dd309e19acb5557c9cc7e4edab718381c26515aab48a79`.
+The SHA-256 above is for the current `install.sh` at HEAD on `main`; `CLAUDE_BLOG_REF` pins the repository clone performed by the installer. Verify against [the canonical file](https://github.com/AgriciDaniel/claude-blog/blob/main/install.sh) before running. The `install.ps1` companion hash is `a574688ba4ca27b7fbac7a26e6c95d1a6a596688f59d16ddbcc452d82f5fea7a`.
 
 Restart Claude Code after installation to activate.
 
@@ -322,16 +322,18 @@ Installation details: [`docs/INSTALLATION.md`](docs/INSTALLATION.md).
 2. **Plugin validation**: `claude plugin validate .` plus manifest, marketplace, and frontmatter checks.
 3. **Stale-path lint**: catches drift in `references/`, `templates/`, command docs, and installer payloads.
 4. **Prose hygiene**: `scripts/lint_prose.py` enforces no em dash, no en dash, and no ASCII double-hyphen prose.
-5. **Version coherence**: canonical version surfaces must all match the release version.
-6. **Command coherence**: `skills/blog/SKILL.md` and [`docs/COMMANDS.md`](docs/COMMANDS.md) must declare the same command set.
-7. **Repository consistency**: validates local reference targets, FLOW prompt locks, and reports orphaned resources without blocking.
-8. **Hash-locked dependency smoke**: installs the audio and NotebookLM locks with `--require-hashes`, then initializes google-genai, Patchright, and preflight without API calls or a browser launch.
-9. **Brain validation**: changes under `brain/**` run its pytest suite, vault lint, and report-only audit.
+5. **Secret adjudication**: `scripts/check_secrets.py` fails on unapproved detector findings and credential-shaped values without printing raw values.
+6. **Version coherence**: canonical version surfaces must all match the release version.
+7. **Command coherence**: `skills/blog/SKILL.md` and [`docs/COMMANDS.md`](docs/COMMANDS.md) must declare the same command set.
+8. **Repository consistency**: validates local reference targets, FLOW prompt locks, and reports orphaned resources without blocking.
+9. **Hash-locked dependency smoke**: installs the audio and NotebookLM locks with `--require-hashes`, then initializes google-genai, Patchright, and preflight without API calls or a browser launch.
+10. **Brain validation**: changes under `brain/**` run its pytest suite, vault lint, and report-only audit.
 
 Run locally before pushing:
 
 ```bash
 python3 -m pytest tests/
+python3 scripts/check_secrets.py
 python3 scripts/lint_prose.py
 claude plugin validate .
 ```
@@ -392,7 +394,7 @@ See [How To Cite](#how-to-cite) or [`CITATION.cff`](CITATION.cff). GitHub also s
 
 ### Is claude-blog secure to install?
 
-The recommended flow downloads the installer as a file so you can inspect it before execution. v2.1.1 uses pinned refs, allowlisted recursive payload copies, manifest-backed uninstall, prose lint, version coherence checks, repository consistency checks, and installer regression tests. See [`SECURITY.md`](.github/SECURITY.md).
+The recommended flow downloads the installer as a file so you can inspect it before execution. v2.2.0 uses pinned refs, allowlisted recursive payload copies, manifest-backed uninstall, prose lint, version coherence checks, repository consistency checks, and installer regression tests. See [`SECURITY.md`](.github/SECURITY.md).
 
 ## Documentation Index
 
@@ -415,7 +417,7 @@ If you use claude-blog in research or production, please cite the project:
   title        = {claude-blog: AI Blog Writing and SEO Optimization Skill for Claude Code},
   year         = {2026},
   url          = {https://github.com/AgriciDaniel/claude-blog},
-  version      = {2.1.1},
+  version      = {2.2.0},
   license      = {MIT}
 }
 ```

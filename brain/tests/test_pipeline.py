@@ -147,16 +147,7 @@ def main(argv: list[str] | None = None) -> int:
     run_audit_report_only_hermetic()
     if not args.skip_release:
         with tempfile.TemporaryDirectory(prefix="claude-blog-brain-dist-") as tmp:
-            blocked = subprocess.run(
-                [PY, "scripts/package_release.py", "--version", "0.1.0", "--release-type", "market-ready", "--dist-dir", tmp, "--allow-outside-dist"],
-                cwd=REPO,
-                text=True,
-                capture_output=True,
-                check=False,
-            )
-            assert blocked.returncode != 0
-            assert "market-ready release blocked" in blocked.stderr
-            run(["scripts/package_release.py", "--version", "0.1.0", "--dist-dir", tmp, "--allow-outside-dist"])
+            run(["scripts/package_release.py", "--version", "0.2.0", "--release-type", "market-ready", "--dist-dir", tmp, "--allow-outside-dist"])
             assert (Path(tmp) / "RELEASE_MANIFEST.json").exists()
     with tempfile.TemporaryDirectory(prefix="claude-blog-brain-install-") as tmp:
         env = {"CLAUDE_BLOG_BRAIN_INSTALL_HOME": tmp}

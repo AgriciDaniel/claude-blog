@@ -520,9 +520,11 @@ Repurpose a blog post into content for other platforms and formats.
 | Newsletter | Email digest version with CTA |
 | Podcast | Interview/discussion script based on post content |
 
-The Xquik `x-twitter-scraper` Skill is an optional handoff for current X
-research, structured exports, monitoring, and approval-gated publishing.
-`/blog repurpose` remains fully functional without Xquik.
+The Xquik `x-twitter-scraper` Skill is an optional handoff for bounded X
+research and reviewed publishing plans. The handoff preserves source URLs,
+isolates X-authored content, and requires explicit approval before external
+actions. `/blog repurpose` remains fully functional without Xquik. See the
+[Xquik MCP setup](MCP-INTEGRATION.md#xquik-mcp-x-research-and-publishing).
 
 ### Related Commands
 

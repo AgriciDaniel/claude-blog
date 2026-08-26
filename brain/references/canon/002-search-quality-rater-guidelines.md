@@ -29,3 +29,9 @@ No verbatim quote included. This note paraphrases the source and routes exact cl
 ## Reinforces
 
 E-E-A-T, trust, YMYL, author bios, source quality, and the blog quality score.
+
+## Folded into the wiki
+
+- [[E-E-A-T Review Rubric]]
+- [[YMYL Escalation Matrix]]
+- [[Source Quality Ladder]]

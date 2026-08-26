@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.0 - 2026-08-25
+
+- Revalidated all 118 elapsed source reviews against 89 public source URLs and
+  completed verification records for all 125 ledger entries, with explicit
+  content-confirmed, manual-review, and corrected decisions.
+- Corrected unsupported or drifted Google, Chrome, standards, and market claims
+  instead of carrying forward stale wording.
+- Added a fail-closed public projection surface, publication rights boundary,
+  and source-review verifier with offline evidence checks.
+
 ## 0.1.1 - 2026-07-08
 
 - Downgraded adapter maturity to generic-only researched state until adapter,

@@ -4,12 +4,14 @@ title: "Google Algorithm Update Ledger"
 domain: "Google Update Monitoring"
 status: active
 created: 2026-07-06
-updated: 2026-07-09
+updated: 2026-08-25
 tags: [monitoring, google-updates, active]
 source_urls:
   - "https://status.search.google.com/products/rGHU1u87FJnkP6W2GwMi/history"
   - "https://developers.google.com/search/docs/essentials/spam-policies"
   - "https://developers.google.com/search/docs/fundamentals/ai-optimization-guide"
+  - "https://status.search.google.com/incidents/LEubPCm2octf2uMqCFKE"
+  - "https://support.google.com/webmasters/answer/6211453?hl=en"
 ---
 
 # Google Algorithm Update Ledger
@@ -21,7 +23,8 @@ This hub owns Google-owned update memory for the blog brain. It keeps ranking up
 ## What This Hub Owns In Algorithm And Requirement Monitoring
 
 - Confirmed chronology from `g-ranking-history` and `g-status-dashboard`.
-- Event-specific local ledger entries such as `g-update-2026-05-21-may-2026-core-update` and `g-update-2026-06-24-june-2026-spam-update`.
+- Event-specific canonical ledger entries such as `ranking-august-2026-spam`
+  and `gsc-reporting-anomalies-2026-08-13`.
 - Routing rules that decide whether a change belongs to a timeline, playbook, schema watch, QRG watch, AI-search watch, quarantine, or impact review.
 - Confidence labels folded from the former standalone monitoring-confidence note.
 
@@ -33,14 +36,14 @@ The hub must not absorb client-specific analytics, broad market CTR benchmarks, 
 
 | Ledger item | Source ID | Owner | Confidence | Status | Next review date | Rollback trigger |
 |---|---|---|---|---|---|---|
-| Confirmed timeline memory | `g-ranking-history`, `g-status-dashboard` | Monitoring owner | high | active | 2026-08-01 | Dashboard adds, removes, or edits an event. |
-| 2026 core and spam sequence | `g-update-2026-05-21-may-2026-core-update`, `g-update-2026-06-24-june-2026-spam-update` | SEO lead | high | active | 2026-08-06 | Source-ledger event date or completion status changes. |
-| Spam policy interpretation | `g-spam-policies`, `g-update-2026-05-15-spam-policies-update-gen-ai-scaled-content` | Spam reviewer | high | active | 2026-08-01 | Google changes spam-policy wording or enforcement note. |
-| AI-search guidance | `g-ai-opt-guide`, `g-ai-features` | AI search owner | high | active | 2026-08-01 | Google changes AI feature access or special-file guidance. |
-| Schema support watch | `g-search-gallery`, `g-intro-sd` | Schema reviewer | high | active | 2026-08-01 | Search gallery support changes. |
-| QRG status | `g-qrg-full`, `g-update-2025-09-11-qrg-update-sept-2025` | Quality reviewer | high | active | 2026-08-09 | A newer full QRG appears. |
-| Generative-AI reporting | `g-update-2026-06-03-search-console-search-generative-ai-performance-reports`, `g-genai-reports` | Data owner | high | active | 2026-08-06 | Report access or documentation wording changes. |
-| Product schema maintenance | `g-search-docs-updates-2026-07-07-product-structured-data`, `g-merchant-listing-sd` | Schema reviewer | high | active | 2026-08-08 | Product docs change or page lacks commerce context. |
+| Confirmed timeline memory | `g-ranking-history`, `ranking-august-2026-spam` | Monitoring owner | high | active | 2026-09-01 | Dashboard adds, removes, or edits an event. |
+| 2026 core and spam sequence | `ranking-august-2026-spam` | SEO lead | high | pending observation | 2026-08-28 | A complete post-update week or official correction becomes available. |
+| Search Console anomalies | `gsc-reporting-anomalies-2026-08-13` | Data owner | high | active | 2026-09-01 | Google edits the anomaly record. |
+| Platform property availability | `search-console-platform-properties-2026-07-29` | Data owner | contested | account check required | 2026-09-01 | Google resolves its conflicting availability wording. |
+| Review snippet integrity | `review-snippet-integrity-2026-07-24` | Schema reviewer | high | active | 2026-09-24 | Google changes review guidance. |
+| Spam policy interpretation | `g-spam-policies` | Spam reviewer | high | active | 2026-09-24 | Google changes spam-policy wording or enforcement guidance. |
+| AI-search guidance | `g-ai-opt-guide`, `g-ai-features` | AI search owner | high | active | 2026-09-24 | Google changes AI feature or special-file guidance. |
+| Google Ads API currentness | `google-ads-api-v25-1-2026-08-19` | Integration owner | high | dependency work pending | 2026-09-19 | Google releases a newer API or changes supported clients. |
 
 ## Spoke Jobs And Deliverable Boundaries
 

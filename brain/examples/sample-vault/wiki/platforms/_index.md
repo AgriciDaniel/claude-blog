@@ -1,9 +1,11 @@
 ---
 type: "hub"
 title: "Platforms Hub"
-created: "2026-07-07"
-updated: "2026-07-07"
+created: "2026-08-25"
+updated: "2026-08-25"
 status: "active"
+domain: "Blog Content Brain"
+tags: [type-hub, platforms, active]
 ---
 
 # Platforms Hub

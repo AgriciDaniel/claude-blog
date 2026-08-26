@@ -505,7 +505,7 @@ After installation, `claude-blog` occupies this structure inside `~/.claude/`:
     └── blog-translator.md              # v1.7.0
 ```
 
-**Component counts (v2.1.1)**: 32 skill directories (1 orchestrator + 31
+**Component counts (v2.2.0)**: 32 skill directories (1 orchestrator + 31
 sub-skills); 30 user-facing commands, 5 agents (blog-researcher, blog-writer, blog-seo, blog-reviewer,
 blog-translator), 22 references in `skills/blog/references/` (plus per-sub-skill
 references and 30 synced FLOW prompts under `skills/blog-flow/references/`),

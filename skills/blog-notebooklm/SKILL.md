@@ -14,7 +14,7 @@ argument-hint: "[ask|discover|library|setup|status|cleanup] [question-or-url]"
 license: MIT
 metadata:
   author: AgriciDaniel
-  version: "2.1.1"
+  version: "2.2.0"
   source: "https://github.com/PleasePrompto/notebooklm-skill"
 ---
 
@@ -227,6 +227,10 @@ All data stored inside the skill directory:
 - `data/browser_state/`: Chrome profile with cookies
 
 **Security:** All data directories are gitignored. Never commit auth or browser state.
+
+Browser lifecycle and authenticated-context isolation are centralized in
+`scripts/browser_session.py`. Command scripts must use that helper instead of
+opening an additional persistent profile or copying cookies into another file.
 
 ## Error Handling
 

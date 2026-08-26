@@ -15,7 +15,7 @@ py-modules = []
 
 [project]
 name = "claude-blog"
-version = "2.1.1"
+version = "2.2.0"
 description = "AI-powered blog creation and optimization skill for Claude Code"
 readme = "README.md"
 license = {text = "MIT"}
@@ -60,8 +60,10 @@ google = [
 ads = [
     # Optional: enables skills/blog-google/scripts/keyword_planner.py.
     # Closes audit VULN-404 phantom-import (was previously imported with no
-    # manifest declaration).
-    "google-ads>=22.0.0,<32.0.0",
+    # manifest declaration). Google Ads API v25 requires Python client 31.2.0
+    # or newer; keep this major-bounded so the declared integration and the
+    # installed client cannot silently drift apart.
+    "google-ads>=31.2.0,<32.0.0",
 ]
 presentation = [
     # v1.9.0 Blog Delivery Contract: enables scripts/blog_preflight.py
@@ -80,6 +82,7 @@ presentation = [
     "Pillow>=11.3.0,<13.0.0",
 ]
 dev = [
+    "detect-secrets>=1.5.0,<2.0.0",
     "pytest>=8.0,<10.0",
     "textstat>=0.7.3,<1.0.0",
     "beautifulsoup4>=4.12.0,<5.0.0",

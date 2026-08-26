@@ -12,7 +12,7 @@ license: MIT
 compatibility: Requires Claude Code and Python 3.11+ for quality scoring
 metadata:
   author: AgriciDaniel
-  version: "2.1.1"
+  version: "2.2.0"
 user-invokable: true
 argument-hint: "[write|rewrite|analyze|brief|calendar|cannibalization|strategy|outline|seo-check|schema|repurpose|geo|image|audit|factcheck|persona|brand|discourse|taxonomy|notebooklm|audio|google|update|cluster|multilingual|translate|localize|locale-audit|flow|style|decay] [topic-or-file]"
 ---
@@ -170,7 +170,8 @@ Score with `skills/blog/references/quality-scoring.md`: Content Quality 30, SEO 
 
 Load on-demand as needed (22 references, load only what the task needs):
 
-- `skills/blog/references/google-landscape-2026.md`: May 2026 Core Update, March 2026 Core Update, E-E-A-T, spam updates, algorithm changes
+- `skills/blog/references/google-landscape-2026.md`: source-governed 2026 Search
+  updates, reporting anomalies, structured data, and API currentness
 - `skills/blog/references/geo-optimization.md`: AI search SEO techniques, AI citation factors, legacy GEO and AEO terminology
 - `skills/blog/references/content-rules.md`: Structure, readability, answer-first formatting
 - `skills/blog/references/visual-media.md`: Image sourcing (Pixabay, Unsplash, Pexels), AI image generation, SVG chart integration

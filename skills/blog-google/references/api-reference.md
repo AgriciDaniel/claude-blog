@@ -111,9 +111,11 @@ Each row: `keys[]`, `clicks`, `impressions`, `ctr`, `position`.
   `searchAppearance` value documented for this endpoint. Do not synthesize
   clicks or queries for those reports or claim this API isolates AI Overviews
   and AI Mode.
-- Instagram, TikTok, X, and YouTube platform properties also have a gradual UI
-  rollout. Do not promise that this endpoint supports their dedicated reports
-  until Google publishes API documentation.
+- Google's July 29 Search Central announcement says Instagram, TikTok, X, and
+  YouTube platform properties are globally available, while the current Help
+  Center still says gradual rollout. Verify availability in the account. Do not
+  promise that this endpoint supports their dedicated reports until Google
+  publishes API documentation.
 
 ---
 
@@ -212,8 +214,11 @@ Gold-standard source for keyword search volume. Methods: **GenerateKeywordIdeas*
 from seeds), **GenerateKeywordHistoricalMetrics** (volume for specific keywords), and
 **GenerateKeywordForecastMetrics** (future projections). Returns volume, competition, CPC bids.
 
-**Current API version guidance:** Google Ads API release notes list v24.2 dated 2026-06-24. Check the official release notes before changing versioned client or REST paths:
+**Current API version guidance:** Google Ads API release notes list v25.1 dated
+2026-08-19. Google's support table lists Python client 31.2.0 as the minimum for
+API v25. Check both official pages before changing a client or versioned path:
 https://developers.google.com/google-ads/api/docs/release-notes
+https://developers.google.com/google-ads/api/docs/sunset-dates
 
 - Without active ad spend, volumes are **bucketed ranges** ("1K-10K") not exact numbers
 - `competition` measures **advertiser competition**, not organic difficulty

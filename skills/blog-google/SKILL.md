@@ -15,7 +15,7 @@ argument-hint: "[setup|pagespeed|crux|crux-history|gsc|inspect|index|ga4|nlp|you
 license: MIT
 metadata:
   author: AgriciDaniel
-  version: "2.1.1"
+  version: "2.2.0"
   category: blog
 ---
 
@@ -25,8 +25,10 @@ Direct access to Google's SEO APIs for blog performance analysis. Provides real
 Chrome user metrics, indexation status, search performance, entity analysis, YouTube
 video discovery, keyword volumes, and PDF/HTML performance reports.
 
-All APIs are free at normal usage levels. Setup requires a Google Cloud project
-with an API key and/or service account.
+Most integrations have no usage fee within their documented quotas. Cloud
+Natural Language requires billing and can incur charges after its free monthly
+tier. Google Ads requires an eligible account and developer token. Never enable
+billing or make a paid request without explicit user approval.
 
 ## Prerequisites
 
@@ -38,7 +40,7 @@ python3 skills/blog-google/scripts/run.py google_auth --check --json
 **Config file:** `~/.config/claude-seo/google-api.json` (shared with claude-seo)
 ```json
 {
-  "api_key": "AIzaSy...",
+  "api_key": "YOUR_GOOGLE_API_KEY",
   "oauth_client_path": "/path/to/client_secret.json",
   "default_property": "sc-domain:example.com",
   "ga4_property_id": "properties/123456789",
@@ -124,10 +126,11 @@ the Search view covers AI Overviews and AI Mode. Do not promise clicks, queries,
 or API retrieval from these dedicated views. Until Google documents an API,
 report that capability as `SKIPPED` or unavailable and point the user to the UI.
 
-Search Console platform properties for Instagram, TikTok, X, and YouTube are
-also rolling out gradually. Their UI can expose Search and Discover performance,
-but `/blog google gsc` must not claim to retrieve these platform reports through
-the current API.
+Google's July 29 Search Central announcement says Search Console platform
+properties for Instagram, TikTok, X, and YouTube are globally available. The
+current Help Center still says gradual rollout. Report this as a Google-source
+conflict, verify availability in the user's account, and do not claim that
+`/blog google gsc` retrieves these platform reports through the current API.
 
 ### `/blog google inspect <url>`
 
@@ -278,6 +281,16 @@ internally by other blog sub-skills:
 
 Falls back gracefully when credentials are not configured.
 
+## Report Templates
+
+Use the bundled templates when a workflow requests a durable human-readable
+report. Keep unavailable account data marked `SKIPPED`; never fill an empty
+section with estimated metrics.
+
+- `assets/templates/cwv-audit-report.md` for PageSpeed and CrUX evidence.
+- `assets/templates/gsc-performance-report.md` for Search Analytics exports.
+- `assets/templates/indexation-status-report.md` for URL Inspection evidence.
+
 ## Technical Notes
 
 - INP replaced FID on March 12, 2024. Never reference FID.
@@ -285,7 +298,9 @@ Falls back gracefully when credentials are not configured.
 - CrUX 404 = insufficient Chrome traffic, not an auth error.
 - Search Analytics data has 2-3 day lag.
 - Indexing API is officially for JobPosting/BroadcastEvent pages only.
-- All Google APIs used are FREE at normal usage levels.
+- Most integrations have no usage fee within quota. Cloud Natural Language
+  requires billing and can incur charges; Google Ads requires account and
+  developer-token access.
 - Read `references/search-currentness.md` before diagnosing a named update,
   canonical change, Discover visibility, Google generative-AI reporting,
   platform properties, Preferred Sources, AMP, or crawler byte-limit issue.

@@ -16,7 +16,7 @@ import sys
 from pathlib import Path
 
 PUBLIC_REPOSITORY = "https://github.com/AgriciDaniel/claude-blog"
-PUBLIC_VERSION = "2.1.1"
+PUBLIC_VERSION = "2.2.0"
 PUBLIC_SLUG = "claude-blog@agricidaniel-blog"
 PUBLIC_OWNER = "AgriciDaniel"
 PUBLIC_OWNER_URL = "https://github.com/AgriciDaniel"
@@ -169,6 +169,7 @@ def validate(root: Path) -> dict:
                     }
                 )
 
+    citation = contents.get("CITATION.cff", "")
     security = contents.get(".github/SECURITY.md", "")
     security_versions = sorted(set(SECURITY_CHECKOUT_RE.findall(security)))
     if security_versions != [PUBLIC_VERSION]:
@@ -181,7 +182,6 @@ def validate(root: Path) -> dict:
             }
         )
 
-    citation = contents.get("CITATION.cff", "")
     expected_citation_repository = f'repository-code: "{PUBLIC_REPOSITORY}"'
     if expected_citation_repository not in citation:
         errors.append(

@@ -28,3 +28,9 @@ No verbatim quote included. This note paraphrases the sources and routes exact c
 ## Reinforces
 
 Page speed, image handling, JavaScript restraint, field data, PSI, CrUX, and technical quality scoring.
+
+## Folded into the wiki
+
+- [[Technical Schema Subscore]]
+- [[GSC Search Analytics Query Plan]]
+- [[Quality Score Rubric]]

@@ -25,3 +25,9 @@ No verbatim quote included. This note paraphrases the source and routes exact cl
 ## Reinforces
 
 People-first writing, E-E-A-T, originality, source-backed claims, and anti-slop review.
+
+## Folded into the wiki
+
+- [[Content Quality Subscore]]
+- [[E-E-A-T for Blog Content]]
+- [[Blog Quality Score]]
