@@ -35,13 +35,13 @@ Optional dependencies (graceful degradation):
 import argparse
 import errno
 import json
-import math
 import os
 import re
 import stat
 import sys
 import tempfile
 import urllib.parse
+from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any
 
@@ -297,6 +297,234 @@ def strip_frontmatter(content: str) -> str:
     return re.sub(r'^---\s*\n.*?\n---\s*\n', '', content, count=1, flags=re.DOTALL)
 
 
+class _HTMLAnalysisParser(HTMLParser):
+    """Extract page metadata and a Markdown-like reader-visible HTML view."""
+
+    _SKIPPED_TAGS = {'script', 'style', 'template', 'noscript', 'svg'}
+    _BLOCK_TAGS = {
+        'article', 'aside', 'div', 'footer', 'header', 'main', 'nav', 'p',
+        'section',
+    }
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.metadata: dict[str, str] = {}
+        self._metadata_priority: dict[str, int] = {}
+        self._parts: list[str] = []
+        self._in_head = False
+        self._in_title = False
+        self._title_parts: list[str] = []
+        self._skip_depth = 0
+        self._anchors: list[str] = []
+        self._lists: list[str] = []
+        self._table_depth = 0
+        self._table_first_row = False
+        self._table_row_cells = 0
+        self._json_ld_parts: list[str] | None = None
+
+    def _set_metadata(self, key: str, value: Any, priority: int) -> None:
+        text = str(value or '').strip()
+        if text and priority > self._metadata_priority.get(key, -1):
+            self.metadata[key] = text
+            self._metadata_priority[key] = priority
+
+    def _newline(self, count: int = 1) -> None:
+        if not self._parts:
+            return
+        trailing = len(self._parts[-1]) - len(self._parts[-1].rstrip('\n'))
+        if trailing < count:
+            self._parts.append('\n' * (count - trailing))
+
+    def _extract_json_ld_metadata(self, raw: str) -> None:
+        try:
+            data = json.loads(raw)
+        except (json.JSONDecodeError, TypeError):
+            return
+
+        def visit(value: Any) -> None:
+            if isinstance(value, dict):
+                schema_type = value.get('@type', '')
+                types = {schema_type} if isinstance(schema_type, str) else set(schema_type or [])
+                priority = 2 if types & {'Article', 'BlogPosting', 'NewsArticle'} else 1
+                self._set_metadata('title', value.get('headline') or value.get('name'), priority)
+                self._set_metadata('description', value.get('description'), priority)
+                self._set_metadata('date', value.get('datePublished'), priority)
+                self._set_metadata('lastUpdated', value.get('dateModified'), priority)
+                self._set_metadata('language', value.get('inLanguage'), priority)
+                author = value.get('author')
+                if isinstance(author, dict):
+                    self._set_metadata('author', author.get('name'), priority)
+                elif isinstance(author, list):
+                    names = [str(item.get('name', '')).strip() for item in author if isinstance(item, dict)]
+                    self._set_metadata('author', ', '.join(name for name in names if name), priority)
+                elif isinstance(author, str):
+                    self._set_metadata('author', author, priority)
+                for child in value.values():
+                    if isinstance(child, (dict, list)):
+                        visit(child)
+            elif isinstance(value, list):
+                for item in value:
+                    visit(item)
+
+        visit(data)
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        tag = tag.lower()
+        values = {str(key).lower(): value or '' for key, value in attrs}
+        if tag == 'html':
+            self._set_metadata('language', values.get('lang'), 3)
+        elif tag == 'head':
+            self._in_head = True
+        elif tag == 'title':
+            self._in_title = True
+            self._title_parts = []
+        elif tag == 'meta':
+            identity = (
+                values.get('name') or values.get('property')
+                or values.get('itemprop') or ''
+            ).lower()
+            content = values.get('content', '')
+            fields = {
+                'description': ('description', 3),
+                'og:description': ('description', 2),
+                'twitter:description': ('description', 1),
+                'author': ('author', 3),
+                'article:author': ('author', 2),
+                'date': ('date', 3),
+                'datepublished': ('date', 3),
+                'article:published_time': ('date', 3),
+                'datemodified': ('lastUpdated', 3),
+                'last-modified': ('lastUpdated', 3),
+                'article:modified_time': ('lastUpdated', 3),
+                'og:title': ('title', 2),
+                'twitter:title': ('title', 1),
+            }
+            if identity in fields:
+                key, priority = fields[identity]
+                self._set_metadata(key, content, priority)
+        elif tag == 'link' and 'canonical' in values.get('rel', '').lower().split():
+            canonical = values.get('href', '').strip()
+            if canonical:
+                parsed = urllib.parse.urlparse(canonical)
+                path = urllib.parse.unquote(parsed.path or '/')
+                self._set_metadata('slug', path.rstrip('/') or '/', 3)
+        elif tag == 'time':
+            identity = (values.get('itemprop') or values.get('class') or '').lower()
+            if 'datemodified' in identity:
+                self._set_metadata('lastUpdated', values.get('datetime'), 2)
+            elif 'datepublished' in identity or 'published' in identity:
+                self._set_metadata('date', values.get('datetime'), 2)
+
+        if tag == 'script' and values.get('type', '').lower() == 'application/ld+json':
+            self._json_ld_parts = []
+        if tag in self._SKIPPED_TAGS:
+            self._skip_depth += 1
+            return
+        if self._skip_depth or self._in_head:
+            return
+
+        if re.fullmatch(r'h[1-6]', tag):
+            self._newline(2)
+            self._parts.append('#' * int(tag[1]) + ' ')
+        elif tag == 'a':
+            self._parts.append('[')
+            self._anchors.append(values.get('href', ''))
+        elif tag in {'ul', 'ol'}:
+            self._lists.append(tag)
+            self._newline(1)
+        elif tag == 'li':
+            self._newline(1)
+            self._parts.append('1. ' if self._lists and self._lists[-1] == 'ol' else '- ')
+        elif tag == 'br':
+            self._newline(1)
+        elif tag == 'blockquote':
+            self._newline(2)
+            self._parts.append('> ')
+        elif tag in {'strong', 'b'}:
+            self._parts.append('**')
+        elif tag in {'em', 'i'}:
+            self._parts.append('*')
+        elif tag == 'table':
+            self._table_depth += 1
+            self._table_first_row = True
+            self._newline(2)
+        elif tag == 'tr' and self._table_depth:
+            self._table_row_cells = 0
+            self._newline(1)
+        elif tag in {'th', 'td'} and self._table_depth:
+            self._table_row_cells += 1
+            self._parts.append('| ')
+        elif tag in self._BLOCK_TAGS:
+            self._newline(2)
+
+    def handle_endtag(self, tag: str) -> None:
+        tag = tag.lower()
+        if tag == 'title':
+            self._in_title = False
+            self._set_metadata('title', ''.join(self._title_parts), 3)
+        elif tag == 'head':
+            self._in_head = False
+
+        if tag in self._SKIPPED_TAGS:
+            if tag == 'script' and self._json_ld_parts is not None:
+                self._extract_json_ld_metadata(''.join(self._json_ld_parts))
+                self._json_ld_parts = None
+            self._skip_depth = max(self._skip_depth - 1, 0)
+            return
+        if self._skip_depth or self._in_head:
+            return
+
+        if re.fullmatch(r'h[1-6]', tag) or tag in self._BLOCK_TAGS or tag == 'blockquote':
+            self._newline(2)
+        elif tag == 'a' and self._anchors:
+            self._parts.append(f']({self._anchors.pop()})')
+        elif tag in {'ul', 'ol'}:
+            if self._lists:
+                self._lists.pop()
+            self._newline(2)
+        elif tag == 'li':
+            self._newline(1)
+        elif tag in {'strong', 'b'}:
+            self._parts.append('**')
+        elif tag in {'em', 'i'}:
+            self._parts.append('*')
+        elif tag in {'th', 'td'} and self._table_depth:
+            self._parts.append(' ')
+        elif tag == 'tr' and self._table_depth:
+            self._parts.append('|\n')
+            if self._table_first_row and self._table_row_cells:
+                self._parts.append('| ' + ' | '.join(['---'] * self._table_row_cells) + ' |\n')
+                self._table_first_row = False
+        elif tag == 'table':
+            self._table_depth = max(self._table_depth - 1, 0)
+            self._newline(2)
+
+    def handle_data(self, data: str) -> None:
+        if self._json_ld_parts is not None:
+            self._json_ld_parts.append(data)
+            return
+        if self._in_title:
+            self._title_parts.append(data)
+            return
+        if self._skip_depth or self._in_head:
+            return
+        text = re.sub(r'\s+', ' ', data)
+        if text.strip():
+            self._parts.append(text)
+
+    def analysis_text(self) -> str:
+        lines = [line.strip() for line in ''.join(self._parts).splitlines()]
+        return re.sub(r'\n{3,}', '\n\n', '\n'.join(lines)).strip()
+
+
+def extract_html_for_analysis(content: str) -> tuple[dict[str, Any], str]:
+    """Return HTML metadata and normalized reader-visible analysis text."""
+    parser = _HTMLAnalysisParser()
+    parser.feed(content)
+    parser.close()
+    return dict(parser.metadata), parser.analysis_text()
+
+
 def _detect_language(frontmatter: dict[str, Any], body: str) -> str:
     """Resolve a supported language profile without broad language guessing."""
     declared = str(
@@ -540,8 +768,8 @@ def analyze_citations(content: str) -> dict[str, Any]:
     # Sourced vs unsourced stats
     sourced_stats = 0
     unsourced_stats = 0
-    for stat in stat_patterns:
-        pos = content.find(stat)
+    for stat_value in stat_patterns:
+        pos = content.find(stat_value)
         if pos >= 0:
             context = content[pos:pos + 200]
             if re.search(r'\[.+\]\(https?://', context) or re.search(r'\([^)]*20\d{2}[^)]*\)', context):
@@ -701,11 +929,11 @@ def analyze_sentences(text: str) -> dict[str, Any]:
         }
 
     avg = sum(lengths) / len(lengths)
-    std_dev = (sum((l - avg) ** 2 for l in lengths) / len(lengths)) ** 0.5
+    std_dev = (sum((length - avg) ** 2 for length in lengths) / len(lengths)) ** 0.5
     burstiness = std_dev / avg if avg > 0 else 0
-    very_long = sum(1 for l in lengths if l > 40)
-    over_20 = sum(1 for l in lengths if l > 20)
-    over_25 = sum(1 for l in lengths if l > 25)
+    very_long = sum(1 for length in lengths if length > 40)
+    over_20 = sum(1 for length in lengths if length > 20)
+    over_25 = sum(1 for length in lengths if length > 25)
     total = len(lengths)
 
     return {
@@ -993,7 +1221,7 @@ def analyze_originality(content: str, language: str = 'en') -> dict[str, Any]:
 def analyze_engagement(content: str) -> dict[str, Any]:
     """Detect questions in body text, examples, call-to-action patterns."""
     # Questions in body (not in headings)
-    body_lines = [l for l in content.split('\n') if not l.strip().startswith('#')]
+    body_lines = [line for line in content.split('\n') if not line.strip().startswith('#')]
     body_text = '\n'.join(body_lines)
     questions_in_text = len(re.findall(r'[^#]\?', body_text))
 
@@ -1788,8 +2016,11 @@ def analyze_file(file_path: str) -> dict[str, Any]:
         content = _read_safely(path)
     except (OSError, UnicodeDecodeError, ValueError) as exc:
         return {'error': f'Could not analyze {file_path}: {exc}'}
-    frontmatter = extract_frontmatter(content)
-    body = strip_frontmatter(content)
+    if path.suffix.lower() == '.html':
+        frontmatter, body = extract_html_for_analysis(content)
+    else:
+        frontmatter = extract_frontmatter(content)
+        body = strip_frontmatter(content)
     language = _detect_language(frontmatter, body)
 
     # Strip markdown formatting for plain-text analysis
@@ -1798,6 +2029,15 @@ def analyze_file(file_path: str) -> dict[str, Any]:
     headings_info = analyze_headings(body)
     sentences_info = analyze_sentences(plain_text)
     faq_info = analyze_faq(body)
+
+    ai_citation_readiness = analyze_ai_citation_readiness(
+        body, headings_info, faq_info, language
+    )
+    if path.suffix.lower() == '.html':
+        ai_citation_readiness['has_robots_restriction'] = bool(re.search(
+            r'(?is)<meta[^>]+name=["\']robots["\'][^>]+content=["\'][^"\']*(?:noindex|noai)[^"\']*["\']',
+            content,
+        ))
 
     analysis: dict[str, Any] = {
         'file': str(path),
@@ -1827,9 +2067,7 @@ def analyze_file(file_path: str) -> dict[str, Any]:
         'links': analyze_links(body),
         'originality': analyze_originality(body, language),
         'engagement': analyze_engagement(body),
-        'ai_citation_readiness': analyze_ai_citation_readiness(
-            body, headings_info, faq_info, language
-        ),
+        'ai_citation_readiness': ai_citation_readiness,
         'social_meta': analyze_social_meta(content, frontmatter),
         'structured_data': analyze_structured_data(body),
         # Internal refs used by scoring (not included in output)

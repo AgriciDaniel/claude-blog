@@ -44,6 +44,57 @@ class TestStripFrontmatter:
         assert stripped == sample_post_no_frontmatter
 
 
+class TestExtractHTMLForAnalysis:
+    def test_extracts_metadata_and_reader_visible_structure(self):
+        content = """<!doctype html>
+<html lang="tr-TR"><head>
+<title>Kaynak İncelemesi</title>
+<meta name="description" content="Kaynak incelemesi için pratik rehber.">
+<meta name="author" content="Ayşe Yılmaz">
+<meta property="article:published_time" content="2026-08-01">
+<meta property="article:modified_time" content="2026-08-20">
+<link rel="canonical" href="https://example.com/blog/kaynak-incelemesi/">
+</head><body><article>
+<h1>Kaynak İncelemesi</h1><h2>Kanıt</h2>
+<p>Bir <a href="https://www.gov.uk/guidance">resmi kaynağı</a> doğrulayın.</p>
+<ul><li>Kaynağı açın</li><li>Tarihi kontrol edin</li></ul>
+</article></body></html>"""
+
+        metadata, normalized = analyze_blog.extract_html_for_analysis(content)
+
+        assert metadata == {
+            "language": "tr-TR",
+            "title": "Kaynak İncelemesi",
+            "description": "Kaynak incelemesi için pratik rehber.",
+            "author": "Ayşe Yılmaz",
+            "date": "2026-08-01",
+            "lastUpdated": "2026-08-20",
+            "slug": "/blog/kaynak-incelemesi",
+        }
+        assert "# Kaynak İncelemesi" in normalized
+        assert "## Kanıt" in normalized
+        assert "[resmi kaynağı](https://www.gov.uk/guidance)" in normalized
+        assert normalized.count("- ") == 2
+
+    def test_json_ld_supplies_equivalent_article_metadata(self):
+        content = """<html><head><script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting",
+ "headline":"Evidence Review","description":"A sourced evidence review.",
+ "author":{"@type":"Person","name":"Jane Doe"},
+ "datePublished":"2026-08-01","dateModified":"2026-08-20",
+ "inLanguage":"en-US"}
+</script></head><body><h1>Evidence Review</h1></body></html>"""
+
+        metadata, _ = analyze_blog.extract_html_for_analysis(content)
+
+        assert metadata["title"] == "Evidence Review"
+        assert metadata["description"] == "A sourced evidence review."
+        assert metadata["author"] == "Jane Doe"
+        assert metadata["date"] == "2026-08-01"
+        assert metadata["lastUpdated"] == "2026-08-20"
+        assert metadata["language"] == "en-US"
+
+
 # ---------------------------------------------------------------------------
 # Heading analysis
 # ---------------------------------------------------------------------------
@@ -536,6 +587,54 @@ class TestAnalyzeFile:
     def test_nonexistent_file(self):
         result = analyze_blog.analyze_file("/nonexistent/file.md")
         assert "error" in result
+
+    def test_rendered_html_metadata_and_structure_are_scored(self, tmp_path):
+        html = """<!doctype html><html lang="en"><head>
+<title>Evidence Review for Editorial Teams</title>
+<meta name="description" content="Evidence review helps editorial teams verify sources and publishing decisions.">
+<meta name="author" content="Jane Doe">
+<meta property="article:published_time" content="2026-08-01">
+<meta property="article:modified_time" content="2026-08-20">
+<link rel="canonical" href="https://example.com/guides/evidence-review/">
+</head><body><main><article>
+<h1>Evidence Review for Editorial Teams</h1>
+<h2>Source selection</h2><p>Evidence review connects claims to
+<a href="https://www.nih.gov/research">NIH research</a> and
+<a href="https://www.cdc.gov/guidance">CDC guidance</a>.</p>
+<h2>Decision record</h2><p>The record explains the reader decision and links
+<a href="/about">the editorial policy</a>.</p>
+<h2>Publication check</h2><p>Editors verify each claim before publication.</p>
+<ul><li>Open the source</li><li>Check the date</li><li>Record the decision</li></ul>
+</article></main></body></html>"""
+        path = tmp_path / "evidence-review.html"
+        path.write_text(html, encoding="utf-8")
+
+        result = analyze_blog.analyze_file(str(path))
+        issues = {item["issue"] for item in result["score"]["issues"]}
+
+        assert result["frontmatter"] == {
+            "language": "en",
+            "title": "Evidence Review for Editorial Teams",
+            "description": "Evidence review helps editorial teams verify sources and publishing decisions.",
+            "author": "Jane Doe",
+            "date": "2026-08-01",
+            "lastUpdated": "2026-08-20",
+            "slug": "/guides/evidence-review",
+        }
+        assert result["language"] == "en"
+        assert result["freshness"]["has_date"] is True
+        assert result["freshness"]["has_last_updated"] is True
+        assert result["headings"]["h1_count"] == 1
+        assert result["headings"]["h2_count"] == 3
+        assert result["links"]["internal_count"] == 1
+        assert result["links"]["external_count"] == 2
+        assert result["citations"]["inline_citations"] == 2
+        assert result["structured_data"]["unordered_list_items"] == 3
+        assert result["score"]["category_details"]["seo_optimization"]["breakdown"]["url_structure"] == 3
+        assert result["score"]["category_details"]["eeat_signals"]["breakdown"]["author"] == 4
+        assert "Missing title in frontmatter" not in issues
+        assert "Missing meta description in frontmatter" not in issues
+        assert "No author attribution in frontmatter" not in issues
 
     def test_style_diagnostics_do_not_change_quality_score(self, tmp_path):
         base = """---

@@ -266,7 +266,9 @@ jobs:
   brain:
     name: Brain
     needs: brain-changes
-    if: ${{ needs.brain-changes.outputs.changed == 'true' }}
+    # Run on every main push so a release commit cannot skip the executable
+    # Brain gate. Pull requests without Brain changes retain the fast path.
+    if: ${{ github.event_name == 'push' || needs.brain-changes.outputs.changed == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1, SHA-pinned
@@ -289,4 +291,4 @@ jobs:
         run: python3 brain/scripts/verify_source_ledger.py --offline-check --as-of 2026-08-25
 
       - name: Audit brain
-        run: python3 brain/scripts/audit_brain.py --json --report-only --no-exec
+        run: python3 brain/scripts/audit_brain.py --json --require market-ready --verify
