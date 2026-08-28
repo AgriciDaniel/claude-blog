@@ -74,7 +74,7 @@ presentation = [
     # attacker-influenceable HTML to PDF; pin to a known-good window.
     # Patchright is exact-pinned because it controls an authenticated browser
     # and must match the separately hash-locked NotebookLM runtime.
-    "patchright==1.61.2",
+    "patchright==1.62.1",
     "weasyprint>=60.2,<65",
     "google-genai>=2.14.0,<3.0.0",
     "requests>=2.32.4,<3.0.0",
