@@ -12,4 +12,4 @@
 patchright==1.61.2
 
 # Environment management
-python-dotenv==1.2.2
+python-dotenv==1.2.3
