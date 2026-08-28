@@ -75,7 +75,7 @@ presentation = [
     # Patchright is exact-pinned because it controls an authenticated browser
     # and must match the separately hash-locked NotebookLM runtime.
     "patchright==1.61.2",
-    "weasyprint>=60.2,<65",
+    "weasyprint>=60.2,<70",
     "google-genai>=2.14.0,<3.0.0",
     "requests>=2.32.4,<3.0.0",
     "markdown>=3.5,<4.0",
