@@ -174,13 +174,17 @@ jobs:
         run: |
           echo "Checking for stale blog/ path references..."
           errors=0
-          # Check that no SKILL.md or doc references the old bare blog/ path (not skills/blog/)
+          # Check that no SKILL.md or doc references the old bare blog/ path
+          # (not skills/blog/). The `.claude-` lookbehind exempts the v2.3.0
+          # user-writable directories `.claude-blog/templates/` and
+          # `.claude-blog/personas/`, which live in the user's working folder
+          # and are a different path entirely from the plugin's own tree.
           for file in $(find skills docs -name "*.md"); do
-            if grep -Pn '(?<!skills/)blog/references/' "$file" 2>/dev/null; then
+            if grep -Pn '(?<!skills/)(?<!\.claude-)blog/references/' "$file" 2>/dev/null; then
               echo "WARNING: $file still references old 'blog/references/' path"
               errors=$((errors + 1))
             fi
-            if grep -Pn '(?<!skills/)blog/templates/' "$file" 2>/dev/null; then
+            if grep -Pn '(?<!skills/)(?<!\.claude-)blog/templates/' "$file" 2>/dev/null; then
               echo "WARNING: $file still references old 'blog/templates/' path"
               errors=$((errors + 1))
             fi

@@ -4,9 +4,9 @@ For security teams evaluating claude-blog before approving it for a Claude
 Cowork, Claude Code, or Claude Desktop deployment. Everything here is checkable
 against the source; where a claim is enforced by a test, the test is named.
 
-Companion documents: [SECURITY.md](../SECURITY.md) (threat model, trust
+Companion documents: [SECURITY.md](../.github/SECURITY.md) (threat model, trust
 boundaries, disclosure policy, audit history) and
-[PRIVACY.md](../PRIVACY.md) (data handling).
+[PRIVACY.md](PRIVACY.md) (data handling).
 
 ## What the plugin is
 
@@ -128,7 +128,7 @@ folders the user mounts.
   unannounced.
 - `patchright` (a stealth-fork of Playwright) is used only by
   `/blog notebooklm`. It is dual-use; the rationale and the decision not to
-  bundle it by default are documented in [SECURITY.md](../SECURITY.md).
+  bundle it by default are documented in [SECURITY.md](../.github/SECURITY.md).
 
 ## Reviewing and pinning a build
 
@@ -171,7 +171,7 @@ never prints credential values, makes no network calls, and writes nothing.
   host's own permission model and, in Cowork, the folder sandbox. Mount the
   narrowest folder that gets the job done.
 - **No formal third-party audit.** The audit history in
-  [SECURITY.md](../SECURITY.md) is self-conducted, with findings and fixes
+  [SECURITY.md](../.github/SECURITY.md) is self-conducted, with findings and fixes
   itemized.
 
-Report a vulnerability through the process in [SECURITY.md](../SECURITY.md).
+Report a vulnerability through the process in [SECURITY.md](../.github/SECURITY.md).
