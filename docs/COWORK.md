@@ -7,10 +7,10 @@ different about Cowork specifically.
 
 ## Install
 
-**From a marketplace** — *Plugins > Add marketplace*, enter
+**From a marketplace** - *Plugins > Add marketplace*, enter
 `AgriciDaniel/claude-blog`, open **claude-blog**, choose **Install**.
 
-**From a file** — build the artifact from a checkout and upload it:
+**From a file** - build the artifact from a checkout and upload it:
 
 ```bash
 python3 scripts/package_plugin.py
@@ -19,7 +19,7 @@ python3 scripts/package_plugin.py
 
 Then *Plugins > Add plugin > Upload*. Use this route when your organization
 restricts third-party marketplaces, when you need to pin an exact reviewed
-build, or if marketplace-installed skills fail to load — a
+build, or if marketplace-installed skills fail to load - a
 [known Cowork issue](https://github.com/anthropics/claude-code/issues/39400)
 where skill metadata registers but the files are not mounted. Uploading the same
 plugin as a file is the documented workaround.
@@ -31,15 +31,15 @@ off by default.
 
 | Option | Enables | Default |
 |---|---|---|
-| **Google AI API key** | `/blog image`, `/blog audio` | blank — features off |
+| **Google AI API key** | `/blog image`, `/blog audio` | blank - features off |
 | **Gemini image model** | Model used by `/blog image` | `gemini-3.1-flash-image-preview` |
 
 While the key is blank, nothing is downloaded and no MCP server is started. See
 [SECURITY-REVIEW.md](SECURITY-REVIEW.md) for how that is enforced.
 
-Everything else — writing, rewriting, briefs, outlines, calendars, strategy,
+Everything else - writing, rewriting, briefs, outlines, calendars, strategy,
 SEO checks, schema, charts, repurposing, GEO audits, clusters, translation,
-localization, fact-checking, personas, taxonomy — needs no configuration.
+localization, fact-checking, personas, taxonomy - needs no configuration.
 
 ## What works where
 
@@ -59,8 +59,8 @@ The two "No" cells are platform limits, not bugs:
 - **`/blog image`** runs the nanobanana MCP server as a local process. Plugins
   bundling local MCP servers work in Claude Desktop and Claude Code; a Cowork
   session on web or mobile has no local process to attach to. The skill detects
-  this and returns the full image brief — 6-component prompt, aspect ratio, alt
-  text — ready to paste into any image tool.
+  this and returns the full image brief - 6-component prompt, aspect ratio, alt
+  text - ready to paste into any image tool.
 - **`/blog notebooklm`** drives a real browser through an interactive Google
   login, which needs a local browser and a human at the keyboard. The skill
   suggests `/blog factcheck` instead.
@@ -97,7 +97,7 @@ your working folder. Uninstalling the plugin does not delete them.
 | Python packages | Preinstalled set; installing more may not persist | You control the environment |
 
 Because a hosted Cowork home directory may not survive between sessions, prefer
-the plugin's own options over `/blog google setup` there — options are set once
+the plugin's own options over `/blog google setup` there - options are set once
 and persist with the plugin.
 
 ## Troubleshooting

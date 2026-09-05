@@ -34,7 +34,7 @@ billing or make a paid request without explicit user approval.
 
 Run `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/runtime_capabilities.py" --check google --json`
 before any command in this skill. If `available` is `false`, report exactly what
-is missing (Python packages, credential, or both) and stop -- do not run the
+is missing (Python packages, credential, or both) and stop - do not run the
 scripts.
 
 On a hosted Claude Cowork session the home directory may not persist between

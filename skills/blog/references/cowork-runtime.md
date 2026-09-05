@@ -2,7 +2,7 @@
 
 claude-blog ships as one plugin that runs on three Claude surfaces. The
 content skills behave identically everywhere. Only the skills that shell out to
-Python, use a credential, or need a local MCP server vary — this file is the
+Python, use a credential, or need a local MCP server vary - this file is the
 single source of truth for which do what, and what to say when one is
 unavailable.
 
@@ -47,15 +47,15 @@ fallback. Never surface a raw traceback as the answer to a content request.
 
 The plugin directory (`${CLAUDE_PLUGIN_ROOT}`) is **read-only** in Cowork and is
 replaced wholesale on every plugin update. Follow these rules everywhere, not
-just in Cowork — they are correct on all three surfaces:
+just in Cowork - they are correct on all three surfaces:
 
-- **Reading plugin content** — always through `${CLAUDE_PLUGIN_ROOT}/...`.
+- **Reading plugin content** - always through `${CLAUDE_PLUGIN_ROOT}/...`.
   Never a bare relative path: the working directory is the user's folder, not
   the plugin.
-- **Writing the user's deliverables** (articles, reports, charts, audio) — into
+- **Writing the user's deliverables** (articles, reports, charts, audio) - into
   the current working directory, or wherever the user asked. Confirm the path
   before writing outside it.
-- **Writing plugin state that must survive updates** (personas, caches) — into
+- **Writing plugin state that must survive updates** (personas, caches) - into
   `${CLAUDE_PLUGIN_DATA}/`, falling back to `.claude-blog/` in the working
   directory when that variable is unset.
 

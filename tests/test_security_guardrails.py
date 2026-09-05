@@ -642,7 +642,7 @@ def test_mcp_server_is_opt_in_via_launcher() -> None:
 
     A plugin's MCP servers start as soon as the plugin is enabled. Pointing the
     config straight at ``npx @ycse/nanobanana-mcp`` would mean every install
-    fetches and executes a third-party npm package unprompted -- a reasonable
+    fetches and executes a third-party npm package unprompted - a reasonable
     thing for a security review to reject. The launcher gates that behind a
     configured API key and pins an exact version.
     """

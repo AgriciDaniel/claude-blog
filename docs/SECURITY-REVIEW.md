@@ -98,7 +98,7 @@ translation command fully functional.
 
 ## Least privilege
 
-**Agents** declare explicit tool allowlists. No agent has `Bash` — enforced by
+**Agents** declare explicit tool allowlists. No agent has `Bash` - enforced by
 `test_no_bash_tool_in_any_agent_frontmatter`. The reviewer and translator agents
 are read-only or write-only-to-content by construction.
 
@@ -112,7 +112,7 @@ outside its own invocation, or run anything on session start.
 **Filesystem:** skills read plugin content through `${CLAUDE_PLUGIN_ROOT}` and
 write deliverables into the user's working folder. Plugin state that must
 survive updates goes to `${CLAUDE_PLUGIN_DATA}`. No skill writes into the plugin
-directory — enforced by
+directory - enforced by
 `tests/test_plugin_portability.py::test_no_skill_writes_into_the_plugin_directory`.
 In Cowork this is bounded further by the sandbox: Claude reaches only the
 folders the user mounts.

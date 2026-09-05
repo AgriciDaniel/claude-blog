@@ -42,7 +42,7 @@ def _has_module(name: str) -> bool:
 def _detect_surface() -> str:
     """Best-effort guess at which Claude surface we are running on.
 
-    Purely advisory -- used to phrase guidance, never to gate behaviour. When we
+    Purely advisory - used to phrase guidance, never to gate behaviour. When we
     cannot tell, say so rather than guessing wrong.
     """
     if os.environ.get("CLAUDE_COWORK") or os.environ.get("COWORK_SESSION_ID"):
@@ -118,7 +118,7 @@ def capabilities() -> dict[str, object]:
         "node_present": shutil.which("node") is not None,
         "degrades_to": "Claude writes the image brief and an alt-text-ready "
         "prompt instead of generating a file. Local MCP servers run in Claude "
-        "Desktop and Claude Code only -- not in Cowork on web or mobile.",
+        "Desktop and Claude Code only - not in Cowork on web or mobile.",
     }
 
     # --- /blog audio : Gemini TTS over HTTPS, no MCP.

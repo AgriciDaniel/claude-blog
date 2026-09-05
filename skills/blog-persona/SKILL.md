@@ -125,9 +125,9 @@ plugin update, which would silently destroy saved personas.
 
 Resolve the store in this order and use the first that works:
 
-1. `${CLAUDE_PLUGIN_DATA}/personas/` -- the plugin's persistent data directory.
+1. `${CLAUDE_PLUGIN_DATA}/personas/` - the plugin's persistent data directory.
    It survives plugin updates and is the correct default on every surface.
-2. `.claude-blog/personas/` in the current working directory -- use this when
+2. `.claude-blog/personas/` in the current working directory - use this when
    `${CLAUDE_PLUGIN_DATA}` is unset (for example a bare checkout), or when the
    user wants personas versioned alongside the blog they belong to.
 

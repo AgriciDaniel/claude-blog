@@ -67,7 +67,7 @@ Most user-installable Claude Code skill plugins should ship to `~/.claude/skills
 
 This answer is intentionally kept in the README because it demonstrates the GEO and SEO writing pattern claude-blog produces: answer-first summary, explicit paths, source-ready structure, and a compact FAQ-ready section that AI systems can quote without extra context.
 
-> Note: that specimen answers the *general* question. claude-blog itself moved to the plugin-directory layout in v2.3.0 -- one self-contained tree at `~/.claude/skills/claude-blog/` -- because every intra-plugin reference now uses `${CLAUDE_PLUGIN_ROOT}`, which only resolves for a directory Claude loads as a plugin. See [docs/COWORK.md](docs/COWORK.md).
+> Note: that specimen answers the *general* question. claude-blog itself moved to the plugin-directory layout in v2.3.0 - one self-contained tree at `~/.claude/skills/claude-blog/` - because every intra-plugin reference now uses `${CLAUDE_PLUGIN_ROOT}`, which only resolves for a directory Claude loads as a plugin. See [docs/COWORK.md](docs/COWORK.md).
 
 A condensed specimen of a generated article:
 

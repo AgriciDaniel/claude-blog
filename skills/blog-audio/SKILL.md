@@ -26,7 +26,7 @@ or two-speaker podcast dialogue. 30 voices, 80+ languages, HTML5 embed output.
 ## Runtime check
 
 Run `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/runtime_capabilities.py" --check audio --json`
-before generating. Audio uses the Gemini TTS API directly -- no MCP server -- so
+before generating. Audio uses the Gemini TTS API directly - no MCP server - so
 it works on every surface once a Google AI API key is configured. Without one,
 write the narration script and say that generating the audio file needs a key.
 

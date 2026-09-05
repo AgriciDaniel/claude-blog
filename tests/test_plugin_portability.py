@@ -3,7 +3,7 @@
 claude-blog ships as one plugin for Claude Cowork, Claude Code, and Claude
 Desktop. On all three, the working directory is the *user's* folder and the
 plugin lives somewhere opaque. Any bare relative path in a skill file --
-``references/x.md``, ``python3 scripts/run.py`` -- therefore resolves against
+``references/x.md``, ``python3 scripts/run.py`` - therefore resolves against
 the wrong directory and the skill silently fails.
 
 The fix is ``${CLAUDE_PLUGIN_ROOT}``, which Claude substitutes for the plugin's
@@ -61,7 +61,7 @@ def _rel(path: Path) -> str:
 # "${CLAUDE_PLUGIN_ROOT}/skills/blog/references/x.md" does not match.
 #
 # The character class covers every placeholder style used in these files --
-# `<type>`, `[type]`, `*` globs -- because a path that only differs by its
+# `<type>`, `[type]`, `*` globs - because a path that only differs by its
 # placeholder syntax is just as broken at runtime.
 PLACEHOLDER = r"A-Za-z0-9_*<>\[\].-"
 

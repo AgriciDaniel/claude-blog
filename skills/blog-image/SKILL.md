@@ -36,7 +36,7 @@ downloaded. It is also a *local* MCP server, so it is available in Claude
 Desktop and Claude Code but **not** in Cowork on web or mobile.
 
 When `available` is `false`, do not error out. Produce the full Creative
-Director brief -- the 6-component prompt, aspect ratio, and alt text -- and tell
+Director brief - the 6-component prompt, aspect ratio, and alt text - and tell
 the user in one line that it is ready to paste into an image tool, naming the
 reason generation is unavailable here.
 

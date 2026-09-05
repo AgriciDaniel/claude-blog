@@ -16,23 +16,23 @@ Claude Desktop, with identical skills, agents, and templates on all three. This
 release is portability and packaging work: no skill lost a capability.
 
 #### Added
-- **`docs/COWORK.md`** -- Cowork install (marketplace and file upload), the full
+- **`docs/COWORK.md`** - Cowork install (marketplace and file upload), the full
   capability matrix per surface, sandbox and mounted-folder behaviour, and
   troubleshooting.
-- **`docs/SECURITY-REVIEW.md`** -- a brief for security teams evaluating the
+- **`docs/SECURITY-REVIEW.md`** - a brief for security teams evaluating the
   plugin: default posture, the complete egress list, credential handling,
   least-privilege guarantees, supply-chain pinning, and how to review, pin and
   distribute a build. Linked from `.github/SECURITY.md`.
-- **`skills/blog/references/cowork-runtime.md`** -- the runtime contract Claude
+- **`skills/blog/references/cowork-runtime.md`** - the runtime contract Claude
   reads before any script-backed or credentialed workflow: which capabilities
   exist on which surface, where to read plugin files, where to write user data.
-- **`scripts/runtime_capabilities.py`** -- stdlib capability detection
+- **`scripts/runtime_capabilities.py`** - stdlib capability detection
   (`--check analyze|google|image|audio|notebooklm --json`). Skills call it first
   so an unavailable capability produces an explanation and a fallback instead of
   a traceback. Never prints credential values; makes no network calls. Named
   distinctly from the existing `blog_preflight.py`, which gates the Blog
   Delivery Contract and is unrelated.
-- **`scripts/package_plugin.py`** -- builds `dist/claude-blog-<version>.plugin`
+- **`scripts/package_plugin.py`** - builds `dist/claude-blog-<version>.plugin`
   for Cowork's upload path, prints a SHA-256, and refuses to package anything
   credential-shaped. Excludes `brain/` (~5.8 MB) and `branding/`, which no skill
   reads. Also the workaround for the known Cowork issue where marketplace-
@@ -43,11 +43,11 @@ release is portability and packaging work: no skill lost a capability.
   held in secure storage. Deliberately not named `.mcp.json`: that filename is
   also read as a project-scoped config, which would make Claude try to launch it
   with `${CLAUDE_PLUGIN_ROOT}` unresolved in a contributor's checkout.
-- **`scripts/nanobanana-launcher.mjs`** -- gates that MCP server behind a
+- **`scripts/nanobanana-launcher.mjs`** - gates that MCP server behind a
   configured key. With no key it serves an inert but valid MCP session
   advertising zero tools: no network, no download, no third-party code, and no
   spurious "failed to connect" notice on every session.
-- **`tests/test_plugin_portability.py`** -- 6 tests asserting no bare
+- **`tests/test_plugin_portability.py`** - 6 tests asserting no bare
   intra-plugin paths survive, every `${CLAUDE_PLUGIN_ROOT}` target resolves, no
   skill writes into the plugin directory, the manifest is valid, the API key
   stays optional and sensitive, and the packaged archive has its manifest at the
