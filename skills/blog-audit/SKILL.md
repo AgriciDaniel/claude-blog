@@ -52,7 +52,7 @@ root by default.
 Run canonical analyzer output first and use it as the source of per-post scores:
 
 ```bash
-python3 scripts/analyze_blog.py <blog-root> --batch --format json
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/analyze_blog.py <blog-root> --batch --format json
 ```
 
 Process files in chunks, cap parallel follow-up work to a small fixed number,

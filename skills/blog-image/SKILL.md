@@ -13,7 +13,7 @@ argument-hint: "[generate|edit|setup] [description-or-path]"
 license: MIT
 metadata:
   author: AgriciDaniel
-  version: "2.2.0"
+  version: "2.3.0"
   mcp-package: "@ycse/nanobanana-mcp"
 ---
 
@@ -23,6 +23,22 @@ You are a **Creative Director** that orchestrates Gemini's image generation
 specifically for blog content. Never pass raw user text directly to the API.
 Always interpret, enhance, and construct an optimized prompt using the
 6-component Reasoning Brief system.
+
+## Runtime check
+
+Run `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/runtime_capabilities.py" --check image --json`
+first.
+
+Image generation is **opt-in**. The nanobanana MCP server starts only once a
+Google AI API key is set in the plugin's options (or `GOOGLE_AI_API_KEY`); with
+no key it serves an inert session advertising zero tools, and nothing is
+downloaded. It is also a *local* MCP server, so it is available in Claude
+Desktop and Claude Code but **not** in Cowork on web or mobile.
+
+When `available` is `false`, do not error out. Produce the full Creative
+Director brief -- the 6-component prompt, aspect ratio, and alt text -- and tell
+the user in one line that it is ready to paste into an image tool, naming the
+reason generation is unavailable here.
 
 ## Quick Reference
 
@@ -87,7 +103,7 @@ Choose the expertise lens for the image:
 | **Infographic** | Data-driven posts, processes, comparisons | Layout structure, hierarchy, accessible colors |
 | **Abstract** | Pattern backgrounds, section dividers, decorative | Color theory, mathematical forms, textures |
 
-Load `references/prompt-engineering-blog.md` for domain mode modifier libraries.
+Load `${CLAUDE_PLUGIN_ROOT}/skills/blog-image/references/prompt-engineering-blog.md` for domain mode modifier libraries.
 
 ### Step 3: Construct the 6-Component Reasoning Brief
 
@@ -143,8 +159,8 @@ Call `set_aspect_ratio` BEFORE generating. Use `conversation_id: "default"`.
 - Pinned `@ycse/nanobanana-mcp@1.1.1`: `set_model` accepts `flash` and `pro`, but maps them to preview IDs that shut down on 2026-06-25
 - Use direct API or a newer MCP package that explicitly supports stable image IDs before promising working MCP image generation
 
-Load `references/mcp-tools.md` for parameter details.
-Load `references/gemini-models.md` for model specs, pricing, and rate limits.
+Load `${CLAUDE_PLUGIN_ROOT}/skills/blog-image/references/mcp-tools.md` for parameter details.
+Load `${CLAUDE_PLUGIN_ROOT}/skills/blog-image/references/gemini-models.md` for model specs, pricing, and rate limits.
 
 ### Step 6: Post-Processing (when needed)
 
@@ -241,14 +257,14 @@ Bad: `SEO AI marketing blog optimization image`
 
 For `/blog image setup`:
 
-1. Run `python3 skills/blog-image/scripts/setup_image_mcp.py` (interactive)
-   - Prefer: `GOOGLE_AI_API_KEY=... python3 skills/blog-image/scripts/setup_image_mcp.py`
-   - Or: `python3 skills/blog-image/scripts/setup_image_mcp.py --key-file /path/to/key.txt`
+1. Run `python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-image/scripts/setup_image_mcp.py` (interactive)
+   - Prefer: `GOOGLE_AI_API_KEY=... python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-image/scripts/setup_image_mcp.py`
+   - Or: `python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-image/scripts/setup_image_mcp.py --key-file /path/to/key.txt`
    - Avoid `--key` unless necessary because command arguments can enter shell history and process lists
    - Default writes to `~/.claude/settings.json` (user-private, mode 0600)
    - `--project` flag opts into project `.mcp.json` (env-expansion only,
      refuses to write a literal key into a tracked file)
-2. Verify: `python3 skills/blog-image/scripts/validate_image_setup.py`
+2. Verify: `python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-image/scripts/validate_image_setup.py`
 3. Requires:
    - Node.js 18+ (npx)
    - Google AI API key, free to create at https://aistudio.google.com/apikey
@@ -300,6 +316,6 @@ preserve what works while fixing what doesn't.
 ## Reference Documentation
 
 Load on-demand - do NOT load all at startup:
-- `references/prompt-engineering-blog.md` - Domain modes, 6-component system, blog templates
-- `references/gemini-models.md` - Model specs, rate limits, aspect ratios, pricing
-- `references/mcp-tools.md` - MCP tool parameters and response formats
+- `${CLAUDE_PLUGIN_ROOT}/skills/blog-image/references/prompt-engineering-blog.md` - Domain modes, 6-component system, blog templates
+- `${CLAUDE_PLUGIN_ROOT}/skills/blog-image/references/gemini-models.md` - Model specs, rate limits, aspect ratios, pricing
+- `${CLAUDE_PLUGIN_ROOT}/skills/blog-image/references/mcp-tools.md` - MCP tool parameters and response formats

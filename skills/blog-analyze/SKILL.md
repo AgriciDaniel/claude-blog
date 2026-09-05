@@ -24,11 +24,19 @@ heuristic, not a Google ranking factor or calibrated citation probability.
 Works with local files or published URLs.
 
 Reference documents (paths from repo root):
-- `skills/blog/references/quality-scoring.md`: full scoring checklist
-- `skills/blog/references/eeat-signals.md`: E-E-A-T evaluation criteria
-- `skills/blog/references/ai-slop-detection.md`: two-tier reflex methodology (v1.8.0)
-- `skills/blog/references/editorial-heuristics.md`: ordinal 0-4 rubric, P0-P3 severity (v1.8.0, used with `--rubric`)
-- `skills/blog/references/cognitive-load.md`: per-section concept density (v1.8.0, used with `--cognitive-load`)
+- `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/quality-scoring.md`: full scoring checklist
+- `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/eeat-signals.md`: E-E-A-T evaluation criteria
+- `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/ai-slop-detection.md`: two-tier reflex methodology (v1.8.0)
+- `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/editorial-heuristics.md`: ordinal 0-4 rubric, P0-P3 severity (v1.8.0, used with `--rubric`)
+- `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/cognitive-load.md`: per-section concept density (v1.8.0, used with `--cognitive-load`)
+
+## Runtime check
+
+Run `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/runtime_capabilities.py" --check analyze --json`
+before scoring. Scoring works on every Claude surface; `textstat` and
+`beautifulsoup4` are optional and only add readability grades. If they are
+missing, score with the heuristic fallback and say which grades were skipped --
+do not ask the user to install anything mid-task.
 
 ## Input Handling
 
@@ -39,8 +47,8 @@ Reference documents (paths from repo root):
 
 ### Optional Modes (v1.8.0)
 
-- `--rubric`: in addition to the 100-point score, emit the ordinal 0-4 editorial-heuristics rubric with P0-P3 severity tags. See `skills/blog/references/editorial-heuristics.md`. The 100-point JSON schema is preserved; the rubric is added as a sibling `rubric` field.
-- `--cognitive-load`: run `python3 scripts/cognitive_load.py` against the post and embed the per-section load heatmap as a sibling `cognitive_load` field. See `skills/blog/references/cognitive-load.md`.
+- `--rubric`: in addition to the 100-point score, emit the ordinal 0-4 editorial-heuristics rubric with P0-P3 severity tags. See `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/editorial-heuristics.md`. The 100-point JSON schema is preserved; the rubric is added as a sibling `rubric` field.
+- `--cognitive-load`: run `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/cognitive_load.py` against the post and embed the per-section load heatmap as a sibling `cognitive_load` field. See `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/cognitive-load.md`.
 
 Both modes are additive. The default behavior (no flags) is unchanged from v1.7.1.
 
@@ -63,7 +71,7 @@ Read the blog post and extract:
 
 ### Step 2: Score Each Category
 
-Load `skills/blog/references/quality-scoring.md` for the full checklist. Score each:
+Load `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/quality-scoring.md` for the full checklist. Score each:
 
 #### Content Quality (30 points)
 | Check | Points | Pass Criteria |
@@ -184,7 +192,7 @@ terms for optional editorial review:
 
 ### Step 4.5: Optional Ordinal Rubric (--rubric)
 
-When `--rubric` is passed, additionally score the post on the 10 editorial heuristics defined in `skills/blog/references/editorial-heuristics.md`. Each heuristic gets a 0-4 score and a severity tag (P0 / P1 / P2 / P3 / none).
+When `--rubric` is passed, additionally score the post on the 10 editorial heuristics defined in `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/editorial-heuristics.md`. Each heuristic gets a 0-4 score and a severity tag (P0 / P1 / P2 / P3 / none).
 
 The rubric does NOT replace the 100-point score. It runs alongside and surfaces which findings are blocking versus which are polish.
 
@@ -210,7 +218,7 @@ Rubric JSON schema:
 
 ### Step 4.6: Optional Cognitive Load Heatmap (--cognitive-load)
 
-When `--cognitive-load` is passed, run `python3 scripts/cognitive_load.py <file> --format json` and embed the result under a `cognitive_load` field in JSON output, or append a `### Cognitive Load Heatmap` markdown section in markdown output. See `skills/blog/references/cognitive-load.md` for thresholds and interpretation.
+When `--cognitive-load` is passed, run `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/cognitive_load.py <file> --format json` and embed the result under a `cognitive_load` field in JSON output, or append a `### Cognitive Load Heatmap` markdown section in markdown output. See `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/cognitive-load.md` for thresholds and interpretation.
 
 ### Step 5: Generate Report
 

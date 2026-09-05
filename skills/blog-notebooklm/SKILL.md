@@ -14,7 +14,7 @@ argument-hint: "[ask|discover|library|setup|status|cleanup] [question-or-url]"
 license: MIT
 metadata:
   author: AgriciDaniel
-  version: "2.2.0"
+  version: "2.3.0"
   source: "https://github.com/PleasePrompto/notebooklm-skill"
 ---
 
@@ -31,6 +31,17 @@ verifiable underlying source. Record a stable source URL and a publication,
 study-period, or retrieval date when that detail affects verification or
 interpretation. Use the underlying source title as the inline citation. Do not
 cite the private NotebookLM URL as the bibliography entry for public content.
+
+## Runtime check
+
+Run `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/runtime_capabilities.py" --check notebooklm --json`
+first.
+
+This skill drives a real browser through an interactive Google sign-in, so it
+needs a local browser and a human at the keyboard. It works in Claude Code and
+Claude Desktop, and **not** on hosted or sandboxed sessions including Cowork on
+web or mobile. When `available` is `false`, say so and offer `/blog factcheck`
+(web search) as the research fallback rather than attempting the browser launch.
 
 ## Quick Reference
 
@@ -55,12 +66,12 @@ cite the private NotebookLM URL as the bibliography entry for public content.
 
 ## Use the run.py Wrapper
 
-Call scripts only through the run.py wrapper: `python3 scripts/run.py [script]`:
+Call scripts only through the run.py wrapper: `python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py [script]`:
 
 ```bash
 # CORRECT:
-python3 scripts/run.py auth_manager.py status
-python3 scripts/run.py ask_question.py --question "..."
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py auth_manager.py status
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py ask_question.py --question "..."
 
 # Do not call files under scripts/ directly. The wrapper owns venv setup.
 ```
@@ -73,7 +84,7 @@ sets up Chrome, and executes the target script.
 Before any query operation, check authentication:
 
 ```bash
-python3 scripts/run.py auth_manager.py status
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py auth_manager.py status
 ```
 
 - If authenticated: proceed with the query
@@ -88,7 +99,7 @@ For `/blog notebooklm setup`:
 
 ```bash
 # Opens a visible browser for manual Google login (one-time)
-python3 scripts/run.py auth_manager.py setup
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py auth_manager.py setup
 ```
 
 Tell the user: "A browser window will open. Please log in to your Google account."
@@ -96,9 +107,9 @@ Authentication persists via browser profile + cookie injection (hybrid approach)
 
 Other auth commands:
 ```bash
-python3 scripts/run.py auth_manager.py status   # Check auth
-python3 scripts/run.py auth_manager.py reauth   # Re-authenticate
-python3 scripts/run.py auth_manager.py clear     # Clear all auth data
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py auth_manager.py status   # Check auth
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py auth_manager.py reauth   # Re-authenticate
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py auth_manager.py clear     # Clear all auth data
 ```
 
 ## Query Workflow
@@ -118,19 +129,19 @@ Determine which notebook to query:
 ### Step 3: Ask the Question
 ```bash
 # Basic query (uses active notebook)
-python3 scripts/run.py ask_question.py --question "Your question here"
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py ask_question.py --question "Your question here"
 
 # Query specific notebook by ID
-python3 scripts/run.py ask_question.py --question "..." --notebook-id notebook-id
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py ask_question.py --question "..." --notebook-id notebook-id
 
 # Query by URL directly
-python3 scripts/run.py ask_question.py --question "..." --notebook-url "https://..."
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py ask_question.py --question "..." --notebook-url "https://..."
 
 # JSON output (for internal/programmatic use)
-python3 scripts/run.py ask_question.py --question "..." --json
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py ask_question.py --question "..." --json
 
 # Show browser for debugging
-python3 scripts/run.py ask_question.py --question "..." --show-browser
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py ask_question.py --question "..." --show-browser
 ```
 
 ### Step 4: Analyze and Follow Up
@@ -150,12 +161,12 @@ When adding a notebook without knowing its content, query it first:
 
 ```bash
 # Step 1: Discover content
-python3 scripts/run.py ask_question.py \
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py ask_question.py \
   --question "What is the content of this notebook? What topics are covered? Provide a complete overview briefly and concisely" \
   --notebook-url "<URL>"
 
 # Step 2: Add with discovered metadata
-python3 scripts/run.py notebook_manager.py add \
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py notebook_manager.py add \
   --url "<URL>" \
   --name "<Based on content>" \
   --description "<Based on content>" \
@@ -168,26 +179,26 @@ Do not guess descriptions; discover or ask the user.
 
 ```bash
 # List all notebooks
-python3 scripts/run.py notebook_manager.py list
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py notebook_manager.py list
 
 # Add notebook (all params required -- discover or ask user!)
-python3 scripts/run.py notebook_manager.py add \
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py notebook_manager.py add \
   --url "https://notebooklm.google.com/notebook/..." \
   --name "Descriptive Name" \
   --description "What this notebook contains" \
   --topics "topic1,topic2,topic3"
 
 # Search by keyword
-python3 scripts/run.py notebook_manager.py search --query "keyword"
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py notebook_manager.py search --query "keyword"
 
 # Set active notebook
-python3 scripts/run.py notebook_manager.py activate --id notebook-id
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py notebook_manager.py activate --id notebook-id
 
 # Remove notebook
-python3 scripts/run.py notebook_manager.py remove --id notebook-id
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py notebook_manager.py remove --id notebook-id
 
 # Library statistics
-python3 scripts/run.py notebook_manager.py stats
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py notebook_manager.py stats
 ```
 
 ## Internal API (for blog-write / blog-researcher)
@@ -222,14 +233,19 @@ Never block blog-write or blog-rewrite because NotebookLM is unavailable.
 ## Data Storage
 
 All data stored inside the skill directory:
-- `data/library.json`: Notebook metadata and library
-- `data/auth_info.json`: Authentication status
+- `<data-dir>/library.json`: Notebook metadata and library
+- `<data-dir>/auth_info.json`: Authentication status
+
+`<data-dir>` is `${CLAUDE_PLUGIN_DATA}/notebooklm/` under a plugin install
+(it survives plugin updates), or `${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/data/`
+in a bare checkout. Never write these into the plugin directory on a
+plugin install: it is read-only in Claude Cowork and is replaced on update.
 - `data/browser_state/`: Chrome profile with cookies
 
 **Security:** All data directories are gitignored. Never commit auth or browser state.
 
 Browser lifecycle and authenticated-context isolation are centralized in
-`scripts/browser_session.py`. Command scripts must use that helper instead of
+`${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/browser_session.py`. Command scripts must use that helper instead of
 opening an additional persistent profile or copying cookies into another file.
 
 ## Error Handling
@@ -255,5 +271,5 @@ opening an additional persistent profile or copying cookies into another file.
 ## Reference Documentation
 
 Load on-demand: do NOT load all at startup:
-- `references/commands.md`: Full CLI commands, parameters, and workflow patterns
-- `references/troubleshooting.md`: Error solutions, recovery procedures, debugging
+- `${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/references/commands.md`: Full CLI commands, parameters, and workflow patterns
+- `${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/references/troubleshooting.md`: Error solutions, recovery procedures, debugging

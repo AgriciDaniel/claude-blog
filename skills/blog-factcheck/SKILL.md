@@ -174,7 +174,7 @@ claude-blog applies FLOW's evidence discipline through claim-appropriate
 provenance. Include the source details, relevant date or study period,
 methodology, limitations, and stable URL when they are needed to identify,
 verify, or interpret a claim. No fixed citation form is required. See
-`skills/blog-flow/references/flow-framework.md` and `/blog flow` for the full
+`${CLAUDE_PLUGIN_ROOT}/skills/blog-flow/references/flow-framework.md` and `/blog flow` for the full
 framework.
 
 ## Limitations

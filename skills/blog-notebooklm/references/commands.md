@@ -8,7 +8,7 @@ Always use `run.py` to execute any script. It handles venv creation,
 dependency installation, Chrome setup, and proper execution.
 
 ```bash
-python3 scripts/run.py <script_name>.py [arguments]
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py <script_name>.py [arguments]
 ```
 
 ## ask_question.py: Query Interface
@@ -17,19 +17,19 @@ Ask questions to NotebookLM notebooks with automated browser interaction.
 
 ```bash
 # Basic query (uses active notebook)
-python3 scripts/run.py ask_question.py --question "Your question"
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py ask_question.py --question "Your question"
 
 # Query specific notebook by ID
-python3 scripts/run.py ask_question.py --question "..." --notebook-id notebook-id
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py ask_question.py --question "..." --notebook-id notebook-id
 
 # Query by URL directly
-python3 scripts/run.py ask_question.py --question "..." --notebook-url "https://..."
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py ask_question.py --question "..." --notebook-url "https://..."
 
 # JSON output for structured responses
-python3 scripts/run.py ask_question.py --question "..." --json
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py ask_question.py --question "..." --json
 
 # Show browser for debugging
-python3 scripts/run.py ask_question.py --question "..." --show-browser
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py ask_question.py --question "..." --show-browser
 ```
 
 **Parameters:**
@@ -61,26 +61,26 @@ CRUD operations for the notebook library.
 
 ```bash
 # Add notebook (all metadata required)
-python3 scripts/run.py notebook_manager.py add \
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py notebook_manager.py add \
   --url "https://notebooklm.google.com/notebook/..." \
   --name "Descriptive Name" \
   --description "What this notebook contains" \
   --topics "topic1,topic2,topic3"
 
 # List all notebooks
-python3 scripts/run.py notebook_manager.py list
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py notebook_manager.py list
 
 # Search by keyword (searches name, description, topics)
-python3 scripts/run.py notebook_manager.py search --query "keyword"
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py notebook_manager.py search --query "keyword"
 
 # Set active notebook (default for queries without --notebook-id)
-python3 scripts/run.py notebook_manager.py activate --id notebook-id
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py notebook_manager.py activate --id notebook-id
 
 # Remove notebook from library
-python3 scripts/run.py notebook_manager.py remove --id notebook-id
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py notebook_manager.py remove --id notebook-id
 
 # Show library statistics
-python3 scripts/run.py notebook_manager.py stats
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py notebook_manager.py stats
 ```
 
 **Commands:**
@@ -96,7 +96,7 @@ python3 scripts/run.py notebook_manager.py stats
 **Smart discovery** (recommended before `add`):
 ```bash
 # Query the notebook to learn its content first
-python3 scripts/run.py ask_question.py \
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py ask_question.py \
   --question "What is the content of this notebook? What topics are covered?" \
   --notebook-url "<URL>"
 # Then use discovered info for the add command
@@ -107,10 +107,10 @@ python3 scripts/run.py ask_question.py \
 Handle Google authentication and browser state.
 
 ```bash
-python3 scripts/run.py auth_manager.py setup    # Initial setup (browser visible)
-python3 scripts/run.py auth_manager.py status   # Check authentication
-python3 scripts/run.py auth_manager.py reauth   # Re-authenticate
-python3 scripts/run.py auth_manager.py clear    # Clear all auth data
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py auth_manager.py setup    # Initial setup (browser visible)
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py auth_manager.py status   # Check authentication
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py auth_manager.py reauth   # Re-authenticate
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py auth_manager.py clear    # Clear all auth data
 ```
 
 **Commands:**
@@ -130,10 +130,10 @@ fingerprint consistency + manual cookie injection from state.json
 Clean skill data with preservation options.
 
 ```bash
-python3 scripts/run.py cleanup_manager.py                    # Preview (dry run)
-python3 scripts/run.py cleanup_manager.py --confirm          # Execute cleanup
-python3 scripts/run.py cleanup_manager.py --confirm --preserve-library  # Keep notebooks
-python3 scripts/run.py cleanup_manager.py --confirm --force  # Skip confirmation
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py cleanup_manager.py                    # Preview (dry run)
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py cleanup_manager.py --confirm          # Execute cleanup
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py cleanup_manager.py --confirm --preserve-library  # Keep notebooks
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py cleanup_manager.py --confirm --force  # Skip confirmation
 ```
 
 **Options:**
@@ -148,15 +148,15 @@ python3 scripts/run.py cleanup_manager.py --confirm --force  # Skip confirmation
 ### Pattern: Research for Blog Writing
 ```bash
 # 1. Check if relevant notebook exists
-python3 scripts/run.py notebook_manager.py search --query "marketing"
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py notebook_manager.py search --query "marketing"
 
 # 2. Query for source-grounded data
-python3 scripts/run.py ask_question.py \
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py ask_question.py \
   --question "What are the latest conversion rate benchmarks?" \
   --notebook-id marketing-research --json
 
 # 3. Follow up for completeness
-python3 scripts/run.py ask_question.py \
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py ask_question.py \
   --question "Break down conversion rates by industry and channel" \
   --notebook-id marketing-research --json
 ```
@@ -164,8 +164,8 @@ python3 scripts/run.py ask_question.py \
 ### Pattern: Multi-Notebook Research
 ```bash
 # Query different notebooks for a comprehensive view
-python3 scripts/run.py ask_question.py --question "..." --notebook-id source-a
-python3 scripts/run.py ask_question.py --question "..." --notebook-id source-b
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py ask_question.py --question "..." --notebook-id source-a
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py ask_question.py --question "..." --notebook-id source-b
 # Synthesize answers from both sources
 ```
 
@@ -173,7 +173,7 @@ python3 scripts/run.py ask_question.py --question "..." --notebook-id source-b
 ```bash
 # Ask multiple focused questions (respect 50/day rate limit)
 for question in "Q1" "Q2" "Q3"; do
-  python3 scripts/run.py ask_question.py --question "$question" --json
+  python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py ask_question.py --question "$question" --json
   sleep 2  # Avoid rate limits
 done
 ```

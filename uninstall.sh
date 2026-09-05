@@ -24,6 +24,7 @@ main() {
         "lint_prose.py" "sync_flow.py"
         "ai_citation_score.py" "content_decay.py" "quality_gate.py" "style_learn.py"
         "check_google_currentness.py" "check_secrets.py" "consistency_check.py" "dependency_smoke.py"
+        "runtime_capabilities.py" "package_plugin.py"
         "sync_google_updates.py" "validate_public_release.py"
     )
     local agent_files=(
@@ -45,7 +46,7 @@ main() {
         local path="$1"
         [ -n "${path}" ] || return 0
         case "${path}" in
-            "${SKILL_DIR}/blog"|${SKILL_DIR}/blog-*)
+            "${SKILL_DIR}/claude-blog"|"${SKILL_DIR}/blog"|${SKILL_DIR}/blog-*)
                 rm -rf "${path}"
                 echo "  Removed: ${path}"
                 ;;
@@ -64,6 +65,12 @@ main() {
 
     echo "=== Uninstalling claude-blog ==="
     echo ""
+
+    # v2.3.0+ ships as a single plugin directory. Remove it first, then
+    # continue into the legacy cleanup below so an upgrade from a pre-2.3.0
+    # flat install does not leave shadowing copies behind.
+    safe_remove_path "${SKILL_DIR}/claude-blog"
+
 
     if [ -f "${MANIFEST}" ]; then
         while IFS= read -r installed_path; do

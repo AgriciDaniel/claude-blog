@@ -15,7 +15,7 @@ license: MIT
 compatibility: Requires Claude Code and claude-blog (provides blog-write, blog-chart, blog-image)
 metadata:
   author: AgriciDaniel
-  version: "2.2.0"
+  version: "2.3.0"
   category: blog
 user-invokable: true
 argument-hint: "[plan|execute] [seed-keyword|cluster-plan.json]"
@@ -45,9 +45,9 @@ keyword. Three layers: Semantic Clustering (the brain), Cluster Architecture
 
 ## Key references (load on demand)
 
-- `references/semantic-clustering.md` (SERP overlap analysis, intent classification, keyword universe expansion)
-- `references/cluster-architecture.md` (hub-and-spoke specs, schema strategy, link-density rules)
-- `references/execution-workflow.md` (execution order, context injection, scorecard, failure handling)
+- `${CLAUDE_PLUGIN_ROOT}/skills/blog-cluster/references/semantic-clustering.md` (SERP overlap analysis, intent classification, keyword universe expansion)
+- `${CLAUDE_PLUGIN_ROOT}/skills/blog-cluster/references/cluster-architecture.md` (hub-and-spoke specs, schema strategy, link-density rules)
+- `${CLAUDE_PLUGIN_ROOT}/skills/blog-cluster/references/execution-workflow.md` (execution order, context injection, scorecard, failure handling)
 
 ## Cross-references to existing claude-blog skills
 
@@ -76,7 +76,7 @@ This skill never modifies files belonging to other skills. It calls them via the
 
 ## Plan Phase: `/blog cluster plan <seed-keyword>`
 
-Reference: `references/semantic-clustering.md`
+Reference: `${CLAUDE_PLUGIN_ROOT}/skills/blog-cluster/references/semantic-clustering.md`
 
 ### Step 1. Seed keyword expansion
 
@@ -90,7 +90,7 @@ Use WebSearch to expand the seed into a keyword universe of 30 to 50 phrases:
 
 ### Step 2. Semantic clustering
 
-Group the expanded keywords using the priority rules in `references/semantic-clustering.md`:
+Group the expanded keywords using the priority rules in `${CLAUDE_PLUGIN_ROOT}/skills/blog-cluster/references/semantic-clustering.md`:
 
 1. **SERP Overlap Analysis** is the primary signal. Two keywords with 4 or more shared top-10 results usually target the same intent and should be considered for one post.
 2. **Intent Classification** assigns each keyword to informational, commercial, transactional, or navigational.
@@ -99,7 +99,7 @@ Group the expanded keywords using the priority rules in `references/semantic-clu
 
 ### Step 3. Cluster architecture design
 
-Reference: `references/cluster-architecture.md`
+Reference: `${CLAUDE_PLUGIN_ROOT}/skills/blog-cluster/references/cluster-architecture.md`
 
 Build the hub and spoke:
 
@@ -214,7 +214,7 @@ Bridges `blog-strategy` output into a cluster plan.
 
 ## Execute Phase: `/blog cluster execute [path-to-plan]`
 
-Reference: `references/execution-workflow.md`
+Reference: `${CLAUDE_PLUGIN_ROOT}/skills/blog-cluster/references/execution-workflow.md`
 
 ### Step 1. Load plan
 
@@ -230,7 +230,7 @@ Before reading a user-supplied plan path, canonicalize it relative to the curren
 
 ### Step 3. For each post: build cluster context and call `blog-write`
 
-Construct the cluster context block (full schema in `references/execution-workflow.md`) and prepend it to the topic prompt passed to the Task tool invoking `blog-write`. The context tells `blog-write` the cluster name, the post's role (pillar or spoke), the primary and secondary keywords, the chosen template, the word count target, the list of already-written posts (link to these), the list of upcoming posts (use `[INTERNAL-LINK]` placeholders), and the linking requirements for this post.
+Construct the cluster context block (full schema in `${CLAUDE_PLUGIN_ROOT}/skills/blog-cluster/references/execution-workflow.md`) and prepend it to the topic prompt passed to the Task tool invoking `blog-write`. The context tells `blog-write` the cluster name, the post's role (pillar or spoke), the primary and secondary keywords, the chosen template, the word count target, the list of already-written posts (link to these), the list of upcoming posts (use `[INTERNAL-LINK]` placeholders), and the linking requirements for this post.
 
 **Evidence provenance propagation.** The cluster context includes this directive
 for every spoke and the pillar: "Keep material claims traceable to sources that
@@ -241,7 +241,7 @@ contradicted ones."
 
 This cascade preserves evidence discipline across batch execution without
 turning a fixed source-record format into a score or gate. See
-`skills/blog/references/flow-alignment.md`.
+`${CLAUDE_PLUGIN_ROOT}/skills/blog/references/flow-alignment.md`.
 
 The context also instructs `blog-write` to run autonomously: skip topic clarification, skip outline approval, do not auto-detect template, do not pause.
 
@@ -273,7 +273,7 @@ After all attempted posts complete, produce a markdown scorecard covering:
 
 - Per-post status (written, failed, skipped) with file path and word count.
 - Per-post quality score (call `/blog analyze` on each in parallel via Task) and the cluster average.
-- Cluster cohesion score: a 0 to 100 composite of link reciprocity, intent diversity, template diversity, and keyword coverage (formula in `references/execution-workflow.md`).
+- Cluster cohesion score: a 0 to 100 composite of link reciprocity, intent diversity, template diversity, and keyword coverage (formula in `${CLAUDE_PLUGIN_ROOT}/skills/blog-cluster/references/execution-workflow.md`).
 - Internal-link audit: outgoing and incoming counts per post, orphan flags, unresolved `[INTERNAL-LINK]` markers.
 - Cannibalization check: any two posts sharing primary keyword, or any pair with greater than 70% keyword overlap. Recommend running `/blog cannibalization` for a deeper pass.
 - Image generation summary: hero images generated vs. skipped.

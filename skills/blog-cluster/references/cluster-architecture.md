@@ -29,7 +29,7 @@ AI citation systems.
 ```
 
 For deeper background on link architecture and anchor distribution rules
-shared across all claude-blog skills, see `skills/blog/references/internal-linking.md`.
+shared across all claude-blog skills, see `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/internal-linking.md`.
 This document focuses on the cluster-specific overlay.
 
 ## Pillar (hub) anatomy
@@ -99,7 +99,7 @@ Optional links:
    - Only when topically relevant
    - Strengthens the overall cluster web without diluting topical focus
 
-### Anchor text strategy (overrides only the cluster context; site-wide rules from `skills/blog/references/internal-linking.md` still apply)
+### Anchor text strategy (overrides only the cluster context; site-wide rules from `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/internal-linking.md` still apply)
 
 Within a single cluster, vary anchors to avoid repetition. Distribution
 target across all internal links produced by `blog-cluster`:

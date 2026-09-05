@@ -47,13 +47,13 @@ sources.
 
 ### Step 0.45: Topic Pre-Flight (v1.8.0)
 
-Before any search, run the four keyword-trap checks from `skills/blog/references/research-quality.md`. If the topic matches one of the four classes (Class 1 demographic shopping, Class 2 numeric trap, Class 3 overly-literal phrase, Class 4 generic single-noun), return a clarification request to the orchestrator BEFORE running searches.
+Before any search, run the four keyword-trap checks from `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/research-quality.md`. If the topic matches one of the four classes (Class 1 demographic shopping, Class 2 numeric trap, Class 3 overly-literal phrase, Class 4 generic single-noun), return a clarification request to the orchestrator BEFORE running searches.
 
 Skipping this pre-flight on a trap topic is the named failure mode of wasted research effort. One turn of reframe is worth 5 minutes of doomed searches.
 
 ### Step 0.55: Named-Entity Decomposition (v1.8.0)
 
-For named-entity topics (proper nouns, products, people, projects), decompose the topic into discrete searchable entities before searching. Document the decomposition at the top of the research output. Use the checklist in `skills/blog/references/research-quality.md`:
+For named-entity topics (proper nouns, products, people, projects), decompose the topic into discrete searchable entities before searching. Document the decomposition at the top of the research output. Use the checklist in `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/research-quality.md`:
 
 - [ ] Primary entity (official statements, vendor site)
 - [ ] Counter-perspective (critics, competitors, contrarians)
@@ -85,23 +85,23 @@ updates), use sources recent enough to support the claim at the time of
 publication. Evergreen content may rely on older authoritative sources when
 their facts remain current. Report the freshness summary and any material
 currency gaps at the top of the research output. See
-`skills/blog/references/research-quality.md` for the full classification table.
+`${CLAUDE_PLUGIN_ROOT}/skills/blog/references/research-quality.md` for the full classification table.
 
 ### Quality Rubric (v1.8.0)
 
-Before passing research to `blog-writer`, score the output against the 5-dimension rubric in `skills/blog/references/research-quality.md`:
+Before passing research to `blog-writer`, score the output against the 5-dimension rubric in `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/research-quality.md`:
 
 - 30% groundedness (claim-appropriate, verifiable source support)
 - 25% specificity (named entities, exact numbers)
 - 20% coverage (>=2 independent sources per load-bearing claim; cross-source clustering applied)
 - 15% actionability (the reader can do something concrete)
-- 10% format compliance (per `skills/blog/references/synthesis-contract.md`)
+- 10% format compliance (per `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/synthesis-contract.md`)
 
 A research output scoring below 70 is sent back for remediation. Below 50 is a do-over.
 
 ### Cross-Source Clustering (v1.8.0)
 
-When multiple retrieved sources cite the same upstream source (e.g. five articles all paraphrasing one BrightEdge report), they are ONE source for coverage scoring purposes, not five. Group retrieved sources by upstream; surface the upstream as the primary citation; mention secondary sources only when they add original analysis. See `skills/blog/references/research-quality.md` for the clustering procedure and reporting format.
+When multiple retrieved sources cite the same upstream source (e.g. five articles all paraphrasing one BrightEdge report), they are ONE source for coverage scoring purposes, not five. Group retrieved sources by upstream; surface the upstream as the primary citation; mention secondary sources only when they add original analysis. See `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/research-quality.md` for the clustering procedure and reporting format.
 
 ### When Finding Images
 
@@ -126,7 +126,7 @@ After finding each candidate image URL:
    - Pixabay CDN pattern: `https://cdn.pixabay.com/photo/YYYY/MM/DD/HH/MM/filename.jpg`
    - Unsplash CDN pattern: `https://images.unsplash.com/photo-<id>?w=1200&h=630&fit=crop&q=80`
 3. Do not run shell commands for URL checks. Mark direct image URLs as
-   candidate URLs, then ask the orchestrator to run `scripts/blog_preflight.py`
+   candidate URLs, then ask the orchestrator to run `${CLAUDE_PLUGIN_ROOT}/scripts/blog_preflight.py`
    Gate 5 or another safe URL validator with SSRF protection
    - Must return HTTP 200 with an image content type
    - If 403/404 or non-image content: discard and find replacement
@@ -258,7 +258,7 @@ When researching for blog posts, find 2-3 relevant YouTube videos for embedding:
 
 1. Ask the orchestrator to use blog-google if available.
 2. If blog-google is unavailable, use WebSearch: `site:youtube.com [topic] [year] -shorts`
-3. Apply quality criteria (from `skills/blog/references/video-embeds.md`):
+3. Apply quality criteria (from `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/video-embeds.md`):
    - Minimum 1,000 views, published within last 3 years
    - Title or description contains the topic keyword
    - From a channel with > 1,000 subscribers

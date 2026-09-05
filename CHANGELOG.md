@@ -7,6 +7,108 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.0] - 2026-09-05
+
+### Claude Cowork port
+
+claude-blog now runs as a single plugin on Claude Cowork, Claude Code, and
+Claude Desktop, with identical skills, agents, and templates on all three. This
+release is portability and packaging work: no skill lost a capability.
+
+#### Added
+- **`docs/COWORK.md`** -- Cowork install (marketplace and file upload), the full
+  capability matrix per surface, sandbox and mounted-folder behaviour, and
+  troubleshooting.
+- **`docs/SECURITY-REVIEW.md`** -- a brief for security teams evaluating the
+  plugin: default posture, the complete egress list, credential handling,
+  least-privilege guarantees, supply-chain pinning, and how to review, pin and
+  distribute a build. Linked from `.github/SECURITY.md`.
+- **`skills/blog/references/cowork-runtime.md`** -- the runtime contract Claude
+  reads before any script-backed or credentialed workflow: which capabilities
+  exist on which surface, where to read plugin files, where to write user data.
+- **`scripts/runtime_capabilities.py`** -- stdlib capability detection
+  (`--check analyze|google|image|audio|notebooklm --json`). Skills call it first
+  so an unavailable capability produces an explanation and a fallback instead of
+  a traceback. Never prints credential values; makes no network calls. Named
+  distinctly from the existing `blog_preflight.py`, which gates the Blog
+  Delivery Contract and is unrelated.
+- **`scripts/package_plugin.py`** -- builds `dist/claude-blog-<version>.plugin`
+  for Cowork's upload path, prints a SHA-256, and refuses to package anything
+  credential-shaped. Excludes `brain/` (~5.8 MB) and `branding/`, which no skill
+  reads. Also the workaround for the known Cowork issue where marketplace-
+  installed skills register metadata but fail to mount.
+- **`mcp-servers.json`** at the plugin root, referenced from `plugin.json`, plus
+  `userConfig`, so Cowork users enable image generation by entering an API key
+  instead of editing files. The key is marked `sensitive`, so it is masked and
+  held in secure storage. Deliberately not named `.mcp.json`: that filename is
+  also read as a project-scoped config, which would make Claude try to launch it
+  with `${CLAUDE_PLUGIN_ROOT}` unresolved in a contributor's checkout.
+- **`scripts/nanobanana-launcher.mjs`** -- gates that MCP server behind a
+  configured key. With no key it serves an inert but valid MCP session
+  advertising zero tools: no network, no download, no third-party code, and no
+  spurious "failed to connect" notice on every session.
+- **`tests/test_plugin_portability.py`** -- 6 tests asserting no bare
+  intra-plugin paths survive, every `${CLAUDE_PLUGIN_ROOT}` target resolves, no
+  skill writes into the plugin directory, the manifest is valid, the API key
+  stays optional and sensitive, and the packaged archive has its manifest at the
+  archive root with no tests, git metadata, or `brain/` inside.
+- Two security guardrails: the shipped MCP config must stay credential-free and
+  wired through `plugin.json`, and the MCP server must stay behind the launcher
+  with an exact version pin and the inert no-key path.
+
+#### Changed
+- **All 352 intra-plugin references now use `${CLAUDE_PLUGIN_ROOT}`.** Skills
+  previously mixed repo-root-relative (`skills/blog/references/x.md`) and
+  skill-relative (`python3 scripts/run.py`) paths. Neither resolves when the
+  working directory belongs to the user, which is the case on every surface.
+- **`install.sh` / `install.ps1` install a plugin directory** at
+  `~/.claude/skills/claude-blog/` rather than spreading files across
+  `~/.claude/skills/`, `~/.claude/agents/` and `~/.claude/scripts/`. Claude
+  auto-discovers any directory containing `.claude-plugin/plugin.json`, which is
+  what makes `${CLAUDE_PLUGIN_ROOT}` resolve. One layout now serves marketplace,
+  upload, and standalone installs, and there is no second copy of the root
+  helper scripts to keep in sync.
+- **Installers no longer install Python packages by default.** Dependencies are
+  opt-in via `CLAUDE_BLOG_INSTALL_DEPS=1`. No content skill needs them, and an
+  installer that silently mutates a user's Python environment fails security
+  review.
+- **Personas moved out of the plugin directory** to `${CLAUDE_PLUGIN_DATA}/personas/`,
+  falling back to `.claude-blog/personas/` in the working directory. The old
+  location is read-only in Cowork and was replaced wholesale on every plugin
+  update, silently destroying saved personas and the active-persona pointer.
+- **NotebookLM auth, cookies and library** likewise moved to
+  `${CLAUDE_PLUGIN_DATA}/notebooklm/` (`config.py`), falling back to the in-skill
+  path for a bare checkout, so a plugin update no longer forces a re-login.
+- **Template customization moved to `.claude-blog/templates/`** in the working
+  directory, and `blog-write` now checks there before the shipped templates. The
+  previous guidance told users to edit files inside the plugin, which does not
+  survive an update.
+- **The Google update ledger now has one trusted location**,
+  `${CLAUDE_PLUGIN_ROOT}/data/google-updates.json`. The pre-2.3.0 second copy at
+  `~/.claude/skills/blog/data/` no longer exists; guidance and the installers
+  were updated together and `test_ledger_consumer_guidance_matches_installed_path`
+  now enforces the new coupling.
+- `blog-analyze`, `blog-google`, `blog-image`, `blog-audio` and
+  `blog-notebooklm` each gained a **Runtime check** section stating what they
+  need, on which surfaces they work, and what to do instead when unavailable.
+- `uninstall.sh` / `uninstall.ps1` remove both the new plugin directory and a
+  pre-2.3.0 flat install, so an upgrade cannot leave shadowing copies behind.
+- README, `CLAUDE.md`, `docs/ARCHITECTURE.md` and the marketplace catalog updated
+  for the multi-surface story; installer SHA-256 digests in README refreshed.
+
+#### Notes
+- The SKILL.md frontmatter field remains `user-invokable`, which CI requires and
+  treats as mandatory. The Agent Skills spec field is `user-invocable`; the two
+  behave identically here (both yield an invocable skill), so the rename was left
+  out of this release rather than breaking the CI gate for a cosmetic change.
+
+#### Upgrading
+Existing flat installs are shadowed by, not merged with, the plugin install. Run
+`./uninstall.sh`, which clears both layouts, then re-run the installer. Saved
+personas and NotebookLM sessions in the old locations are left in place by the
+uninstaller; copy them to the new plugin data directory before removing the old
+tree if you want to keep them.
+
 ## [2.2.0] - 2026-08-26
 
 ### Added

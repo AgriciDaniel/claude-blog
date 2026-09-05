@@ -18,15 +18,15 @@ default, and recommends the next content action.
 Run the local analyzer against two GSC page exports:
 
 ```bash
-python3 scripts/content_decay.py current.json previous.json
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/content_decay.py current.json previous.json
 ```
 
 Useful options:
 
 ```bash
-python3 scripts/content_decay.py current.json previous.json --threshold 0.30
-python3 scripts/content_decay.py current.json previous.json --metric impressions
-python3 scripts/content_decay.py current.json previous.json --format markdown --output decay-report.md
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/content_decay.py current.json previous.json --threshold 0.30
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/content_decay.py current.json previous.json --metric impressions
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/content_decay.py current.json previous.json --format markdown --output decay-report.md
 ```
 
 The script accepts JSON lists of page rows with `page` or `url`, `clicks`, and
@@ -39,9 +39,9 @@ For live data, use `/blog google gsc` or the underlying `blog-google` command
 to create each period export, then run the offline analyzer:
 
 ```bash
-python3 skills/blog-google/scripts/run.py gsc_query --property sc-domain:example.com --dimensions page --start-date YYYY-MM-DD --end-date YYYY-MM-DD --json > gsc-current.json
-python3 skills/blog-google/scripts/run.py gsc_query --property sc-domain:example.com --dimensions page --start-date YYYY-MM-DD --end-date YYYY-MM-DD --json > gsc-previous.json
-python3 scripts/content_decay.py gsc-current.json gsc-previous.json --format markdown
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-google/scripts/run.py gsc_query --property sc-domain:example.com --dimensions page --start-date YYYY-MM-DD --end-date YYYY-MM-DD --json > gsc-current.json
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-google/scripts/run.py gsc_query --property sc-domain:example.com --dimensions page --start-date YYYY-MM-DD --end-date YYYY-MM-DD --json > gsc-previous.json
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/content_decay.py gsc-current.json gsc-previous.json --format markdown
 ```
 
 Use adjacent periods of similar length for short-term checks. For seasonality,

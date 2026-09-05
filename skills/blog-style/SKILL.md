@@ -28,19 +28,19 @@ containing posts.
 Run the local learner:
 
 ```bash
-python3 scripts/style_learn.py <paths> --format markdown
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/style_learn.py <paths> --format markdown
 ```
 
 For machine-readable output:
 
 ```bash
-python3 scripts/style_learn.py <paths> --format json --output voice-profile.json
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/style_learn.py <paths> --format json --output voice-profile.json
 ```
 
 For a VOICE.md-ready block:
 
 ```bash
-python3 scripts/style_learn.py <paths> --format markdown --output VOICE.md
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/style_learn.py <paths> --format markdown --output VOICE.md
 ```
 
 If fewer than the requested minimum sample count is supplied, warn and continue.

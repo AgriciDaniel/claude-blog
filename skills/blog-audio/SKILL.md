@@ -14,7 +14,7 @@ argument-hint: "[generate|voices|setup] [file-or-text] [--mode summary|full|dial
 license: MIT
 metadata:
   author: AgriciDaniel
-  version: "2.2.0"
+  version: "2.3.0"
 ---
 
 # Blog Audio: Gemini TTS Narration for Blog Posts
@@ -22,6 +22,13 @@ metadata:
 Generate professional audio narration of blog content using Google's Gemini TTS.
 Three modes: summary (200-300 word spoken overview), full article read-aloud,
 or two-speaker podcast dialogue. 30 voices, 80+ languages, HTML5 embed output.
+
+## Runtime check
+
+Run `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/runtime_capabilities.py" --check audio --json`
+before generating. Audio uses the Gemini TTS API directly -- no MCP server -- so
+it works on every surface once a Google AI API key is configured. Without one,
+write the narration script and say that generating the audio file needs a key.
 
 ## Quick Reference
 
@@ -41,10 +48,10 @@ or two-speaker podcast dialogue. 30 voices, 80+ languages, HTML5 embed output.
 
 ```bash
 # CORRECT:
-python3 scripts/run.py generate_audio.py --text "..." --voice Charon --json
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-audio/scripts/run.py generate_audio.py --text "..." --voice Charon --json
 
 # WRONG:
-python3 scripts/generate_audio.py --text "..."  # Fails without venv
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-audio/scripts/generate_audio.py --text "..."  # Fails without venv
 ```
 
 ## API Key Check (Gate Pattern)
@@ -70,13 +77,13 @@ For `/blog audio setup`:
 1. Check if `GOOGLE_AI_API_KEY` is set in environment
 2. If blog-image uses project `.mcp.json`, confirm the referenced env var is exported
 3. If not, guide user to https://aistudio.google.com/apikey
-4. Verify with a dry run: `python3 scripts/run.py generate_audio.py --text "Test" --dry-run --json`
+4. Verify with a dry run: `python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-audio/scripts/run.py generate_audio.py --text "Test" --dry-run --json`
 
 ## Voice Selection
 
 For `/blog audio voices`:
 
-Load `references/voices.md` and present the voice catalog to the user.
+Load `${CLAUDE_PLUGIN_ROOT}/skills/blog-audio/references/voices.md` and present the voice catalog to the user.
 
 Ask the user which voice they prefer, or recommend based on content type:
 - **Article narration**: Charon (Informative) or Sadaltager (Knowledgeable)
@@ -151,7 +158,7 @@ Write the prepared text to a file under the working directory, then call:
 
 ```bash
 # Single voice (summary or full mode)
-python3 scripts/run.py generate_audio.py \
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-audio/scripts/run.py generate_audio.py \
   --text-file blog_audio_prepared.txt \
   --voice Charon \
   --model flash \
@@ -159,7 +166,7 @@ python3 scripts/run.py generate_audio.py \
   --json
 
 # Two voices (dialogue mode)
-python3 scripts/run.py generate_audio.py \
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-audio/scripts/run.py generate_audio.py \
   --text-file blog_audio_dialogue.txt \
   --voice Puck \
   --voice2 Kore \
@@ -248,4 +255,4 @@ blog-write because audio generation is unavailable.
 ## Reference Documentation
 
 Load on-demand: do NOT load all at startup:
-- `references/voices.md`: Full 30-voice catalog, recommendations by content type, dialogue pairings
+- `${CLAUDE_PLUGIN_ROOT}/skills/blog-audio/references/voices.md`: Full 30-voice catalog, recommendations by content type, dialogue pairings

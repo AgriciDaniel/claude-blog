@@ -6,7 +6,7 @@ This repository contains **Claude Blog**, a Tier 4 Claude Code skill for blog co
 creation, optimization, and management. It follows the Agent Skills open standard and the
 3-layer architecture (directive, orchestration, execution). 32 skill directories
 (1 orchestrator + 31 sub-skills), 30 user-facing `/blog` commands, 5 specialized
-subagents, 12 content templates, and 22 reference docs are dual-optimized for Google rankings
+subagents, 12 content templates, and 23 reference docs are dual-optimized for Google rankings
 (2026 core and spam update timeline, E-E-A-T) and AI citations (GEO/AEO). Includes FLOW framework
 integration, semantic topic-cluster planning + execution, multilingual publishing (Pro Hub
 Challenge v1.7.0), BRAND.md/VOICE.md/DISCOURSE.md project-root context auto-load (v1.8.0,
@@ -46,7 +46,7 @@ claude-blog/
   scripts/validate_public_release.py # Read-only public worktree validation
   skills/                            # 32 skill directories (1 orchestrator + 31 sub-skills)
     blog/SKILL.md                   # Main orchestrator, routing, scoring
-      references/                   # 22 on-demand knowledge files (5 in v1.8.0, 1 in v1.9.0)
+      references/                   # 23 on-demand knowledge files (5 in v1.8.0, 1 in v1.9.0)
       templates/                    # 12 content templates
       scripts/                     # Python analysis scripts
     blog-write/SKILL.md            # Write new articles from scratch
@@ -152,6 +152,10 @@ and `/blog rewrite`; it is not a top-level user command.
 ## Development Rules
 
 - Keep SKILL.md files under 500 lines / 5000 tokens
+- **Never write a bare intra-plugin path.** Every reference to a file inside the plugin must be `${CLAUDE_PLUGIN_ROOT}/...`. The working directory belongs to the user, not the plugin, so `references/x.md` or `python3 scripts/run.py` resolve to nothing on every surface (Cowork, Claude Code, Desktop). `test_no_bare_intra_plugin_paths_in_runtime_files` enforces this. Naming a skill file in prose (`skills/blog-brand/SKILL.md`) is documentation, not a load path, and needs no variable
+- **Never write user state into the plugin directory.** It is read-only in Claude Cowork and replaced wholesale on update. Deliverables go to the working directory; state that must survive updates goes to `${CLAUDE_PLUGIN_DATA}` (personas, NotebookLM auth/library)
+- Anything needing Python, a credential, or an MCP server must call `scripts/runtime_capabilities.py` first and degrade with an explanation rather than a traceback. See `skills/blog/references/cowork-runtime.md`
+- The shipped MCP config is `mcp-servers.json` (referenced from `plugin.json`), deliberately **not** `.mcp.json`: that filename is also read as a project-scoped config, so a contributor in this repo would have Claude launch it with `${CLAUDE_PLUGIN_ROOT}` unresolved
 - SKILL.md frontmatter: only valid fields (name, description, user-invokable, argument-hint, compatibility, license, metadata, disable-model-invocation). Do NOT use `allowed-tools`; it is not a Claude Code spec field
 - New reference files should be focused and under 200 lines. Existing comprehensive references (platform-guides, schema-stack, content-templates, distribution-playbook) are exempt from this guideline
 - Scripts must have docstrings, CLI interface, and JSON output
@@ -160,6 +164,7 @@ and `/blog rewrite`; it is not a top-level user command.
 - Python 3.11+ required; dependencies in pyproject.toml
 - Test with `python3 -m pytest tests/` after changes
 - Run `claude plugin validate .` before pushing plugin changes
+- Run `python3 scripts/package_plugin.py` to build the Cowork upload artifact
 - Run `python3 scripts/lint_prose.py` locally to catch forbidden prose chars before CI does (v1.8.4+)
 - Project-root file loading (BRAND.md/VOICE.md/DISCOURSE.md): use `scripts/load_untrusted_root.py` via Bash; never hand-roll a fence (v1.8.3+)
 - Plugin skills auto-discovered from `skills/` directory (do not list in plugin.json)
@@ -178,9 +183,9 @@ Submit at: claude.ai/settings/plugins/submit or platform.claude.com/plugins/subm
 ### Standalone Install (no marketplace)
 ```bash
 curl -fsSLo install.sh \
-  https://raw.githubusercontent.com/AgriciDaniel/claude-blog/v2.2.0/install.sh
+  https://raw.githubusercontent.com/AgriciDaniel/claude-blog/v2.3.0/install.sh
 # Compare the SHA-256 digest with the value published in README.md.
-CLAUDE_BLOG_REF=v2.2.0 bash ./install.sh
+CLAUDE_BLOG_REF=v2.3.0 bash ./install.sh
 ```
 
 ## Release Blog Post

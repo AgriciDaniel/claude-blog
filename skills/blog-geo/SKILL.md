@@ -30,7 +30,7 @@ for Google visibility. Use GEO/AEO as shorthand labels only.
 
 ## Cross-reference
 
-This skill covers FLOW surface 3 (AI assistant citations: ChatGPT, Perplexity, Claude, Gemini, Copilot, You.com) and contributes to surface 2 (SERP plus AI Overviews). Surface mapping: `skills/blog/references/flow-alignment.md`.
+This skill covers FLOW surface 3 (AI assistant citations: ChatGPT, Perplexity, Claude, Gemini, Copilot, You.com) and contributes to surface 2 (SERP plus AI Overviews). Surface mapping: `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/flow-alignment.md`.
 
 For directly relevant AI-citation prompts (AI-supporting-pages rewrite,
 evidence-based quality follow-up, ChatGPT discovery, visibility prompts), see
@@ -287,11 +287,11 @@ Run `/blog analyze <file>` for full content quality scoring.
 If blog-google credentials include Tier 1 (GSC) and the post has a published URL:
 
 1. Query GSC by page and query dimensions, then filter rows to the URL:
-   `python3 skills/blog-google/scripts/run.py gsc_query --property <property> --dimensions query,page --json`
+   `python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-google/scripts/run.py gsc_query --property <property> --dimensions query,page --json`
 2. Add to platform-specific analysis:
    - Current impressions, clicks, CTR, average position
    - Search queries driving traffic to this URL
-3. Check indexation: `python3 skills/blog-google/scripts/run.py gsc_inspect <url> --json`
+3. Check indexation: `python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-google/scripts/run.py gsc_inspect <url> --json`
 4. Report indexation status, canonical selection, mobile usability.
 5. If skipped, report `SKIPPED: credentials unavailable` or
    `SKIPPED: unpublished URL`.
@@ -302,7 +302,7 @@ For a per-engine readiness view (distinct
 from the 15-point AI Citation Readiness category scored by `/blog analyze`), run:
 
 ```bash
-python3 scripts/ai_citation_score.py <file> --format markdown
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/ai_citation_score.py <file> --format markdown
 ```
 
 It returns a non-calibrated 0-100 overall heuristic plus per-engine subscores

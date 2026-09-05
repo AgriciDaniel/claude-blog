@@ -78,7 +78,7 @@ compatibility:
 | Gemini 2.5 Pro Preview TTS | `gemini-2.5-pro-preview-tts` | Yes | Yes | Local `pro` and `legacy-pro25` aliases |
 
 **Default:** Flash for summary/full modes, Pro for dialogue mode. The local
-wrapper accepts the aliases listed above; verify `scripts/generate_audio.py`
+wrapper accepts the aliases listed above; verify `${CLAUDE_PLUGIN_ROOT}/skills/blog-audio/scripts/generate_audio.py`
 before using a newly listed model ID.
 
 ## Language Notes

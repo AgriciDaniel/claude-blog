@@ -56,7 +56,7 @@ rewrite content. You identify issues and prescribe fixes.
 - Relevance: Links support adjacent claims
 - Attributes: rel="nofollow" for sponsored, rel="noopener" for new tabs
 - Broken link check: Do not fetch URLs directly. Delegate live link checks to
-  `scripts/blog_preflight.py` Gate 5 through the orchestrator
+  `${CLAUDE_PLUGIN_ROOT}/scripts/blog_preflight.py` Gate 5 through the orchestrator
 - **Pass criteria**: All tier 1-3 + no broken links
 
 ### 6. Canonical URL

@@ -18,7 +18,7 @@ license: MIT
 compatibility: Standalone within claude-blog. Invoked by blog-multilingual.
 metadata:
   author: AgriciDaniel
-  version: "2.2.0"
+  version: "2.3.0"
   category: blog
 ---
 
@@ -36,9 +36,9 @@ formatting.
 
 Load on demand:
 
-- `references/translation-rules.md`, format preservation, number/date/currency
+- `${CLAUDE_PLUGIN_ROOT}/skills/blog-translate/references/translation-rules.md`, format preservation, number/date/currency
   formats per locale, quote handling, quality criteria.
-- `references/cultural-adaptation.md`, cultural profiles per locale (DACH,
+- `${CLAUDE_PLUGIN_ROOT}/skills/blog-translate/references/cultural-adaptation.md`, cultural profiles per locale (DACH,
   Francophone, Hispanic, Japanese, custom). This file is shared with
   `blog-localize` (do not duplicate).
 
@@ -117,7 +117,7 @@ Spawn the `blog-translator` agent (via Task) for each target language with:
 - The source content.
 - The keyword localization map from Phase 3.
 - The target language code.
-- Pointer to `references/translation-rules.md`.
+- Pointer to `${CLAUDE_PLUGIN_ROOT}/skills/blog-translate/references/translation-rules.md`.
 - Instruction to limit this phase to language, register, natural topical
   coverage, and formatting. Reserve brand, legal, statistic, and cultural
   substitutions for `blog-localize`.
@@ -141,7 +141,7 @@ For each translated version:
    - Same number of H2 and H3 sections as the original.
    - All images present with translated alt text.
    - All SVG charts present with translated text labels (length-adjusted:
-     DE +30%, FR +15%, JA -20%, others see `references/translation-rules.md`).
+     DE +30%, FR +15%, JA -20%, others see `${CLAUDE_PLUGIN_ROOT}/skills/blog-translate/references/translation-rules.md`).
    - FAQ count matches.
    - Evidence-backed explanations from the source remain intact where present.
 3. Save translated files:
