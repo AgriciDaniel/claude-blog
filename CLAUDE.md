@@ -22,12 +22,16 @@ claude-blog/
   CLAUDE.md                          # Project instructions (this file)
   docs/CONTRIBUTORS.md               # Pro Hub Challenge attribution and integration decisions
   CHANGELOG.md                       # Keep a Changelog format
-  .claude-plugin/plugin.json         # Plugin manifest (v2.2.0)
+  .claude-plugin/plugin.json         # Plugin manifest (v2.3.0) + userConfig for the optional Gemini key
   .claude-plugin/marketplace.json    # Marketplace catalog for distribution
+  mcp-servers.json                   # Shipped MCP config, referenced from plugin.json; opt-in image server
   .mcp.example.json                  # MCP config example (tracked; .mcp.json is gitignored)
   pyproject.toml                     # Python packaging (3.11+)
   brain/                             # Vendored self-contained evidence-gated Obsidian brain; not plugin payload; tooling stays under skills/
   scripts/analyze_blog.py            # 5-category quality scoring (stdlib)
+  scripts/runtime_capabilities.py    # Per-surface capability detection; call before any script-backed skill (v2.3.0)
+  scripts/package_plugin.py          # Builds the Claude Cowork .plugin upload artifact (v2.3.0)
+  scripts/nanobanana-launcher.mjs    # Gates the image MCP server behind an API key; inert without one (v2.3.0)
   scripts/blog_preflight.py          # 5-gate delivery contract runner (v1.9.0)
   scripts/blog_render.py             # md -> html -> pdf renderer; XSS-safe JSON-LD (v1.9.0)
   scripts/blog_hygiene.py            # Optional deterministic hygiene: lazy-load imgs + auto-TOC (v1.11.0)
