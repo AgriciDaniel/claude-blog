@@ -52,7 +52,7 @@ for Lighthouse lab scores.
 
 Same request format as CrUX API. Returns up to **40 weekly collection periods** (~10 months)
 as timeseries arrays (`p75s[]`, `densities[]`). Default is 25; configurable via
-`collectionPeriodCount` parameter (range: 1–40).
+`collectionPeriodCount` parameter (range: 1-40). Use `crux_history.py --periods N`.
 
 - Updated **Mondays** ~04:00 UTC.
 - Each period = 28-day rolling average ending on a Sunday.
@@ -72,7 +72,7 @@ Current as of March 2026. INP replaced FID on March 12, 2024.
 | **INP** | ≤ 200ms | 200-500ms | > 500ms |
 | **CLS** | ≤ 0.1 | 0.1-0.25 | > 0.25 |
 
-**Diagnostic metrics (not CWV — informational only):**
+**Diagnostic metrics (not CWV - informational only):**
 
 | Metric | Good | Needs Improvement | Poor |
 |--------|------|-------------------|------|
@@ -96,7 +96,7 @@ Current as of March 2026. INP replaced FID on March 12, 2024.
 | `dimensionFilterGroups` | object[] | Filter groups with `dimension`, `operator`, `expression` |
 | `rowLimit` | int | 1-25000 (default: 1000) |
 | `startRow` | int | Pagination offset (default: 0) |
-| `dataState` | string | `final` (default), `all`, `hourly_all` (April 2025, requires `HOUR` dimension) |
+| `dataState` | string | `final` (default), `all`, `hourly_all` (April 2025, requires `hour` dimension) |
 
 ### Filter Operators
 `contains`, `equals`, `notContains`, `notEquals`, `includingRegex`, `excludingRegex`
@@ -104,8 +104,18 @@ Current as of March 2026. INP replaced FID on March 12, 2024.
 ### Response Fields
 Each row: `keys[]`, `clicks`, `impressions`, `ctr`, `position`.
 
-- Data lag by `dataState`: `final` = ~2-3 days; `all` = shorter lag; `hourly_all` = few hours (April 2025). Retention: ~16 months.
+- Data lag by `dataState`: `final` = ~2-3 days; `all` = shorter lag; `hourly_all` = few hours (April 2025). Retention: ~16 months. Use `gsc_query.py --data-state hourly_all --dimensions date,hour,...`.
 - Country codes are **ISO 3166-1 alpha-3** (e.g., `USA`, `GBR`).
+- The dedicated generative-AI Search and Discover reports are a gradual
+  Search Console UI rollout. They are not an extra `type` or
+  `searchAppearance` value documented for this endpoint. Do not synthesize
+  clicks or queries for those reports or claim this API isolates AI Overviews
+  and AI Mode.
+- Google's July 29 Search Central announcement says Instagram, TikTok, X, and
+  YouTube platform properties are globally available, while the current Help
+  Center still says gradual rollout. Verify availability in the account. Do not
+  promise that this endpoint supports their dedicated reports until Google
+  publishes API documentation.
 
 ---
 
@@ -184,7 +194,9 @@ Each entity includes `name`, `type`, `salience` (0-1), `sentiment`, and `metadat
 
 ## YouTube Data API v3
 
-YouTube mentions correlate strongly with AI citation visibility (GEO research).
+YouTube results can support relevant media research and cross-platform
+distribution. Third-party visibility correlations are observational and do not
+establish a Google ranking or citation requirement.
 
 | Method | Quota Cost | Description |
 |--------|-----------|-------------|
@@ -202,8 +214,11 @@ Gold-standard source for keyword search volume. Methods: **GenerateKeywordIdeas*
 from seeds), **GenerateKeywordHistoricalMetrics** (volume for specific keywords), and
 **GenerateKeywordForecastMetrics** (future projections). Returns volume, competition, CPC bids.
 
-**Current API version:** v23.1 (released Feb 25, 2026). Monthly release cadence since Jan 2026.
-Any version below v20 is sunset. Update versioned endpoint paths accordingly.
+**Current API version guidance:** Google Ads API release notes list v25.1 dated
+2026-08-19. Google's support table lists Python client 31.2.0 as the minimum for
+API v25. Check both official pages before changing a client or versioned path:
+https://developers.google.com/google-ads/api/docs/release-notes
+https://developers.google.com/google-ads/api/docs/sunset-dates
 
 - Without active ad spend, volumes are **bucketed ranges** ("1K-10K") not exact numbers
 - `competition` measures **advertiser competition**, not organic difficulty

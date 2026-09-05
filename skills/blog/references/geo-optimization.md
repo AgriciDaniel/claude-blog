@@ -1,38 +1,44 @@
-# GEO/AEO Optimization -- AI Citation Strategies
+# AI Search SEO: Citation Strategies
 
-## Core GEO Research
+Use GEO and AEO as legacy labels for AI citation readiness. For Google, the
+Google Search Central AI features guidance is explicit: optimization for AI
+Overviews and AI Mode is SEO, not a separate discipline.
+
+## Core AI Search SEO Research
 
 ### Princeton GEO Paper (KDD 2024)
-GEO methods boost AI visibility by up to 40%.
+The Princeton GEO paper tested content transformations in a defined
+experimental setting. It offers research context, not a calibrated forecast,
+Google ranking factor, or universal causal effect.
 
-| Technique | Improvement |
-|-----------|-------------|
-| Citing authoritative sources | +115.1% visibility (5th-ranked sites, main experiment) |
-| Quotation addition | +28% (main experiment); +37% (Perplexity.ai validation, Table 7) |
-| Statistics addition | +41% (main experiment); +22% (Perplexity.ai validation, Table 7) |
-| FAQ schema | +28% (sponsored article on SEL; not editorial research) |
+| Technique | Reader-first interpretation |
+|-----------|-----------------------------|
+| Citing authoritative sources | Improves traceability when the source supports the claim |
+| Relevant quotations | Can preserve expert context when quoted accurately |
+| Supported statistics | Can make claims more specific when methodology and limits are clear |
+| FAQPage entity markup | Optional visible-content markup; no Google rich result and no readiness score benefit |
 
-Traditional keyword stuffing performs **worse than baseline** in generative engines.
+Keyword stuffing is unhelpful to readers and conflicts with Google spam
+guidance.
 
 ### Cross-Platform Citation Divergence
 
-- Only 11% of domains are cited by both ChatGPT and Perplexity (Digital Bloom, 2025;
-  domain-level, not URL-level; AI Overviews not included in that study)
-- 80% of LLM citations don't rank in Google's top 100 (Ahrefs, Aug 2025) - traditional
-  SEO rankings are a poor predictor of AI citation
-- Brands are 6.5x more likely to be cited through third-party sources than their own
-  domains (AirOps, Oct 2025) - earned media dominates AI visibility
+Vendor datasets show that citation sets can differ across products and query
+samples. Treat those observations as non-causal and time-bound. They support
+monitoring each declared surface separately, not a fixed content formula or
+budget allocation.
 
 ### Kevin Indig's AI Search Pipeline (Jan 5, 2026)
 Three critical stages:
 
 1. **Retrieval**: Which pages enter the candidate set
-   - Server response time under 200ms TTFB
+   - Reliable server response time measured as an operational diagnostic
    - Metadata relevance
-   - Content must be in HTML (not behind JS)
+   - Primary content accessible to each declared target crawler; initial HTML
+     improves portability when rendering support is unknown
 2. **Citation**: Which sources get mentioned
-   - Content freshness dominates (70%+ cited pages updated within 12 months)
-   - Content within 3 months performs best
+   - Retrieval systems may value current facts for time-sensitive queries
+   - Update only when facts, methods, or recommendations materially change
 3. **Trust**: Which citations users click
    - Brand recognition
    - Source authority
@@ -41,108 +47,111 @@ Three critical stages:
 
 | Format | Impact | Source |
 |--------|--------|--------|
-| Listicles | 50% of top AI citations (Onely/nobori.ai; Wix/Peec 75K-answer study found 21.9%) |
-| Tables/structured data | 2.5x more citations (Onely citing Averi AI) |
-| Long-form (2,000+ words) | ~3x more citations (Moz 2025 found 3.2x; SE Ranking found 1.6x) |
-| FAQ schema | +28% (sponsored SEL article, not editorial research) |
-| Content with statistics | +40% higher citation rates | Onely |
-| Sections of 120-180 words between headings | 70% more ChatGPT citations | SE Ranking, Nov 2025 |
-| Comparison tables with `<thead>` | 47% higher AI citation rates (SEL; primary source unlocatable) |
+| Listicles | Useful when the reader genuinely needs a curated set |
+| Tables/structured data | Useful when they make comparisons or facts clearer |
+| Long-form | Appropriate only when the task requires depth; no word minimum |
+| FAQPage entity markup | Optional visible-content markup; no Google rich result and no readiness score benefit |
+| Content with statistics | Use supported statistics when they improve reader understanding |
+| Self-contained evidence-backed sections | Useful for readers and reuse; Google prescribes no chunk length |
+| Comparison tables with `<thead>` | May improve extraction; attributed SEL figure is unverified |
+
+### Passage-Level Extractability (2026)
+
+Google may use query fan-out and retrieval across passages, but its guidance
+does not prescribe chunking, question headings, or word bands. Make important
+sections understandable on their own and support material claims with named
+entities, dates when relevant, source attribution, and specific examples.
+
+Clear entity references and transparent first-hand evidence can improve reader
+trust when they are real and relevant. Do not treat either as a tie-breaker or
+guarantee of inclusion in an AI answer.
 
 ## Platform-Specific Citation Patterns
 
-Each AI platform has distinct content preferences:
+Vendor observations vary by product, time, geography, and query set:
 
-| Platform | Favored Content Type | Key Bias |
-|----------|---------------------|----------|
-| ChatGPT | "Best X" listicles | 43.8% of citations are list-format content |
-| Perplexity | Reddit discussions | 6.6% of all citations come from Reddit |
-| AI Overviews | Google properties | 23% of citations favor Google-owned sources |
+| Platform | Scoped observation |
+|----------|--------------------|
+| ChatGPT | Source mixes vary by retrieval mode and query sample |
+| Perplexity | Community sources appear in some vendor datasets |
+| AI Overviews | Eligible sources and links vary by query and Search surface |
 
-**Perplexity content decay**: Citation relevance begins declining 2-3 days
-post-publication - Perplexity heavily weights recency, making it the most
-freshness-dependent platform. Content older than 1 week sees sharp citation drops.
+2026 wrinkle: AI Overviews now highlight links from a user's subscribed
+publications, so publisher subscriptions can influence which sources users see
+inside the AI answer (Nieman Lab, 2026-05).
 
-## Content Freshness Requirements
+Vendor datasets report rapid source turnover on some Perplexity query sets.
+Treat this as directional and query-dependent, not a universal content-decay
+window or reason to change dates without substantive work.
 
-- 76.4% of ChatGPT's most-cited pages updated within 30 days (Ahrefs, ~17M citations)
-- URLs cited in AI results are 25.7% fresher than traditional search
-- Content < 3 months old is 3x more likely to get cited
-- **Action**: Update critical content quarterly with at least 30% changes
+## Meaningful Freshness
 
-## Off-Site Signals (Dominate AI Visibility)
+Update critical content when facts, screenshots, pricing, methods, source
+availability, or intent have materially changed. Do not change dates or copy
+solely to imitate freshness patterns observed in vendor datasets.
 
-### Ahrefs Study (Dec 2025, 75,000 brands)
+## Off-Site Context
 
-| Factor | Correlation with AI Visibility |
-|--------|-------------------------------|
-| YouTube mentions | 0.737 (strongest) |
-| Branded web mentions | 0.656-0.709 |
-| Domain Rating | 0.266-0.326 |
-| Backlinks | 0.218 (dramatically weaker than expected) |
+### Vendor Dataset Context
 
-### Platform-Specific Citation Rates
+Some vendor datasets report associations between branded mentions, video
+mentions, links, and measured visibility. Correlation does not establish which
+factor caused an outcome. Use off-site work to reach relevant audiences and
+earn accurate coverage, not to satisfy an internal multiplier.
+
+### Platform Presence
 
 **YouTube**:
-- Citations in AI Overviews up 414% (Q1 2025, NP Digital, 10K+ AIO analysis)
-- How-to videos up 651%
-- Visual demos up 592%
-- 200x more cited than any other video platform
-- Optimization: keywords in titles/transcripts, Q&A-style, 10+ min, public transcripts
+- Publish useful videos when demonstrations improve understanding.
+- Use accurate titles and public transcripts for accessibility and discovery.
 
 **Reddit**:
-- Citations surged 1.30% → 7.15% (450% growth)
-- Google's $60M annual API deal
-- 2.2-21% of AI Overview citations by query type
-- Strategy: Authentic participation in 3-5 subreddits BEFORE any promotional content
+- Participate only where the community and topic are relevant.
+- Follow community rules and avoid manufactured promotional activity.
 
 **Review Platforms (B2B)**:
-- G2 accounts for 22-23% of review-platform citations (Radix via G2's own blog;
-  self-reported — Hall.com's independent analysis found G2 at only 8.25% of B2B
-  software citations in ChatGPT)
-- 33% of review citations come from G2 (Profound via G2's blog; treat as directional)
-- Multi-platform presence: 4.6-6.3 citations vs 1.8 without (2.6-3.5x multiplier)
+- Maintain accurate profiles where buyers actually research the category.
+- Treat self-reported citation shares as product context, not causal evidence.
 
 **Wikipedia/Wikidata**:
-- 7.8% of all ChatGPT citations (Profound)
-- Used as "credibility tiebreaker" when sources conflict
-
-### Budget Allocation
-Recommended: **40% owned content / 60% earned media**
-(Most companies allocate 90/10 - this is wrong for GEO)
-
-88-92% of AI citations come from off-site signals, not on-page optimization alone.
+- Contribute only under the platform's notability, sourcing, neutrality, and
+  conflict-of-interest policies.
 
 ## AI Crawler Technical Requirements
 
-| Crawler | JavaScript Rendering |
-|---------|---------------------|
-| GPTBot (OpenAI) | No |
-| ChatGPT-User | No |
-| ClaudeBot | No |
-| PerplexityBot | No |
-| Googlebot | Yes |
-| Google-Extended | Yes |
+| Crawler | JavaScript rendering guidance |
+|---------|-------------------------------|
+| GPTBot (OpenAI) | Verify current official documentation and observed fetch behavior |
+| ChatGPT-User | Capabilities can vary by product mode; verify current behavior |
+| ClaudeBot | Verify current official documentation and observed fetch behavior |
+| PerplexityBot | Verify current official documentation and observed fetch behavior |
+| Googlebot | Can render eligible JavaScript; validate the rendered result |
 
-**Critical**: Content behind JavaScript is invisible to ChatGPT, Claude, Perplexity.
-Use SSR, SSG, or ISR. Test by disabling JS and reloading.
+Rendering capabilities and crawler policies can change. Prefer SSR, SSG, ISR,
+or otherwise useful initial HTML for cross-crawler portability. Treat
+JavaScript-gated content as critical only when testing shows a declared target
+crawler cannot access the primary content.
 
-### AI Crawler Traffic Growth
+### Google's Official Gen-AI Guidance
 
-- Cloudflare AI crawling rose 32% YoY across all monitored sites
-- GPTBot traffic grew 305% YoY
-- PerplexityBot traffic grew 157,490% YoY (from near-zero baseline)
-- 65% of AI bot hits target content published within the past year (Seer Interactive)
-  - freshness is a retrieval signal, not just a citation signal
+Google's stance holds: optimization for AI Overviews and AI Mode is SEO. There
+is no special schema for gen-AI features, and Google does not need llms.txt.
+Use standard crawlable HTML, Article schema with author and Organization
+entities, helpful content, clear source attribution, and fast server responses.
 
-### Performance Requirements for AI Retrieval
-- Server response time under 200ms TTFB (Kevin Indig pipeline)
-- Maximum 600ms TTFB before AI crawlers time out and skip the page
-- Crawlers implement 3-5 second hard timeouts (Getpassionfruit)
+### AI Crawler Traffic Context
+
+Crawler volumes reported by infrastructure vendors can change quickly and may
+start from very small baselines. Use server logs to understand the site's own
+traffic. Do not convert aggregate growth figures into content or freshness
+requirements.
+
+### Performance Guidance for Retrieval
+- Keep server responses reliable and reasonably fast for users and crawlers.
+- Some crawlers and retrieval systems use practical timeouts; verify per crawler.
 - Core Web Vitals are a constraint, not a growth lever - good CWV doesn't reliably
   outperform, but severe LCP failure creates disadvantage (Search Engine Land, 107,352 pages)
-- Top 10 domains capture 46% of all ChatGPT citations per topic (Growth Memo, Mar 2026)
-- Slow pages are excluded from AI citation candidate pools entirely
+- Slow pages may miss crawl, fetch, or extraction opportunities
 - Vercel analysis of 500+ million GPTBot fetches found zero evidence of JS execution
 
 ### robots.txt for AI Visibility
@@ -158,24 +167,23 @@ Allow: /
 ```
 
 ### llms.txt Standard
-Markdown file at site root helping LLMs understand content at inference time.
-Keep under 10KB, plain URLs with brief comments.
+Google does not need llms.txt for AI Overviews or AI Mode. Treat the file as an
+optional site inventory for non-Google tools, not a ranking or citation lever.
+Do not spend AI search SEO budget on llms.txt before crawlability, passage extraction,
+source quality, crawlability, and entity consistency.
 
 ## Attribution Gaps
 
-Perplexity visits ~10 pages per query but cites only 3-4. Not all AI responses
-include citations - optimizing for retrieval is critical. Content must enter the
-candidate set before citation is possible.
+Not all AI responses include citations, and retrieval behavior varies by
+product and query. A page must be crawlable and eligible for retrieval before
+it can appear as a cited source, but that does not guarantee selection.
 
-## GEO Case Study Results
+## AI Search Case Study Context
 
-| Company | Results | Timeframe |
-|---------|---------|-----------|
-| Go Fish Digital | +43% AI traffic, +83% conversions, 25x conversion rate | 3 months |
-| Netpeak USA | +120% revenue, +693% AI visits | Ongoing |
-| Nine Peaks Media | 36% visibility improvement, first ChatGPT citations | Ongoing |
-| ABM Agency/Chemours | 82% ChatGPT mention rate, $90M+ pipeline | Ongoing |
-| Smart Rent | 32% SQL increase, 40% faster pipeline | Ongoing |
+Vendor case studies can suggest questions to test, but their attribution,
+samples, query sets, product versions, and confounders differ. Do not reuse
+headline uplift figures as benchmarks or evidence of a causal tactic. Require
+the underlying methodology and results before making a case-study claim.
 
 ## Entity-First SEO
 
@@ -184,58 +192,58 @@ Google Knowledge Graph: 800B facts about 8B entities.
 
 Entity building timeline (3-6 months):
 1. Create entity map with Wikidata Q-IDs
-2. Establish Wikipedia/Wikidata presence
+2. Establish Wikipedia/Wikidata presence only when the entity meets independent
+   notability requirements; disclose conflicts of interest and follow platform policy
 3. Build entity consistency across all platforms (exact same name)
 4. Practice "controlled co-occurrence" via third-party mentions
 5. Earn external citations from recognized publications
 
-## Readability-GEO Connection
+## Readability and AI Search Connection
 
-Readability directly impacts AI citation rates. Content in the Flesch 60-75
-band receives significantly more AI citations across all major platforms.
+Readability supports readers. Any relationship with AI citation frequency is
+vendor-reported and not a calibrated effect. Use audience-appropriate
+readability as an editorial heuristic, not as a citation target.
 
-### Flesch Score & AI Citation Rates
-- **Flesch 60-75 = 31% more AI citations** (Spotlight, 18,000 monitored prompts;
-  self-reported internal data from a commercial platform, no independent verification)
-- Teams improving Flesch from 52→68 saw parallel citation lifts within two
-  crawl windows
-- Content that is too complex (Flesch <50) or too simple (Flesch >80) gets
-  fewer citations - AI systems prefer fluent, authoritative writing
+### Readability Context
+- Commercial platform reports associate some readability bands with citation
+  outcomes, but the findings are not independently verified.
+- Choose sentence structure and vocabulary for the audience and subject.
+- Do not turn a Flesch range into a mandatory target or citation score.
 
 ### Citation Position Bias
-- **44.2% of all LLM citations come from the first 30% of text** (Growth Memo,
-  Feb 2026, Kevin Indig). Answer-first formatting is critical for citation capture.
-- Direct answers in the first 1-2 sentences of each section maximize
-  extractability for AI systems
+- Some vendor samples observe more cited material earlier on a page, but that
+  pattern is non-causal and query-dependent.
+- State important answers early when that helps the reader, without requiring a
+  fixed sentence position or section form.
 
-### GEO Tactic Combinations
-Princeton GEO paper (KDD 2024) findings on readability-related tactics:
-- **Fluency optimization** = 15-30% visibility boost
-- **Statistics addition** = up to 41% visibility boost
-- **Fluency + Statistics combined** outperforms any single tactic by 5.5%
-- Keyword stuffing performs -10% WORSE than baseline
+### Reader-First Tactic Combinations
+Clear writing and supported evidence can work together because readers need
+both comprehension and trust. Do not apply experimental uplift figures as
+expected results. Avoid keyword stuffing because it reduces usefulness and can
+conflict with spam policies.
 
-**FLOW evidence triple is mandatory for AI-citation readiness.** AI assistants extract claims that have year anchor in prose, inline publisher + title, and URL with retrieval date. Stats without the triple are less likely to surface in citations. See `flow-alignment.md`.
+Support material claims with sources that actually substantiate them. Record
+dates, titles, URLs, retrieval notes, methodology, and limitations when they
+help readers identify or interpret the evidence. No fixed evidence triple,
+length, or citation format is required for readiness.
 
 ### Schema & Structure for AI Citation
-- Comparison tables with proper HTML (`<thead>`, `<tbody>`) = **47% higher**
-  AI citation rates (attributed to SEL; primary source unlocatable — treat as directional)
-- SearchVIU confirmed ChatGPT, Claude, Perplexity, and Gemini all process
-  Schema Markup during citation selection
+- Use proper table markup when a comparison helps readers and accessibility.
+- Structured data can help supported parsers understand a page, but do not
+  claim a citation lift or universal platform use without current primary
+  evidence.
 
-### Platform-Specific Citation Behaviors
-| Platform | Key Behavior | Readability Preference |
-|----------|-------------|----------------------|
-| ChatGPT | Wikipedia = 7.8% of citations; SearchGPT: 87% match Bing top 10 | Prefers well-structured, fluent content |
-| Perplexity | Reddit = 46.7% of top-10 sources; strongest depth correlation (0.191) | 2-3 day content decay; heavily weights recency |
-| AI Overviews | 93.67% from top-10 organic; avg 10.2 links per response | Prefers established authority + clear answers |
+### Platform-Specific Observation Limits
+| Platform | Non-causal context |
+|----------|--------------------|
+| ChatGPT | Source mixes depend on product mode, retrieval provider, and query set |
+| Perplexity | Community-source and recency shares vary across vendor samples |
+| AI Overviews | Source overlap with organic results varies by query and Search surface |
 
-Only 11% of domains are cited by both ChatGPT and Perplexity (Digital Bloom). Only 12%
-of URLs cited by ChatGPT, Perplexity, and Copilot rank in Google's top 10 (Ahrefs).
+Compare declared surfaces independently with current, reproducible samples.
+Do not infer a platform preference or causal ranking rule from overlap rates.
 
 ### Content Freshness for AI Citation
-- **65%** of AI bot hits target content published within the past year (Seer Interactive)
-- **85%** of AI Overview citations come from content <2 years old
-- **44%** of AI Overview citations come from 2025 content specifically
-- **50%** of Perplexity citations come from 2025 alone
-- Content older than 3 months sees 3x fewer citations
+Freshness matters when the query or facts are time-sensitive. Update content
+only after a substantive change and do not infer a universal decay window from
+vendor citation samples.

@@ -7,6 +7,7 @@ Ensures all scripts run with the correct virtual environment
 import os
 import sys
 import subprocess
+import hashlib
 from pathlib import Path
 
 
@@ -28,9 +29,16 @@ def ensure_venv():
     skill_dir = Path(__file__).parent.parent
     venv_dir = skill_dir / ".venv"
     setup_script = skill_dir / "scripts" / "setup_environment.py"
+    lock_file = skill_dir / "scripts" / "requirements.lock"
+    requirements_file = skill_dir / "scripts" / "requirements.txt"
+    stamp_file = venv_dir / ".requirements.stamp"
+
+    source = lock_file if lock_file.exists() else requirements_file
+    expected_stamp = hashlib.sha256(source.read_bytes()).hexdigest() if source.exists() else None
+    current_stamp = stamp_file.read_text().strip() if stamp_file.exists() else None
 
     # Check if venv exists
-    if not venv_dir.exists():
+    if not venv_dir.exists() or (expected_stamp and current_stamp != expected_stamp):
         print("🔧 First-time setup: Creating virtual environment...")
         print("   This may take a minute...")
 
@@ -52,7 +60,6 @@ def main():
         print("\nAvailable scripts:")
         print("  ask_question.py    - Query NotebookLM")
         print("  notebook_manager.py - Manage notebook library")
-        print("  session_manager.py  - Manage sessions")
         print("  auth_manager.py     - Handle authentication")
         print("  cleanup_manager.py  - Clean up skill data")
         sys.exit(1)
@@ -71,9 +78,16 @@ def main():
 
     # Get script path
     skill_dir = Path(__file__).parent.parent
-    script_path = skill_dir / "scripts" / script_name
+    scripts_dir = (skill_dir / "scripts").resolve()
+    script_path = (scripts_dir / script_name).resolve()
 
-    if not script_path.exists():
+    try:
+        script_path.relative_to(scripts_dir)
+    except ValueError:
+        print(f"❌ Script path escapes scripts directory: {script_name}")
+        sys.exit(1)
+
+    if not script_path.is_file():
         print(f"❌ Script not found: {script_name}")
         print(f"   Working directory: {Path.cwd()}")
         print(f"   Skill directory: {skill_dir}")

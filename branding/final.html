@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>claude-blog - final brand assets</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --desktop:    #7d6c52;
+    --bar:        #f5f1e8;
+    --bar-bd:     #a89968;
+    --ink:        #1A1816;
+    --muted:      #6F5F54;
+    --hover:      #e5dcc8;
+    --cta:        #fbbf24;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--desktop);
+    background-image:
+      repeating-linear-gradient(0deg,  rgba(0,0,0,0.03) 0, transparent 1px, transparent 2px, rgba(0,0,0,0.03) 3px),
+      repeating-linear-gradient(90deg, rgba(0,0,0,0.03) 0, transparent 1px, transparent 2px, rgba(0,0,0,0.03) 3px);
+    color: var(--ink);
+    font-family: 'Inter', system-ui, sans-serif;
+    min-height: 100vh;
+    padding-top: 48px;
+  }
+  .menu-bar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    height: 36px; background: var(--bar);
+    border-bottom: 1px solid var(--bar-bd);
+    display: flex; align-items: center; padding: 0 16px;
+    font-size: 14px; color: var(--ink); font-weight: 500; gap: 16px;
+  }
+  .menu-bar .brand { font-weight: 700; }
+  .menu-bar .links { display: flex; gap: 4px; }
+  .menu-bar .links button {
+    background: transparent; border: none; padding: 4px 10px; border-radius: 4px;
+    font-size: 13px; color: var(--ink); cursor: pointer; font-family: inherit;
+  }
+  .menu-bar .links button:hover { background: var(--hover); }
+  .menu-bar .cta {
+    margin-left: auto; background: var(--cta); color: #1A1816;
+    border: none; padding: 5px 14px; border-radius: 4px;
+    font-weight: 600; font-size: 13px; cursor: pointer; font-family: inherit;
+  }
+  .menu-bar .cta:hover { background: #f59e0b; }
+
+  .desktop-content { max-width: 1400px; margin: 0 auto; padding: 40px 24px 80px; }
+  header { margin-bottom: 48px; padding: 0 4px; }
+  header .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--muted);
+    letter-spacing: 2px; text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  header h1 {
+    font-size: 38px; font-weight: 700; letter-spacing: -0.6px;
+    color: var(--ink); margin-bottom: 10px;
+  }
+  header p { color: var(--muted); max-width: 780px; line-height: 1.55; font-size: 15px; }
+  header .meta {
+    margin-top: 16px; display: flex; gap: 18px;
+    font-family: 'JetBrains Mono', monospace; font-size: 12px;
+    color: var(--muted);
+  }
+  header .meta strong { color: var(--ink); font-weight: 600; }
+
+  .section { margin-bottom: 56px; }
+  .section .label {
+    display: flex; align-items: baseline; gap: 14px;
+    margin-bottom: 14px; padding: 0 4px;
+  }
+  .section .label .num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px; color: var(--ink); font-weight: 700;
+    background: rgba(0,0,0,0.08);
+    padding: 4px 12px; border-radius: 4px; min-width: 40px; text-align: center;
+  }
+  .section .label .title { font-size: 22px; font-weight: 600; color: var(--ink); letter-spacing: -0.2px; }
+  .section .label .desc { margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--muted); }
+  .section .holder {
+    border-radius: 10px;
+    filter: drop-shadow(0 8px 24px rgba(0,0,0,0.18));
+  }
+  .section .holder object,
+  .section .holder img {
+    display: block; width: 100%; height: auto; border-radius: 10px;
+  }
+  .section .filename {
+    margin-top: 10px; padding: 0 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--muted);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section .filename .key {
+    background: var(--bar); border: 1px solid var(--bar-bd);
+    color: var(--ink); padding: 2px 8px; border-radius: 3px;
+  }
+
+  .legend {
+    padding: 24px 4px 0;
+    border-top: 1px solid var(--bar-bd);
+    color: var(--muted); font-size: 13px; line-height: 1.6;
+  }
+  .legend code {
+    background: var(--bar); color: var(--ink);
+    padding: 2px 6px; border-radius: 3px;
+    font-family: 'JetBrains Mono', monospace; font-size: 12px;
+    border: 1px solid var(--bar-bd);
+  }
+  .legend ul { margin-top: 10px; padding-left: 20px; }
+  .legend li { margin-bottom: 6px; }
+</style>
+</head>
+<body>
+
+<div class="menu-bar">
+  <span class="brand">claude-blog</span>
+  <div class="links">
+    <button>Write</button>
+    <button>Sub-skills</button>
+    <button>FLOW</button>
+    <button>Docs</button>
+    <button>Community</button>
+  </div>
+  <button class="cta">Get started</button>
+</div>
+
+<div class="desktop-content">
+
+  <header>
+    <div class="eyebrow">claude-blog - v1.11.0 - final brand assets</div>
+    <h1>Brand kit - cover + 4 diagrams</h1>
+    <p>Current finalized visual set for claude-blog. Five locked SVG assets: cover-blog, 1B horizontal architecture, 2B delivery pipeline, 3A sub-skill map, and 4B FLOW framework.</p>
+    <div class="meta">
+      <span>COVER: <strong>assets/cover-blog.svg</strong></span>
+      <span>DIAGRAMS: <strong>assets/diagrams/*.svg</strong></span>
+      <span>TOTAL: <strong>5 SVG files</strong></span>
+    </div>
+  </header>
+
+  <section class="section">
+    <div class="label">
+      <span class="num">00</span>
+      <span class="title">Cover</span>
+      <span class="desc">README hero</span>
+    </div>
+    <div class="holder">
+      <object data="../assets/cover-blog.svg" type="image/svg+xml"></object>
+    </div>
+    <div class="filename"><span class="key">assets/cover-blog.svg</span><span>final external cover asset</span></div>
+  </section>
+
+  <section class="section">
+    <div class="label">
+      <span class="num">01</span>
+      <span class="title">System architecture</span>
+      <span class="desc">B - left-to-right pipeline</span>
+    </div>
+    <div class="holder">
+      <object data="../assets/diagrams/01-architecture-B.svg" type="image/svg+xml"></object>
+    </div>
+    <div class="filename"><span class="key">assets/diagrams/01-architecture-B.svg</span><span>/blog write to orchestrator to branches to delivery contract</span></div>
+  </section>
+
+  <section class="section">
+    <div class="label">
+      <span class="num">02</span>
+      <span class="title">Delivery pipeline</span>
+      <span class="desc">B - finalized pipeline</span>
+    </div>
+    <div class="holder">
+      <object data="../assets/diagrams/02-pipeline-B.svg" type="image/svg+xml"></object>
+    </div>
+    <div class="filename"><span class="key">assets/diagrams/02-pipeline-B.svg</span><span>finalized delivery pipeline asset</span></div>
+  </section>
+
+  <section class="section">
+    <div class="label">
+      <span class="num">03</span>
+      <span class="title">Sub-skill ecosystem</span>
+      <span class="desc">A - finalized map</span>
+    </div>
+    <div class="holder">
+      <object data="../assets/diagrams/03-sub-skill-map-A.svg" type="image/svg+xml"></object>
+    </div>
+    <div class="filename"><span class="key">assets/diagrams/03-sub-skill-map-A.svg</span><span>finalized sub-skill map asset</span></div>
+  </section>
+
+  <section class="section">
+    <div class="label">
+      <span class="num">04</span>
+      <span class="title">FLOW framework</span>
+      <span class="desc">B - finalized framework</span>
+    </div>
+    <div class="holder">
+      <object data="../assets/diagrams/04-framework-B.svg" type="image/svg+xml"></object>
+    </div>
+    <div class="filename"><span class="key">assets/diagrams/04-framework-B.svg</span><span>finalized FLOW framework asset</span></div>
+  </section>
+
+  <div class="legend">
+    <strong>What ships:</strong>
+    <ul>
+      <li><code>assets/cover-blog.svg</code> - finalized cover</li>
+      <li><code>assets/diagrams/01-architecture-B.svg</code></li>
+      <li><code>assets/diagrams/02-pipeline-B.svg</code></li>
+      <li><code>assets/diagrams/03-sub-skill-map-A.svg</code></li>
+      <li><code>assets/diagrams/04-framework-B.svg</code></li>
+    </ul>
+    <p style="margin-top: 14px;">These five SVGs are hand-finalized external assets. <code>branding/scripts/generate_diagrams.py</code> is retired and exits non-zero to prevent accidental regeneration.</p>
+  </div>
+
+</div>
+
+</body>
+</html>

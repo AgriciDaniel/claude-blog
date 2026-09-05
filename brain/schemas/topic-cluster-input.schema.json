@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/AgriciDaniel/claude-blog-brain/schemas/topic-cluster-input.schema.json",
+  "title": "Topic Cluster Plan Input",
+  "description": "A hub and spoke topic cluster plan consumed by Claude Blog Brain cluster adapters.",
+  "type": "object",
+  "required": ["cluster_name", "primary_topic", "locale", "hub", "spokes"],
+  "properties": {
+    "cluster_name": {"type": "string", "minLength": 1},
+    "primary_topic": {"type": "string", "minLength": 1},
+    "locale": {"type": "string", "pattern": "^[a-z]{2,3}(-[A-Z]{2})?$"},
+    "audience": {"type": "string"},
+    "objective": {"type": "string"},
+    "hub": {
+      "type": "object",
+      "required": ["title", "url", "target_keyword"],
+      "additionalProperties": false,
+      "properties": {
+        "title": {"type": "string", "minLength": 1},
+        "url": {"type": "string", "format": "uri", "pattern": "^https?://"},
+        "target_keyword": {"type": "string", "minLength": 1}
+      }
+    },
+    "spokes": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "url", "target_keyword", "intent"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "title": {"type": "string", "minLength": 1},
+          "url": {"type": "string", "format": "uri", "pattern": "^https?://"},
+          "target_keyword": {"type": "string", "minLength": 1},
+          "intent": {"type": "string", "minLength": 1},
+          "stage": {"type": "string"},
+          "priority": {"type": "string", "enum": ["critical", "high", "medium", "low"]},
+          "source_ids": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    },
+    "existing_links": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["from_url", "to_url"],
+        "additionalProperties": false,
+        "properties": {
+          "from_url": {"type": "string", "format": "uri", "pattern": "^https?://"},
+          "to_url": {"type": "string", "format": "uri", "pattern": "^https?://"},
+          "anchor": {"type": "string"}
+        }
+      }
+    },
+    "entity_terms": {"type": "array", "items": {"type": "string"}},
+    "source_ids": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,18 @@
+wiki/media/Alt Text Standards.md -> deepen; added Alt Text Standards Decision Table plus 5-step review procedure; source_ids: g-google-images, g-video, g-ai-opt-guide, schema-full.
+wiki/media/Audio Summary Rules.md -> deepen; added Audio Summary Rules Rule Table plus rollback procedure; source_ids: g-ai-opt-guide, g-helpful-content, g-video, schema-full.
+wiki/media/Chart Source Requirements.md -> deepen; added Chart Source Requirements Source Table plus refresh procedure; source_ids: g-helpful-content, nng-editorial-heuristics, g-ai-opt-guide, schema-full.
+wiki/media/Data Visualization Review.md -> deepen; added Data Visualization Review Media Table plus scale audit; source_ids: g-google-images, g-video, g-intro-sd, g-update-2026-06-30-merchant-center-product-videos-serving-eligible.
+wiki/media/Generated Media Disclosure Notes.md -> deepen; added Generated Media Disclosure Notes Media Table plus provenance review procedure; source_ids: g-google-images, g-video, g-ai-opt-guide, schema-full.
+wiki/media/Image Selection Rules.md -> deepen; added Image Selection Rules Rule Table plus selection procedure; source_ids: g-google-images, g-ai-opt-guide, schema-full, g-common-crawlers.
+wiki/media/Image Sitemap Notes.md -> deepen; added Image Sitemap Notes Media Table plus canonical review procedure; source_ids: g-google-images, g-video, g-intro-sd, g-update-2026-06-30-merchant-center-product-videos-serving-eligible.
+wiki/media/Images Audio and Charts.md -> deepen; added Images Audio and Charts Spoke Map plus asset review table; source_ids: g-google-images, g-ai-opt-guide, schema-full, g-common-crawlers.
+wiki/media/Media Accessibility Checklist.md -> deepen; added Media Accessibility Checklist Pass Fail Table plus handoff procedure; source_ids: g-google-images, g-video, g-ai-opt-guide, schema-full.
+wiki/media/Media QA For Blog Posts.md -> deepen; added Media QA For Blog Posts Pass Fail Table plus ready-status procedure; source_ids: g-google-images, g-video, g-ai-opt-guide, schema-full, g-intro-sd.
+wiki/media/Media Repurposing Matrix.md -> deepen; added Media Repurposing Matrix Matrix Table plus interpretation rules; source_ids: g-google-images, g-video, g-intro-sd, g-update-2026-06-30-merchant-center-product-videos-serving-eligible.
+wiki/media/VideoObject Checklist.md -> deepen; added VideoObject Checklist Pass Fail Table plus schema handoff procedure; source_ids: g-video, schema-full, g-search-gallery, g-ai-opt-guide.
+wiki/media/Visual Claim Review.md -> deepen; added Visual Claim Review Media Table plus claim-verdict procedure; source_ids: g-google-images, g-video, g-intro-sd, g-update-2026-06-30-merchant-center-product-videos-serving-eligible, g-helpful-content.
+
+Merge decisions: none. Reason: all 13 notes represent distinct operating jobs in the media workflow.
+Prune decisions: none. Reason: each note could be made note-specific with ledger-backed sources and a concrete review artifact.
+
+Verification: python3 scripts/lint_vault.py passed.

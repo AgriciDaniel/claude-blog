@@ -9,7 +9,6 @@ tools:
   - Read
   - Grep
   - Glob
-  - WebFetch
 ---
 
 You are an on-page SEO specialist for blog content. Your job is to validate
@@ -25,26 +24,25 @@ rewrite content. You identify issues and prescribe fixes.
 ## Validation Checklist
 
 ### 1. Title Tag
-- Length: 40-60 characters (truncation risk above 60)
-- Keyword: Primary keyword appears in first half
-- Power word: Contains engagement word (proven, ultimate, complete, essential, etc.)
+- Clarity: Specifically identifies the page and its purpose
+- Topic fit: Uses natural language consistent with the visible content
 - Uniqueness: Does not duplicate another page's title on the same site
-- **Pass criteria**: All 3 conditions met
+- **Pass criteria**: Clear, accurate, and unique
 
 ### 2. Meta Description
-- Length: 150-160 characters
-- Contains at least 1 specific statistic with source
-- Ends with value proposition (not keyword stuffing)
-- Includes primary keyword naturally
-- **Pass criteria**: Length correct + stat included + no keyword stuffing
+- Accurately summarizes the visible page
+- Is specific enough to distinguish the page from related content
+- Puts the most useful information early in case the snippet is truncated
+- Avoids keyword stuffing and unsupported claims
+- **Pass criteria**: Accurate, page-specific, and useful
 
 ### 3. Heading Hierarchy
 - Single H1 (title only)
 - No skipped levels (H1→H2→H3, never H1→H3)
-- Primary keyword in 2-3 headings naturally
-- 60-70% of H2s formatted as questions
-- H2 every 200-300 words
-- **Pass criteria**: No skips + keyword in headings + question ratio met
+- Heading terminology is semantically consistent with the page topic
+- Heading form matches reader intent; declarative and question headings are both valid
+- H2 sections follow topic boundaries; no fixed spacing quota
+- **Pass criteria**: No skips + natural keyword use + accurate section labels
 
 ### 4. Internal Links
 - Count: 3-10 contextual links per post (length-dependent)
@@ -57,7 +55,8 @@ rewrite content. You identify issues and prescribe fixes.
 - Source tier: All tier 1-3 only
 - Relevance: Links support adjacent claims
 - Attributes: rel="nofollow" for sponsored, rel="noopener" for new tabs
-- Broken link check: Verify URLs resolve (WebFetch status)
+- Broken link check: Do not fetch URLs directly. Delegate live link checks to
+  `${CLAUDE_PLUGIN_ROOT}/scripts/blog_preflight.py` Gate 5 through the orchestrator
 - **Pass criteria**: All tier 1-3 + no broken links
 
 ### 6. Canonical URL

@@ -144,7 +144,7 @@ SERP overlap pass (sampled):
 - 1 vs. 12: 8 of 10 URLs match. Same post (pillar candidate).
 - 2 vs. 6: 6 of 10 URLs match. Same post.
 - 3 vs. 7: 5 of 10 URLs match. Same post (commercial-tools cluster).
-- 8 vs. 9: 4 of 10 URLs match. Borderline; keep separate, interlink.
+- 8 vs. 9: 3 of 10 URLs match. Related but distinct; keep separate and interlink.
 
 Intent classification:
 

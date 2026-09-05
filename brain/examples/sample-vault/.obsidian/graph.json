@@ -1,0 +1,66 @@
+{
+  "collapse-filter": false,
+  "search": "",
+  "showTags": false,
+  "showAttachments": false,
+  "hideUnresolved": true,
+  "showOrphans": false,
+  "colorGroups": [
+    {
+      "query": "file:wiki/hot.md OR file:wiki/index.md OR file:wiki/overview.md OR file:wiki/log.md OR path:wiki/meta",
+      "color": {
+        "a": 1,
+        "rgb": 14047793
+      }
+    },
+    {
+      "query": "path:wiki/sources",
+      "color": {
+        "a": 1,
+        "rgb": 5795730
+      }
+    },
+    {
+      "query": "path:wiki/flows",
+      "color": {
+        "a": 1,
+        "rgb": 12740671
+      }
+    },
+    {
+      "query": "path:wiki/entities OR path:wiki/accounts OR path:wiki/platforms",
+      "color": {
+        "a": 1,
+        "rgb": 3112839
+      }
+    },
+    {
+      "query": "path:wiki/decisions",
+      "color": {
+        "a": 1,
+        "rgb": 13214811
+      }
+    },
+    {
+      "query": "path:wiki/deliverables OR path:wiki/reports",
+      "color": {
+        "a": 1,
+        "rgb": 11033485
+      }
+    },
+    {
+      "query": "path:wiki/experiments",
+      "color": {
+        "a": 1,
+        "rgb": 8150963
+      }
+    }
+  ],
+  "showArrow": true,
+  "textFadeMultiplier": 0.2,
+  "nodeSizeMultiplier": 1.25,
+  "lineSizeMultiplier": 1.25,
+  "centerStrength": 0.5,
+  "repelStrength": 11,
+  "linkDistance": 155
+}

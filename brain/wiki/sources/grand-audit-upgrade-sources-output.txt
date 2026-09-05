@@ -1,0 +1,18 @@
+wiki/sources/Canon Notes Map.md -> deepen; added Canon Notes Map Source Table plus 5-step refresh procedure; source_ids: g-helpful-content, g-intro-sd, g-ai-opt-guide, g-update-2026-06-15-llms-txt-clarified-as-unused-by-google-search.
+wiki/sources/Claim To Source Mapping.md -> deepen; added claim pattern/source/coverage/limitation table plus 5-step refresh procedure; source_ids: g-helpful-content, g-ai-opt-guide, g-search-gallery, g-ranking-history.
+wiki/sources/Claim Verification Flow.md -> deepen; added 7-step triage procedure plus claim class decision table; source_ids: g-helpful-content, g-ai-opt-guide, g-search-gallery, g-ranking-history.
+wiki/sources/Current Requirements Digest.md -> deepen; added current requirements source table plus 5-step digest refresh procedure; source_ids: g-helpful-content, g-ai-opt-guide, g-search-gallery, g-ranking-history.
+wiki/sources/Evidence Gap Register.md -> deepen; added gap register table with owner, confidence, status, next review, rollback trigger; source_ids: g-helpful-content, g-ai-opt-guide, g-search-gallery, g-ranking-history.
+wiki/sources/Google Source Priority Ladder.md -> deepen; added source priority ladder table plus 5-step priority refresh procedure; source_ids: g-helpful-content, g-ai-opt-guide, g-search-gallery, g-ranking-history.
+wiki/sources/Practitioner Source Caveats.md -> deepen; added caveat language table plus 6-step practitioner caveat procedure; source_ids: g-helpful-content, g-ai-opt-guide, g-search-gallery, g-ranking-history.
+wiki/sources/Primary Study Source Rules.md -> deepen; added rule table plus 4-step review and rollback procedure; source_ids: g-helpful-content, g-ai-opt-guide, g-search-gallery, g-ranking-history.
+wiki/sources/Research Pack Index.md -> deepen; added folder routing table plus graph hygiene checklist; source_ids: g-helpful-content, g-ai-opt-guide, g-search-gallery, g-ranking-history.
+wiki/sources/Research Release Gate Notes.md -> deepen; added pass/fail release gate table plus 5-step handoff rules; source_ids: g-helpful-content, g-intro-sd, g-ai-opt-guide, g-update-2026-06-15-llms-txt-clarified-as-unused-by-google-search.
+wiki/sources/research-pack-2026-07-06.md -> deepen; added source governance table plus 5-step pack refresh procedure; source_ids: g-helpful-content, g-ai-opt-guide, g-search-gallery, g-ranking-history.
+wiki/sources/Source Confidence Labels.md -> deepen; added operating-label/verdict table plus 5-step label refresh procedure; source_ids: g-helpful-content, g-ai-opt-guide, g-search-gallery, g-ranking-history.
+wiki/sources/Source Ledger Reading Guide.md -> deepen; added ledger-field reading table and source owner/status table plus 5-step review loop; source_ids: g-helpful-content, g-ai-opt-guide, g-search-gallery, g-ranking-history.
+wiki/sources/Source Refresh Cadence.md -> deepen; added cadence table plus 5-step cadence procedure; source_ids: g-helpful-content, g-ai-opt-guide, g-search-gallery, g-ranking-history.
+wiki/sources/Source URL Canonicalization.md -> deepen; added canonical URL table plus 5-step canonicalization procedure; source_ids: g-helpful-content, g-intro-sd, g-ai-opt-guide, g-update-2026-06-15-llms-txt-clarified-as-unused-by-google-search.
+wiki/monitoring/Monitoring Confidence Labels.md -> not edited; outside assigned folder and already deleted in the existing worktree.
+
+Merge/prune decisions: none inside wiki/sources. Each in-scope source note has a distinct operating job, table, and procedure after review.

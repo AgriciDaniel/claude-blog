@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """
-YouTube Data API v3 - Search, video details, and channel data for SEO.
+YouTube Data API v3 - Search, video details, and channel data for editorial use.
 
-YouTube mentions have the strongest AI visibility correlation (0.737).
-This script provides authoritative YouTube data directly from Google.
+Use the results to evaluate whether a video is relevant, accurate, useful, and
+eligible for the intended page. The script does not predict or award ranking,
+readiness, authority, or citation outcomes.
 
 Usage:
     python youtube_search.py search "claude code seo"

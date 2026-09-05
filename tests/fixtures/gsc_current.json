@@ -1,0 +1,22 @@
+[
+  {
+    "page": "https://example.com/stable",
+    "clicks": 95,
+    "impressions": 980
+  },
+  {
+    "page": "https://example.com/refresh-me",
+    "clicks": 60,
+    "impressions": 600
+  },
+  {
+    "page": "https://example.com/query-shift",
+    "clicks": 20,
+    "impressions": 920
+  },
+  {
+    "page": "https://example.com/prune-me",
+    "clicks": 0,
+    "impressions": 10
+  }
+]

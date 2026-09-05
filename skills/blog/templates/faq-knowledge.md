@@ -9,7 +9,7 @@
 
 Use this template when:
 - A topic generates many recurring questions across forums, support channels, or search
-- Each question can be answered in 80-120 words with a clear, direct response
+- Each question can be answered clearly and directly without a fixed word band
 - The content needs to be optimized for Google Featured Snippets and AI citations
 - Search queries are phrased as questions ("how do I," "what is the difference between," "why does")
 - You want to create a linkable reference page that other content can point to
@@ -20,7 +20,10 @@ Do NOT use this template for:
 - Original data studies (use data-research)
 - Topics with fewer than 10 meaningful questions (too thin for this format)
 
-**SEO Note:** This template is specifically optimized for FAQPage structured data (schema.org). Every Q&A pair should be a self-contained, extractable passage that can appear as a Featured Snippet or AI citation without any surrounding context.
+**SEO Note:** This template is optimized for visible, self-contained Q&A passages.
+Visible Q&A can support extraction for snippets and AI citations, but FAQPage
+schema does not cause Featured Snippets and should be secondary to Article,
+Person, Organization, and BreadcrumbList schema.
 
 ---
 
@@ -43,7 +46,7 @@ Do NOT use this template for:
 
 **Alternative Title Formats:**
 - "[Topic] FAQ: [N] Questions Answered ([Year])"
-- "Everything You Need to Know About [Topic] ([Year])"
+- "[Topic] for [Audience]: [N] Common Questions Answered ([Year])"
 - "[Topic] Explained: [N] Common Questions Answered"
 
 ---
@@ -54,14 +57,15 @@ Do NOT use this template for:
 
 ### Introduction (100-150 words)
 
-[ANSWER-FIRST] Introduce the topic and establish why these questions matter. Include a stat about the topic's relevance or how common these questions are.
+[ANSWER-FIRST] Introduce the topic and establish why these questions matter.
+Use a verified statistic only when it materially improves that explanation.
 
 ```markdown
 # [Topic]: Frequently Asked Questions ([Year])
 
 [ANSWER-FIRST] [Topic] is [one-sentence definition or description]. [Why it matters in 1 sentence].
 
-[STAT: data point about the topic's relevance - adoption rate, search volume, market size, or frequency of these questions]
+[STAT when useful: data point about the topic's relevance - adoption rate, search volume, market size, or frequency of these questions]
 
 This FAQ covers the [N] most common questions about [topic], organized into [N] categories:
 
@@ -79,11 +83,11 @@ This FAQ covers the [N] most common questions about [topic], organized into [N] 
 - The introduction should be skimmable - readers will jump to their question
 - Include a table of contents via the category list
 - State when the page was last updated (trust signal)
-- Include a stat to establish the topic's relevance
+- Include a stat to establish the topic's relevance when one is available and sourced
 
 ---
 
-### FAQ Category 1: "Getting Started" Questions (3-4 Questions)
+### FAQ Category 1: "Getting Started" Questions (count by reader need)
 
 Foundational questions for newcomers. Each question is an H2.
 
@@ -92,7 +96,7 @@ Foundational questions for newcomers. Each question is an H2.
 
 ### What is [topic/tool/concept]?
 
-[ANSWER-FIRST] [Topic] is [clear, jargon-free definition in 40-60 words]. [One sentence of additional context about its purpose or primary use case].
+[ANSWER-FIRST] [Topic] is [clear, jargon-free definition sized to the concept]. [Add context about its purpose or primary use case when helpful].
 
 [STAT: adoption or usage data point that validates relevance]
 
@@ -132,7 +136,7 @@ Foundational questions for newcomers. Each question is an H2.
 
 ---
 
-### FAQ Category 2: "How It Works" Questions (3-4 Questions)
+### FAQ Category 2: "How It Works" Questions (count by reader need)
 
 Functional questions about mechanics and capabilities.
 
@@ -141,7 +145,7 @@ Functional questions about mechanics and capabilities.
 
 ### How does [topic/feature] work?
 
-[ANSWER-FIRST] [Topic/feature] works by [mechanism explained in 40-60 words without jargon]. [One sentence of technical detail for readers who want depth].
+[ANSWER-FIRST] [Topic/feature] works by [mechanism explained completely without unnecessary jargon]. [Add technical detail for readers who need depth].
 
 [VISUAL: simple-diagram showing how it works, if applicable]
 
@@ -184,7 +188,7 @@ Functional questions about mechanics and capabilities.
 
 ---
 
-### FAQ Category 3: "Common Problems" Questions (3-4 Questions)
+### FAQ Category 3: "Common Problems" Questions (count by reader need)
 
 Troubleshooting questions for users who are stuck.
 
@@ -245,7 +249,7 @@ Troubleshooting questions for users who are stuck.
 
 ---
 
-### FAQ Category 4: "Advanced" Questions (2-3 Questions)
+### FAQ Category 4: "Advanced" Questions (count by reader need)
 
 Questions from experienced users looking for deeper understanding.
 
@@ -332,7 +336,9 @@ Didn't find what you're looking for? [Contact method - e.g., "Leave a comment be
 
 ## Structured Data Notes
 
-This template requires FAQPage schema markup. When generating the final HTML:
+FAQPage schema is optional entity markup for visible Q&A. Article or BlogPosting,
+Person, Organization, and BreadcrumbList remain the baseline. When FAQPage is
+used, generate valid JSON-LD from the visible questions:
 
 ```json
 {
@@ -352,10 +358,11 @@ This template requires FAQPage schema markup. When generating the final HTML:
 ```
 
 **Rules:**
-- Every H2 question must be included in the schema
+- If FAQPage is generated, include every visible H2 question in the schema
 - Use the [ANSWER-FIRST] text as the answer in the schema
-- Limit schema to 10 questions maximum (Google's practical limit for display)
-- Test with Google's Rich Results Test before publishing
+- Schema may include all visible FAQ questions when JSON size remains reasonable
+- Test FAQPage with Schema.org Validator and validate entity consistency. Use
+  Google's Rich Results Test only for page types eligible for Google rich results.
 
 ---
 
@@ -364,19 +371,19 @@ This template requires FAQPage schema markup. When generating the final HTML:
 Before publishing, verify:
 
 - [ ] Title includes topic name, "Frequently Asked Questions," and year
-- [ ] Introduction includes a stat about the topic's relevance
+- [ ] Introduction includes a stat about the topic's relevance when available and sourced
 - [ ] Questions are organized into 3-4 logical categories
 - [ ] Every question is phrased exactly as users would search it
 - [ ] Every answer opens with [ANSWER-FIRST] (direct answer in first sentence)
-- [ ] Each answer is 80-120 words and self-contained
+- [ ] Each answer is complete and self-contained; length alone does not pass or fail
 - [ ] Each answer is extractable as a standalone snippet (no "as mentioned above" references)
-- [ ] At least 12 total questions across all categories
-- [ ] At least 3 [STAT] markers with relevant data points
+- [ ] Question count follows demonstrated reader need without padding
+- [ ] Statistics are optional, material to an answer, and verified when used
 - [ ] At least 2 [INFO-GAIN] markers with original experience or insight
 - [ ] At least 6 [INTERNAL-LINK] zones connecting to detailed content
 - [ ] At least 1 [VISUAL] marker (comparison table or diagram)
 - [ ] Related Resources section has 3-5 links
 - [ ] "Still Have Questions?" section with clear contact/community path
-- [ ] FAQPage structured data schema prepared for all questions
+- [ ] FAQPage structured data is optional and generated only from visible Q&A
 - [ ] No answer references another answer (each must stand alone)
-- [ ] All answers pass the "would this make sense as a Google Featured Snippet?" test
+- [ ] All answers are clear enough to stand alone in search snippets or AI citations

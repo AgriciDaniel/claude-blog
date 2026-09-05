@@ -7,7 +7,7 @@
 ## When to Use This Template
 
 - **Content Goals:** Drive organic traffic from instructional queries, establish topical authority, earn featured snippets for step-based queries
-- **Search Intent:** Informational / Transactional hybrid -- the reader has a specific problem and wants a clear solution *right now*
+- **Search Intent:** Informational / Transactional hybrid: the reader has a specific problem and wants a clear solution *right now*
 - **Best For:** Process explanations, software tutorials, setup guides, configuration walkthroughs, skill-building content
 - **Avoid When:** The topic lacks a clear sequential process or has fewer than 3 meaningful steps
 
@@ -34,7 +34,7 @@
 
 ### Introduction (150-200 words)
 
-[ANSWER-FIRST] Open with the single most compelling statistic or fact that validates *why* this process matters. Not a vague claim -- a specific number.
+[ANSWER-FIRST] Open with the single most compelling statistic or fact that validates *why* this process matters. Not a vague claim: a specific number.
 
 **Structure:**
 1. **Problem statement** (1-2 sentences): What pain point does the reader have?
@@ -44,10 +44,14 @@
 
 [STAT: Industry statistic that quantifies the problem this guide solves]
 
-[INFO-GAIN: personal experience] Share a specific, brief anecdote about encountering this problem yourself -- when, what happened, what the stakes were.
+[INFO-GAIN: personal experience] Include an anecdote only when the author
+supplies what happened, the context, and supporting evidence. Otherwise use a
+sourced problem example without first-person framing.
 
 **Example opening:**
-> "[STAT: 73% of deployments fail due to misconfigured pipelines (Source, Year).] If you've ever pushed code on a Friday and spent the weekend firefighting, you already know the pain. This guide walks you through setting up a bulletproof CI/CD pipeline in under an hour -- the same process we used to reduce deployment failures by 90% across 12 projects."
+> "[VERIFIED PROBLEM EVIDENCE]. This guide explains [PROCESS] for [AUDIENCE]
+> and shows how to verify [SUCCESS CONDITION]. Add first-hand results only when
+> the author supplies the methodology, evidence, and outcome."
 
 [INTERNAL-LINK] Link to a related foundational concept post (e.g., "If you're new to [topic], start with our [Beginner's Guide to X]").
 
@@ -68,7 +72,7 @@
 
 **Example:**
 > **What you'll need:**
-> - Node.js v20+ installed ([how to install](/link))
+> - Current active LTS version of Node.js installed ([how to install](/link))
 > - A GitHub account with repo access
 > - Basic familiarity with the terminal
 > - **Time:** ~45 minutes
@@ -78,7 +82,7 @@
 
 ### Step 1: [Action Verb] + [Specific Object] (200-300 words)
 
-[ANSWER-FIRST] Open with what the reader will have accomplished by the end of this step -- the micro-outcome.
+[ANSWER-FIRST] Open with what the reader will have accomplished by the end of this step: the micro-outcome.
 
 **Structure for EVERY step section:**
 1. **Micro-outcome statement** (1 sentence): "By the end of this step, you'll have [specific result]."
@@ -88,7 +92,9 @@
 
 [IMAGE] Screenshot showing the expected state after completing this step.
 
-[INFO-GAIN: specific configuration or setting] Share a non-obvious detail -- a specific config value, flag, or option that makes a difference and isn't in the official docs.
+[INFO-GAIN: specific configuration or setting] Share a verified non-obvious
+detail from supplied evidence or a cited source. Do not invent undocumented
+behavior.
 
 **Formatting rules:**
 - Use H2 for the step heading: `## Step 1: Install and Configure the CLI`
@@ -124,7 +130,9 @@
 
 [IMAGE] Screenshot of expected state after this step.
 
-[INFO-GAIN: troubleshooting tip] Share a problem you personally encountered at this stage and how you solved it.
+[INFO-GAIN: troubleshooting tip] Use a supplied first-hand problem and solution
+only when evidence is available; otherwise provide a sourced troubleshooting
+case without personal framing.
 
 ---
 
@@ -144,13 +152,14 @@
 
 [VISUAL: before-after] Side-by-side comparison showing before (Step 1) and after (Step 6) state.
 
-**Note:** Not every guide needs exactly 6 steps. Use 4-8 steps depending on the complexity of the process. Each step should represent a meaningful, testable milestone -- not a trivial action.
+**Note:** Not every guide needs exactly 6 steps. Use 4-8 steps depending on the complexity of the process. Each step should represent a meaningful, testable milestone: not a trivial action.
 
 ---
 
 ### Common Mistakes to Avoid (150-200 words)
 
-[ANSWER-FIRST] Open with the single most frequent mistake and its consequence: "[X]% of people get stuck on [Y] because they [Z]."
+[ANSWER-FIRST] Open with a verified frequent mistake and its consequence. Use a
+statistic only when supplied by a source that supports the specific claim.
 
 **Format:** 3-5 mistakes, each as a bolded sub-heading with 2-3 sentences of explanation.
 
@@ -159,13 +168,17 @@
 2. **Why it happens** (1 sentence): The underlying cause or misconception
 3. **The fix** (1 sentence): What to do instead
 
-[INFO-GAIN: original observation] Include at least one mistake that comes from your direct experience -- something not commonly listed in other guides.
+[INFO-GAIN: original observation] Include a direct-experience mistake only
+when the author supplies the context, evidence, and result. Otherwise use a
+verified source or omit the marker.
 
 [STAT: Failure rate or error frequency for the most common mistake]
 
 **Example:**
 > **1. Skipping environment variable validation**
-> Most tutorials assume your `.env` file is correctly formatted, but in our experience, 40% of "it works on my machine" bugs trace back to missing or malformed env vars. Always run `printenv | grep APP_` before deploying.
+> [VERIFIED DESCRIPTION OF THE FAILURE MODE]. Explain the validation step and
+> expected result using the actual environment and source evidence. Do not add a
+> percentage or "in our experience" claim unless supplied and documented.
 
 ---
 
@@ -186,20 +199,20 @@
 
 ---
 
-### Frequently Asked Questions (5 questions)
+### Optional Reader Questions (count by reader need)
 
-[FAQ]
+[FAQ: Include this section only when genuine reader questions add material not
+already covered by the steps.]
 
-**Format:** Each question as an H3, answer in 2-4 sentences. Structure answers for featured snippet eligibility.
+**Format:** Each question as an H3 with a complete, direct answer. Let
+complexity determine answer length.
 
-**Question selection criteria:**
-1. The most common "People Also Ask" question for this topic
-2. A question about an alternative approach ("Can I do this with [Y] instead?")
-3. A question about troubleshooting ("What if [X] doesn't work?")
-4. A question about scaling or advanced use ("How do I [extend this]?")
-5. A question about cost, time, or prerequisites ("How long does this take?" / "Is [X] free?")
+**Question selection criteria:** Use only questions supported by reader
+research, such as a meaningful alternative, unresolved troubleshooting case,
+scaling concern, cost, time, or prerequisite.
 
-[STAT: Include at least one statistic in your FAQ answers]
+[STAT when useful: include a verified statistic only when it materially
+improves an answer.]
 
 **Example:**
 
@@ -230,7 +243,7 @@
 **Structure:**
 1. **Recap** (1 sentence): Summarize what they accomplished.
 2. **Reinforce value** (1 sentence): Restate the benefit with the key metric.
-3. **CTA** (1-2 sentences): Clear next action -- share the post, subscribe, try a related guide, leave a comment with their results.
+3. **CTA** (1-2 sentences): Clear next action: share the post, subscribe, try a related guide, leave a comment with their results.
 
 [INTERNAL-LINK] Link to 2-3 related posts for continued reading.
 
@@ -241,14 +254,14 @@
 Before publishing, verify:
 
 - [ ] Title includes primary keyword and current year
-- [ ] Introduction opens with a specific statistic, not a generic claim
+- [ ] Introduction establishes the reader task; any statistic is material and verified
 - [ ] Every step has a clear micro-outcome, numbered sub-steps, and verification
 - [ ] Every step has a supporting screenshot or visual
-- [ ] At least 2 [INFO-GAIN] elements with original experience or data
-- [ ] At least 3 [STAT] markers filled with sourced statistics
-- [ ] Common mistakes section includes at least one original observation
-- [ ] FAQ answers are structured for featured snippet eligibility
+- [ ] Any [INFO-GAIN] elements contain supported original experience or data
+- [ ] Any [STAT] markers are filled with material, verified statistics
+- [ ] Any original observations include supplied methodology, evidence, and results
+- [ ] Optional FAQ answers genuine reader questions directly
 - [ ] All [INTERNAL-LINK] zones have contextual links to related content
-- [ ] Word count falls within 2,000-2,500 range
+- [ ] Length is sufficient for the task without padding; planning ranges are optional
 - [ ] All code blocks are syntax-highlighted and tested
-- [ ] Meta description written (under 160 characters, includes primary keyword)
+- [ ] Meta description is accurate, page-specific, and consistent with visible content

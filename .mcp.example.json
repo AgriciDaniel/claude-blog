@@ -6,7 +6,7 @@
       "args": ["-y", "@ycse/nanobanana-mcp@1.1.1"],
       "env": {
         "GOOGLE_AI_API_KEY": "${GOOGLE_AI_API_KEY}",
-        "NANOBANANA_MODEL": "gemini-3.1-flash-image-preview"
+        "NANOBANANA_MODEL": "gemini-3.1-flash-image"
       }
     }
   }

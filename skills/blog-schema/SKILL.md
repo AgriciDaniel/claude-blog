@@ -1,8 +1,8 @@
 ---
 name: blog-schema
 description: >
-  Generate complete JSON-LD schema markup for blog posts including BlogPosting,
-  Person, Organization, BreadcrumbList, FAQPage, and ImageObject. Validates
+  Generate complete JSON-LD schema markup for blog posts with Article/BlogPosting,
+  Person, Organization, BreadcrumbList, ImageObject, and optional FAQPage. Validates
   against Google requirements and warns about deprecated types. Use when user
   says "schema", "blog schema", "json-ld", "structured data", "schema markup",
   "generate schema".
@@ -11,7 +11,7 @@ argument-hint: "<file-path>"
 license: MIT
 ---
 
-# Blog Schema -- JSON-LD Structured Data Generation
+# Blog Schema: JSON-LD Structured Data Generation
 
 Generates complete, validated JSON-LD schema markup for blog posts using the
 @graph pattern. Combines multiple schema types into a single script tag with
@@ -35,14 +35,14 @@ Read the blog post and extract all schema-relevant data:
 
 ### Step 2: Generate BlogPosting Schema
 
-Complete BlogPosting with all required and recommended properties:
+Complete BlogPosting with recommended properties when applicable:
 
 ```json
 {
   "@type": "BlogPosting",
   "@id": "{siteUrl}/blog/{slug}#article",
-  "headline": "Post title (max 110 chars)",
-  "description": "Meta description (150-160 chars)",
+  "headline": "Concise post title",
+  "description": "Concise page-specific meta description",
   "datePublished": "YYYY-MM-DD",
   "dateModified": "YYYY-MM-DD",
   "author": { "@id": "{siteUrl}/author/{author-slug}#person" },
@@ -57,9 +57,12 @@ Complete BlogPosting with all required and recommended properties:
 }
 ```
 
-Required properties: @type, headline, datePublished, author, publisher, image.
-Recommended properties: description, dateModified, mainEntityOfPage, wordCount,
-articleBody (excerpt).
+Google's Article structured data docs do not define required Article
+properties. Include `headline`, `datePublished`, `author`, `publisher`, and
+`image` when applicable, validate with the Rich Results Test, and treat missing
+fields as warnings unless the target surface requires them. Recommended
+properties: description, dateModified, mainEntityOfPage, wordCount, articleBody
+(excerpt).
 
 ### Step 3: Generate Person Schema
 
@@ -108,9 +111,9 @@ Blog's parent organization entity:
 }
 ```
 
-Logo requirements: must be a valid image URL. Google recommends logos be
-112x112px minimum, 600px wide maximum. Rectangular logos preferred for
-BlogPosting publishers.
+Logo requirements: use a valid crawlable image URL and follow the active
+Organization and Article documentation for the target surface. Do not invent
+hard logo dimensions unless the project or current docs require them.
 
 ### Step 5: Generate BreadcrumbList
 
@@ -146,7 +149,7 @@ Navigation breadcrumb schema showing content hierarchy:
 If no category is available, use "Blog" as the second breadcrumb item with
 `{siteUrl}/blog` as the URL.
 
-### Step 6: Generate FAQPage Schema
+### Step 6: Generate FAQPage Entity Schema (Optional)
 
 Extract Q&A pairs from the blog post's FAQ section:
 
@@ -160,19 +163,22 @@ Extract Q&A pairs from the blog post's FAQ section:
       "name": "What is the question?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "The complete answer text (40-60 words with statistic)."
+        "text": "The complete visible answer text."
       }
     }
   ]
 }
 ```
 
-Important note: Google restricted FAQ rich results to government and health
-sites since August 2023. However, FAQ schema markup still provides value
-because:
-- AI systems (ChatGPT, Perplexity, Gemini) extract FAQ data for citations
-- It structures content for future rich result eligibility changes
-- It improves content organization signals
+Google retired FAQ rich results for all sites on 2026-05-07. FAQPage is not a
+Google rich-result or generative-AI optimization path, and it earns no SEO or
+AI-readiness credit. Only emit it when a visible FAQ genuinely helps readers,
+with at least one valid `Question` and matching visible answer. Do not pad an
+answer to a target length or add an FAQ solely for markup.
+
+Do not substitute QAPage. Google supports QAPage for a page focused on one
+question where users can submit answers. Editorial FAQs, support FAQs, and blog
+Q&A sections do not meet that model.
 
 ### Step 7: Generate VideoObject (if videos present)
 
@@ -224,34 +230,44 @@ Image requirements:
 
 ### Step 8: Validate & Warn
 
-Check for deprecated schema types and apply validation rules:
+Check per-surface support before recommending schema types:
 
-**NEVER use these deprecated types:**
-- **HowTo** - Deprecated September 2023 (Google no longer shows rich results)
-- **SpecialAnnouncement** - Deprecated July 2025
-- **Practice Problem** - Deprecated (education markup)
-- **Dataset** - Deprecated for general use
-- **Sitelinks Search Box** - Deprecated
-- **Q&A** - Deprecated January 2026 (distinct from FAQPage)
+| Type | Google Search status | Valid entity/context use |
+|------|----------------------|--------------------------|
+| HowTo | No current Google rich-result experience | Valid schema.org type for genuine how-to content |
+| Dataset | Used by Dataset Search, not general Google Search rich results | Valid only for an actual dataset |
+| QAPage | Supported for one question with user-submitted answers | Do not use for editorial FAQ content |
+| Course | Course list remains distinct from the retired Course Info experience | Use only when the current Course list documentation and visible content match |
+| ClaimReview, SpecialAnnouncement, Course Info, Estimated Salary, Learning Video, Vehicle Listing | Former Google Search experiences; support was retired | May remain schema.org-valid, but never recommend them for Google eligibility |
+| PracticeProblem | Removed from Google Search and its documentation | Do not recommend for Google eligibility |
+| Sitelinks Search Box | No dedicated Google Search visual element | Google generates sitelinks algorithmically |
 
 **Validation checks:**
 1. All @id references resolve to entities within the @graph
 2. dateModified is equal to or after datePublished
-3. headline does not exceed 110 characters
-4. description is between 50-160 characters
+3. headline is concise. Warn when it may truncate or becomes unclear
+4. description is concise, page-specific, and not duplicated across posts
 5. All URLs are absolute (not relative)
 6. Image dimensions are positive integers
 7. BreadcrumbList positions are sequential starting from 1
-8. FAQPage has at least 2 questions
+8. If FAQPage is emitted, visible Q&A content exists and includes at least 1 valid `Question`
 
-**AI citation optimization note:** Pages using 3 or more schema types have
-approximately 13% higher AI citation likelihood. This skill generates up to 7
-types (BlogPosting, Person, Organization, BreadcrumbList, FAQPage, ImageObject,
-VideoObject) to maximize both search engine understanding and AI extraction.
+**Generative AI note:** Structured data is not required for Google generative
+AI search, and there is no special AI schema. Prioritize accurate,
+visible-content-consistent Article/BlogPosting, Person, Organization, and
+BreadcrumbList entities. Add ImageObject or VideoObject when the assets exist.
+FAQPage remains optional reader-facing markup and adds no Google AI advantage.
 
 ### Step 9: Output
 
 Combine all schemas into a single `<script>` tag using the @graph pattern:
+
+Security requirement: build the JSON-LD with a real JSON encoder, never string
+interpolation. Before embedding in HTML, make the JSON text script-safe by
+escaping closing script sequences and literal less-than characters, for example
+replace `</` with `<\/` and `<` with `\u003c`. User-controlled fields such as
+headline, description, author name, image URL, and breadcrumb labels must only
+enter the block as JSON-encoded values.
 
 ```html
 <script type="application/ld+json">
@@ -283,3 +299,9 @@ Combine all schemas into a single `<script>` tag using the @graph pattern:
 
 Save the generated schema to the blog post file or to a separate schema file
 as the user prefers.
+
+Google can process JSON-LD generated by JavaScript when it is present in the
+rendered DOM. Server-rendered markup is still more portable for non-Google
+crawlers, but source-only JSON-LD is not a Google requirement. For dynamic
+markup, validate the rendered URL, confirm the values match visible content,
+and avoid delayed or failed client requests that leave the rendered DOM empty.

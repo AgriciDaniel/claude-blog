@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 760" width="100%"
+     preserveAspectRatio="xMidYMid meet" role="img"
+     aria-label="claude-blog FLOW framework as four quadrants around a central FLOW badge: Find, Leverage, Optimize, Win">
+<title>claude-blog — FLOW framework</title>
+<desc>Four phase cards arranged in a 2 by 2 quadrant around a central FLOW badge. Each phase card shows a letter, name, purpose, and prompt chips.</desc>
+<defs>
+  <style type="text/css"><![CDATA[
+    .t { font-family:'Inter',system-ui,-apple-system,sans-serif; }
+    .b { font-family:'Poppins','Inter',system-ui,sans-serif; font-weight:700; }
+    .fl { transform-box:fill-box; transform-origin:center; }
+    .fl1{ animation: floaty 6.6s ease-in-out infinite; }
+    @keyframes floaty { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+    @media (prefers-reduced-motion: reduce){ .fl1{animation:none} }
+  ]]></style>
+  <filter id="sh" x="-40%" y="-40%" width="180%" height="200%">
+    <feDropShadow dx="0" dy="10" stdDeviation="16" flood-color="#26313f" flood-opacity="0.12"/>
+  </filter>
+</defs>
+
+<rect x="0" y="0" width="1600" height="760" fill="#F6F5F0"/>
+
+<!-- header -->
+<text x="96" y="92" class="t" font-size="15" letter-spacing="4" fill="#8A93A0">FLOW FRAMEWORK</text>
+<text x="94" y="140" class="b" font-size="34" fill="#1E242B">Four phases, one loop.</text>
+
+<!-- connectors from center badge to cards -->
+<g stroke="#C7CBD2" stroke-width="2.6" stroke-linecap="round">
+  <line x1="726" y1="446" x2="700" y2="430"/>
+  <line x1="874" y1="446" x2="900" y2="430"/>
+  <line x1="726" y1="504" x2="700" y2="520"/>
+  <line x1="874" y1="504" x2="900" y2="520"/>
+</g>
+
+<!-- TL Find -->
+<g filter="url(#sh)"><rect x="170" y="250" width="530" height="180" rx="24" fill="#FFFFFF"/></g>
+<rect x="198" y="280" width="60" height="60" rx="16" fill="#4C86EF"/>
+<text x="228" y="322" text-anchor="middle" class="b" font-size="32" fill="#FFFFFF">F</text>
+<text x="280" y="308" class="b" font-size="23" fill="#1E242B">Find</text>
+<text x="280" y="334" class="t" font-size="14" fill="#6B7480">discover the right topics</text>
+<g class="t" font-size="13.5" fill="#2E63C8">
+  <rect x="198" y="366" width="150" height="28" rx="14" fill="#EAF0FE"/><text x="214" y="385">topic-discovery</text>
+  <rect x="356" y="366" width="140" height="28" rx="14" fill="#EAF0FE"/><text x="372" y="385">intent-mapping</text>
+  <rect x="504" y="366" width="126" height="28" rx="14" fill="#EAF0FE"/><text x="520" y="385">gap-analysis</text>
+</g>
+
+<!-- TR Leverage -->
+<g filter="url(#sh)"><rect x="900" y="250" width="530" height="180" rx="24" fill="#FFFFFF"/></g>
+<rect x="928" y="280" width="60" height="60" rx="16" fill="#E8503C"/>
+<text x="958" y="322" text-anchor="middle" class="b" font-size="32" fill="#FFFFFF">L</text>
+<text x="1010" y="308" class="b" font-size="23" fill="#1E242B">Leverage</text>
+<text x="1010" y="334" class="t" font-size="14" fill="#6B7480">amplify existing assets</text>
+<g class="t" font-size="13.5" fill="#C43D2B">
+  <rect x="928" y="366" width="126" height="28" rx="14" fill="#FDEBE8"/><text x="944" y="385">asset-audit</text>
+  <rect x="1062" y="366" width="150" height="28" rx="14" fill="#FDEBE8"/><text x="1078" y="385">repurpose-map</text>
+</g>
+
+<!-- center FLOW badge -->
+<g filter="url(#sh)"><rect x="725" y="440" width="150" height="70" rx="18" fill="#FFFFFF"/></g>
+<g><circle cx="770" cy="462" r="4.5" fill="#4C86EF"/><circle cx="786" cy="462" r="4.5" fill="#E8503C"/><circle cx="802" cy="462" r="4.5" fill="#F5B62A"/><circle cx="818" cy="462" r="4.5" fill="#33A457"/></g>
+<text x="800" y="494" text-anchor="middle" class="b" font-size="20" fill="#1E242B">FLOW</text>
+
+<!-- BL Optimize -->
+<g filter="url(#sh)"><rect x="170" y="520" width="530" height="180" rx="24" fill="#FFFFFF"/></g>
+<rect x="198" y="550" width="60" height="60" rx="16" fill="#F5B62A"/>
+<text x="228" y="592" text-anchor="middle" class="b" font-size="32" fill="#FFFFFF">O</text>
+<text x="280" y="578" class="b" font-size="23" fill="#1E242B">Optimize</text>
+<text x="280" y="604" class="t" font-size="14" fill="#6B7480">improve what already exists</text>
+<g class="t" font-size="13.5" fill="#A6790E">
+  <rect x="198" y="636" width="164" height="28" rx="14" fill="#FEF4DE"/><text x="214" y="655">serp-realignment</text>
+  <rect x="370" y="636" width="146" height="28" rx="14" fill="#FEF4DE"/><text x="386" y="655">freshness-pass</text>
+  <rect x="524" y="636" width="130" height="28" rx="14" fill="#FEF4DE"/><text x="540" y="655">internal-loop</text>
+</g>
+
+<!-- BR Win -->
+<g filter="url(#sh)"><rect x="900" y="520" width="530" height="180" rx="24" fill="#FFFFFF"/></g>
+<rect x="928" y="550" width="60" height="60" rx="16" fill="#33A457"/>
+<text x="958" y="592" text-anchor="middle" class="b" font-size="32" fill="#FFFFFF">W</text>
+<text x="1010" y="578" class="b" font-size="23" fill="#1E242B">Win</text>
+<text x="1010" y="604" class="t" font-size="14" fill="#6B7480">convert the reader</text>
+<g class="t" font-size="13.5" fill="#248347">
+  <rect x="928" y="636" width="112" height="28" rx="14" fill="#E7F6EC"/><text x="944" y="655">bofu-cta</text>
+  <rect x="1048" y="636" width="176" height="28" rx="14" fill="#E7F6EC"/><text x="1064" y="655">dual-surface-score</text>
+</g>
+</svg>

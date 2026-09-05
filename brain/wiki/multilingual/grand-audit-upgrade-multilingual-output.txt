@@ -1,0 +1,15 @@
+Cross Locale Internal Linking -> deepen; added Cross Locale Link Map table and link-gap escalation procedure; source_ids: g-localized, g-multiregional, g-helpful-content, schema-full.
+Hreflang Checklist -> deepen; added Hreflang Pass Fail Table and handoff rules; source_ids: g-localized, g-multiregional, g-canonical, sitemaps-org.
+Locale Intent Research -> deepen; added Locale Intent Research Table and 4-step research procedure; source_ids: g-localized, g-multiregional, g-helpful-content, schema-full.
+Locale Launch QA -> deepen; added Locale Launch QA Pass Fail Table and final handoff rule; source_ids: g-localized, g-multiregional, g-helpful-content, schema-full.
+Locale Review Workflow -> deepen; added Locale Review Workflow Step Table and control points; source_ids: g-localized, g-multiregional, g-helpful-content, schema-full.
+Localized Source Requirements -> deepen; added source requirement table and refresh procedure; source_ids: g-localized, g-multiregional, g-helpful-content, schema-full.
+Machine Translation Risk Notes -> deepen; added Machine Translation Risk Table and escalation procedure; source_ids: g-localized, g-multiregional, g-helpful-content, schema-full.
+Multilingual Publishing -> deepen lightly; added Spoke Map table and routing boundaries; source_ids: g-localized, g-multiregional, g-helpful-content, schema-full.
+Multilingual Refresh Cadence -> deepen; added Refresh Cadence Table and refresh procedure; source_ids: g-localized, g-multiregional, g-helpful-content, g-spam-policies.
+Multilingual Schema Rules -> deepen; added Multilingual Schema Rule Table and rollback procedure; source_ids: g-intro-sd, g-search-gallery, schema-full, w3c-jsonld.
+Regional Legal And YMYL Escalation -> deepen; added Regional Escalation Decision Table and escalation procedure; source_ids: g-localized, g-multiregional, g-helpful-content, g-spam-policies.
+Translation Versus Localization -> deepen; added decision table and boundary procedure; source_ids: g-localized, g-multiregional, g-helpful-content, schema-full.
+x-default Handling -> deepen; added x-default Decision Table and fallback review procedure; source_ids: g-localized, g-multiregional, g-helpful-content, schema-full.
+
+Merge/prune decisions: none. All 13 assigned notes map to distinct operating deliverables, so no concept was merged or removed.

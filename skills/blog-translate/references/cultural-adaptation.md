@@ -1,9 +1,8 @@
 # Cultural Adaptation Profiles
 
-Locale profiles for cultural deep-adaptation. Loaded on demand by both
-`blog-translate` (at translation time) and `blog-localize` (for the
-adaptation pass). This file is the single source of truth, do not
-duplicate it elsewhere.
+Locale profiles for cultural deep-adaptation. Loaded on demand by
+`blog-localize` and by `blog-multilingual` during the adaptation pass.
+This file is the single source of truth, do not duplicate it elsewhere.
 
 Each profile covers: address form (formality), example brands and
 companies to substitute in, currency and pricing conventions, statistics
@@ -27,8 +26,10 @@ sources to prefer, legal references to swap, CTA tone, and idiom notes.
   Bundesnetzagentur, Destatis (Statistisches Bundesamt), HWWI,
   ifo Institut, Bertelsmann Stiftung. Avoid US-only Pew or Nielsen
   unless explicitly framed as US comparison.
-- **Legal references to swap:** CCPA -> DSGVO (GDPR in DACH-speak),
-  FTC -> Bundeskartellamt, FCC -> Bundesnetzagentur, ADA -> BGG.
+- **Legal references to swap:** CCPA to DSGVO (GDPR in DACH-speak),
+  FTC to Bundeskartellamt, FCC to Bundesnetzagentur. Accessibility law is
+  jurisdiction-specific: DE BGG, AT BGStG, CH BehiG. Keep ADA when the claim
+  is specifically about US compliance.
 - **CTA tone:** Informational, never imperative. Prefer "Jetzt
   entdecken", "Mehr erfahren", "Kostenlos testen". Avoid "Buy now",
   "Sign up today" style. Trust signals (data protection, GDPR
@@ -48,9 +49,9 @@ sources to prefer, legal references to swap, CTA tone, and idiom notes.
   (retail/electronics), Orange, SFR (telecom), BNP Paribas, Société
   Générale (finance), Dassault, Capgemini (B2B tech). Quebec: Hydro-Québec,
   Desjardins, Couche-Tard.
-- **Currency:** EUR (FR, BE, FR-CH context CHF), CAD for fr-CA. Format:
-  `1 234,56 EUR` (NBSP as thousands separator). Quebec writes CAD as
-  `1 234,56 $` with the symbol after.
+- **Currency:** EUR for `fr-FR` and `fr-BE`, CHF for `fr-CH`, CAD for
+  `fr-CA`. Format: `1 234,56 EUR` (NBSP as thousands separator). Quebec
+  writes CAD as `1 234,56 $` with the symbol after.
 - **Statistics sources to prefer:** INSEE, Médiamétrie, IFOP, BVA,
   ARCOM (formerly CSA), Statistique Canada (for fr-CA), Eurostat (for
   fr-FR European context).
@@ -68,8 +69,9 @@ sources to prefer, legal references to swap, CTA tone, and idiom notes.
 
 ## Hispanic (Spain vs. LATAM)
 
-Hispanic markets split sharply. Don't conflate `es-ES` with `es-MX` or
-generic `es`. If a user writes `es`, ask which market.
+Hispanic markets split sharply. Do not conflate `es-ES` with `es-MX` or
+generic `es`. If a user writes `es`, ask which market or require explicit
+neutral Spanish mode.
 
 ### Spain (`es-ES`)
 
@@ -96,7 +98,8 @@ generic `es`. If a user writes `es`, ask which market.
   Telcel, BBVA México, Bimbo. (AR): Mercado Libre, Banco Galicia.
   (CO): Éxito, Bancolombia, Rappi.
 - **Currency:** Local. MXN (`$1,234.56 MXN`), ARS (`$1.234,56`),
-  COP (`$1.234,56 COP`). Always specify the currency code; bare `$`
+  COP (`$1.234 COP`). Use whole-peso COP examples unless a source explicitly
+  uses centavos. Always specify the currency code; bare `$`
   is ambiguous.
 - **Sources:** INEGI (MX), DANE (CO), INDEC (AR), Comscore LATAM,
   IAB LATAM.
@@ -118,9 +121,8 @@ generic `es`. If a user writes `es`, ask which market.
   Rakuten, Mercari (e-commerce), NTT Docomo, SoftBank (telecom),
   MUFG, SMBC (finance), Sony, Toyota, Hitachi (B2B), LINE,
   PayPay (payments).
-- **Currency:** Yen, no decimals. Format: `1,234 yen` or `JPY 1,234`.
-  Use the kanji "yen" character in body copy when the publication
-  prefers JP characters; ASCII "yen" is acceptable for SEO contexts.
+- **Currency:** Yen, no decimals. Prefer `1,234円` in body copy or
+  `JPY 1,234` in finance-style contexts.
 - **Sources:** Statistics Bureau of Japan (Soumusho), METI, Nikkei
   research, Dentsu reports, Macromill, Recruit Works Institute,
   Mitsubishi Research.
@@ -174,15 +176,19 @@ Quick research pass to fill the template:
 4. Read 2-3 native blog posts in the target market to calibrate
    `formality.default` and `cta_tone.style`.
 
-Save the new profile by appending it as a new section in this file
-(prefixed with the locale name) so future runs reuse it.
+Save custom locale profiles outside this shared skill reference, for example in
+a project-local `.claude/blog-locale-profiles/<locale>.md` file or in the task
+output. Do not append runtime profiles to this file.
 
 ## Profile Selection Logic
 
-Used by `blog-translate` (Phase 4) and `blog-localize` (Phase 1):
+Used by `blog-localize` (Phase 1) and `blog-multilingual` (Phase 4):
 
 1. Exact locale match (`de-CH`, `fr-CA`, `es-MX`).
-2. Language-only fallback (`de`, `fr`, `es`, `ja`).
+2. Language-only fallback only for unambiguous editorial markets (`de`, `fr`,
+   `ja`). Treat `es`, `pt`, `zh`, and any language spanning materially
+   different legal, currency, or script markets as ambiguous unless the user
+   requests explicit neutral mode.
 3. Regional grouping (e.g., DACH for any `de-*`, LATAM for any
    `es-*` other than `es-ES`).
 4. Custom-locale template if no match.

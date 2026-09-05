@@ -114,7 +114,8 @@ A quick-scan visual reference before the reader dives into details. This section
 
 ### Feature Sections (4-6 features, 150-200 words each)
 
-Each feature gets its own H2 section, framed as a question the reader is likely asking.
+Each feature gets its own H2 section with a heading form that matches reader
+intent; genuine questions and clear declarative headings are both valid.
 
 **For each feature section, use this structure:**
 
@@ -209,13 +210,13 @@ List 2-3 alternatives, each with:
 
 ---
 
-### FAQ (3-5 questions)
+### Optional Reader Questions (count by reader need)
 
 [FAQ] Source questions from People Also Ask results, product forums, Reddit threads, and common pre-purchase questions.
 
 **Guidelines:**
 - Focus on purchase-decision questions (not general category questions - save those for the pillar page)
-- Each answer should be 40-80 words and lead with a direct answer
+- Each answer should be complete and lead with a direct answer; no fixed word band
 - Include at least one pricing question and one comparison question
 
 ```
@@ -246,18 +247,29 @@ List 2-3 alternatives, each with:
 
 ## Pre-Publish Checklist
 
-- [ ] Total word count is 1,500-2,000 words
+- [ ] Coverage is complete for the review intent without padding
 - [ ] All [ANSWER-FIRST] prompts have been fulfilled - every section leads with the answer
 - [ ] All [STAT] markers replaced with real, cited statistics or measured data from testing
 - [ ] All [IMAGE] markers replaced with your own screenshots or product photos (not press images)
 - [ ] All [INFO-GAIN] markers replaced with specific, first-hand observations from real testing
 - [ ] All [INTERNAL-LINK] zones populated with real links to related content
-- [ ] All [FAQ] answers are concise (40-80 words) and lead with a direct answer
+- [ ] All [FAQ] answers are complete and lead with a direct answer
 - [ ] TL;DR Verdict Box is complete with score, summary, best-for, pricing
 - [ ] Testing methodology is specific enough to establish credibility
+- [ ] Product or Review JSON-LD is used only when the page has visible review
+      content for an eligible reviewed item
+- [ ] `reviewRating` matches the visible score and the rating scale is explained
+- [ ] Every quoted review is traceable to a genuine experience; no review,
+      reviewer, rating, or testimonial was generated or fabricated
+- [ ] Any review written for money, a discount, a voucher, free access, or a
+      free product has a clear and prominent incentive disclosure
+- [ ] Review and AggregateRating markup contains only review text and ratings
+      that users can see on the page and does not aggregate other websites
+- [ ] Affiliate, sponsorship, free-trial, or gifted-access disclosures appear
+      before commercial links
 - [ ] At least one honest, meaningful con is included (not just nitpicking)
 - [ ] Pricing information is current and accurate
 - [ ] Alternatives section includes products you have actual knowledge of
 - [ ] Affiliate disclosures (if applicable) are clearly visible
 - [ ] Meta title includes "[Product Name] Review [Year]"
-- [ ] Meta description is 150-160 characters with verdict hint and CTA
+- [ ] Meta description accurately summarizes the visible verdict

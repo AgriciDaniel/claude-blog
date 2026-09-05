@@ -15,7 +15,7 @@ license: MIT
 compatibility: Requires Claude Code and claude-blog (provides blog-write, blog-chart, blog-image)
 metadata:
   author: AgriciDaniel
-  version: "1.7.0"
+  version: "2.3.0"
   category: blog
 user-invokable: true
 argument-hint: "[plan|execute] [seed-keyword|cluster-plan.json]"
@@ -45,9 +45,9 @@ keyword. Three layers: Semantic Clustering (the brain), Cluster Architecture
 
 ## Key references (load on demand)
 
-- `references/semantic-clustering.md` (SERP overlap analysis, intent classification, keyword universe expansion)
-- `references/cluster-architecture.md` (hub-and-spoke specs, schema strategy, link-density rules)
-- `references/execution-workflow.md` (execution order, context injection, scorecard, failure handling)
+- `${CLAUDE_PLUGIN_ROOT}/skills/blog-cluster/references/semantic-clustering.md` (SERP overlap analysis, intent classification, keyword universe expansion)
+- `${CLAUDE_PLUGIN_ROOT}/skills/blog-cluster/references/cluster-architecture.md` (hub-and-spoke specs, schema strategy, link-density rules)
+- `${CLAUDE_PLUGIN_ROOT}/skills/blog-cluster/references/execution-workflow.md` (execution order, context injection, scorecard, failure handling)
 
 ## Cross-references to existing claude-blog skills
 
@@ -56,7 +56,7 @@ keyword. Three layers: Semantic Clustering (the brain), Cluster Architecture
 | `/blog strategy` | Upstream planning. `plan --from strategy` consumes its Cluster Build Plan tables. |
 | `/blog write` | Per-post execution. Each spoke and the pillar are produced by `blog-write` with a prepended cluster-context block. |
 | `/blog chart` | Invoked internally by `blog-write` for inline SVG charts. No direct call from this skill. |
-| `/blog image` | Optional hero image generation per post (graceful fallback if `nanobanana-mcp` is not configured). |
+| `/blog image` | Optional hero image generation per post. Model selection is delegated to `blog-image`; prefer current Gemini image models when available. |
 | `/blog seo-check` | Recommended after execution for per-post on-page validation. |
 | `/blog cannibalization` | Recommended after execution to confirm zero keyword overlap across the cluster. |
 | `/blog schema` | Recommended after execution to add `BreadcrumbList`, `ItemList`, and `Article` schema. |
@@ -76,7 +76,7 @@ This skill never modifies files belonging to other skills. It calls them via the
 
 ## Plan Phase: `/blog cluster plan <seed-keyword>`
 
-Reference: `references/semantic-clustering.md`
+Reference: `${CLAUDE_PLUGIN_ROOT}/skills/blog-cluster/references/semantic-clustering.md`
 
 ### Step 1. Seed keyword expansion
 
@@ -90,16 +90,16 @@ Use WebSearch to expand the seed into a keyword universe of 30 to 50 phrases:
 
 ### Step 2. Semantic clustering
 
-Group the expanded keywords using the priority rules in `references/semantic-clustering.md`:
+Group the expanded keywords using the priority rules in `${CLAUDE_PLUGIN_ROOT}/skills/blog-cluster/references/semantic-clustering.md`:
 
-1. **SERP Overlap Analysis** is the primary signal. Two keywords with 5 or more shared top-10 results target the same intent and belong in one post.
+1. **SERP Overlap Analysis** is the primary signal. Two keywords with 4 or more shared top-10 results usually target the same intent and should be considered for one post.
 2. **Intent Classification** assigns each keyword to informational, commercial, transactional, or navigational.
 3. **Entity Mapping** identifies the people, products, frameworks, and organizations Google associates with the topic.
 4. **Grouping** combines keywords that share intent and topical proximity. Each group becomes one branch of the hub and spoke.
 
 ### Step 3. Cluster architecture design
 
-Reference: `references/cluster-architecture.md`
+Reference: `${CLAUDE_PLUGIN_ROOT}/skills/blog-cluster/references/cluster-architecture.md`
 
 Build the hub and spoke:
 
@@ -108,9 +108,8 @@ Build the hub and spoke:
 
 Cluster formation rules:
 
-- 2 to 5 clusters per pillar.
-- 2 to 4 spokes per cluster.
-- Total: 1 pillar plus 5 to 15 spokes.
+- Normal mode: 2 to 5 clusters per pillar, 2 to 4 spokes per cluster, total 1 pillar plus 5 to 15 spokes.
+- Small-cluster mode: for narrow seeds, allow 1 pillar plus 2 to 4 spokes only after warning the user and asking for confirmation.
 - Every spoke targets a unique primary keyword (zero cannibalization).
 
 ### Step 4. Internal link matrix
@@ -122,11 +121,11 @@ For each spoke `S`:
 - `S` to other spokes in the same cluster (2 to 3 links each, contextual anchors).
 - `S` to spokes in adjacent clusters (0 to 1 links, only when semantically relevant).
 
-Verify every spoke has at least 3 incoming links. Count total planned interlinks.
+Verify every spoke has at least 2 incoming links. Count total planned interlinks.
 
 ### Step 5. Generate output files
 
-All plan and execute artifacts go into a single subdirectory of the current working directory:
+All plan and execute artifacts go into a single subdirectory of the current working directory. Canonicalize the output directory, refuse symlinks, and reject writes outside the cluster directory. Slugs must match lowercase letters, numbers, and hyphens only; reject absolute paths, `..`, path separators inside slugs, and hidden control characters.
 
 ```
 <cwd>/
@@ -215,11 +214,13 @@ Bridges `blog-strategy` output into a cluster plan.
 
 ## Execute Phase: `/blog cluster execute [path-to-plan]`
 
-Reference: `references/execution-workflow.md`
+Reference: `${CLAUDE_PLUGIN_ROOT}/skills/blog-cluster/references/execution-workflow.md`
 
 ### Step 1. Load plan
 
 Read `cluster-plan.json` from the user-specified path or the most recent `cluster-*/cluster-plan.json` in the working directory. Validate JSON structure. If no plan exists, return: "No cluster plan found. Run `/blog cluster plan <seed-keyword>` first."
+
+Before reading a user-supplied plan path, canonicalize it relative to the current working directory. Reject absolute paths, `..`, symlinks, non-`cluster-plan.json` filenames, and any path outside the selected cluster directory. Constrain all generated post, image, map, and scorecard outputs to that cluster directory.
 
 ### Step 2. Determine execution order
 
@@ -229,11 +230,18 @@ Read `cluster-plan.json` from the user-specified path or the most recent `cluste
 
 ### Step 3. For each post: build cluster context and call `blog-write`
 
-Construct the cluster context block (full schema in `references/execution-workflow.md`) and prepend it to the topic prompt passed to the Task tool invoking `blog-write`. The context tells `blog-write` the cluster name, the post's role (pillar or spoke), the primary and secondary keywords, the chosen template, the word count target, the list of already-written posts (link to these), the list of upcoming posts (use `[INTERNAL-LINK]` placeholders), and the linking requirements for this post.
+Construct the cluster context block (full schema in `${CLAUDE_PLUGIN_ROOT}/skills/blog-cluster/references/execution-workflow.md`) and prepend it to the topic prompt passed to the Task tool invoking `blog-write`. The context tells `blog-write` the cluster name, the post's role (pillar or spoke), the primary and secondary keywords, the chosen template, the word count target, the list of already-written posts (link to these), the list of upcoming posts (use `[INTERNAL-LINK]` placeholders), and the linking requirements for this post.
 
-**FLOW evidence triple propagation (required).** The cluster context must include this directive for every spoke and the pillar: "Apply the FLOW evidence triple to every public statistic. Year anchor in prose ('In 2026,'), inline citation with publisher and title, URL with retrieval date in the source block. Drop unverifiable stats. Replace contradicted ones."
+**Evidence provenance propagation.** The cluster context includes this directive
+for every spoke and the pillar: "Keep material claims traceable to sources that
+support them. Record dates, publisher/title details, retrieval notes,
+methodology, and limitations when they help identify or interpret the source.
+Use the publication's citation style. Drop unverifiable statistics and replace
+contradicted ones."
 
-This cascade is required because cluster execution is a high-leverage operation (5 to 15 posts at once). Without explicit propagation, individual spokes could silently skip evidence discipline. See `skills/blog/references/flow-alignment.md`.
+This cascade preserves evidence discipline across batch execution without
+turning a fixed source-record format into a score or gate. See
+`${CLAUDE_PLUGIN_ROOT}/skills/blog/references/flow-alignment.md`.
 
 The context also instructs `blog-write` to run autonomously: skip topic clarification, skip outline approval, do not auto-detect template, do not pause.
 
@@ -241,7 +249,7 @@ Output format: standard markdown (`.md`) by default, matching `blog-write`'s def
 
 ### Step 4. Per-post optional hero image
 
-If `nanobanana-mcp` is configured, call `/blog image generate` via the Task tool to produce a 16:9 hero image for the post and place it in `cluster-<slug>/images/<post-slug>-hero.png`. Insert a standard markdown image reference in the post's frontmatter (`coverImage:`) and at the top of the body. If the MCP is unavailable or fails, log a warning and continue without images. Image generation is non-blocking.
+If `blog-image` is available, call `/blog image generate` via the Task tool to produce a 16:9 hero image for the post and place it in `cluster-<slug>/images/<post-slug>-hero.png`. Delegate provider selection to `blog-image`, prefer current Gemini image models when available, and record the model ID in the scorecard. If image generation is unavailable or fails, log a warning and continue without images. Image generation is non-blocking.
 
 ### Step 5. Backward link injection
 
@@ -253,7 +261,9 @@ After each post is written:
 
 ### Step 6. Failure handling
 
-If `blog-write` fails for a single post (timeout, error, or quality gate fail), log the failure and continue with remaining posts. Do not abort the cluster. The scorecard will mark the gap and recommend a retry with `/blog write` invoked manually for that post.
+If `blog-write` returns a quality-gate failure for any post, stop the batch immediately. Save progress, mark the failed post and all remaining posts as skipped, and tell the user to inspect or retry the failed post manually before continuing. Do not keep generating 5 to 15 posts after a quality failure, because that can create scaled-content-abuse risk.
+
+If `blog-write` fails before content is generated because of a timeout or runtime error, log the failure in the scorecard and stop unless the user explicitly resumes after checking the cause.
 
 If the user cancels mid-execution, save progress and note completed posts. On the next `/blog cluster execute`, detect already-written files and resume from the next unwritten post.
 
@@ -262,8 +272,8 @@ If the user cancels mid-execution, save progress and note completed posts. On th
 After all attempted posts complete, produce a markdown scorecard covering:
 
 - Per-post status (written, failed, skipped) with file path and word count.
-- Per-post quality score (call `/blog analyze` on each in parallel) and the cluster average.
-- Cluster cohesion score: a 0 to 100 composite of link reciprocity, intent diversity, template diversity, and keyword coverage (formula in `references/execution-workflow.md`).
+- Per-post quality score (call `/blog analyze` on each in parallel via Task) and the cluster average.
+- Cluster cohesion score: a 0 to 100 composite of link reciprocity, intent diversity, template diversity, and keyword coverage (formula in `${CLAUDE_PLUGIN_ROOT}/skills/blog-cluster/references/execution-workflow.md`).
 - Internal-link audit: outgoing and incoming counts per post, orphan flags, unresolved `[INTERNAL-LINK]` markers.
 - Cannibalization check: any two posts sharing primary keyword, or any pair with greater than 70% keyword overlap. Recommend running `/blog cannibalization` for a deeper pass.
 - Image generation summary: hero images generated vs. skipped.
@@ -294,8 +304,8 @@ Return a concise summary to the user with totals, the scorecard path, and the ne
 |------|-------|----------------|
 | Cluster minimum | At least 2 clusters with at least 2 posts each | Warn during plan; suggest expansion |
 | Cannibalization | No two posts share primary keyword | Block execution; require plan adjustment |
-| Link completeness | Every post has 3 or more incoming internal links | Warn in scorecard |
-| Word count | Pillar at least 2,500 words; spokes at least 1,200 words | Pass to `blog-write` as a hard constraint |
+| Link completeness | Every post has 2 or more incoming internal links | Warn in scorecard |
+| Length estimate | Pillars often need more depth than spokes | Pass to `blog-write` as optional planning context; never enforce a raw word minimum |
 | Intent diversity | At least 2 distinct intents across clusters | Warn in scorecard |
 | Template diversity | At least 3 distinct templates across the cluster | Warn in scorecard |
 
@@ -307,12 +317,12 @@ Return a concise summary to the user with totals, the scorecard path, and the ne
 |----------|--------|
 | Seed keyword too broad (more than 50 keyword variants) | Suggest narrowing the focus before clustering. |
 | Seed keyword too narrow (fewer than 5 keyword variants) | Offer a smaller cluster (pillar plus 2 to 3 spokes) or suggest broadening. |
-| WebSearch unavailable | Fall back to Claude's reasoning for keyword expansion and grouping. Note the reduced accuracy in the scorecard. |
-| `blog-write` fails for one post | Log, skip, continue. Mark the gap in the scorecard. |
+| WebSearch unavailable | Produce a draft plan only and require user confirmation, imported keyword data, or SERP data before execution. |
+| `blog-write` fails a quality gate or content generation | Stop the batch, save progress, mark remaining posts as skipped, and require manual inspection or explicit resume. |
 | `blog-write` not installed | Return: "blog-cluster requires claude-blog. Install it before running this skill." |
 | `cluster-plan.json` malformed | Validate JSON and report parse errors with line numbers. |
 | User cancels execution | Save progress; resume on next invocation with already-written posts auto-detected. |
-| `nanobanana-mcp` not configured | Skip hero image generation; warn once at start of execute, not per post. |
+| Optional image generation unavailable or failed | Skip hero image generation; warn once at start of execute, not per post. |
 
 ---
 

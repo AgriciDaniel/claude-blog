@@ -136,3 +136,15 @@ class StealthUtils:
         StealthUtils.random_delay(100, 300)
         element.click()
         StealthUtils.random_delay(100, 300)
+
+    @staticmethod
+    def random_mouse_movement(page: Page, moves: int = 3):
+        """Move the mouse across random visible points."""
+        viewport = page.viewport_size or {"width": 1280, "height": 720}
+        width = max(1, int(viewport.get("width", 1280)))
+        height = max(1, int(viewport.get("height", 720)))
+        for _ in range(max(1, moves)):
+            x = random.randint(1, width)
+            y = random.randint(1, height)
+            page.mouse.move(x, y, steps=random.randint(3, 8))
+            StealthUtils.random_delay(80, 220)

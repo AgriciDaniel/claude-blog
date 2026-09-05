@@ -7,7 +7,7 @@
 ## When to Use This Template
 
 - **Content Goals:** Capture high-volume "best of" search queries, provide quick decision-making support, drive affiliate or referral traffic, establish curation authority
-- **Search Intent:** Commercial investigation -- the reader is evaluating options and wants an expert-curated shortlist
+- **Search Intent:** Commercial investigation: the reader is evaluating options and wants an expert-curated shortlist
 - **Best For:** Tool roundups, resource collections, strategy compilations, product recommendations, tip collections
 - **Avoid When:** The topic requires deep analysis of only 1-2 options (use the Comparison template instead) or the items cannot be meaningfully ranked or differentiated
 
@@ -27,7 +27,7 @@
 - "12 Best VS Code Extensions for Python Development in 2026"
 
 **Rules:**
-- Use an odd or specific number (7, 9, 11) -- they outperform round numbers in CTR
+- Use an odd or specific number (7, 9, 11): they outperform round numbers in CTR
 - Include the primary keyword and target audience
 - Include the year for freshness signals
 - Keep under 60 characters if possible
@@ -36,7 +36,10 @@
 
 ### Introduction (100-150 words)
 
-[ANSWER-FIRST] Open with the single most important market statistic or data point that explains *why* this category matters right now. Not "there are many options" -- a specific number that creates urgency.
+[ANSWER-FIRST] Open with the most useful supported context for why this
+category matters to the target reader now. Use a market statistic only when it
+is material, current, and sourced; a clear change, constraint, or decision
+context is equally valid.
 
 **Structure:**
 1. **Market context** (1-2 sentences): Why this category is relevant now. What changed?
@@ -44,53 +47,59 @@
 3. **Selection criteria anchor** (1-2 sentences): How you selected and ranked these items. Be specific about your methodology.
 4. **Promise** (1 sentence): What the reader will walk away with.
 
-[STAT: Market size, growth rate, or adoption statistic for this category]
+[STAT when useful: a verified market size, growth, or adoption figure that
+materially improves the context]
 
-[INFO-GAIN: selection methodology] Briefly explain your unique evaluation criteria -- what did you weight most heavily and why? This differentiates you from every other listicle.
+[INFO-GAIN: selection methodology] Briefly explain your unique evaluation criteria: what did you weight most heavily and why? This differentiates you from every other listicle.
 
 **Example opening:**
-> "[STAT: The static site generator market grew 340% between 2023 and 2025 (Source).] With over 50 SSGs now available, choosing the right one can waste weeks on migrations you'll regret. We evaluated 23 generators across build speed, plugin ecosystem, and learning curve -- testing each with a real 500-page documentation site. Here are the 9 that actually delivered."
+> "[VERIFIED CATEGORY CONTEXT]. We reviewed [DOCUMENTED SCOPE] using
+> [NAMED SOURCES] and compared each option against [CRITERIA]. This is a
+> research-only comparison unless the author supplies a testing methodology,
+> evidence, and results."
 
 [INTERNAL-LINK] Link to a foundational guide: "New to [category]? Read our [What Is X and Why Does It Matter] guide first."
 
 ---
 
-### Item 1: [Item Name] -- Best Overall / Best for [Primary Use Case] (150-200 words)
+### Item 1: [Item Name] - Best Overall / Best for [Primary Use Case] (150-200 words)
 
 [ANSWER-FIRST] Open with the single strongest reason this item earned its ranking position. Lead with the differentiator, not the description.
 
 **Structure for EVERY item section:**
 
-**H2 format:** `## 1. [Item Name] -- Best for [Specific Use Case]`
+**H2 format:** `## 1. [Item Name] - Best for [Specific Use Case]`
 
 1. **Lead differentiator** (1 sentence): The single strongest reason to choose this item.
 2. **Why it's great** (2-3 sentences): Key strengths with specific details (not marketing copy).
 3. **Best for** (1 sentence): The specific persona or use case where this item excels.
 4. **Key feature highlight** (1-2 sentences): One standout feature explained with enough detail to be useful.
-5. **Pricing** (1 sentence): Clear pricing info -- free tier, starting price, per-seat cost, etc.
+5. **Pricing** (1 sentence): Clear pricing info: free tier, starting price, per-seat cost, etc.
 
 [IMAGE] Product screenshot, logo, or UI screenshot showing the key feature in action.
 
-[INFO-GAIN: hands-on observation] Share one specific thing you noticed during testing that isn't mentioned on the product's marketing page.
+[INFO-GAIN: evaluation finding] If hands-on testing was actually completed,
+share a finding with the methodology, evidence, and result. Otherwise provide a
+sourced comparative observation without implying first-hand use.
 
 [STAT: Performance metric, user count, or benchmark result for this item]
 
 **Example:**
-> ## 1. Astro -- Best for Content-Heavy Sites
+> ## 1. Astro - Best for Content-Heavy Sites
 >
-> Astro ships zero JavaScript by default, which means your content-heavy site loads faster than anything else on this list -- our 500-page test site scored 100/100 on Lighthouse without any optimization.
+> Astro ships zero JavaScript by default, which means your content-heavy site loads faster than anything else on this list: our 500-page test site scored 100/100 on Lighthouse without any optimization.
 >
 > **Why it's great:** The "islands" architecture lets you sprinkle interactivity only where needed. The content collections API makes managing hundreds of Markdown files trivial. And the ecosystem hit 800+ integrations in early 2026.
 >
 > **Best for:** Documentation sites, blogs, marketing pages, and any project where content volume matters more than app-like interactivity.
 >
-> **Key feature:** Content Collections provide type-safe frontmatter validation -- catch broken posts at build time, not in production.
+> **Key feature:** Content Collections provide type-safe frontmatter validation: catch broken posts at build time, not in production.
 >
 > **Pricing:** Free and open source. Astro Studio (optional hosting) starts at $0/month with generous free tier.
 
 ---
 
-### Item 2: [Item Name] -- Best for [Specific Use Case] (150-200 words)
+### Item 2: [Item Name] - Best for [Specific Use Case] (150-200 words)
 
 [Follow the same structure as Item 1]
 
@@ -98,7 +107,7 @@
 
 ---
 
-### Item 3: [Item Name] -- Best for [Specific Use Case] (150-200 words)
+### Item 3: [Item Name] - Best for [Specific Use Case] (150-200 words)
 
 [Follow the same structure as Item 1]
 
@@ -108,7 +117,7 @@
 
 ---
 
-### Item 4: [Item Name] -- Best for [Specific Use Case] (150-200 words)
+### Item 4: [Item Name] - Best for [Specific Use Case] (150-200 words)
 
 [Follow the same structure as Item 1]
 
@@ -116,7 +125,7 @@
 
 ---
 
-### Item 5: [Item Name] -- Best for [Specific Use Case] (150-200 words)
+### Item 5: [Item Name] - Best for [Specific Use Case] (150-200 words)
 
 [Follow the same structure as Item 1]
 
@@ -155,19 +164,23 @@
 
 ---
 
-### How We Selected These (100-150 words)
+### How We Selected These
 
 [ANSWER-FIRST] Open with the total number of options you evaluated and the primary elimination criterion.
 
 **Structure:**
 1. **Scope** (1 sentence): How many options you started with.
 2. **Evaluation criteria** (bulleted list): 3-5 specific criteria with brief explanations.
-3. **Testing methodology** (1-2 sentences): What you actually did to test (not just "we researched").
-4. **Disclosure** (1 sentence): Any affiliations, sponsorships, or biases the reader should know about.
+3. **Evaluation methodology**: State whether this was hands-on testing or
+   research-only review. For hands-on claims, include the method, evidence, and
+   results. For research-only work, name the sources and comparison criteria.
+4. **Disclosure** (1 sentence): Any affiliate links, sponsorships, free access, or biases the reader should know about. Repeat a short disclosure before the first outbound product link when commercial links appear.
 
-[INFO-GAIN: testing process] Describe your actual testing methodology -- what did you build, measure, or try with each item?
+[INFO-GAIN: evaluation process] Describe what you actually evaluated. Never
+write "we tested" unless the author supplied the methodology, evidence, and
+results.
 
-[STAT: Total evaluation scope -- "We tested [N] tools over [X] weeks"]
+[STAT: Total evaluation scope, using "tested" only for documented hands-on work]
 
 **Example:**
 > We started with 23 static site generators identified from GitHub trending, community surveys, and our own reader requests. Each was evaluated against five criteria:
@@ -179,13 +192,21 @@
 >
 > Testing took 4 weeks with a standardized 500-page documentation site benchmark. No item on this list paid for placement.
 
+**Research-only alternative:**
+> We reviewed 23 static site generators using current documentation, public
+> repositories, pricing pages, and independent benchmarks. We compared build
+> workflow, ecosystem maturity, content authoring, and deployment flexibility.
+> We did not run a hands-on benchmark, so performance claims remain attributed
+> to their original sources.
+
 ---
 
-### Frequently Asked Questions (3-5 questions)
+### Optional Frequently Asked Questions
 
-[FAQ]
+[FAQ: Include only when genuine reader questions add useful material not
+already answered in the article.]
 
-**Format:** Each question as an H3, answer in 2-4 sentences.
+**Format:** Use each genuine question as an H3 and answer it completely.
 
 **Question selection criteria:**
 1. "What is the best [X] overall?" (Restate your top pick with reasoning)
@@ -194,7 +215,7 @@
 4. "[Category]-specific question" (Address a domain-specific concern, e.g., "Do I need a paid [X] for production?")
 5. "How often does this list get updated?" (Build trust around freshness)
 
-[STAT: Include at least one statistic in your FAQ answers]
+[STAT: Include a verified statistic only when it helps answer the question.]
 
 **Example:**
 
@@ -218,7 +239,7 @@
 1. **Top pick restatement** (1 sentence): Name the overall winner and the single biggest reason.
 2. **Runner-up for different need** (1 sentence): Name the best alternative for a different use case.
 3. **Decision framework** (1 sentence): Give the reader a simple rule for choosing ("If you need [X], go with [A]. If you need [Y], go with [B].").
-4. **CTA** (1 sentence): Ask for engagement -- "What's your pick? Share in the comments" or "Subscribe for our next roundup."
+4. **CTA** (1 sentence): Ask for engagement: "What's your pick? Share in the comments" or "Subscribe for our next roundup."
 
 [INTERNAL-LINK] Link to 2-3 related posts: individual reviews, comparison posts, or how-to guides for the top picks.
 
@@ -229,16 +250,17 @@
 Before publishing, verify:
 
 - [ ] Title includes a specific number, primary keyword, audience, and current year
-- [ ] Introduction opens with a market statistic, not a vague claim
+- [ ] Introduction establishes the list's purpose with relevant, supportable
+      context; use a market statistic only when it is material and sourced
 - [ ] Every item has a clear "Best for" positioning that differentiates it from other items
 - [ ] Every item includes pricing information
 - [ ] Every item has a supporting screenshot or visual
 - [ ] Comparison table uses specific metrics, not vague ratings
-- [ ] At least 2 [INFO-GAIN] elements with original testing data or observations
-- [ ] At least 3 [STAT] markers filled with sourced statistics
+- [ ] Any [INFO-GAIN] elements contain supported original material
+- [ ] Material statistics are verified and cited; no statistic quota
 - [ ] "How We Selected" section establishes credibility and discloses biases
-- [ ] FAQ answers are structured for featured snippet eligibility
+- [ ] Optional FAQ answers genuine reader questions directly
 - [ ] All [INTERNAL-LINK] zones have contextual links to related content
-- [ ] Word count falls within 1,500-2,000 range
-- [ ] No item is filler -- every entry earns its spot with 150+ meaningful words
-- [ ] Meta description written (under 160 characters, includes primary keyword)
+- [ ] Coverage is complete for the list intent without padding
+- [ ] No item is filler: every entry earns its place through reader value
+- [ ] Meta description accurately summarizes the visible list

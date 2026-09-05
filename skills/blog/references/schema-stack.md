@@ -12,37 +12,49 @@
 - [VideoObject Schema](#videoobject-schema)
 - [Speakable Schema](#speakable-schema)
 - [Stable @id Patterns](#stable-id-patterns)
-- [Deprecated Schema Types -- NEVER Use](#deprecated-schema-types----never-use)
+- [Schema Types: Use Only When Eligible](#schema-types-use-only-when-eligible)
 - [ProfilePage Schema (Author Pages)](#profilepage-schema-author-pages)
 - [JSON-LD @graph Pattern](#json-ld-graph-pattern)
 - [Schema Validation Checklist](#schema-validation-checklist)
 
 ## Why Schema Matters
 
-72% of first-page results use structured data markup. Pages using 3+ schema
-types have approximately 13% higher likelihood of AI citation. Schema must
-appear in HTML source -- not injected via JavaScript -- because most AI crawlers
-do not execute JS.
+Article schema with author Person, publisher Organization, and BreadcrumbList
+is the priority schema family for blog content in 2026. FAQ and HowTo rich
+results are no longer broadly available for general blog content, so standard
+article entities remain the practical baseline. Structured data does not earn
+Google generative-AI visibility by itself and no special AI schema is required.
+Google can process JavaScript-generated JSON-LD when it is available in the
+rendered DOM. Source or server-rendered markup remains more portable for
+non-Google crawlers.
+
+Still rich-result-eligible for eligible blog content in 2026: Article,
+BreadcrumbList, Video, Product, Review, and Event. FAQPage and HowTo remain
+valid schema.org types, but general blogs should not expect FAQ or HowTo visual
+rich results.
 
 ---
 
 ## BlogPosting Schema
 
-The primary schema for every blog post. Embeds author, publisher, and article
+The priority schema family for every blog post is Article. `BlogPosting` remains
+acceptable as an Article-family implementation, but the required shape is the
+same: author Person, publisher Organization, dates, headline, and canonical page
 metadata in a single structured entity.
 
 ### Full Property Reference
 
-**Note:** Google states "there are no required properties" for BlogPosting — all properties
-below are recommended. `@context` and `@type` are required by the JSON-LD spec itself.
+**Note:** Google states "there are no required properties" for Article or
+BlogPosting structured data. All properties below are recommended. `@context`
+and `@type` are required by the JSON-LD spec itself.
 
 | Property | Status | Type | Description |
 |----------|--------|------|-------------|
 | `@context` | JSON-LD required | URL | Always `"https://schema.org"` |
-| `@type` | JSON-LD required | String | Always `"BlogPosting"` |
+| `@type` | JSON-LD required | String | `"Article"` or `"BlogPosting"` |
 | `@id` | Recommended | URI | Stable identifier: `{siteUrl}/blog/{slug}#article` |
 | `headline` | Recommended | String | Post title, max 110 characters |
-| `description` | Recommended | String | Meta description, 150-160 characters |
+| `description` | Recommended | String | Accurate description that matches visible content |
 | `datePublished` | Recommended | ISO 8601 | Original publish date |
 | `dateModified` | Recommended | ISO 8601 | Last content update date |
 | `author` | Recommended | Person | Author entity (use @id reference) |
@@ -57,11 +69,12 @@ below are recommended. `@context` and `@type` are required by the JSON-LD spec i
 | `thumbnailUrl` | Optional | URL | Smaller preview image |
 | `articleBody` | Optional | String | Full text (usually omitted for size) |
 
-### Complete BlogPosting Example
+### Complete Article/BlogPosting Example
 
 ```json
 {
-  "@type": "BlogPosting",
+  "@context": "https://schema.org",
+  "@type": "Article",
   "@id": "https://example.com/blog/technical-seo-guide#article",
   "headline": "Complete Guide to Technical SEO in 2026",
   "description": "Technical SEO has evolved beyond Core Web Vitals. 72% of top-ranking pages now use structured data. Here's how to optimize your site for both traditional search and AI systems.",
@@ -249,14 +262,11 @@ Each breadcrumb item requires `@type`, `position`, `name`, and `item` (URL).
 
 ## FAQPage Schema
 
-**Important**: Since August 2023, Google restricted FAQ rich results to government and health
-authority websites only. For all other sites, **no FAQ rich results will appear in Google
-Search** — the markup produces no visual search enhancement.
-
-However, the markup is still worth including for AI citation reasons: LLMs parse your page's
-**visible FAQ text** (not the JSON-LD) and Q&A-formatted content improves extractability for
-citation. Google says there is "no need to proactively remove" existing FAQPage markup and it
-"does not cause problems for Search." Implement for AI citation value, not rich results.
+Google retired FAQ rich results for every site on 2026-05-07 and removed the
+feature documentation in June. FAQPage remains a schema.org type, but it is not
+a Google rich-result or generative-AI optimization path. Keep or add it only
+when the visible FAQ is independently useful to readers. It earns no SEO or
+AI-readiness credit.
 
 ### Structure
 
@@ -267,13 +277,14 @@ FAQPage
               ├── name (the question text)
               └── acceptedAnswer
                     └── Answer
-                          └── text (the answer text, 40-60 words)
+                          └── text (the complete visible answer)
 ```
 
 ### Complete FAQPage Example
 
 ```json
 {
+  "@context": "https://schema.org",
   "@type": "FAQPage",
   "mainEntity": [
     {
@@ -281,7 +292,7 @@ FAQPage
       "name": "How does technical SEO affect AI visibility?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Technical SEO directly determines whether AI crawlers can access and extract your content. Since AI crawlers do not execute JavaScript, server-side rendered HTML with structured data markup is essential. Sites with proper technical SEO and accessible content structure are significantly more likely to earn AI citations."
+        "text": "Technical SEO helps crawlers access and understand a page. Render the primary content reliably, keep important metadata crawlable, and validate structured data against the visible page."
       }
     },
     {
@@ -289,7 +300,7 @@ FAQPage
       "name": "What is the most important schema type for blog posts?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "BlogPosting schema is the foundation for blog content. It provides structured metadata about the article including author, dates, and content classification. Combined with Person and Organization schemas, it creates a complete entity graph that search engines and AI systems use to evaluate content authority."
+        "text": "Article or BlogPosting describes the article and can reference its author and publisher. Use properties that are accurate for the visible page and validate them for the intended search surface."
       }
     },
     {
@@ -297,7 +308,7 @@ FAQPage
       "name": "Do AI search engines use schema markup?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes. AI search engines like ChatGPT Search, Perplexity, and Google AI Overviews use schema markup to identify authoritative content. Pages with 3 or more schema types have approximately 13% higher likelihood of being cited in AI-generated responses compared to pages without structured data."
+        "text": "Google does not require structured data for generative AI search and has no special AI schema. Use structured data for supported search features and accurate entity description, not as a citation guarantee."
       }
     }
   ]
@@ -306,11 +317,13 @@ FAQPage
 
 ### Guidelines
 
-- 3-5 FAQ items per page (not excessive)
-- Answers should be 40-60 words (concise, extractable)
-- Questions should match real user queries (People Also Ask style)
+- Include only the questions readers genuinely need
+- Let each answer be as short or long as the subject requires
+- Use questions supported by user research, support data, or the article's purpose
 - Do not duplicate content already in the main article body
 - Each answer should be self-contained and useful without context
+- Do not use QAPage for editorial FAQs; QAPage requires one question and
+  user-submitted answers
 
 ---
 
@@ -352,8 +365,10 @@ Used within BlogPosting for featured images and inline article images.
 
 ## VideoObject Schema
 
-Used for YouTube videos embedded in blog posts. YouTube has the strongest
-AI visibility correlation (0.737). Each embedded video gets its own VideoObject.
+Use VideoObject only for a visible, relevant, useful video when the page and
+markup satisfy Google's current video structured-data eligibility and
+visible-content requirements. The markup does not create a ranking, readiness,
+or AI-citation bonus.
 
 ### Properties
 
@@ -403,9 +418,9 @@ AI visibility correlation (0.737). Each embedded video gets its own VideoObject.
 
 ## Speakable Schema
 
-Optimizes content for voice search and voice assistants (Google Assistant,
-Siri, Alexa). Identifies which sections of a page are most suitable for
-text-to-speech playback.
+Speakable support is limited and should not be a default schema recommendation
+for normal blog pages. Use it only when the target surface explicitly supports
+Speakable markup and the selected text is visible on the page.
 
 ### Implementation Options
 
@@ -493,27 +508,33 @@ Instead of embedding a full Person object in every BlogPosting, reference the
 
 ---
 
-## Deprecated Schema Types -- NEVER Use
+## Schema Types: Use Only When Eligible
 
-These types have been deprecated by Google. Using them does not cause penalties
-but wastes implementation effort and may trigger rich result validation warnings.
+These entries separate Google rich-result eligibility from schema.org validity.
+Using unsupported rich-result markup can waste implementation effort and cause
+validation confusion. Schema.org validity and Google Search feature support are
+separate questions.
 
-| Type | Deprecated | Date | Notes |
-|------|------------|------|-------|
-| HowTo | Yes | September 2023 | Rich results removed entirely |
-| SpecialAnnouncement | Yes | July 2025 | COVID-era, no longer processed |
-| ClaimReview | Yes | June 2025 | Google structured data simplification; no longer generates rich results |
-| Practice Problem | Yes | -- | Educational, no longer generates rich results |
-| Dataset | Yes | -- | For general search; still works in Google Dataset Search |
-| Sitelinks Search Box | Yes | -- | Google generates these algorithmically now |
-| Q&A | Yes | January 2026 | Replaced by community forum features |
+| Type | Google Search status | Notes |
+|------|----------------------|-------|
+| HowTo | No current rich-result experience | Use visible step content plus Article for general blogs |
+| ClaimReview | Former Search experience | Retired as part of Google's 2025 result simplification |
+| SpecialAnnouncement | Former Search experience | Documentation removed in September 2025 |
+| Course Info | Former Search experience | Distinct from the currently documented Course list feature |
+| Estimated Salary | Former Search experience | Documentation removed in September 2025 |
+| Learning Video | Former Search experience | Documentation removed in September 2025 |
+| Vehicle Listing | Former Search experience | Documentation removed in September 2025 |
+| PracticeProblem | Removed Search experience | Documentation removed in January 2026 |
+| Dataset | Dataset Search only | Do not use for ordinary articles |
+| Sitelinks Search Box | No dedicated visual element | Google generates sitelinks algorithmically |
+| QAPage | Supported narrow use | One question with user-submitted answers, not editorial FAQs |
 
 ### What to Use Instead
 
 | Deprecated Type | Alternative |
 |----------------|-------------|
-| HowTo | Use standard BlogPosting with clear step headings (H2/H3) |
-| Q&A | Use FAQPage for editorial Q&A; no replacement for community Q&A |
+| HowTo | Use standard Article or BlogPosting with clear step headings (H2/H3) |
+| QAPage | Use FAQPage only for a genuinely useful visible editorial FAQ |
 | SpecialAnnouncement | Use standard Article or NewsArticle |
 | ClaimReview | No direct replacement for blogs; use Author entity with credentials |
 
@@ -521,8 +542,8 @@ but wastes implementation effort and may trigger rich result validation warnings
 
 ## ProfilePage Schema (Author Pages)
 
-Fully supported since December 2025. Add to author bio/team pages to strengthen E-E-A-T
-signals and improve eligibility for the "Discussions and Forums" SERP feature.
+Supported in 2026. Add to author bio/team pages to strengthen E-E-A-T signals
+and improve eligibility for author entity understanding.
 
 ```json
 {
@@ -602,7 +623,7 @@ multiple schema types.
       }
     },
     {
-      "@type": "BlogPosting",
+      "@type": "Article",
       "@id": "https://example.com/blog/technical-seo-guide#article",
       "headline": "Complete Guide to Technical SEO in 2026",
       "description": "Technical SEO has evolved beyond Core Web Vitals. 72% of top-ranking pages now use structured data. Here's how to optimize your site for both traditional search and AI systems.",
@@ -663,7 +684,7 @@ multiple schema types.
           "name": "How does technical SEO affect AI visibility?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Technical SEO directly determines whether AI crawlers can access and extract your content. Server-side rendered HTML with structured data is essential since AI crawlers do not execute JavaScript."
+            "text": "Technical SEO helps crawlers access and understand a page. Render the primary content reliably, keep important metadata crawlable, and validate structured data against the visible page."
           }
         },
         {
@@ -671,7 +692,7 @@ multiple schema types.
           "name": "What schema types should every blog post have?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Every blog post should have BlogPosting, Person (author), Organization (publisher), and BreadcrumbList schemas at minimum. Adding FAQPage as a fifth type increases AI citation likelihood by approximately 13%."
+            "text": "Use Article or BlogPosting with accurate author, publisher, date, image, and canonical-page information when those properties apply. Add other types only when visible content and the intended search feature support them."
           }
         }
       ]
@@ -686,19 +707,25 @@ multiple schema types.
 
 | Check | Pass | Fail |
 |-------|------|------|
-| JSON-LD in HTML source (not JS-injected) | In `<head>` or `<body>` tag | Loaded via JavaScript |
+| JSON-LD reaches rendered DOM | Present in source or reliably rendered DOM | Missing from rendered DOM or populated after a failed request |
 | Valid JSON syntax | Passes JSON.parse() | Syntax errors |
 | @context is `https://schema.org` | Exact match | Missing or HTTP |
 | @id uses stable fragment pattern | Consistent across builds | Random or missing |
 | dateModified matches actual update | Within 24 hours of last edit | Stale or fabricated |
 | Author @id matches author page | Same URI used everywhere | Inconsistent references |
 | Image URLs are absolute | Start with `https://` | Relative paths |
-| No deprecated types used | None from deprecated list | HowTo, Q&A, etc. |
-| 3+ schema types per page | BlogPosting + Person + Org + Breadcrumb minimum | Fewer than 3 |
-| Validates in Google Rich Results Test | No errors | Errors present |
+| Eligibility checked for optional types | Type is valid for the visible content and target surface | Ineligible rich-result markup used as a default |
+| Complete schema graph per page | Article/BlogPosting + Person + Organization + BreadcrumbList minimum | Missing priority entity baseline |
+| Validates in the right tool | Schema.org Validator for schema validity; Rich Results Test only for eligible Google rich-result types | Errors present |
 
 ### Validation Tools
 
-- **Google Rich Results Test**: https://search.google.com/test/rich-results
 - **Schema.org Validator**: https://validator.schema.org
+- **Google Rich Results Test**: https://search.google.com/test/rich-results for eligible Google rich-result types
 - **JSON-LD Playground**: https://json-ld.org/playground/
+
+For JavaScript-generated JSON-LD, test the URL rather than only a copied code
+fragment, inspect the rendered HTML, and confirm every marked-up fact matches
+visible content. Google documents both Google Tag Manager and custom JavaScript
+generation at:
+https://developers.google.com/search/docs/appearance/structured-data/generate-structured-data-with-javascript

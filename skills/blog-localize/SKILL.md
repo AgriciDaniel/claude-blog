@@ -1,25 +1,20 @@
 ---
 name: blog-localize
 description: >
-  Cultural adaptation for translated content. Run AFTER blog-translate
-  completes. Adjusts brand examples, CTAs, legal references, and formality
-  for the target market (German, French, Japanese, Spanish, etc.).
-  Deep cultural adaptation of translated blog posts. Goes beyond translation
-  to swap brand examples, adapt CTAs, substitute legal references, localize
-  statistic sources where possible, and adjust formality (Sie/du, tu/vous,
-  formal/informal). Built-in profiles for DACH, Francophone, Hispanic, and
-  Japanese markets, plus a custom-locale template. Makes content feel
-  locally authored, not translated.
+  Deep cultural adaptation of translated blog posts. Run after blog-translate
+  completes. Goes beyond translation to swap brand examples, adapt CTAs,
+  substitute legal references, localize statistic sources where possible, and
+  adjust formality (Sie/du, tu/vous, formal/informal). Built-in profiles for
+  DACH, Francophone, Hispanic, and Japanese markets.
   Use when user says "localize blog", "blog localize", "cultural adaptation",
-  "adapt for Germany", "adapt for France", "lokalisieren", "localiser",
-  "adaptar".
+  "adapt for Germany", "lokalisieren", "localiser", "adaptar".
 user-invokable: true
 argument-hint: "<file> --locale <locale-code>"
 license: MIT
 compatibility: Standalone within claude-blog. Invoked by blog-multilingual.
 metadata:
   author: AgriciDaniel
-  version: "1.7.0"
+  version: "2.3.0"
   category: blog
 ---
 
@@ -50,14 +45,22 @@ tone, swaps references, and localizes the entire reading experience.
 
 ### Phase 1: Locale Understanding
 
-1. Parse the locale code. Accept full codes (`de-DE`, `fr-CA`, `es-MX`,
-   `pt-BR`, `zh-TW`) or plain language codes (`de`, `fr`).
+1. Parse the locale code with the shared multilingual locale rules used by
+   `blog-translate`, `blog-multilingual`, and `blog-locale-audit`: ISO 639-1
+   language in lowercase, optional ISO 15924 script in title case, optional
+   ISO 3166-1 Alpha-2 region in uppercase. Accept full codes (`de-DE`,
+   `fr-CA`, `es-MX`, `pt-BR`, `zh-Hant`) and unambiguous plain language codes
+   (`de`, `fr`). Require a region or explicit neutral mode for ambiguous
+   language-only targets such as `es`, `pt`, and `zh`.
 2. Load the cultural profile from
    `../blog-translate/references/cultural-adaptation.md`.
    - If the locale has a profile, use it.
    - If not, follow the "Custom-locale template" section in that reference
      to build a minimal profile inline.
-3. Read the translated post and identify adaptation targets.
+3. Read the translated post only after resolving it inside the project
+   root/current working directory. Reject symlinked paths, traversal outside
+   the root, files over 10 MB, and binary files. Then identify adaptation
+   targets.
 
 ### Phase 2: Cultural Audit
 
@@ -86,15 +89,28 @@ Swap foreign examples for local equivalents:
 
 - Use WebSearch to find local case studies, brands, or scenarios.
 - Replace inline, preserving the same argument and structure.
+- Record source URL, access date, and rationale for every non-obvious local
+  replacement.
 - If no local equivalent exists, keep the original but add local context
   ("In the German market, the equivalent dynamic is X").
 
 #### 3b. Statistics Localization
 
-- Search for equivalent local statistics (`[topic] statistik [country] 2025
-  2026`).
-- If local data exists, swap the source and the figure together. Keep one
-  named source per claim.
+- Use primary or high-quality local sources for replacement statistics:
+  national statistics offices, regulators, official industry bodies, academic
+  datasets, or named research reports with methodology.
+- Do not rely on generic WebSearch snippets as evidence. Fetch the cited page,
+  verify the figure and context, and record the source URL and date.
+- Fetch cited pages only after SSRF checks: allow `https` URLs only; reject
+  `javascript:`, `data:`, `file:`, localhost, loopback, private, link-local,
+  multicast, and reserved IPs after DNS resolution; disable redirects or
+  validate the final URL with the same checks; cap redirects, response size,
+  and request time; log the final URL and access date.
+- If local data exists with comparable methodology, swap the source and the
+  figure together. Keep one named source per claim.
+- If local data is related but uses a different methodology or timeframe, do
+  not silently swap it. Keep the original claim scoped, or rewrite the claim to
+  match the local source.
 - If not, keep the original stat but mark its geographic scope ("In the
   US, ...").
 - Never strip source attribution.
@@ -118,8 +134,10 @@ Rewrite calls-to-action per the cultural profile:
 
 #### 3e. Legal and Regulatory Context
 
-- Replace references to foreign laws with local equivalents (CCPA becomes
-  DSGVO in DE, RGPD in FR, LGPD in BR).
+- Map legal references by issue and jurisdiction. Keep the original law when
+  the claim is specifically about US compliance. Only substitute when the
+  local law addresses the same issue, such as CCPA to DSGVO in DE, RGPD in
+  FR, LGPD in BR, LFPDPPP in MX, Ley 1581 in CO, or Ley 25.326 in AR.
 - Add local compliance notes where they help the reader.
 - Remove irrelevant foreign regulatory references.
 
@@ -130,10 +148,10 @@ substitution tables. Common examples:
 
 | Source (US) | DACH | FR | ES (Spain) | LATAM | JA |
 |-------------|------|----|----|-------|----|
-| Walmart | MediaMarkt | Carrefour | El Corte Ingles | Walmart MX | Aeon |
+| Walmart | MediaMarkt | Carrefour | El Corte Inglés | Walmart MX | Aeon |
 | Target | Saturn | Auchan | Hipercor | Liverpool | Ito-Yokado |
-| FTC | Bundeskartellamt | DGCCRF | CNMC | Profeco (MX) | JFTC |
-| CCPA | DSGVO | RGPD | RGPD | LGPD (BR) | APPI |
+| FTC | Bundeskartellamt | DGCCRF | CNMC | PROFECO (MX) | JFTC |
+| CCPA | DSGVO | RGPD | RGPD | LFPDPPP (MX), Ley 1581 (CO), Ley 25.326 (AR), LGPD (BR) | APPI |
 
 ### Phase 4: Quality Verification
 
@@ -144,14 +162,18 @@ substitution tables. Common examples:
 - CTAs match cultural expectations.
 - Formal or informal address is consistent end to end.
 - Content still supports the same argument as the original.
-- SEO elements remain optimized (keywords, meta, headings).
+- SEO elements remain optimized beyond keyword placement: localized title and
+  meta, heading intent, slug, alt text, internal-link anchors, same-language
+  canonical, hreflang compatibility, and schema `inLanguage`.
 - Word count is within the expected ratio for the language pair.
 
 ### Phase 5: Save and Report
 
-1. Save the localized version. Default: overwrite the translated file.
-   Optional: save as `{slug}-localized.{ext}` if the user wants to keep the
-   pre-localization version.
+1. Save the localized version. Default: write a reviewed copy as
+   `{slug}-localized.{ext}`. Only overwrite the translated file when the user
+   asks for overwrite; before overwriting, create a timestamped backup and
+   show a diff summary. Resolve every output path inside the project root and
+   reject traversal, symlinked paths, or writes outside that root.
 
 2. Present the summary:
 

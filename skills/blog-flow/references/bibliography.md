@@ -16,7 +16,7 @@ This bibliography lists the sources used for public claims. Web sources include 
 
 - https://ahrefs.com/blog/ai-overviews-reduce-clicks-update/ | retrieved 2026-04-25 | used for: 58% lower average CTR for position-one content when an AI Overview is present, using December 2025 Ahrefs data
 - https://backlinko.com/google-user-behavior | retrieved 2026-04-25 | used for: 42% of local-query searchers click inside the Google Maps Pack
-- https://gs.statcounter.com/search-engine-market-share/all/worldwide/2025 | retrieved 2026-04-25 | used for: Bing March 2026 share: 5.13% worldwide; 9.85% United States all-platform search share
+- https://gs.statcounter.com/search-engine-market-share/all/worldwide/2026 | retrieved 2026-04-25 | used for: Bing March 2026 share: 5.13% worldwide; 9.85% United States all-platform search share
 - https://support.google.com/business/answer/10515606?hl=en | retrieved 2026-04-25 | used for: 70% more likely to visit; 50% more likely to consider purchasing
 - https://www.brightlocal.com/resources/local-seo-statistics/ | retrieved 2026-04-25 | used for: 39%
 - https://www.pewresearch.org/short-reads/2025/07/22/google-users-are-less-likely-to-click-on-links-when-an-ai-summary-appears-in-the-results/ | retrieved 2026-04-25 | used for: 8% with AI summary vs 15% without AI summary

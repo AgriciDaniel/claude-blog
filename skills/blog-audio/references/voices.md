@@ -65,34 +65,47 @@ Recommended voice combinations for two-speaker podcast/dialogue format:
 | Technical | Laomedeia (Upbeat) | Iapetus (Clear) | Curious host + precise technical expert |
 | News | Schedar (Even) | Rasalgethi (Informative) | Neutral anchor + informed analyst |
 
-## Model Comparison
+## Model Support
 
-| Model | ID | Best For | Cost (output) |
-|-------|----|---------|----|
-| **Flash** | `gemini-2.5-flash-preview-tts` | Summaries, standard narration, cost-sensitive | $10/1M tokens |
-| **Pro** | `gemini-2.5-pro-preview-tts` | Dialogue mode, premium podcasts, audiobooks | $20/1M tokens |
+Google's Gemini TTS supported-model list changes. As of 2026-07-08, use the
+current Gemini 3.1 Flash TTS model for new work and keep 2.5 aliases only for
+compatibility:
 
-**Default:** Flash for summary/full modes, Pro for dialogue mode.
+| Model | ID | Single speaker | Multispeaker | Note |
+|-------|----|----------------|--------------|------|
+| Gemini 3.1 Flash TTS | `gemini-3.1-flash-tts-preview` | Yes | Yes | Local `flash` and `flash31` aliases map here |
+| Gemini 2.5 Flash Preview TTS | `gemini-2.5-flash-preview-tts` | Yes | Yes | Local `legacy-flash25` alias |
+| Gemini 2.5 Pro Preview TTS | `gemini-2.5-pro-preview-tts` | Yes | Yes | Local `pro` and `legacy-pro25` aliases |
 
-Flash is 2x cheaper and faster. Pro has higher fidelity and better handling of
-multi-speaker turn-taking. Use Pro when audio quality is the priority.
+**Default:** Flash for summary/full modes, Pro for dialogue mode. The local
+wrapper accepts the aliases listed above; verify `${CLAUDE_PLUGIN_ROOT}/skills/blog-audio/scripts/generate_audio.py`
+before using a newly listed model ID.
 
 ## Language Notes
 
 - All 30 voices support 80+ languages via automatic detection
-- Pass text in any supported language -- no language parameter needed
+- Pass text in any supported language: no language parameter needed
 - Voice characteristics (Bright, Firm, etc.) carry across languages
 - For best results with non-English text, test voice-language combinations
 - BCP-47 language codes are auto-detected from input text
 
 ## Style Control
 
-Gemini TTS does not support SSML. Control style via natural language in the text:
+Gemini TTS does not support SSML. Control style via natural language in the text
+and, on 3.1 TTS, supported audio tags:
 
-Instead of markup, write the text in the desired style:
+Natural language controls:
 - For emphasis: use naturally emphatic phrasing
 - For pauses: use punctuation (periods, ellipses, commas)
 - For pace: shorter sentences = faster pace, longer = slower
 - For tone: word choice drives delivery (urgent words = urgent delivery)
+
+Audio tag examples for 3.1 TTS:
+- `[whispers]` for quiet delivery
+- `[laughs]` for a light laugh
+- `[sighs]` for a sigh
+
+Keep tags sparse and test the output, because unsupported tags may be spoken
+literally by older models.
 
 The TTS model interprets natural language prosody cues automatically.

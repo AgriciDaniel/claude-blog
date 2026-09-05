@@ -23,52 +23,130 @@ jobs:
         python-version: ["3.11", "3.12"]
 
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.0 (SHA-pinned, closes VULN-503)
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1, SHA-pinned, closes VULN-503
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6.0.0 (SHA-pinned)
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0, SHA-pinned
         with:
           python-version: ${{ matrix.python-version }}
 
       - name: Install dependencies
         # Use the dev extras group so PR builds resolve identically to local
-        # development. The pyproject.toml `dev` group pins pytest, textstat,
-        # and beautifulsoup4 within bounded ranges (closes audit VULN-502).
+        # development. The pyproject.toml `dev` group pins the complete
+        # dependency set exercised by tests within bounded ranges.
         run: |
-          python -m pip install --upgrade pip
+          python3 -m pip install --upgrade pip
           pip install -e ".[dev]"
 
       - name: Run tests
-        run: python -m pytest tests/ -v
+        run: python3 -m pytest tests/ -v
+
+      - name: Run adjudicated secret scan
+        run: python3 scripts/check_secrets.py
+
+  dependency-smoke:
+    # Validate the exact hash-locked optional runtimes without API calls,
+    # secrets, a browser download, or a browser launch.
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1, SHA-pinned
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0, SHA-pinned
+        with:
+          python-version: "3.11"
+
+      - name: Verify hash-locked google-genai client initialization
+        run: |
+          python3 -m venv .ci-audio-smoke
+          .ci-audio-smoke/bin/python -m pip install \
+            --disable-pip-version-check --require-hashes \
+            -r skills/blog-audio/scripts/requirements.lock
+          .ci-audio-smoke/bin/python scripts/dependency_smoke.py \
+            --component audio
+
+      - name: Verify hash-locked Patchright and preflight initialization
+        run: |
+          python3 -m venv .ci-browser-smoke
+          .ci-browser-smoke/bin/python -m pip install \
+            --disable-pip-version-check --require-hashes \
+            -r skills/blog-notebooklm/scripts/requirements.lock
+          .ci-browser-smoke/bin/python scripts/dependency_smoke.py \
+            --component browser --component preflight
 
   validate-skills:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.0 (SHA-pinned, closes VULN-503)
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1, SHA-pinned, closes VULN-503
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020  # v7.0.0, SHA-pinned
+        with:
+          node-version: "22"
+
+      - name: Install Claude Code CLI
+        run: npm install --global --no-audit --no-fund @anthropic-ai/claude-code@2.1.218
 
       - name: Validate SKILL.md frontmatter
         run: |
-          echo "Checking all SKILL.md files have required frontmatter..."
-          errors=0
-          for file in $(find skills -name "SKILL.md"); do
-            if ! head -1 "$file" | grep -q "^---"; then
-              echo "ERROR: $file missing YAML frontmatter"
-              errors=$((errors + 1))
-            fi
-            if ! grep -q "^name:" "$file"; then
-              echo "ERROR: $file missing 'name' field"
-              errors=$((errors + 1))
-            fi
-            if ! grep -q "^description:" "$file" && ! grep -q "description: >" "$file"; then
-              echo "ERROR: $file missing 'description' field"
-              errors=$((errors + 1))
-            fi
-          done
-          if [ $errors -gt 0 ]; then
-            echo "Found $errors validation errors"
-            exit 1
-          fi
-          echo "All SKILL.md files valid"
+          python3 - <<'PY'
+          import re
+          import sys
+          from pathlib import Path
+
+          allowed = {
+              "name",
+              "description",
+              "user-invokable",
+              "argument-hint",
+              "compatibility",
+              "license",
+              "metadata",
+              "disable-model-invocation",
+          }
+          errors = []
+          for path in sorted(Path("skills").rglob("SKILL.md")):
+              lines = path.read_text(encoding="utf-8").splitlines()
+              if not lines or lines[0].strip() != "---":
+                  errors.append(f"{path}: missing YAML frontmatter")
+                  continue
+              try:
+                  end = next(i for i, line in enumerate(lines[1:], start=1) if line.strip() == "---")
+              except StopIteration:
+                  errors.append(f"{path}: unterminated YAML frontmatter")
+                  continue
+
+              fields = {}
+              for line in lines[1:end]:
+                  if not line.strip() or line.lstrip().startswith("#") or line.startswith((" ", "\t", "-")):
+                      continue
+                  match = re.match(r"^([A-Za-z][A-Za-z0-9_-]*):\s*(.*)$", line)
+                  if not match:
+                      errors.append(f"{path}: malformed frontmatter line: {line}")
+                      continue
+                  fields[match.group(1)] = match.group(2).strip()
+
+              missing = {"name", "description", "user-invokable"} - set(fields)
+              for field in sorted(missing):
+                  errors.append(f"{path}: missing required field {field}")
+              for field in sorted(set(fields) - allowed):
+                  errors.append(f"{path}: invalid frontmatter field {field}")
+              if "allowed-tools" in fields:
+                  errors.append(f"{path}: allowed-tools is not valid SKILL.md frontmatter")
+              if fields.get("user-invokable", "").lower() == "true" and "argument-hint" not in fields:
+                  errors.append(f"{path}: user-invokable skills must declare argument-hint")
+              if len(lines) > 500:
+                  errors.append(f"{path}: {len(lines)} lines exceeds 500 line cap")
+              token_estimate = sum(len(line.split()) for line in lines)
+              if token_estimate > 5000:
+                  errors.append(f"{path}: {token_estimate} token estimate exceeds 5000 cap")
+
+          if errors:
+              print("\n".join(errors))
+              sys.exit(1)
+          print("All SKILL.md files passed schema and size checks")
+          PY
 
       - name: Validate plugin.json
         run: |
@@ -84,22 +162,29 @@ jobs:
           print('plugin.json is valid')
           "
 
+      - name: Run `claude plugin validate`
+        run: claude plugin validate .
+
   lint-markdown:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.0 (SHA-pinned, closes VULN-503)
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1, SHA-pinned, closes VULN-503
 
       - name: Check for broken internal references
         run: |
           echo "Checking for stale blog/ path references..."
           errors=0
-          # Check that no SKILL.md or doc references the old bare blog/ path (not skills/blog/)
+          # Check that no SKILL.md or doc references the old bare blog/ path
+          # (not skills/blog/). The `.claude-` lookbehind exempts the v2.3.0
+          # user-writable directories `.claude-blog/templates/` and
+          # `.claude-blog/personas/`, which live in the user's working folder
+          # and are a different path entirely from the plugin's own tree.
           for file in $(find skills docs -name "*.md"); do
-            if grep -Pn '(?<!skills/)blog/references/' "$file" 2>/dev/null; then
+            if grep -Pn '(?<!skills/)(?<!\.claude-)blog/references/' "$file" 2>/dev/null; then
               echo "WARNING: $file still references old 'blog/references/' path"
               errors=$((errors + 1))
             fi
-            if grep -Pn '(?<!skills/)blog/templates/' "$file" 2>/dev/null; then
+            if grep -Pn '(?<!skills/)(?<!\.claude-)blog/templates/' "$file" 2>/dev/null; then
               echo "WARNING: $file still references old 'blog/templates/' path"
               errors=$((errors + 1))
             fi
@@ -109,3 +194,103 @@ jobs:
             exit 1
           fi
           echo "No stale path references found"
+
+      - name: Validate repository consistency and FLOW locks
+        run: python3 scripts/consistency_check.py --root .
+
+  lint-prose-hygiene:
+    # Enforces CONTRIBUTING.md prose rules (no em-dashes / en-dashes /
+    # ASCII double-hyphen). Added v1.8.4 after the 5th-round hostile audit
+    # found 31 markdown em-dashes the v1.8.2/v1.8.3 cleanup scripts missed.
+    # The actual check is `scripts/lint_prose.py` (fence-aware + backtick-aware).
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1, SHA-pinned
+      - name: Set up Python 3.12
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0, SHA-pinned
+        with:
+          python-version: "3.12"
+      - name: Run prose-hygiene linter
+        run: python3 scripts/lint_prose.py
+
+  version-coherence:
+    # Asserts that pyproject.toml, plugin.json, CITATION.cff, AND the
+    # orchestrator skills/blog/SKILL.md frontmatter all report the same
+    # version. Added v1.8.4 after the 5th audit found SKILL.md:19 still
+    # said "1.8.0" while every other surface had moved to 1.8.3.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1, SHA-pinned
+      - name: Set up Python 3.12
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0, SHA-pinned
+        with:
+          python-version: "3.12"
+      - name: Install pytest
+        run: pip install pytest
+      - name: Run version-coherence pytest (canonical source v1.8.6+)
+        # Replaces the prior heredoc duplicate. tests/test_version_coherence.py
+        # is now the single source of truth; local devs and CI run the same
+        # assertion logic. Closes 7TH-AUDIT-012.
+        run: python3 -m pytest tests/test_version_coherence.py -v
+
+  # Keep the brain job conditional on brain/** changes without filtering existing jobs.
+  brain-changes:
+    name: Detect brain changes
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.filter.outputs.changed }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1, SHA-pinned
+        with:
+          fetch-depth: 0
+
+      - name: Check whether brain changed
+        id: filter
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BEFORE_SHA: ${{ github.event.before }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            changed_files="$(git diff --name-only "$BASE_SHA...$HEAD_SHA" -- brain/)"
+          elif [ "$BEFORE_SHA" = "0000000000000000000000000000000000000000" ]; then
+            changed_files="$(git ls-tree -r --name-only "$GITHUB_SHA" -- brain/)"
+          else
+            changed_files="$(git diff --name-only "$BEFORE_SHA" "$GITHUB_SHA" -- brain/)"
+          fi
+
+          if [ -n "$changed_files" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  brain:
+    name: Brain
+    needs: brain-changes
+    if: ${{ needs.brain-changes.outputs.changed == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1, SHA-pinned
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0, SHA-pinned
+        with:
+          python-version: "3.12"
+
+      - name: Install pytest
+        run: python3 -m pip install "pytest>=8.0,<10.0"
+
+      - name: Run brain tests
+        run: python3 -m pytest brain/tests/
+
+      - name: Lint brain vault
+        run: python3 brain/scripts/lint_vault.py
+
+      - name: Verify brain source-review records offline
+        run: python3 brain/scripts/verify_source_ledger.py --offline-check --as-of 2026-08-25
+
+      - name: Audit brain
+        run: python3 brain/scripts/audit_brain.py --json --report-only --no-exec

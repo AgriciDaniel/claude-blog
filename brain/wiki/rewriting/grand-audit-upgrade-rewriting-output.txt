@@ -1,0 +1,24 @@
+wiki/rewriting deepening report, 2026-07-09
+
+Per-note actions:
+- Content Consolidation Rules -> deepen; added Consolidation Rule Table plus consolidation review/reversal procedure; source_ids: g-helpful-content, g-gsc-api, g-ranking-history, g-canonical.
+- Content Decay Detection -> deepen; added Decay Diagnosis Table plus 5-step verification procedure; source_ids: g-gsc-api, g-helpful-content, g-ranking-history, g-canonical.
+- Decay Segment Prioritization -> deepen; added Priority Scoring Table plus queue review procedure; source_ids: g-helpful-content, g-ranking-history, g-status-dashboard, g-update-2024-06-20-june-2024-spam-update.
+- Freshness and Content Decay -> deepen; added Spoke Map table plus evidence/refresh rules; source_ids: g-gsc-api, g-helpful-content, g-ranking-history, g-canonical.
+- Historical Performance Review -> deepen; added Historical Review Table plus review procedure; source_ids: g-helpful-content, g-gsc-api, g-ranking-history, g-canonical.
+- Intent Drift Audit -> deepen; added Intent Ownership Table plus drift audit procedure; source_ids: g-helpful-content, g-gsc-api, g-ranking-history, g-canonical.
+- Pruning Advisory Checklist -> deepen; added Pruning Pass Fail Table plus pruning handoff rules; source_ids: g-helpful-content, g-gsc-api, g-ranking-history, g-canonical.
+- Refresh Versus Rewrite Decision -> deepen; added Action Decision Table plus decision procedure; source_ids: g-helpful-content, g-gsc-api, g-ranking-history, g-canonical.
+- Rewrite QA Checklist -> deepen; added Rewrite QA Pass Fail Table plus QA exit rules; source_ids: g-helpful-content, g-gsc-api, g-ranking-history, g-canonical.
+- Rewrite Rollback Notes -> deepen; added Rollback Control Table plus rollback verification procedure; source_ids: g-helpful-content, g-ranking-history, g-status-dashboard, g-update-2024-06-20-june-2024-spam-update.
+- Source Refresh Workflow -> deepen; added Source Refresh Step Table plus control points; source_ids: g-helpful-content, g-gsc-api, g-ranking-history, g-canonical.
+- Stale Claim Register -> deepen; added Stale Claim Register Table plus review loop; source_ids: g-helpful-content, g-gsc-api, g-ranking-history, g-canonical.
+- Update Timestamp Policy -> deepen; added Timestamp Rule Table plus timestamp audit/reversal procedure; source_ids: g-helpful-content, g-ranking-history, g-status-dashboard, g-update-2024-06-20-june-2024-spam-update.
+
+Merge/prune decisions:
+- No merges. The 13 notes now own distinct workflow boundaries: hub routing, detection, historical review, intent audit, action choice, source refresh, stale-claim tracking, consolidation, pruning, QA, rollback, prioritization, and timestamp policy.
+- No prunes. Every assigned note maps to a real advisory deliverable inside freshness and content-decay operations.
+
+Verification:
+- python3 scripts/lint_vault.py -> passed.
+- python3 scripts/lint_vault.py --vault . -> failed only on pre-existing out-of-scope status/tag/deliverable issues; no dead wikilink errors were reported for wiki/rewriting.

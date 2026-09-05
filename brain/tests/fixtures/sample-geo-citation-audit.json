@@ -1,0 +1,56 @@
+{
+  "audit_name": "AI citation readiness audit",
+  "url": "https://example.com/blog/ai-citation-ready-blog-strategy",
+  "title": "AI Citation Ready Blog Strategy",
+  "locale": "en-US",
+  "target_queries": [
+    "how to make a blog citation ready for AI search",
+    "AI citation ready blog"
+  ],
+  "passages": [
+    {
+      "id": "answer-block",
+      "heading": "What makes a blog citation ready for AI search?",
+      "text": "A citation ready blog page gives readers a direct answer, names the entities involved, and places dated source context close to the claim.",
+      "entities": ["AI search", "source context", "blog page"],
+      "citations": [
+        {
+          "title": "AI features and your website",
+          "url": "https://developers.google.com/search/docs/appearance/ai-features",
+          "published": "2025-12-10",
+          "retrieved": "2026-07-09"
+        }
+      ]
+    },
+    {
+      "id": "source-evidence",
+      "heading": "Where should source evidence appear?",
+      "text": "Editors should place visible source labels near factual claims, especially when the passage may be extracted independently by AI search systems.",
+      "entities": ["source labels", "factual claims", "AI search systems"],
+      "citations": [
+        {
+          "title": "Google AI Overviews source selection",
+          "url": "https://ziptie.dev/blog/google-ai-overviews-source-selection/",
+          "published": "2026-03-25",
+          "retrieved": "2026-07-08"
+        }
+      ]
+    },
+    {
+      "id": "measurement-boundary",
+      "heading": "Can citation readiness guarantee visibility?",
+      "text": "No. Citation readiness improves evidence hygiene and makes passages easier to evaluate, but it does not guarantee AI Overview, AI Mode, ChatGPT, Perplexity, Gemini, or Copilot citation.",
+      "entities": ["AI Overview", "AI Mode", "evidence hygiene"],
+      "citations": []
+    }
+  ],
+  "page_signals": {
+    "has_article_schema": false,
+    "indexable": true,
+    "preview_allowed": true,
+    "has_visible_author": true,
+    "has_modified_date": false
+  },
+  "llms_txt_strategy": "planned",
+  "source_ids": ["g-ai-features", "ziptie-aio-source-selection", "g-ai-opt-guide", "g-genai-reports"]
+}

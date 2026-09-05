@@ -194,13 +194,13 @@ Organize resources into 2-3 categories based on what experts mentioned or recomm
 
 ---
 
-### FAQ (3-5 questions)
+### Optional Reader Questions (count by reader need)
 
 [FAQ] Source questions from the types of follow-up questions readers would have after reading expert advice.
 
 **Guidelines:**
 - Focus on implementation questions ("How do I start?") and clarification questions ("Does this apply to [my situation]?")
-- Each answer should be 40-80 words and lead with a direct answer
+- Each answer should be complete and lead with a direct answer; no fixed word band
 - Reference specific experts when relevant
 
 ```
@@ -248,14 +248,14 @@ Organize resources into 2-3 categories based on what experts mentioned or recomm
 
 ## Pre-Publish Checklist
 
-- [ ] Total word count is 1,500-2,000 words
+- [ ] Coverage is complete for the roundup intent without padding
 - [ ] All [ANSWER-FIRST] prompts have been fulfilled - every section leads with the answer
 - [ ] All [STAT] markers replaced with real, cited statistics (with source and year)
 - [ ] All [IMAGE] markers replaced with actual expert headshots (with permission) or branded graphics
 - [ ] All [VISUAL] markers replaced with actual charts or diagrams
 - [ ] All [INFO-GAIN] markers replaced with original editorial analysis (not just quote presentation)
 - [ ] All [INTERNAL-LINK] zones populated with real links to supporting content
-- [ ] All [FAQ] answers are concise (40-80 words) and lead with a direct answer
+- [ ] All [FAQ] answers are complete and lead with a direct answer
 - [ ] 5-8 experts are featured with proper attribution (name, title, company)
 - [ ] All expert quotes are accurate and used with permission
 - [ ] Each expert section includes YOUR analysis, not just the quote
@@ -264,4 +264,4 @@ Organize resources into 2-3 categories based on what experts mentioned or recomm
 - [ ] Methodology section is honest about sourcing and selection
 - [ ] Experts have been notified of publication (for sharing)
 - [ ] Meta title includes the number of experts and topic
-- [ ] Meta description is 150-160 characters with key finding and CTA
+- [ ] Meta description accurately summarizes the visible findings

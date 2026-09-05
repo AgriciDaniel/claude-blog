@@ -2,13 +2,70 @@
 # claude-blog installer for Windows
 # Installs the blog skill ecosystem to ~/.claude/skills/ and ~/.claude/agents/
 #
-# One-command install:
-#   iex (irm https://raw.githubusercontent.com/AgriciDaniel/claude-blog/main/install.ps1)
+# Install (download first, then run so you can inspect it):
+#   irm https://raw.githubusercontent.com/AgriciDaniel/claude-blog/main/install.ps1 -OutFile install.ps1
+#   pwsh -File ./install.ps1
 
 $ErrorActionPreference = "Stop"
+$ClaudeBlogVersion = "2.3.0"
 
 function Write-Color($Color, $Text) {
     Write-Host $Text -ForegroundColor $Color
+}
+
+function Copy-Tree($Source, $Destination) {
+    if (-not (Test-Path -LiteralPath $Source)) {
+        return
+    }
+    New-Item -ItemType Directory -Force -Path $Destination | Out-Null
+    $sourceRoot = (Resolve-Path -LiteralPath $Source).Path.TrimEnd('\', '/')
+    Get-ChildItem -LiteralPath $Source -Recurse -File | Where-Object {
+        $_.FullName -notmatch '[\\/]+__pycache__[\\/]+' -and $_.Name -notlike '*.pyc'
+    } | ForEach-Object {
+        $relative = $_.FullName.Substring($sourceRoot.Length).TrimStart('\', '/')
+        $target = Join-Path $Destination $relative
+        New-Item -ItemType Directory -Force -Path (Split-Path -Parent $target) | Out-Null
+        Copy-Item -LiteralPath $_.FullName -Destination $target -Force
+    }
+}
+
+function Count-Files($Path) {
+    if (-not (Test-Path -LiteralPath $Path)) {
+        return 0
+    }
+    return @(Get-ChildItem -LiteralPath $Path -Recurse -File | Where-Object {
+        $_.FullName -notmatch '[\\/]+__pycache__[\\/]+' -and $_.Name -notlike '*.pyc'
+    }).Count
+}
+
+function Test-Python311($PythonCommand) {
+    try {
+        & $PythonCommand.Source -c "import sys; raise SystemExit(0 if sys.version_info >= (3, 11) else 1)" *> $null
+        return $LASTEXITCODE -eq 0
+    } catch {
+        return $false
+    }
+}
+
+function Get-PythonVersion($PythonCommand) {
+    try {
+        return (& $PythonCommand.Source -c "import sys; print('%d.%d.%d' % sys.version_info[:3])" 2>$null).Trim()
+    } catch {
+        return "unknown"
+    }
+}
+
+function Print-Commands($SkillMd) {
+    if (-not (Test-Path -LiteralPath $SkillMd)) {
+        return
+    }
+    Get-Content -LiteralPath $SkillMd | ForEach-Object {
+        if ($_ -match '^\|\s*`/blog\s+([^`]+)`\s*\|\s*([^|]+)\|') {
+            $cmd = ("/blog " + $Matches[1]).Replace('\|', '|').Trim()
+            $desc = $Matches[2].Trim()
+            Write-Color Cyan ("    {0,-38} {1}" -f $cmd, $desc)
+        }
+    }
 }
 
 function Main {
@@ -21,113 +78,111 @@ function Main {
 
 "@
 
+    Write-Color White "Release: $ClaudeBlogVersion"
+    Write-Color White ""
+
     $SkillDir = Join-Path (Join-Path $env:USERPROFILE ".claude") "skills"
     $AgentDir = Join-Path (Join-Path $env:USERPROFILE ".claude") "agents"
     $TempDir = $null
 
     # Determine source directory (local clone or piped from irm)
-    if ($MyInvocation.MyCommand.Path -and (Test-Path (Join-Path (Join-Path (Split-Path -Parent $MyInvocation.MyCommand.Path) "skills") "blog"))) {
-        $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+    if ($PSScriptRoot -and (Test-Path (Join-Path (Join-Path $PSScriptRoot "skills") "blog"))) {
+        $ScriptDir = $PSScriptRoot
     } else {
-        Write-Color White "Cloning claude-blog..."
+        $Repo = if ($env:CLAUDE_BLOG_REPO) { $env:CLAUDE_BLOG_REPO } else { "AgriciDaniel/claude-blog" }
+        $Ref = if ($env:CLAUDE_BLOG_REF) { $env:CLAUDE_BLOG_REF } else { "main" }
+        $Url = if ($env:CLAUDE_BLOG_URL) { $env:CLAUDE_BLOG_URL } else { "https://github.com/$Repo.git" }
+        Write-Color White "Cloning claude-blog from $Repo ($Ref)..."
         $TempDir = Join-Path ([System.IO.Path]::GetTempPath()) "claude-blog-install-$([System.Guid]::NewGuid().ToString('N').Substring(0,8))"
-        git clone --depth 1 https://github.com/AgriciDaniel/claude-blog.git $TempDir 2>$null
+        git clone --depth 1 --branch $Ref $Url $TempDir 2>$null
+        if ($LASTEXITCODE -ne 0) {
+            git clone $Url $TempDir 2>$null
+            git -C $TempDir checkout --detach $Ref *> $null
+        }
         $ScriptDir = $TempDir
+        $CheckedOut = git -C $ScriptDir rev-parse --short HEAD
+        Write-Color Green "  + checked out $CheckedOut"
+        if ($Ref -eq "main") {
+            Write-Color Yellow "  Tip: set CLAUDE_BLOG_REF to a tag or commit SHA for a pinned install."
+        }
     }
 
     # Check prerequisites
-    try {
-        $null = Get-Command python3 -ErrorAction Stop
-    } catch {
-        try {
-            $null = Get-Command python -ErrorAction Stop
-        } catch {
-            Write-Color Yellow "WARNING: Python not found. The analyze_blog.py script requires Python 3.11+."
+    $PythonCmd = Get-Command python3 -ErrorAction SilentlyContinue
+    if (-not $PythonCmd) { $PythonCmd = Get-Command python -ErrorAction SilentlyContinue }
+    if (-not $PythonCmd) {
+        Write-Color Yellow "WARNING: Python not found. The scripts require Python 3.11+."
+    } elseif (-not (Test-Python311 $PythonCmd)) {
+        $PythonVersion = Get-PythonVersion $PythonCmd
+        Write-Color Yellow "WARNING: Python $PythonVersion found. The scripts require Python 3.11+."
+    }
+
+    # Install as a plugin directory. Claude auto-discovers any folder holding
+    # .claude-plugin/plugin.json under a skills directory and loads it as a
+    # plugin, which is what makes ${CLAUDE_PLUGIN_ROOT} resolve inside the skill
+    # files. Since v2.3.0 every intra-plugin reference uses that variable, so
+    # this is the only layout that works.
+    $PluginDir = Join-Path $SkillDir "claude-blog"
+
+    if (Test-Path (Join-Path (Join-Path $SkillDir "blog") "SKILL.md")) {
+        Write-Color Yellow "Found a pre-2.3.0 flat install at $SkillDir\blog\"
+        Write-Color Yellow "  It will shadow this plugin install. Clear it with ./uninstall.ps1,"
+        Write-Color Yellow "  which removes both layouts, then re-run this installer."
+        Write-Color White ""
+    }
+
+    Write-Color White "Installing plugin to $PluginDir..."
+    if (Test-Path $PluginDir) { Remove-Item -Recurse -Force $PluginDir }
+    New-Item -ItemType Directory -Force -Path $PluginDir | Out-Null
+
+    # Payload only: everything Claude loads at runtime and nothing else.
+    # brain/ and branding/ are bundled project material no skill reads.
+    foreach ($item in @(".claude-plugin", "mcp-servers.json", "skills", "agents", "scripts", "data", "LICENSE", "NOTICE", "README.md")) {
+        $src = Join-Path $ScriptDir $item
+        if (Test-Path -LiteralPath $src -PathType Container) {
+            Copy-Tree $src (Join-Path $PluginDir $item)
+        } elseif (Test-Path -LiteralPath $src) {
+            Copy-Item -LiteralPath $src -Destination (Join-Path $PluginDir $item) -Force
         }
     }
 
-    # Create directories
-    Write-Color White "Creating directories..."
-    New-Item -ItemType Directory -Force -Path (Join-Path (Join-Path $SkillDir "blog") "references") | Out-Null
-    New-Item -ItemType Directory -Force -Path (Join-Path (Join-Path $SkillDir "blog") "templates") | Out-Null
-    New-Item -ItemType Directory -Force -Path (Join-Path (Join-Path $SkillDir "blog") "scripts") | Out-Null
-    New-Item -ItemType Directory -Force -Path $AgentDir | Out-Null
-
-    # Copy main skill
-    Write-Color White "Installing main skill: blog..."
-    Copy-Item (Join-Path (Join-Path (Join-Path $ScriptDir "skills") "blog") "SKILL.md") (Join-Path (Join-Path $SkillDir "blog") "SKILL.md") -Force
-
-    # Copy references
-    Write-Color White "Installing reference files..."
-    Copy-Item (Join-Path (Join-Path (Join-Path (Join-Path $ScriptDir "skills") "blog") "references") "*.md") (Join-Path (Join-Path $SkillDir "blog") "references") -Force
-
-    # Copy templates
-    if (Test-Path (Join-Path (Join-Path (Join-Path $ScriptDir "skills") "blog") "templates")) {
-        Write-Color White "Installing content templates..."
-        Copy-Item (Join-Path (Join-Path (Join-Path (Join-Path $ScriptDir "skills") "blog") "templates") "*.md") (Join-Path (Join-Path $SkillDir "blog") "templates") -Force
+    # Root helper scripts ship inside the plugin. Skills invoke them as
+    # ${CLAUDE_PLUGIN_ROOT}/scripts/*.py, so unlike pre-2.3.0 there is no second
+    # copy under ~/.claude/scripts to keep in sync.
+    $RootScripts = @(Get-ChildItem -File (Join-Path (Join-Path $PluginDir "scripts") "*.py"))
+    $RootScriptCount = $RootScripts.Count
+    foreach ($RootScript in $RootScripts) {
+        Write-Color Green "  + scripts/$($RootScript.Name)"
     }
 
-    # Copy sub-skills (auto-discovers all skill directories)
-    Write-Color White "Installing sub-skills..."
-    Get-ChildItem -Directory (Join-Path $ScriptDir "skills") | ForEach-Object {
-        $skillName = $_.Name
-        if ($skillName -eq "blog") { return }
-        $skillDst = Join-Path $SkillDir $skillName
-        New-Item -ItemType Directory -Force -Path $skillDst | Out-Null
-
-        # Copy SKILL.md
-        $src = Join-Path $_.FullName "SKILL.md"
-        if (Test-Path $src) {
-            Copy-Item $src (Join-Path $skillDst "SKILL.md") -Force
-            Write-Color Green "  + $skillName"
-        }
-
-        # Copy references/ if present
-        $refSrc = Join-Path $_.FullName "references"
-        if (Test-Path $refSrc) {
-            $refDst = Join-Path $skillDst "references"
-            New-Item -ItemType Directory -Force -Path $refDst | Out-Null
-            Get-ChildItem -File $refSrc | ForEach-Object {
-                Copy-Item $_.FullName (Join-Path $refDst $_.Name) -Force
-            }
-        }
-
-        # Copy scripts/ if present
-        $scriptSrc = Join-Path $_.FullName "scripts"
-        if (Test-Path $scriptSrc) {
-            $scriptDst = Join-Path $skillDst "scripts"
-            New-Item -ItemType Directory -Force -Path $scriptDst | Out-Null
-            Get-ChildItem -File $scriptSrc | ForEach-Object {
-                Copy-Item $_.FullName (Join-Path $scriptDst $_.Name) -Force
-            }
-        }
+    # The reviewed Google update ledger (data/google-updates.json) ships inside
+    # the plugin and is read at ${CLAUDE_PLUGIN_ROOT}/data/google-updates.json.
+    $LedgerPath = Join-Path (Join-Path $PluginDir "data") "google-updates.json"
+    if (-not (Test-Path -LiteralPath $LedgerPath)) {
+        throw "data/google-updates.json missing from the install."
     }
 
-    # Create personas directory for blog-persona
-    New-Item -ItemType Directory -Force -Path (Join-Path (Join-Path (Join-Path $SkillDir "blog") "references") "personas") | Out-Null
-
-    # Copy agents
-    Write-Color White "Installing agents..."
-    Get-ChildItem -File (Join-Path (Join-Path $ScriptDir "agents") "*.md") | ForEach-Object {
-        Copy-Item $_.FullName (Join-Path $AgentDir $_.Name) -Force
-        Write-Color Green "  + $($_.BaseName)"
+    $SkillCount = @(Get-ChildItem -Path (Join-Path $PluginDir "skills") -Filter "SKILL.md" -Recurse).Count
+    $AgentCount = @(Get-ChildItem -Path (Join-Path $PluginDir "agents") -Filter "*.md").Count
+    if ($SkillCount -lt 30) {
+        throw "Installed only $SkillCount skills; the install looks incomplete."
     }
 
-    # Copy scripts
-    Write-Color White "Installing scripts..."
-    Copy-Item (Join-Path (Join-Path $ScriptDir "scripts") "analyze_blog.py") (Join-Path (Join-Path (Join-Path $SkillDir "blog") "scripts") "analyze_blog.py") -Force
+    # One directory, one manifest line. Uninstall removes the tree.
+    $Manifest = Join-Path (Join-Path $env:USERPROFILE ".claude") "claude-blog-manifest.txt"
+    Set-Content -LiteralPath $Manifest -Value $PluginDir
+
 
     # Install Python dependencies (closes audit VULN-507/804: capture stderr
     # to a logfile instead of swallowing it).
-    Write-Color White "Installing Python dependencies..."
     $reqFile = Join-Path $ScriptDir "requirements.txt"
-    if (Test-Path $reqFile) {
+    if (($env:CLAUDE_BLOG_INSTALL_DEPS -eq "1") -and (Test-Path $reqFile)) {
+        Write-Color White "Installing Python dependencies (CLAUDE_BLOG_INSTALL_DEPS=1)..."
         $pipLog = Join-Path ([System.IO.Path]::GetTempPath()) "claude-blog-pip-$([System.Guid]::NewGuid().ToString('N').Substring(0,8)).log"
         # Resolve python: prefer python3, fall back to python. Avoid the `??`
         # null-coalescing operator (PowerShell 7+ only) so this works on the
         # default Windows PowerShell 5.1.
-        $pipCmd = Get-Command python3 -ErrorAction SilentlyContinue
-        if (-not $pipCmd) { $pipCmd = Get-Command python -ErrorAction SilentlyContinue }
+        $pipCmd = $PythonCmd
         if ($pipCmd) {
             $proc = Start-Process -FilePath $pipCmd.Source -ArgumentList @("-m","pip","install","--quiet","-r",$reqFile) -RedirectStandardError $pipLog -NoNewWindow -Wait -PassThru
             if ($proc.ExitCode -eq 0) {
@@ -157,39 +212,20 @@ function Main {
 
 "@
 
-    Write-Color White "Installed:"
-    Write-Color Green "  Main skill:   blog/ (orchestrator + 14 references + 12 templates)"
-    Write-Color Green "  Sub-skills:   28 (27 commands + 1 internal blog-chart)"
-    Write-Color Green "  Agents:       5 specialists"
-    Write-Color Green "  Scripts:      analyze_blog.py + per-skill scripts"
+    Write-Color White "Installed at: $PluginDir"
+    Write-Color Green "  Skills:       $SkillCount ($(Count-Files (Join-Path (Join-Path (Join-Path $PluginDir "skills") "blog") "references")) references, $(Count-Files (Join-Path (Join-Path (Join-Path $PluginDir "skills") "blog") "templates")) templates)"
+    Write-Color Green "  Agents:       $AgentCount specialists"
+    Write-Color Green "  Scripts:      $RootScriptCount root-level + per-skill scripts"
     Write-Color White ""
     Write-Color White "Commands available:"
-    Write-Color Cyan  "  /blog write <topic>        Write a new blog post"
-    Write-Color Cyan  "  /blog rewrite <file>       Optimize an existing blog post"
-    Write-Color Cyan  "  /blog analyze <file>       Audit blog quality (0-100 score)"
-    Write-Color Cyan  "  /blog brief <topic>        Generate a content brief"
-    Write-Color Cyan  "  /blog calendar             Generate an editorial calendar"
-    Write-Color Cyan  "  /blog strategy <niche>     Blog strategy and topic ideation"
-    Write-Color Cyan  "  /blog outline <topic>      Generate a SERP-informed outline"
-    Write-Color Cyan  "  /blog seo-check <file>     Post-writing SEO validation"
-    Write-Color Cyan  "  /blog schema <file>        Generate JSON-LD schema markup"
-    Write-Color Cyan  "  /blog repurpose <file>     Repurpose content for other platforms"
-    Write-Color Cyan  "  /blog geo <file>           AI citation optimization audit"
-    Write-Color Cyan  "  /blog image <idea>         AI image generation via Gemini"
-    Write-Color Cyan  "  /blog audit [directory]    Full-site blog health assessment"
-    Write-Color Cyan  "  /blog cannibalization      Detect keyword overlap across posts"
-    Write-Color Cyan  "  /blog factcheck            Verify statistics against sources"
-    Write-Color Cyan  "  /blog persona              Manage writing personas"
-    Write-Color Cyan  "  /blog taxonomy             Tag/category CMS management"
-    Write-Color Cyan  "  /blog notebooklm <query>   Query NotebookLM for research"
-    Write-Color Cyan  "  /blog audio <file>         Generate audio narration via Gemini TTS"
+    Print-Commands (Join-Path (Join-Path (Join-Path $ScriptDir "skills") "blog") "SKILL.md")
     Write-Color White ""
     Write-Color White "Optional: AI Features (same API key for both)"
     Write-Color Cyan  "  /blog image setup             Configure Gemini image generation"
     Write-Color Cyan  "  /blog audio setup             Configure Gemini TTS audio narration"
     Write-Color White "  Requires: Google AI API key (free at https://aistudio.google.com/apikey)"
     Write-Color White ""
-    Write-Color Yellow "Restart Claude Code to activate the new skill."
+    Write-Color Yellow "Restart Claude Code to activate the plugin."
 }
 
 Main

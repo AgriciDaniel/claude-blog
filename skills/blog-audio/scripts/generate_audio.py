@@ -1,17 +1,23 @@
 #!/usr/bin/env python3
 """
-Blog Audio Generator -- Gemini TTS
+Blog Audio Generator - Gemini TTS
 Converts prepared text to speech using Google's Gemini TTS models.
 
+The SDK calls below use the generate_content compatibility path. Prefer the
+Interactions API for new Gemini 3.1 TTS features when the installed SDK
+supports it.
+
 Usage:
-    python scripts/run.py generate_audio.py --text "Hello world" --voice Charon --json
-    python scripts/run.py generate_audio.py --text-file article.txt --voice Puck --voice2 Kore --json
-    python scripts/run.py generate_audio.py --text "Test" --dry-run --json
+    python3 scripts/run.py generate_audio.py --text "Hello world" --voice Charon --json
+    python3 scripts/run.py generate_audio.py --text-file article.txt --voice Puck --voice2 Kore --json
+    python3 scripts/run.py generate_audio.py --text "Test" --dry-run --json
 """
 
 import argparse
 import base64
+import html
 import json
+import mimetypes
 import os
 import shutil
 import subprocess
@@ -37,8 +43,11 @@ VOICES = {
 }
 
 MODELS = {
-    "flash": "gemini-2.5-flash-preview-tts",
+    "flash": "gemini-3.1-flash-tts-preview",
+    "flash31": "gemini-3.1-flash-tts-preview",
+    "legacy-flash25": "gemini-2.5-flash-preview-tts",
     "pro": "gemini-2.5-pro-preview-tts",
+    "legacy-pro25": "gemini-2.5-pro-preview-tts",
 }
 
 # Audio constants (Gemini TTS output format)
@@ -46,9 +55,96 @@ SAMPLE_RATE = 24000  # 24kHz
 SAMPLE_WIDTH = 2     # 16-bit (2 bytes per sample)
 CHANNELS = 1         # Mono
 
-# Cost per 1M tokens (output)
-COST_PER_1M_OUTPUT = {"flash": 10.0, "pro": 20.0}
-COST_PER_1M_INPUT = {"flash": 0.50, "pro": 1.0}
+# Cost per 1M tokens. Audio output tokens are billed at 25 tokens per second.
+COST_PER_1M_OUTPUT = {
+    "flash": 20.0,
+    "flash31": 20.0,
+    "legacy-flash25": 10.0,
+    "pro": 20.0,
+    "legacy-pro25": 20.0,
+}
+COST_PER_1M_INPUT = {
+    "flash": 1.0,
+    "flash31": 1.0,
+    "legacy-flash25": 0.50,
+    "pro": 1.0,
+    "legacy-pro25": 1.0,
+}
+AUDIO_TOKENS_PER_SECOND = 25
+MAX_INPUT_TOKENS = 8192
+CHUNK_TARGET_TOKENS = 7800
+MAX_TEXT_FILE_BYTES = 1_000_000
+TEXT_FILE_EXTENSIONS = {
+    ".csv",
+    ".htm",
+    ".html",
+    ".log",
+    ".markdown",
+    ".md",
+    ".rst",
+    ".text",
+    ".tsv",
+    ".txt",
+}
+
+
+def _path_contains_symlink(path: Path, root: Path) -> bool:
+    """Return True if path or any existing parent below root is a symlink."""
+    current = path if path.exists() or path.is_symlink() else path.parent
+    current = current.absolute()
+    root = root.absolute()
+    while current != current.parent:
+        if current.is_symlink():
+            return True
+        if current == root:
+            return False
+        current = current.parent
+    return False
+
+
+def _resolve_under_cwd(path_value: str, label: str, must_exist: bool) -> Path:
+    """Resolve a path under the current working directory."""
+    root = Path.cwd().resolve()
+    candidate = Path(path_value).expanduser()
+    if not candidate.is_absolute():
+        candidate = root / candidate
+
+    if _path_contains_symlink(candidate, root):
+        raise ValueError(f"{label} must not use symlinks")
+
+    try:
+        resolved = candidate.resolve(strict=must_exist)
+    except FileNotFoundError as exc:
+        raise ValueError(f"{label} not found: {path_value}") from exc
+
+    try:
+        resolved.relative_to(root)
+    except ValueError as exc:
+        raise ValueError(f"Refusing {label} outside working directory: {path_value}") from exc
+
+    return resolved
+
+
+def read_text_file(path_value: str) -> str:
+    """Read a bounded text file from the current working directory."""
+    path = _resolve_under_cwd(path_value, "text file", must_exist=True)
+    if not path.is_file():
+        raise ValueError(f"Text file is not a regular file: {path_value}")
+    size = path.stat().st_size
+    if size > MAX_TEXT_FILE_BYTES:
+        raise ValueError(f"Text file exceeds {MAX_TEXT_FILE_BYTES} bytes: {path_value}")
+
+    mime_type, _ = mimetypes.guess_type(path.name)
+    is_text_mime = bool(mime_type and mime_type.startswith("text/"))
+    if path.suffix.lower() not in TEXT_FILE_EXTENSIONS and not is_text_mime:
+        raise ValueError("Text file must use a text extension or text MIME type")
+
+    return path.read_text(encoding="utf-8")
+
+
+def resolve_output_path(path_value: str) -> Path:
+    """Resolve a writable output path under the current working directory."""
+    return _resolve_under_cwd(path_value, "output path", must_exist=False)
 
 
 def estimate_cost(text: str, model: str) -> dict:
@@ -60,7 +156,7 @@ def estimate_cost(text: str, model: str) -> dict:
     duration_minutes = word_count / 150
     duration_seconds = duration_minutes * 60
     # Rough output token estimate based on audio duration
-    output_tokens = duration_seconds * 200  # ~200 tokens per second of audio
+    output_tokens = duration_seconds * AUDIO_TOKENS_PER_SECOND
 
     input_cost = (input_tokens / 1_000_000) * COST_PER_1M_INPUT[model]
     output_cost = (output_tokens / 1_000_000) * COST_PER_1M_OUTPUT[model]
@@ -72,7 +168,51 @@ def estimate_cost(text: str, model: str) -> dict:
         "duration_seconds_est": int(duration_seconds),
         "duration_human_est": f"{int(duration_minutes)}:{int(duration_seconds % 60):02d}",
         "cost_estimate": f"${total_cost:.3f}",
+        "chunk_count_est": len(split_text_for_tts(text)),
     }
+
+
+def estimate_input_tokens(text: str) -> int:
+    """Estimate Gemini input tokens from text length."""
+    return max(1, int(len(text) / 4))
+
+
+def split_text_for_tts(text: str, max_tokens: int = CHUNK_TARGET_TOKENS) -> list[str]:
+    """Split long text into TTS-safe chunks without cutting words."""
+    if estimate_input_tokens(text) <= max_tokens:
+        return [text]
+
+    max_chars = max_tokens * 4
+    chunks = []
+    current = []
+    current_len = 0
+
+    paragraphs = [p.strip() for p in text.split("\n\n") if p.strip()]
+    for paragraph in paragraphs:
+        if len(paragraph) > max_chars:
+            words = paragraph.split()
+            for word in words:
+                word_len = len(word) + 1
+                if current and current_len + word_len > max_chars:
+                    chunks.append(" ".join(current).strip())
+                    current = []
+                    current_len = 0
+                current.append(word)
+                current_len += word_len
+            continue
+
+        add_len = len(paragraph) + 2
+        if current and current_len + add_len > max_chars:
+            chunks.append("\n\n".join(current).strip())
+            current = []
+            current_len = 0
+        current.append(paragraph)
+        current_len += add_len
+
+    if current:
+        separator = "\n\n" if any("\n" in item for item in current) else " "
+        chunks.append(separator.join(current).strip())
+    return [chunk for chunk in chunks if chunk]
 
 
 def pcm_to_wav(pcm_data: bytes, output_path: str):
@@ -102,19 +242,54 @@ def pcm_to_wav(pcm_data: bytes, output_path: str):
         f.write(pcm_data)
 
 
-def wav_to_mp3(wav_path: str, mp3_path: str) -> bool:
+def atomic_write_wav(pcm_data: bytes, output_path: Path) -> None:
+    """Write a WAV file atomically."""
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    fd, tmp_name = tempfile.mkstemp(
+        prefix=f".{output_path.stem}.",
+        suffix=".wav",
+        dir=str(output_path.parent),
+    )
+    os.close(fd)
+    tmp_path = Path(tmp_name)
+    try:
+        pcm_to_wav(pcm_data, str(tmp_path))
+        os.replace(tmp_path, output_path)
+    finally:
+        try:
+            if tmp_path.exists():
+                tmp_path.unlink()
+        except OSError:
+            pass
+
+
+def wav_to_mp3(wav_path: Path, mp3_path: Path) -> bool:
     """Convert WAV to MP3 using FFmpeg. Returns True on success."""
     if not shutil.which("ffmpeg"):
         return False
+    fd, tmp_name = tempfile.mkstemp(
+        prefix=f".{mp3_path.stem}.",
+        suffix=".mp3",
+        dir=str(mp3_path.parent),
+    )
+    os.close(fd)
+    tmp_path = Path(tmp_name)
     try:
         subprocess.run(
             ["ffmpeg", "-y", "-i", wav_path, "-codec:a", "libmp3lame",
-             "-b:a", "192k", "-ar", "24000", "-ac", "1", mp3_path],
+             "-b:a", "192k", "-ar", "24000", "-ac", "1", str(tmp_path)],
             check=True, capture_output=True,
         )
+        os.replace(tmp_path, mp3_path)
         return True
     except subprocess.CalledProcessError:
         return False
+    finally:
+        try:
+            if tmp_path.exists():
+                tmp_path.unlink()
+        except OSError:
+            pass
 
 
 def extract_audio_data(response) -> bytes:
@@ -128,7 +303,7 @@ def extract_audio_data(response) -> bytes:
 
 
 def generate_single_speaker(client, text: str, voice: str, model: str) -> bytes:
-    """Generate audio with a single voice."""
+    """Generate audio with a single voice via the compatibility API."""
     from google.genai import types
 
     response = client.models.generate_content(
@@ -149,7 +324,7 @@ def generate_single_speaker(client, text: str, voice: str, model: str) -> bytes:
 
 
 def generate_multi_speaker(client, text: str, voice1: str, voice2: str, model: str) -> bytes:
-    """Generate audio with two speakers (dialogue mode)."""
+    """Generate audio with two speakers via the compatibility API."""
     from google.genai import types
 
     response = client.models.generate_content(
@@ -182,6 +357,20 @@ def generate_multi_speaker(client, text: str, voice1: str, voice2: str, model: s
         ),
     )
     return extract_audio_data(response)
+
+
+def generate_audio_chunks(client, text: str, voice1: str, voice2: str, model: str) -> tuple[bytes, int]:
+    """Generate one or more TTS chunks and stitch the raw PCM bytes."""
+    chunks = split_text_for_tts(text)
+    audio_parts = []
+    for chunk in chunks:
+        if estimate_input_tokens(chunk) > MAX_INPUT_TOKENS:
+            raise ValueError("Prepared text chunk exceeds the 8,192 token TTS input limit")
+        if voice2:
+            audio_parts.append(generate_multi_speaker(client, chunk, voice1, voice2, model))
+        else:
+            audio_parts.append(generate_single_speaker(client, chunk, voice1, model))
+    return b"".join(audio_parts), len(chunks)
 
 
 def output_result(data: dict, as_json: bool):
@@ -220,7 +409,7 @@ def main():
 
     parser.add_argument("--voice", default="Charon", help="Primary voice (default: Charon)")
     parser.add_argument("--voice2", help="Second voice for dialogue mode")
-    parser.add_argument("--model", choices=["flash", "pro"], default="flash", help="TTS model")
+    parser.add_argument("--model", choices=sorted(MODELS), default="flash", help="TTS model")
     parser.add_argument("--output", help="Output file path (default: auto-generated)")
     parser.add_argument("--json", action="store_true", help="Output structured JSON")
     parser.add_argument("--dry-run", action="store_true", help="Estimate cost without generating")
@@ -236,12 +425,12 @@ def main():
 
     # Read text
     if args.text_file:
-        text_path = Path(args.text_file)
-        if not text_path.exists():
-            result = {"status": "error", "error": f"Text file not found: {args.text_file}"}
+        try:
+            text = read_text_file(args.text_file).strip()
+        except (OSError, UnicodeDecodeError, ValueError) as e:
+            result = {"status": "error", "error": f"Text file rejected: {e}"}
             output_result(result, args.json)
             return 1
-        text = text_path.read_text(encoding="utf-8").strip()
     else:
         text = args.text.strip()
 
@@ -250,7 +439,7 @@ def main():
         output_result(result, args.json)
         return 1
 
-    # Dry run -- estimate only
+    # Dry run - estimate only
     if args.dry_run:
         est = estimate_cost(text, args.model)
         result = {
@@ -260,6 +449,7 @@ def main():
             "voice2": args.voice2,
             "text_length": len(text),
             "word_count": len(text.split()),
+            "input_tokens_est": estimate_input_tokens(text),
             **est,
         }
         output_result(result, args.json)
@@ -280,10 +470,9 @@ def main():
         if not args.json:
             print(f"Generating audio ({args.model} model, voice: {args.voice})...")
 
-        if args.voice2:
-            pcm_data = generate_multi_speaker(client, text, args.voice, args.voice2, args.model)
-        else:
-            pcm_data = generate_single_speaker(client, text, args.voice, args.model)
+        pcm_data, chunk_count = generate_audio_chunks(
+            client, text, args.voice, args.voice2, args.model
+        )
 
     except Exception as e:
         result = {"status": "error", "error": f"Gemini TTS API error: {str(e)}"}
@@ -297,37 +486,42 @@ def main():
     duration_sec = int(duration_seconds % 60)
     duration_human = f"{duration_min}:{duration_sec:02d}"
 
-    # Determine output path
-    if args.output:
-        output_path = Path(args.output)
-    else:
-        ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-        output_path = Path.cwd() / f"audio_{ts}.mp3"
-
-    # Write WAV, then convert to MP3
-    wav_path = str(output_path.with_suffix(".wav"))
-    pcm_to_wav(pcm_data, wav_path)
-
-    final_format = "wav"
-    final_path = wav_path
-
-    if output_path.suffix.lower() in (".mp3", ""):
-        mp3_path = str(output_path.with_suffix(".mp3"))
-        if wav_to_mp3(wav_path, mp3_path):
-            os.unlink(wav_path)  # Remove temp WAV
-            final_path = mp3_path
-            final_format = "mp3"
+    try:
+        # Determine output path
+        if args.output:
+            output_path = resolve_output_path(args.output)
         else:
-            if not args.json:
-                print("  Warning: FFmpeg not found. Output is WAV (install ffmpeg for MP3).")
+            ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+            output_path = resolve_output_path(f"audio_{ts}.mp3")
+
+        # Write WAV, then convert to MP3
+        wav_path = resolve_output_path(str(output_path.with_suffix(".wav")))
+        atomic_write_wav(pcm_data, wav_path)
+
+        final_format = "wav"
+        final_path = wav_path
+
+        if output_path.suffix.lower() in (".mp3", ""):
+            mp3_path = resolve_output_path(str(output_path.with_suffix(".mp3")))
+            if wav_to_mp3(wav_path, mp3_path):
+                wav_path.unlink()  # Remove generated WAV after MP3 succeeds
+                final_path = mp3_path
+                final_format = "mp3"
+            else:
+                if not args.json:
+                    print("  Warning: FFmpeg not found. Output is WAV (install ffmpeg for MP3).")
+                final_path = wav_path
+                final_format = "wav"
+        elif output_path.suffix.lower() == ".wav":
             final_path = wav_path
             final_format = "wav"
-    elif output_path.suffix.lower() == ".wav":
-        final_path = wav_path
-        final_format = "wav"
+    except (OSError, ValueError) as e:
+        result = {"status": "error", "error": f"Output path rejected: {e}"}
+        output_result(result, args.json)
+        return 1
 
     # Build embed HTML
-    rel_path = Path(final_path).name
+    rel_path = html.escape(final_path.relative_to(Path.cwd().resolve()).as_posix(), quote=True)
     mime = "audio/mpeg" if final_format == "mp3" else "audio/wav"
     embed_html = (
         f'<audio controls preload="metadata">'
@@ -347,6 +541,8 @@ def main():
         "voice": args.voice,
         "voice2": args.voice2,
         "model": args.model,
+        "model_id": MODELS[args.model],
+        "chunk_count": chunk_count,
         "embed_html": embed_html,
         "cost_estimate": est["cost_estimate"],
         "timestamp": datetime.now(timezone.utc).isoformat(),

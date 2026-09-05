@@ -1,0 +1,21 @@
+Claude Blog Brain GEO/AEO output, 2026-07-09
+
+AI Citation Mechanics -> deepen; added decision matrix for AI feature eligibility, AIO value caveat, click-scarcity framing, and surface selection; source_ids: g-ai-opt-guide, g-ai-features, sparktoro-zero-click-2026, seer-aio-impact-ctr-2026.
+AI Feature Preview Controls -> deepen; added preview-control citation table plus five-step remediation procedure; source_ids: g-ai-opt-guide, g-ai-features, sparktoro-zero-click-2026, seer-aio-impact-ctr-2026, g-genai-reports.
+AI Mode Citation Review -> deepen; added scenario table for follow-up comparison, planning query, low-share concern, and citation divergence; source_ids: blog-io2026, sparktoro-zero-click-2026, ahrefs-aio-vs-aimode, g-ai-features, semrush-ai-mode-comparison.
+AI Overview Citation Review -> deepen; added evidence table for surface existence, citation state, click interpretation, and AIO-prone topic sampling; source_ids: seer-aio-impact-ctr-2026, pew-ai, ahrefs-aio, g-ai-features, semrush-aio.
+Answer Block Extraction Test -> deepen; added extraction test table plus four-step isolation procedure; source_ids: g-ai-opt-guide, g-ai-features, sparktoro-zero-click-2026, seer-aio-impact-ctr-2026, ziptie-aio-source-selection.
+Assistant Answer Surface Map -> deepen; added surface routing table separating Google AI Overviews, AI Mode, Search file requests, and non-Google assistants; source_ids: g-ai-features, g-ai-opt-guide, g-update-2026-06-15-llms-txt-clarified-as-unused-by-google-search, blog-io2026, seoclarity-chatgpt.
+Citation Exposure Metrics -> deepen; added metrics table for AI feature impressions, observed citation, preview-control risk, and llms.txt requests; source_ids: g-ai-features, g-ai-opt-guide, g-update-2026-06-15-llms-txt-clarified-as-unused-by-google-search, blog-io2026, g-genai-reports.
+Entity Clarity For AI Answers -> deepen; added entity clarity table plus rewrite procedure for noun, date, source, and scope checks; source_ids: g-ai-opt-guide, g-ai-features, sparktoro-zero-click-2026, seer-aio-impact-ctr-2026, ziptie-aio-source-selection, seoclarity-chatgpt.
+Generative Search Measurement Plan -> deepen; added execution table for surface inventory, first-party export, citation sampling, and market context; source_ids: g-ai-opt-guide, g-ai-features, sparktoro-zero-click-2026, seer-aio-impact-ctr-2026, g-genai-reports, similarweb-gen-ai-stats-2026.
+GEO Risk Register -> deepen; added risk register table with source ID, owner, confidence, status, review date, and rollback trigger; source_ids: g-ai-opt-guide, g-ai-features, sparktoro-zero-click-2026, seer-aio-impact-ctr-2026, g-update-2026-06-15-llms-txt-clarified-as-unused-by-google-search, ziptie-aio-source-selection.
+llms.txt Caveat Note -> deepen; added llms.txt decision table plus five-step remediation procedure; source_ids: g-ai-opt-guide, g-update-2026-06-15-llms-txt-clarified-as-unused-by-google-search, llmstxt, g-ai-features.
+Passage Citability Checklist -> deepen; added pass-fail table for answer sentence, entity clarity, source proximity, market caveat, and measurement path; source_ids: g-ai-opt-guide, g-ai-features, sparktoro-zero-click-2026, seer-aio-impact-ctr-2026, ziptie-aio-source-selection, g-genai-reports.
+Source Proximity Pattern -> deepen; added source table with URLs represented by source IDs, dates, claim coverage, limitations, and refresh cadence; source_ids: g-ai-features, g-ai-opt-guide, g-update-2026-06-15-llms-txt-clarified-as-unused-by-google-search, blog-io2026, ziptie-aio-source-selection.
+
+Merge decisions: none. Reason: each in-scope note now owns a distinct operating job, review gate, metric, risk, or caveat.
+Prune decisions: none. Reason: no in-scope note was source-empty or duplicative after the rewrites.
+Out-of-scope skipped: wiki/concepts/Dual Optimization Risk Register.md. Reason: the brief named it, but the edit authority was limited to wiki/geo-aeo only.
+
+Verification: python3 scripts/lint_vault.py passed. Scoped wikilink check for wiki/geo-aeo found no missing targets. Root wiki substance check still reports unrelated pre-existing failures outside this folder, with zero GEO/AEO citation or table failures.

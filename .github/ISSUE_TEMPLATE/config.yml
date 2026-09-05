@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: "Questions, ideas, and general discussion"
+    url: https://github.com/AgriciDaniel/claude-blog/discussions
+    about: "Open a Discussion for questions, ideas, integration help, or sharing how you use claude-blog. Issues are for bugs and feature requests."
+  - name: "AI Marketing Hub Community"
+    url: https://www.skool.com/ai-marketing-hub
+    about: "Join the free community for tips, workflows, and conversations with other users."
+  - name: "Security disclosures"
+    url: https://github.com/AgriciDaniel/claude-blog/security/advisories/new
+    about: "Report security vulnerabilities privately via GitHub Security Advisories. Do not open a public issue for security findings (see SECURITY.md)."
+  - name: "Documentation"
+    url: https://github.com/AgriciDaniel/claude-blog/tree/main/docs
+    about: "Installation, commands, architecture, templates, and troubleshooting."

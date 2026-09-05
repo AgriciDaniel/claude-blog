@@ -7,19 +7,19 @@ technical elements, and AI citation readiness. Returns structured JSON, markdown
 reports, or compact tables.
 
 Usage:
-    python analyze_blog.py <file>                          # Default JSON output
-    python analyze_blog.py <file> --format markdown        # Markdown report
-    python analyze_blog.py <file> --format table           # Compact table
-    python analyze_blog.py <directory> --batch --sort score # Batch with sorting
-    python analyze_blog.py <file> --category seo           # Single category detail
-    python analyze_blog.py <file> --fix                    # Output specific fixes
+    python3 analyze_blog.py <file>                          # Default JSON output
+    python3 analyze_blog.py <file> --format markdown        # Markdown report
+    python3 analyze_blog.py <file> --format table           # Compact table
+    python3 analyze_blog.py <directory> --batch --sort score # Batch with sorting
+    python3 analyze_blog.py <file> --category seo           # Single category detail
+    python3 analyze_blog.py <file> --fix                    # Output specific fixes
 
 Scoring:
-    Content Quality       30 pts   Depth, readability, originality, structure, engagement, grammar
+    Content Quality       30 pts   Coverage, readability, originality, structure, utility, grammar
     SEO Optimization      25 pts   Title, headings, keywords, linking, meta, URL
-    E-E-A-T Signals       15 pts   Author, citations, trust, experience
+    E-E-A-T Signals       15 pts   Author, citations, trust, evidence basis
     Technical Elements    15 pts   Schema, images, structured data, speed, mobile, social
-    AI Citation Readiness 15 pts   Citability, Q&A, entities, extraction, crawler access
+    AI Citation Readiness 15 pts   Evidence, purpose, entities, utility, crawler access
 
 Bands:
     90-100  Exceptional
@@ -33,12 +33,28 @@ Optional dependencies (graceful degradation):
 """
 
 import argparse
+import errno
 import json
 import math
+import os
 import re
+import stat
 import sys
+import tempfile
+import urllib.parse
 from pathlib import Path
 from typing import Any
+
+
+def _project_version() -> str:
+    """Read the package version from pyproject.toml."""
+    try:
+        text = (Path(__file__).resolve().parent.parent / "pyproject.toml").read_text(encoding="utf-8")
+    except OSError:
+        return "0.0.0"
+    match = re.search(r'^version\s*=\s*"([^"]+)"', text, re.MULTILINE)
+    return match.group(1) if match else "0.0.0"
+
 
 # ---------------------------------------------------------------------------
 # Optional dependency detection
@@ -73,7 +89,7 @@ def _print_dependency_notice() -> None:
 
 
 # ---------------------------------------------------------------------------
-# AI content detection phrases
+# Editorial style diagnostic phrases
 # ---------------------------------------------------------------------------
 
 AI_PHRASES = [
@@ -84,7 +100,7 @@ AI_PHRASES = [
     "empower", "state-of-the-art",
 ]
 
-# AI trigger words (single words that spiked >50% post-ChatGPT)
+# Configurable editorial terms to flag for manual review.
 AI_TRIGGER_WORDS = [
     "delve", "tapestry", "multifaceted", "testament", "pivotal", "robust",
     "cutting-edge", "furthermore", "indeed", "moreover", "utilize", "leverage",
@@ -123,6 +139,8 @@ CONTENT_TYPE_BENCHMARKS: dict[str, tuple[int, int]] = {
 # Source tier classification
 # ---------------------------------------------------------------------------
 
+MAX_INPUT_BYTES = 10 * 1024 * 1024
+
 TIER1_DOMAINS = [
     'nature.com', 'science.org', 'gov', 'edu', 'who.int', 'nih.gov',
     'cdc.gov', 'bls.gov', 'census.gov', 'europa.eu', 'un.org',
@@ -134,6 +152,124 @@ TIER2_DOMAINS = [
     'washingtonpost.com', 'economist.com', 'forbes.com', 'hbr.org',
     'mckinsey.com', 'gartner.com', 'statista.com', 'pew', 'gallup.com',
 ]
+
+LANGUAGE_PROFILES: dict[str, dict[str, Any]] = {
+    'en': {
+        'summary_labels': (
+            r'TL;?DR', r'key takeaway', r'the bottom line',
+            r'what you.ll learn', r'at a glance', r'in brief',
+        ),
+        'about_patterns': (
+            r'\babout\s+(?:us|the author|me)\b', r'/about(?:[/?#]|$)',
+        ),
+        'contact_patterns': (r'\bcontact\b', r'/contact(?:[/?#]|$)'),
+        'first_person_patterns': (
+            r'\bI\s+(?:found|discovered|tested|built|created|noticed|learned|experienced)\b',
+            r'\b(?:we|our team)\s+(?:tested|built|ran|analyzed|measured|conducted|found|discovered)\b',
+            r'\bin (?:my|our) experience\b',
+            r'\bfrom (?:my|our) (?:testing|research|analysis|work)\b',
+        ),
+        'methodology_patterns': (
+            r'\b(?:methodology|sample size|test setup|testing method|research method)\b',
+            r'\b(?:we|I|our team)\s+(?:tested|measured|analyzed|conducted)\b[^.\n]{0,180}'
+            r'(?:\d|https?://|\[[^\]]+\]\(https?://)',
+        ),
+        'readability_model': 'flesch',
+    },
+    'tr': {
+        'summary_labels': (r'özet', r'özetle', r'kısaca'),
+        'about_patterns': (
+            r'/biz-kimiz(?:[/?#]|$)', r'/hakk[ıi]m[ıi]zda(?:[/?#]|$)',
+            r'\bbiz kimiz\b', r'\bhakk[ıi]m[ıi]zda\b',
+        ),
+        'contact_patterns': (
+            r'/ilet[iİ]ş[iİ]m(?:[/?#]|$)', r'\bilet[iİ]ş[iİ]m\b',
+        ),
+        'first_person_patterns': (
+            r'\b(?:biz|ekibimiz)\s+(?:test ettik|oluşturduk|inceledik|ölçtük|analiz ettik|derledik|bulduk)\b',
+            r'\b(?:kendi\s+)?(?:kayıtlarımızdan|verilerimizden|analizimizden)\s+'
+            r'(?:derlediğimiz|çıkardığımız|ölçtüğümüz)\b',
+            r'\bportfolyomuzun\b[^.\n]{0,120}\bsayımından çıkarıldı\b',
+            r'\b(?:deneyimimize|tecrübemize) göre\b',
+        ),
+        'methodology_patterns': (
+            r'\b(?:yöntem|metodoloji|örneklem|örneklem büyüklüğü|test düzeni|araştırma yöntemi|sayım|kayıt)\b',
+            r'\b(?:biz|ekibimiz)\s+(?:test ettik|ölçtük|analiz ettik)\b[^.\n]{0,180}'
+            r'(?:\d|https?://|\[[^\]]+\]\(https?://)',
+        ),
+        'readability_model': 'atesman',
+    },
+}
+
+
+def _read_safely(path: Path, max_bytes: int = MAX_INPUT_BYTES) -> str:
+    """Read a regular non-symlink file with a size cap."""
+    flags = os.O_RDONLY
+    if hasattr(os, "O_NOFOLLOW"):
+        flags |= os.O_NOFOLLOW
+    elif path.is_symlink():
+        raise ValueError(f"refusing to follow symlink: {path}")
+    try:
+        fd = os.open(str(path), flags)
+    except OSError as exc:
+        if exc.errno == errno.ELOOP:
+            raise ValueError(f"refusing to follow symlink: {path}") from exc
+        raise
+    try:
+        st = os.fstat(fd)
+        if not stat.S_ISREG(st.st_mode):
+            raise ValueError(f"not a regular file: {path}")
+        if st.st_size > max_bytes:
+            raise ValueError(f"input exceeds size cap ({st.st_size} > {max_bytes}): {path}")
+        data = os.read(fd, max_bytes + 1)
+    finally:
+        os.close(fd)
+    if len(data) > max_bytes:
+        raise ValueError(f"input exceeds size cap after read ({max_bytes}): {path}")
+    return data.decode("utf-8")
+
+
+def _safe_write_text(path: str | Path, text: str) -> None:
+    """Write output atomically and refuse symlink targets."""
+    out = Path(path)
+    if out.exists() and out.is_symlink():
+        raise ValueError(f"output path is a symlink: {out}")
+    if not out.parent.exists():
+        raise ValueError(f"output directory does not exist: {out.parent}")
+    fd, tmp = tempfile.mkstemp(dir=str(out.parent), prefix=f".{out.name}.", suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            f.write(text)
+        os.replace(tmp, out)
+    except Exception:
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
+        raise
+
+
+def _hostname(url: str) -> str:
+    try:
+        parsed = urllib.parse.urlparse(url)
+    except ValueError:
+        return ""
+    return (parsed.hostname or "").lower().rstrip(".")
+
+
+def _host_matches_domain(host: str, domain: str) -> bool:
+    domain = domain.lower().rstrip(".")
+    if domain in {"gov", "edu"}:
+        if host == domain or host.endswith(f".{domain}"):
+            return True
+        labels = host.split(".")
+        country_suffix = len(labels[-1]) == 2 and labels[-1].isalpha()
+        if country_suffix and len(labels) >= 2 and labels[-2] == domain:
+            return True
+        if domain == "edu" and country_suffix and len(labels) >= 2 and labels[-2] == "ac":
+            return True
+        return False
+    return host == domain or host.endswith(f".{domain}")
 
 # ---------------------------------------------------------------------------
 # Frontmatter extraction (kept from original)
@@ -159,6 +295,40 @@ def extract_frontmatter(content: str) -> dict[str, Any]:
 def strip_frontmatter(content: str) -> str:
     """Remove YAML frontmatter from content."""
     return re.sub(r'^---\s*\n.*?\n---\s*\n', '', content, count=1, flags=re.DOTALL)
+
+
+def _detect_language(frontmatter: dict[str, Any], body: str) -> str:
+    """Resolve a supported language profile without broad language guessing."""
+    declared = str(
+        frontmatter.get('lang')
+        or frontmatter.get('language')
+        or frontmatter.get('inLanguage')
+        or ''
+    ).strip().lower()
+    if declared:
+        primary = re.split(r'[-_]', declared, maxsplit=1)[0]
+        return primary if primary in LANGUAGE_PROFILES else 'en'
+
+    strong_turkish_markers = len(re.findall(r'[ığşİĞŞ]', body))
+    letters = len(re.findall(r'[^\W\d_]', body, re.UNICODE))
+    if strong_turkish_markers >= 2 and strong_turkish_markers / max(letters, 1) >= 0.002:
+        return 'tr'
+    return 'en'
+
+
+def _plain_text_for_analysis(content: str) -> str:
+    """Remove non-prose payloads while retaining reader-visible prose."""
+    text = re.sub(r'```.*?```', '', content, flags=re.DOTALL)
+    text = re.sub(r'<(?:script|style|svg)\b.*?</(?:script|style|svg)\s*>', '', text,
+                  flags=re.DOTALL | re.IGNORECASE)
+    text = re.sub(r'^\s*\|.*\|\s*$', '', text, flags=re.MULTILINE)
+    text = re.sub(r'<[^>]+>', '', text)
+    text = re.sub(r'!\[.*?\]\(.*?\)', '', text)
+    text = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', text)
+    text = re.sub(r'^#{1,6}\s+', '', text, flags=re.MULTILINE)
+    text = re.sub(r'^\s*(?:[-*+]|\d+\.)\s+', '', text, flags=re.MULTILINE)
+    text = re.sub(r'^\s*>\s?', '', text, flags=re.MULTILINE)
+    return re.sub(r'\n{3,}', '\n\n', text).strip()
 
 
 # ---------------------------------------------------------------------------
@@ -263,7 +433,16 @@ def analyze_paragraphs(content: str) -> dict[str, Any]:
 def analyze_images(content: str) -> dict[str, Any]:
     """Count images and check alt text, formats, optimization signals."""
     md_images = re.findall(r'!\[([^\]]*)\]\(([^)]+)\)', content)
-    html_images = re.findall(r'<img[^>]+src=["\']([^"\']+)["\'][^>]*>', content)
+    html_images: list[tuple[str, str]] = []
+    for tag in re.findall(r'<img\b[^>]*>', content, re.IGNORECASE):
+        src_match = re.search(r'\bsrc\s*=\s*["\']([^"\']+)["\']', tag, re.IGNORECASE)
+        if not src_match:
+            continue
+        alt_match = re.search(r'\balt\s*=\s*["\']([^"\']*)["\']', tag, re.IGNORECASE)
+        html_images.append((
+            alt_match.group(1) if alt_match else "",
+            src_match.group(1),
+        ))
 
     images: list[dict[str, Any]] = []
     for alt, src in md_images:
@@ -278,13 +457,13 @@ def analyze_images(content: str) -> dict[str, Any]:
                       'pexels' if 'pexels' in src else 'other',
         })
 
-    for src in html_images:
-        alt_match = re.search(r'alt=["\']([^"\']*)["\']', content[content.find(src) - 200:content.find(src) + len(src)])
-        has_alt = bool(alt_match and alt_match.group(1).strip()) if alt_match else False
+    for alt, src in html_images:
+        has_alt = bool(alt.strip())
         ext = Path(src.split('?')[0]).suffix.lower()
         images.append({
             'src': src,
             'has_alt': has_alt,
+            'alt_length': len(alt.strip()),
             'format': ext,
             'source': 'pixabay' if 'pixabay' in src else
                       'unsplash' if 'unsplash' in src else
@@ -329,12 +508,14 @@ def analyze_charts(content: str) -> dict[str, Any]:
 
 def _classify_source_tier(url: str) -> int:
     """Classify a URL into tier 1, 2, or 3."""
-    url_lower = url.lower()
+    host = _hostname(url)
+    if not host:
+        return 3
     for domain in TIER1_DOMAINS:
-        if domain in url_lower:
+        if _host_matches_domain(host, domain):
             return 1
     for domain in TIER2_DOMAINS:
-        if domain in url_lower:
+        if _host_matches_domain(host, domain):
             return 2
     return 3
 
@@ -444,13 +625,28 @@ def analyze_self_promotion(content: str, brand_name: str = '') -> dict[str, Any]
 # ---------------------------------------------------------------------------
 
 
-def analyze_readability(text: str) -> dict[str, Any]:
+def analyze_readability(text: str, language: str = 'en') -> dict[str, Any]:
     """Compute readability metrics using textstat if available, else estimate."""
-    words = text.split()
+    words = re.findall(r"[^\W\d_]+(?:['’][^\W\d_]+)?", text, re.UNICODE)
     word_count = len(words)
     sentences = re.findall(r'[.!?]+', text)
     sentence_count = len(sentences) if sentences else 1
     avg_sentence_len = word_count / sentence_count
+
+    if LANGUAGE_PROFILES.get(language, LANGUAGE_PROFILES['en'])["readability_model"] == 'atesman':
+        vowel_count = sum(len(re.findall(r'[aeıioöuü]', word.lower())) for word in words)
+        mean_syllables = vowel_count / max(word_count, 1)
+        score = 198.825 - 40.175 * mean_syllables - 2.610 * avg_sentence_len
+        score = max(0.0, min(100.0, score))
+        return {
+            'reading_model': 'atesman',
+            'reading_ease': round(score, 1),
+            'atesman_reading_ease': round(score, 1),
+            'reading_time_minutes': round(word_count / 238, 1),
+            'avg_sentence_length': round(avg_sentence_len, 1),
+            'mean_syllables_per_word': round(mean_syllables, 2),
+            'estimated': False,
+        }
 
     if HAS_TEXTSTAT:
         fre = textstat.flesch_reading_ease(text)
@@ -461,6 +657,8 @@ def analyze_readability(text: str) -> dict[str, Any]:
         except Exception:
             reading_time = round(word_count / 238, 1)
         return {
+            'reading_model': 'flesch',
+            'reading_ease': round(fre, 1),
             'flesch_reading_ease': round(fre, 1),
             'flesch_kincaid_grade': round(fkg, 1),
             'gunning_fog': round(fog, 1),
@@ -474,6 +672,8 @@ def analyze_readability(text: str) -> dict[str, Any]:
         est_syllable_ratio = avg_word_len / 4.7  # crude approximation
         fre = max(0, 206.835 - 1.015 * avg_sentence_len - 84.6 * est_syllable_ratio)
         return {
+            'reading_model': 'flesch-estimate',
+            'reading_ease': round(fre, 1),
             'flesch_reading_ease': round(fre, 1),
             'reading_time_minutes': round(word_count / 238, 1),
             'avg_sentence_length': round(avg_sentence_len, 1),
@@ -522,12 +722,18 @@ def analyze_sentences(text: str) -> dict[str, Any]:
 
 
 # ---------------------------------------------------------------------------
-# NEW: AI content detection
+# Editorial style diagnostics
 # ---------------------------------------------------------------------------
 
 
 def analyze_ai_signals(text: str, sentences_info: dict[str, Any]) -> dict[str, Any]:
-    """Detect potential AI-generated content signals."""
+    """Return non-scoring editorial style diagnostics.
+
+    Phrase frequency, type-token ratio, and sentence-length variance cannot
+    determine authorship. The legacy keys remain for output compatibility, but
+    the analyzer never converts these observations into an AI probability or a
+    quality-gate decision.
+    """
     found_phrases: list[dict[str, Any]] = []
     lower_text = text.lower()
     for phrase in AI_PHRASES:
@@ -544,7 +750,9 @@ def analyze_ai_signals(text: str, sentences_info: dict[str, Any]) -> dict[str, A
         'ai_phrase_count': sum(p['count'] for p in found_phrases),
         'vocabulary_diversity_ttr': round(ttr, 3),
         'burstiness': sentences_info.get('burstiness', 0),
-        'likely_ai': sentences_info.get('burstiness', 0) < 0.3 and ttr < 0.4,
+        'likely_ai': None,
+        'editorial_style_only': True,
+        'not_an_authorship_classifier': True,
     }
 
 
@@ -641,26 +849,43 @@ def analyze_schema(content: str) -> dict[str, Any]:
     """Detect JSON-LD schema markup in content."""
     schemas: list[str] = []
 
+    def collect_types(value: Any) -> None:
+        if isinstance(value, dict):
+            schema_type = value.get('@type')
+            if isinstance(schema_type, str):
+                schemas.append(schema_type)
+            elif isinstance(schema_type, list):
+                schemas.extend(item for item in schema_type if isinstance(item, str))
+            for child in value.values():
+                if isinstance(child, (dict, list)):
+                    collect_types(child)
+        elif isinstance(value, list):
+            for item in value:
+                collect_types(item)
+
     if HAS_BS4:
         try:
             soup = BeautifulSoup(content, 'html.parser')
             for script in soup.find_all('script', type='application/ld+json'):
                 try:
                     data = json.loads(script.string)
-                    if isinstance(data, dict):
-                        schemas.append(data.get('@type', 'Unknown'))
-                    elif isinstance(data, list):
-                        for item in data:
-                            if isinstance(item, dict):
-                                schemas.append(item.get('@type', 'Unknown'))
+                    collect_types(data)
                 except (json.JSONDecodeError, TypeError):
                     pass
         except Exception:
             pass
     else:
-        # Fallback: regex detection
-        for match in re.findall(r'"@type"\s*:\s*"([^"]+)"', content):
-            schemas.append(match)
+        # Fallback: parse JSON-LD script bodies without an HTML dependency.
+        for script_body in re.findall(
+            r'<script\b[^>]*type=["\']application/ld\+json["\'][^>]*>(.*?)</script\s*>',
+            content,
+            re.DOTALL | re.IGNORECASE,
+        ):
+            try:
+                collect_types(json.loads(script_body))
+            except (json.JSONDecodeError, TypeError):
+                for match in re.findall(r'"@type"\s*:\s*"([^"]+)"', script_body):
+                    schemas.append(match)
 
     return {
         'schemas_found': schemas,
@@ -668,6 +893,8 @@ def analyze_schema(content: str) -> dict[str, Any]:
         'has_blogposting': 'BlogPosting' in schemas or 'Article' in schemas,
         'has_faqpage': 'FAQPage' in schemas,
         'has_person': 'Person' in schemas,
+        'has_organization': 'Organization' in schemas,
+        'has_breadcrumblist': 'BreadcrumbList' in schemas,
     }
 
 
@@ -706,31 +933,55 @@ def analyze_links(content: str) -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 
-def analyze_originality(content: str) -> dict[str, Any]:
-    """Detect originality markers: original data, personal experience, first person."""
+def analyze_originality(content: str, language: str = 'en') -> dict[str, Any]:
+    """Detect distinctive evidence and first-hand claims without inferring truth."""
     markers: list[str] = []
 
-    if re.search(r'\[ORIGINAL DATA\]', content, re.IGNORECASE):
+    if re.search(r'(?:\[|<!--\s*)ORIGINAL DATA(?:\]|(?:\s*:.*)?-->)', content, re.IGNORECASE):
         markers.append('original_data_tag')
-    if re.search(r'\[PERSONAL EXPERIENCE\]', content, re.IGNORECASE):
+    if re.search(r'(?:\[|<!--\s*)PERSONAL EXPERIENCE(?:\]|(?:\s*:.*)?-->)', content, re.IGNORECASE):
         markers.append('personal_experience_tag')
+    if re.search(r'(?:\[|<!--\s*)UNIQUE INSIGHT(?:\]|(?:\s*:.*)?-->)', content, re.IGNORECASE):
+        markers.append('unique_insight_tag')
 
-    first_person_patterns = [
-        r'\bI\s+(?:found|discovered|tested|built|created|noticed|learned|experienced)\b',
-        r'\b(?:we|our team)\s+(?:tested|built|ran|analyzed|measured|conducted|found|discovered)\b',
-        r'\bin (?:my|our) experience\b',
-        r'\bfrom (?:my|our) (?:testing|research|analysis|work)\b',
-    ]
+    profile = LANGUAGE_PROFILES.get(language, LANGUAGE_PROFILES['en'])
+    first_person_patterns = profile['first_person_patterns']
     first_person_count = 0
     for pattern in first_person_patterns:
         first_person_count += len(re.findall(pattern, content, re.IGNORECASE))
     if first_person_count > 0:
         markers.append('first_person_experience')
 
+    methodology_patterns = profile['methodology_patterns']
+    methodology_count = sum(
+        len(re.findall(pattern, content, re.IGNORECASE))
+        for pattern in methodology_patterns
+    )
+    evidence_marker_count = sum(
+        1 for marker in markers
+        if marker in {'original_data_tag', 'personal_experience_tag', 'unique_insight_tag'}
+    )
+    unsupported_experience_claims = 0
+    for paragraph in re.split(r'\n\s*\n', content):
+        has_claim = any(re.search(pattern, paragraph, re.IGNORECASE)
+                        for pattern in first_person_patterns)
+        has_method = any(re.search(pattern, paragraph, re.IGNORECASE)
+                         for pattern in methodology_patterns)
+        has_support = bool(re.search(
+            r'(?:ORIGINAL DATA|PERSONAL EXPERIENCE|UNIQUE INSIGHT|\d|https?://)',
+            paragraph,
+            re.IGNORECASE,
+        ))
+        if has_claim and not (has_method or has_support):
+            unsupported_experience_claims += 1
+
     return {
         'markers': markers,
         'marker_count': len(markers),
         'first_person_count': first_person_count,
+        'evidence_marker_count': evidence_marker_count,
+        'methodology_count': methodology_count,
+        'unsupported_experience_claims': unsupported_experience_claims,
     }
 
 
@@ -766,15 +1017,35 @@ def analyze_engagement(content: str) -> dict[str, Any]:
 
 
 def analyze_ai_citation_readiness(content: str, headings_info: dict[str, Any],
-                                  faq_info: dict[str, Any]) -> dict[str, Any]:
-    """Assess how easily AI systems can cite/extract from this content."""
-    # Passage citability: count sections of 120-180 words
-    paragraphs = [p.strip() for p in re.split(r'\n\s*\n', content) if p.strip()]
-    citable_passages = 0
-    for p in paragraphs:
-        wc = len(p.split())
-        if 120 <= wc <= 180:
-            citable_passages += 1
+                                  faq_info: dict[str, Any],
+                                  language: str = 'en') -> dict[str, Any]:
+    """Assess evidence-backed reuse readiness without fixed passage lengths."""
+    section_pattern = re.compile(
+        r'^##\s+(.+?)\s*$\n(.*?)(?=^##\s+|\Z)',
+        re.MULTILINE | re.DOTALL,
+    )
+    sections = section_pattern.findall(content)
+    evidence_backed_sections = 0
+    self_contained_sections = 0
+    for heading, section in sections:
+        has_source = bool(re.search(r'\[[^\]]+\]\(https?://[^)]+\)', section))
+        has_evidence_marker = bool(re.search(
+            r'(?:ORIGINAL DATA|PERSONAL EXPERIENCE|UNIQUE INSIGHT)',
+            section,
+            re.IGNORECASE,
+        ))
+        has_definition = bool(re.search(
+            r'\*\*[^*]+\*\*\s*(?:is|are|refers to|means)',
+            section,
+            re.IGNORECASE,
+        ))
+        has_specific_support = bool(re.search(r'\b\d+(?:\.\d+)?%?\b', section))
+        if has_source or has_evidence_marker:
+            evidence_backed_sections += 1
+        if section.strip() and (has_source or has_evidence_marker or has_definition) and (
+            has_specific_support or has_definition
+        ):
+            self_contained_sections += 1
 
     # Q&A detection: question headings followed by direct answers
     qa_pairs = 0
@@ -792,23 +1063,39 @@ def analyze_ai_citation_readiness(content: str, headings_info: dict[str, Any],
     entity_definitions = len(re.findall(r'\*\*[^*]+\*\*\s*(?:is|are|refers to|means)', content))
 
     # Extraction-friendly structures
-    has_tldr = bool(re.search(
-        r'(?i)(?:TL;?DR|key takeaway|the bottom line|what you.ll learn|at a glance|in brief)',
-        content))
+    profile = LANGUAGE_PROFILES.get(language, LANGUAGE_PROFILES['en'])
+    summary_pattern = '|'.join(profile['summary_labels'])
+    has_tldr = bool(re.search(rf'(?i)(?:{summary_pattern})', content))
     table_count = len(re.findall(r'^\|.+\|$', content, re.MULTILINE))
     list_count = len(re.findall(r'^[\s]*[-*+]\s', content, re.MULTILINE))
 
-    # AI crawler accessibility
-    has_robots_meta = bool(re.search(r'(?i)robots|noai|noindex', content))
+    # AI crawler accessibility: inspect actual meta / robots directives only.
+    has_robots_meta = bool(re.search(
+        r'(?is)<meta[^>]+name=["\']robots["\'][^>]+content=["\'][^"\']*(?:noindex|noai)[^"\']*["\']',
+        content,
+    ))
+    intro = re.split(r'^##\s+', content, maxsplit=1, flags=re.MULTILINE)[0]
+    purpose_statement = bool(re.search(r'[A-Za-z]{3,}', intro))
+    relevant_media_count = (
+        len(re.findall(r'!\[[^\]]+\]\([^)]+\)', content))
+        + len(re.findall(r'<(?:img|figure|svg)\b', content, re.IGNORECASE))
+    )
 
     return {
-        'citable_passages': citable_passages,
+        # Compatibility alias: now counts evidence-backed, self-contained
+        # sections rather than passages in a prescribed word-count band.
+        'citable_passages': self_contained_sections,
+        'self_contained_sections': self_contained_sections,
+        'evidence_backed_sections': evidence_backed_sections,
+        'section_count': len(sections),
         'qa_pairs': qa_pairs,
         'entity_definitions': entity_definitions,
         'has_tldr': has_tldr,
         'table_count': table_count,
         'list_count': list_count,
         'has_robots_restriction': has_robots_meta,
+        'purpose_statement': purpose_statement,
+        'relevant_media_count': relevant_media_count,
     }
 
 
@@ -865,6 +1152,21 @@ def analyze_structured_data(content: str) -> dict[str, Any]:
 # Scoring: 5-category, 100-point system
 # ---------------------------------------------------------------------------
 
+_TOPIC_STOPWORDS = {
+    'about', 'after', 'also', 'and', 'are', 'but', 'for', 'from', 'have',
+    'how', 'into', 'its', 'not', 'that', 'the', 'their', 'this', 'with',
+    'what', 'when', 'where', 'which', 'why', 'your',
+}
+
+
+def _topic_terms(value: str) -> set[str]:
+    """Return normalized topic terms for purpose-consistency checks."""
+    return {
+        token
+        for token in re.findall(r"[A-Za-z0-9][A-Za-z0-9'-]*", value.lower())
+        if token not in _TOPIC_STOPWORDS and not token.isdigit()
+    }
+
 
 def _detect_content_type(frontmatter: dict[str, Any], headings_info: dict[str, Any],
                          content: str) -> str:
@@ -903,25 +1205,31 @@ def calculate_score(analysis: dict[str, Any]) -> dict[str, Any]:
     cq = 0
     cq_breakdown: dict[str, Any] = {}
 
-    # Depth / comprehensiveness: 7 pts
-    paras = analysis['paragraphs']
-    word_count = paras['total_word_count']
-    content_type = _detect_content_type(analysis['frontmatter'], analysis['headings'], '')
-    bench_min, bench_max = CONTENT_TYPE_BENCHMARKS.get(content_type, (1200, 3000))
-    if bench_min <= word_count <= bench_max:
-        depth_score = 7
-    elif word_count >= bench_min * 0.7:
-        depth_score = 5
-    elif word_count >= bench_min * 0.5:
-        depth_score = 3
-    else:
-        depth_score = 1
-        issues.append({'category': 'content', 'severity': 'high',
-                       'issue': f'Word count ({word_count}) below benchmark ({bench_min}-{bench_max}) for {content_type}'})
-    if word_count > bench_max * 1.5:
-        depth_score = max(depth_score - 2, 1)
-        issues.append({'category': 'content', 'severity': 'medium',
-                       'issue': f'Word count ({word_count}) excessively long for {content_type}'})
+    # Coverage / comprehensiveness: 7 pts. Word count is reported for context,
+    # never used as a quality target or scoring shortcut.
+    headings = analysis['headings']
+    citations = analysis['citations']
+    engagement = analysis['engagement']
+    depth_score = 0
+    if headings['h2_count'] >= 1:
+        depth_score += 2
+    if headings['h2_count'] >= 3:
+        depth_score += 1
+    if citations['inline_citations'] + citations['paren_citations'] >= 1:
+        depth_score += 2
+    if engagement['example_count'] >= 1:
+        depth_score += 1
+    if analysis['structured_data']['table_count'] >= 1 or (
+        analysis['structured_data']['unordered_list_items']
+        + analysis['structured_data']['ordered_list_items']
+    ) >= 3:
+        depth_score += 1
+    if depth_score < 3:
+        issues.append({
+            'category': 'content',
+            'severity': 'high',
+            'issue': 'Coverage is thin: add missing subtopics, evidence, or useful examples for the reader intent',
+        })
     cq += depth_score
     cq_breakdown['depth'] = depth_score
 
@@ -929,32 +1237,50 @@ def calculate_score(analysis: dict[str, Any]) -> dict[str, Any]:
     # Default band: Flesch Ease 60-70 (Grade 7-8)
     # Persona bands: Consumer 60-80, Professional 50-60, Technical 30-50
     readability = analysis['readability']
-    fre = readability.get('flesch_reading_ease', 50)
-    fkg = readability.get('flesch_kincaid_grade', 8)
-    if 60 <= fre <= 70:
+    reading_ease = readability.get(
+        'reading_ease', readability.get('flesch_reading_ease', 50)
+    )
+    reading_model = readability.get('reading_model', 'flesch')
+    if reading_model == 'atesman' and 50 <= reading_ease <= 69:
         read_score = 7
-    elif 55 <= fre <= 75:
+    elif reading_model == 'atesman' and 30 <= reading_ease <= 89:
         read_score = 5
-    elif 45 <= fre <= 80:
+    elif reading_model == 'atesman' and 0 <= reading_ease <= 100:
+        read_score = 3
+    elif 60 <= reading_ease <= 70:
+        read_score = 7
+    elif 55 <= reading_ease <= 75:
+        read_score = 5
+    elif 45 <= reading_ease <= 80:
         read_score = 3
     else:
         read_score = 1
         issues.append({'category': 'content', 'severity': 'medium',
-                       'issue': f'Flesch reading ease ({fre}) outside acceptable range (55-75)'})
+                       'issue': f'Flesch reading ease ({reading_ease}) outside acceptable range (55-75)'})
     cq += read_score
     cq_breakdown['readability'] = read_score
 
-    # Originality markers: 5 pts
+    # Originality / differentiated evidence: 5 pts
     orig = analysis['originality']
-    orig_score = min(orig['marker_count'] * 2 + min(orig['first_person_count'], 3), 5)
+    orig_score = min(orig.get('evidence_marker_count', 0) * 2, 4)
+    if orig.get('methodology_count', 0) > 0:
+        orig_score = min(5, orig_score + 1)
+    elif citations['unique_sources'] >= 2 and engagement['example_count'] >= 1:
+        # Neutral explainers can demonstrate value through synthesis and examples.
+        orig_score = max(orig_score, 3)
     if orig_score == 0:
         issues.append({'category': 'content', 'severity': 'medium',
-                       'issue': 'No originality markers found - add [ORIGINAL DATA], personal experience, or first-person language'})
+                       'issue': 'No differentiated evidence or analysis found - add original data, a sourced synthesis, a case example, or a clearly labeled unique insight'})
+    if orig.get('unsupported_experience_claims', 0) > 0:
+        issues.append({
+            'category': 'content',
+            'severity': 'high',
+            'issue': 'First-hand testing claims need supporting methodology, measurements, or evidence',
+        })
     cq += orig_score
     cq_breakdown['originality'] = orig_score
 
     # Logical structure: 4 pts
-    headings = analysis['headings']
     struct_score = 0
     if headings['h2_count'] >= 3:
         struct_score += 2
@@ -968,69 +1294,48 @@ def calculate_score(analysis: dict[str, Any]) -> dict[str, Any]:
     else:
         issues.append({'category': 'content', 'severity': 'medium',
                        'issue': 'Heading hierarchy has skips (e.g., H2 to H4)'})
-    # Section length variance: check if paragraphs are reasonably distributed
-    if paras['total_paragraphs'] >= 5 and paras['max_word_count'] < 200:
+    # A single H1 provides a clear document-level topic without relying on
+    # paragraph-length thresholds.
+    if headings['h1_count'] == 1:
         struct_score += 1
     cq += struct_score
     cq_breakdown['structure'] = struct_score
 
-    # Engagement elements: 4 pts
-    engagement = analysis['engagement']
+    # Reader utility elements: 4 pts. Questions are not a scoring requirement.
     eng_score = 0
-    if engagement['questions_in_text'] >= 2:
-        eng_score += 2
-    elif engagement['questions_in_text'] >= 1:
-        eng_score += 1
     if engagement['example_count'] >= 2:
         eng_score += 2
     elif engagement['example_count'] >= 1:
         eng_score += 1
+    ai_ready = analysis['ai_citation_readiness']
+    if ai_ready['has_tldr']:
+        eng_score += 1
+    if analysis['structured_data']['table_count'] >= 1:
+        eng_score += 1
+    elif analysis['structured_data']['unordered_list_items'] + analysis['structured_data']['ordered_list_items'] >= 3:
+        eng_score += 1
     eng_score = min(eng_score, 4)
     if eng_score < 2:
         issues.append({'category': 'content', 'severity': 'low',
-                       'issue': 'Low engagement - add questions and examples in body text'})
+                       'issue': 'Reader utility is limited - add a relevant example, summary, table, or decision aid when useful'})
     cq += eng_score
     cq_breakdown['engagement'] = eng_score
 
-    # Grammar / anti-pattern: 3 pts
+    # Grammar / clarity: 3 pts. Authorship-style diagnostics never affect score.
     sentences = analysis['sentences']
-    passive = analysis.get('passive_voice', {})
     transitions = analysis.get('transition_words', {})
-    ai_triggers = analysis.get('ai_trigger_words', {})
-    gram_score = 0
-    # 1 pt: burstiness >= 0.4 AND passive voice <= 15%
-    passive_pct = passive.get('passive_pct', 0)
-    if sentences['burstiness'] >= 0.4 and passive_pct <= 15:
-        gram_score += 1
-    if passive_pct > 15:
-        issues.append({'category': 'content', 'severity': 'high',
-                       'issue': f'Passive voice at {passive_pct}% - target ≤10%, max 15%'})
-    elif passive_pct > 10:
-        issues.append({'category': 'content', 'severity': 'low',
-                       'issue': f'Passive voice at {passive_pct}% - ideal is ≤10%'})
-    # 1 pt: no sentences > 40 words AND AI trigger words <= 8 per 1K
-    trigger_per_1k = ai_triggers.get('per_1k', 0)
-    if sentences['very_long_count'] == 0 and trigger_per_1k <= 8:
+    gram_score = 1 if sentences['count'] > 0 else 0
+    if sentences['very_long_count'] == 0:
         gram_score += 1
     if sentences['very_long_count'] > 0:
         issues.append({'category': 'content', 'severity': 'low',
                        'issue': f'{sentences["very_long_count"]} sentences over 40 words - consider splitting'})
-    if trigger_per_1k > 8:
-        issues.append({'category': 'content', 'severity': 'high',
-                       'issue': f'AI trigger words: {trigger_per_1k}/1K - target ≤5, max 8'})
-    elif trigger_per_1k > 5:
-        issues.append({'category': 'content', 'severity': 'medium',
-                       'issue': f'AI trigger words: {trigger_per_1k}/1K - target ≤5'})
-    # 1 pt: avg sentence length 12-25 AND transition words 15-35%
     transition_pct = transitions.get('transition_pct', 0)
-    if sentences['count'] > 0 and 12 <= sentences['avg_length'] <= 25 and 15 <= transition_pct <= 35:
+    if sentences['count'] > 0 and 8 <= sentences['avg_length'] <= 30:
         gram_score += 1
-    if transition_pct < 15:
-        issues.append({'category': 'content', 'severity': 'medium',
-                       'issue': f'Transition words at {transition_pct}% - target 20-30%'})
-    elif transition_pct > 35:
-        issues.append({'category': 'content', 'severity': 'medium',
-                       'issue': f'Transition words at {transition_pct}% - reads formulaic, target 20-30%'})
+    if transition_pct > 50:
+        issues.append({'category': 'content', 'severity': 'low',
+                       'issue': f'Transition words occur in {transition_pct}% of sentences - review for repetitive connective phrasing'})
     gram_score = min(gram_score, 3)
     cq += gram_score
     cq_breakdown['grammar_antipattern'] = gram_score
@@ -1045,61 +1350,56 @@ def calculate_score(analysis: dict[str, Any]) -> dict[str, Any]:
     seo_breakdown: dict[str, Any] = {}
     fm = analysis['frontmatter']
 
-    # Title tag (40-60 chars, keyword): 4 pts
+    # Title clarity and purpose fit: 4 pts. Character bands, sentiment, power
+    # words, and exact-match keyword placement do not earn points.
     title = fm.get('title', '')
-    title_len = len(title)
     title_score = 0
-    if 40 <= title_len <= 60:
-        title_score = 4
-    elif 30 <= title_len <= 70:
-        title_score = 2
-    elif title:
-        title_score = 1
+    body = analysis.get('_body_text', '')
+    heading_text = ' '.join(h['text'] for h in headings['headings'])
+    title_terms = _topic_terms(title)
+    body_terms = _topic_terms(body)
+    heading_terms = _topic_terms(heading_text)
+    if title:
+        title_score += 1
+        if title.strip().lower() not in {'home', 'blog', 'post', 'untitled'}:
+            title_score += 1
+        if title_terms & body_terms:
+            title_score += 1
+        if title_terms & heading_terms:
+            title_score += 1
     if not title:
         issues.append({'category': 'seo', 'severity': 'high',
                        'issue': 'Missing title in frontmatter'})
-    elif title_len < 40 or title_len > 60:
+    elif not (title_terms & body_terms):
         issues.append({'category': 'seo', 'severity': 'medium',
-                       'issue': f'Title length ({title_len} chars) outside ideal 40-60 range'})
+                       'issue': 'Title does not clearly match the visible page topic'})
     seo += title_score
     seo_breakdown['title'] = title_score
 
-    # Heading hierarchy with keywords: 5 pts
+    # Heading hierarchy and reader navigation: 5 pts.
     heading_score = 0
     if headings['h1_count'] == 1:
-        heading_score += 1
-    elif headings['h1_count'] == 0 and title:
-        heading_score += 1  # Title serves as H1
-    if headings['h2_count'] >= 3:
         heading_score += 2
-    elif headings['h2_count'] >= 1:
-        heading_score += 1
-    if headings['hierarchy_clean']:
-        heading_score += 1
-    if headings['h3_count'] >= 1:
+    elif headings['h1_count'] == 0 and title:
+        heading_score += 2  # Frontmatter title can serve as the document H1.
+    if headings['total'] > 0 and headings['hierarchy_clean']:
+        heading_score += 2
+    heading_values = [h['text'].strip().lower() for h in headings['headings']]
+    if heading_values and all(heading_values) and len(heading_values) == len(set(heading_values)):
         heading_score += 1
     heading_score = min(heading_score, 5)
     seo += heading_score
     seo_breakdown['headings'] = heading_score
 
-    # Keyword placement: 4 pts (in title, first paragraph, headings)
+    # Semantic topic consistency: 4 pts. Keep the compatibility field name,
+    # but ignore exact-match placement quotas.
     keyword_score = 0
-    # Extract potential keyword from frontmatter
-    keyword = fm.get('keyword', fm.get('keywords', '')).split(',')[0].strip().lower() if fm.get('keyword', fm.get('keywords', '')) else ''
-    if keyword:
-        if keyword in title.lower():
-            keyword_score += 2
-        # Check first paragraph
-        body = analysis.get('_body_text', '')
-        first_para = body.split('\n\n')[0] if body else ''
-        if keyword in first_para.lower():
-            keyword_score += 1
-        # Check headings
-        h_texts = ' '.join(h['text'].lower() for h in headings['headings'])
-        if keyword in h_texts:
-            keyword_score += 1
-    else:
-        keyword_score = 2  # No keyword defined; give partial credit
+    if title_terms & body_terms:
+        keyword_score += 2
+    if title_terms & heading_terms:
+        keyword_score += 1
+    if heading_terms & body_terms:
+        keyword_score += 1
     keyword_score = min(keyword_score, 4)
     seo += keyword_score
     seo_breakdown['keyword_placement'] = keyword_score
@@ -1122,22 +1422,19 @@ def calculate_score(analysis: dict[str, Any]) -> dict[str, Any]:
     seo += int_score
     seo_breakdown['internal_linking'] = int_score
 
-    # Meta description (150-160 chars, stat): 3 pts
+    # Meta description accuracy and visible-content consistency: 3 pts.
     desc = fm.get('description', fm.get('meta_description', ''))
-    desc_len = len(desc)
     meta_score = 0
-    if 150 <= desc_len <= 160:
-        meta_score = 3
-    elif 120 <= desc_len <= 170:
-        meta_score = 2
-    elif desc:
-        meta_score = 1
+    if desc:
+        meta_score += 1
+        desc_terms = _topic_terms(desc)
+        if desc_terms & (title_terms | heading_terms):
+            meta_score += 1
+        if desc_terms & body_terms:
+            meta_score += 1
     else:
         issues.append({'category': 'seo', 'severity': 'high',
                        'issue': 'Missing meta description in frontmatter'})
-    # Bonus if description contains a stat
-    if desc and re.search(r'\d', desc):
-        meta_score = min(meta_score + 1, 3)
     seo += meta_score
     seo_breakdown['meta_description'] = meta_score
 
@@ -1215,9 +1512,13 @@ def calculate_score(analysis: dict[str, Any]) -> dict[str, Any]:
     # Trust indicators: 4 pts (about/contact links, editorial mentions)
     trust_score = 0
     body = analysis.get('_body_text', '')
-    if re.search(r'(?i)\babout\s+(?:us|the author|me)\b', body) or re.search(r'/about', body):
+    language = analysis.get('language', 'en')
+    profile = LANGUAGE_PROFILES.get(language, LANGUAGE_PROFILES['en'])
+    if any(re.search(pattern, body, re.IGNORECASE)
+           for pattern in profile['about_patterns']):
         trust_score += 2
-    if re.search(r'(?i)\bcontact\b', body) or re.search(r'/contact', body):
+    if any(re.search(pattern, body, re.IGNORECASE)
+           for pattern in profile['contact_patterns']):
         trust_score += 1
     if re.search(r'(?i)\b(?:editorial|reviewed by|fact.?check|editor)\b', body):
         trust_score += 1
@@ -1225,18 +1526,20 @@ def calculate_score(analysis: dict[str, Any]) -> dict[str, Any]:
     eeat += trust_score
     eeat_breakdown['trust'] = trust_score
 
-    # Experience signals: 3 pts
+    # Evidence basis: 3 pts. Never require or invent first-person experience.
     orig = analysis['originality']
     exp_score = 0
-    if orig['first_person_count'] >= 3:
+    if orig.get('methodology_count', 0) >= 1 and orig.get('evidence_marker_count', 0) >= 1:
         exp_score = 3
-    elif orig['first_person_count'] >= 1:
+    elif cit['unique_sources'] >= 3 and cit['unsourced_statistics'] == 0:
+        exp_score = 3
+    elif cit['unique_sources'] >= 1:
         exp_score = 2
-    elif 'first_person_experience' in orig['markers']:
+    elif orig.get('evidence_marker_count', 0) >= 1:
         exp_score = 1
     if exp_score == 0:
         issues.append({'category': 'eeat', 'severity': 'medium',
-                       'issue': 'No experience signals - add "we tested", "in our experience" language'})
+                       'issue': 'Evidence basis is unclear - add verifiable sources, transparent methodology, or clearly supported original material'})
     eeat += exp_score
     eeat_breakdown['experience'] = exp_score
 
@@ -1254,9 +1557,9 @@ def calculate_score(analysis: dict[str, Any]) -> dict[str, Any]:
     schema_score = 0
     if schema['has_blogposting']:
         schema_score += 2
-    if schema['has_faqpage']:
-        schema_score += 1
     if schema['has_person']:
+        schema_score += 1
+    if schema.get('has_organization') or schema.get('has_breadcrumblist'):
         schema_score += 1
     if schema['schema_count'] == 0:
         # Check if there are any schema signals at all
@@ -1314,16 +1617,27 @@ def calculate_score(analysis: dict[str, Any]) -> dict[str, Any]:
     tech += speed_score
     tech_breakdown['page_speed'] = speed_score
 
-    # Mobile-friendly: 2 pts
+    # Mobile-friendly: 2 pts. Score observable rendering signals, never prose
+    # length.
     mobile_score = 0
-    # Reasonable line lengths (no extremely long paragraphs without breaks)
-    if paras['max_word_count'] <= 100:
+    raw_content = analysis.get('_raw_content', '')
+    fixed_width_layout = bool(re.search(
+        r'style=["\'][^"\']*\bwidth\s*:\s*(?:1\d{3}|[2-9]\d{3,})px',
+        raw_content,
+        re.IGNORECASE,
+    ))
+    if not fixed_width_layout:
         mobile_score += 1
-    # Responsive patterns (picture element, srcset)
-    if re.search(r'srcset|<picture', analysis.get('_raw_content', ''), re.IGNORECASE):
+    if re.search(
+        r'srcset|<picture|name=["\']viewport["\']',
+        raw_content,
+        re.IGNORECASE,
+    ):
         mobile_score += 1
-    elif paras['total_paragraphs'] > 0:
-        mobile_score += 1  # Reasonable paragraph structure = OK for mobile
+    elif images['count'] == 0 and not re.search(
+        r'<(?:iframe|video)\b', raw_content, re.IGNORECASE
+    ):
+        mobile_score += 1
     mobile_score = min(mobile_score, 2)
     tech += mobile_score
     tech_breakdown['mobile'] = mobile_score
@@ -1350,35 +1664,36 @@ def calculate_score(analysis: dict[str, Any]) -> dict[str, Any]:
     ai = 0
     ai_breakdown: dict[str, Any] = {}
     ai_ready = analysis['ai_citation_readiness']
+    cit = analysis['citations']
 
-    # Passage citability (120-180 word sections): 4 pts
+    # Evidence-backed, self-contained sections: 4 pts. No fixed word band.
     cite_score = 0
-    cp = ai_ready['citable_passages']
-    if cp >= 5:
+    supported_sections = ai_ready.get('evidence_backed_sections', 0)
+    self_contained = ai_ready.get('self_contained_sections', 0)
+    if supported_sections >= 3 and self_contained >= 2 and cit['unsourced_statistics'] == 0:
         cite_score = 4
-    elif cp >= 3:
+    elif supported_sections >= 2 and self_contained >= 1:
         cite_score = 3
-    elif cp >= 1:
+    elif supported_sections >= 1:
         cite_score = 2
+    elif cit['inline_citations'] >= 1:
+        cite_score = 1
     else:
-        cite_score = 0
         issues.append({'category': 'ai_citation', 'severity': 'medium',
-                       'issue': 'No passages in the 120-180 word sweet spot for AI citations'})
+                       'issue': 'No evidence-backed sections found - support reusable claims with clear sources or transparent original evidence'})
     ai += cite_score
     ai_breakdown['citability'] = cite_score
 
-    # Q&A sections: 3 pts
-    qa_score = 0
-    qap = ai_ready['qa_pairs']
-    faq = analysis['faq']
-    if qap >= 5 or faq['has_faq_section']:
-        qa_score = 3
-    elif qap >= 3:
-        qa_score = 2
-    elif qap >= 1:
-        qa_score = 1
-    ai += qa_score
-    ai_breakdown['qa_sections'] = qa_score
+    # Purpose fit: 3 pts. Declarative headings and optional FAQs are valid.
+    purpose_score = 0
+    if ai_ready.get('purpose_statement'):
+        purpose_score += 1
+    if headings['hierarchy_clean'] and headings['h2_count'] >= 1:
+        purpose_score += 1
+    if engagement['example_count'] >= 1 or ai_ready.get('has_tldr'):
+        purpose_score += 1
+    ai += purpose_score
+    ai_breakdown['purpose_fit'] = purpose_score
 
     # Entity clarity: 3 pts
     ent_score = 0
@@ -1394,15 +1709,15 @@ def calculate_score(analysis: dict[str, Any]) -> dict[str, Any]:
     ai += ent_score
     ai_breakdown['entity_clarity'] = ent_score
 
-    # Content structure for extraction: 3 pts
+    # Reader-useful structure: 3 pts. No single format is mandatory.
     ext_score = 0
-    if ai_ready['has_tldr']:
+    if ai_ready['has_tldr'] or engagement['example_count'] >= 1:
         ext_score += 1
-    if ai_ready['table_count'] >= 3:
+    if struct_data['table_count'] >= 1:
         ext_score += 1
-    elif ai_ready['list_count'] >= 5:
+    elif struct_data['unordered_list_items'] + struct_data['ordered_list_items'] >= 3:
         ext_score += 1
-    if struct_data['table_count'] >= 1 and struct_data['unordered_list_items'] >= 3:
+    if ai_ready.get('relevant_media_count', 0) >= 1:
         ext_score += 1
     ext_score = min(ext_score, 3)
     ai += ext_score
@@ -1443,6 +1758,8 @@ def calculate_score(analysis: dict[str, Any]) -> dict[str, Any]:
     return {
         'total': total,
         'rating': rating,
+        'methodology': 'internal_editorial_readiness_heuristic',
+        'calibrated_probability': False,
         'categories': {
             'content_quality': cq,
             'seo_optimization': seo,
@@ -1467,17 +1784,16 @@ def analyze_file(file_path: str) -> dict[str, Any]:
     if not path.exists():
         return {'error': f'File not found: {file_path}'}
 
-    content = path.read_text(encoding='utf-8')
+    try:
+        content = _read_safely(path)
+    except (OSError, UnicodeDecodeError, ValueError) as exc:
+        return {'error': f'Could not analyze {file_path}: {exc}'}
     frontmatter = extract_frontmatter(content)
     body = strip_frontmatter(content)
+    language = _detect_language(frontmatter, body)
 
     # Strip markdown formatting for plain-text analysis
-    plain_text = re.sub(r'```.*?```', '', body, flags=re.DOTALL)
-    plain_text = re.sub(r'<[^>]+>', '', plain_text)
-    plain_text = re.sub(r'!\[.*?\]\(.*?\)', '', plain_text)
-    plain_text = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', plain_text)
-    plain_text = re.sub(r'^#{1,6}\s+', '', plain_text, flags=re.MULTILINE)
-    plain_text = re.sub(r'\n{3,}', '\n\n', plain_text).strip()
+    plain_text = _plain_text_for_analysis(body)
 
     headings_info = analyze_headings(body)
     sentences_info = analyze_sentences(plain_text)
@@ -1486,6 +1802,12 @@ def analyze_file(file_path: str) -> dict[str, Any]:
     analysis: dict[str, Any] = {
         'file': str(path),
         'format': path.suffix,
+        'language': language,
+        'methodology': {
+            'name': 'internal editorial readiness heuristic',
+            'calibrated_probability': False,
+            'authorship_classifier': False,
+        },
         'frontmatter': frontmatter,
         'headings': headings_info,
         'paragraphs': analyze_paragraphs(body),
@@ -1495,7 +1817,7 @@ def analyze_file(file_path: str) -> dict[str, Any]:
         'faq': faq_info,
         'freshness': analyze_freshness(frontmatter),
         'self_promotion': analyze_self_promotion(body),
-        'readability': analyze_readability(plain_text),
+        'readability': analyze_readability(plain_text, language),
         'sentences': sentences_info,
         'ai_signals': analyze_ai_signals(plain_text, sentences_info),
         'passive_voice': analyze_passive_voice(plain_text),
@@ -1503,9 +1825,11 @@ def analyze_file(file_path: str) -> dict[str, Any]:
         'ai_trigger_words': analyze_ai_trigger_words(plain_text),
         'schema': analyze_schema(content),
         'links': analyze_links(body),
-        'originality': analyze_originality(body),
+        'originality': analyze_originality(body, language),
         'engagement': analyze_engagement(body),
-        'ai_citation_readiness': analyze_ai_citation_readiness(body, headings_info, faq_info),
+        'ai_citation_readiness': analyze_ai_citation_readiness(
+            body, headings_info, faq_info, language
+        ),
         'social_meta': analyze_social_meta(content, frontmatter),
         'structured_data': analyze_structured_data(body),
         # Internal refs used by scoring (not included in output)
@@ -1564,21 +1888,13 @@ def _format_markdown(result: dict[str, Any]) -> str:
         lines.append(f'| {label} | {s} | {m} |')
     lines.append('')
 
-    # AI content detection
+    # Editorial style diagnostics
     ai_sig = result.get('ai_signals', {})
-    burstiness = ai_sig.get('burstiness', 0)
-    if burstiness >= 0.5:
-        burst_label = 'Natural'
-    elif burstiness >= 0.3:
-        burst_label = 'Borderline'
-    else:
-        burst_label = 'Flagged'
-    lines.append('### AI Content Detection')
-    lines.append(f'- Burstiness: {burstiness} ({burst_label})')
-    lines.append(f'- AI phrases: {ai_sig.get("ai_phrase_count", 0)} found')
-    lines.append(f'- Vocabulary diversity: {ai_sig.get("vocabulary_diversity_ttr", 0)}')
-    if ai_sig.get('likely_ai'):
-        lines.append('- **WARNING: Content shows AI-generation signals**')
+    lines.append('### Editorial Style Diagnostics')
+    lines.append('- These descriptive observations do not infer authorship and do not affect the score.')
+    lines.append(f'- Sentence-length variation: {ai_sig.get("burstiness", 0)}')
+    lines.append(f'- Configured style phrases: {ai_sig.get("ai_phrase_count", 0)} found')
+    lines.append(f'- Vocabulary diversity sample: {ai_sig.get("vocabulary_diversity_ttr", 0)}')
     lines.append('')
 
     # Readability
@@ -1592,9 +1908,9 @@ def _format_markdown(result: dict[str, Any]) -> str:
     if read.get('flesch_kincaid_grade'):
         lines.append(f'- Flesch-Kincaid Grade: {read.get("flesch_kincaid_grade")} (target: 7-8)')
     lines.append(f'- Reading time: {read.get("reading_time_minutes", "N/A")} minutes')
-    lines.append(f'- Passive voice: {passive.get("passive_pct", "N/A")}% (target: ≤10%)')
+    lines.append(f'- Passive voice: {passive.get("passive_pct", "N/A")}% (descriptive only)')
     lines.append(f'- Transition words: {transitions.get("transition_pct", "N/A")}% (target: 20-30%)')
-    lines.append(f'- AI trigger words: {ai_triggers.get("per_1k", "N/A")}/1K (target: ≤5)')
+    lines.append(f'- Project style-list terms: {ai_triggers.get("per_1k", "N/A")}/1K (advisory)')
     lines.append(f'- Sentences over 20 words: {sents.get("over_20_pct", "N/A")}% (target: ≤25%)')
     if ai_triggers.get('found'):
         trigger_list = ', '.join(f'{t["word"]}({t["count"]})' for t in ai_triggers['found'][:5])
@@ -1784,7 +2100,7 @@ def main(args: argparse.Namespace) -> None:
         else:
             output = json.dumps(batch_result, indent=2)
             if args.output:
-                Path(args.output).write_text(output)
+                _safe_write_text(args.output, output)
                 print(f'Report saved to {args.output}', file=sys.stderr)
             else:
                 print(output)
@@ -1815,7 +2131,7 @@ def main(args: argparse.Namespace) -> None:
     if fmt == 'markdown':
         output = _format_markdown(result)
         if args.output:
-            Path(args.output).write_text(output)
+            _safe_write_text(args.output, output)
             print(f'Report saved to {args.output}', file=sys.stderr)
         else:
             print(output)
@@ -1824,7 +2140,7 @@ def main(args: argparse.Namespace) -> None:
     else:
         output = json.dumps(result, indent=2)
         if args.output:
-            Path(args.output).write_text(output)
+            _safe_write_text(args.output, output)
             print(f'Report saved to {args.output}', file=sys.stderr)
         else:
             print(output)
@@ -1838,12 +2154,12 @@ if __name__ == '__main__':
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python analyze_blog.py post.md                          Default JSON output
-  python analyze_blog.py post.md --format markdown        Markdown report
-  python analyze_blog.py post.md --format table           Compact table
-  python analyze_blog.py ./posts --batch --sort score     Batch analysis
-  python analyze_blog.py post.md --category seo           Single category detail
-  python analyze_blog.py post.md --fix                    Prioritized fix list
+  python3 analyze_blog.py post.md                          Default JSON output
+  python3 analyze_blog.py post.md --format markdown        Markdown report
+  python3 analyze_blog.py post.md --format table           Compact table
+  python3 analyze_blog.py ./posts --batch --sort score     Batch analysis
+  python3 analyze_blog.py post.md --category seo           Single category detail
+  python3 analyze_blog.py post.md --fix                    Prioritized fix list
 
 Scoring Categories (100 points):
   Content Quality        30 pts   Depth, readability, originality, structure
@@ -1860,7 +2176,7 @@ Optional dependencies (graceful degradation):
   pip install textstat beautifulsoup4
         """,
     )
-    parser.add_argument('--version', action='version', version='%(prog)s 1.0.0')
+    parser.add_argument('--version', action='version', version=f'%(prog)s {_project_version()}')
     parser.add_argument('input', help='Blog file path or directory (with --batch)')
     parser.add_argument('--output', '-o', help='Output file path')
     parser.add_argument('--format', '-f', choices=['json', 'markdown', 'table'],

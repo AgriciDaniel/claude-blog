@@ -61,6 +61,7 @@ firebase-debug.log
 # Generated output
 output/
 demo-output/
+.raw/
 
 # Working documents
 definitive-resesarch-blueprint-for-claude-blog.md
@@ -95,3 +96,9 @@ definitive-resesarch-blueprint-for-claude-blog.md
 
 # Hex-named cached GIFs at repo root only (auto-downloaded artifacts)
 /[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]*.gif
+
+# Session-scoped audit evidence at repo root (regenerated per audit cycle)
+/audit-results.md
+
+# Local Claude Code settings (never commit)
+.claude/settings.local.json

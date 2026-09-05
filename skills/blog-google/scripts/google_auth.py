@@ -18,6 +18,7 @@ Usage:
 import argparse
 import json
 import os
+import random
 import secrets
 import sys
 import tempfile
@@ -40,9 +41,12 @@ SERVICE_AUTH = {
     "psi": "api_key",
     "crux": "api_key",
     "crux_history": "api_key",
+    "youtube": "api_key",
+    "nlp": "api_key",
     "gsc": "oauth_or_sa",
     "indexing": "oauth_or_sa",
     "ga4": "oauth_or_sa",
+    "keywords": "ads",
 }
 
 OAUTH_REDIRECT_URI = "http://127.0.0.1:8085"
@@ -94,10 +98,59 @@ SERVICE_NAMES = {
     "psi": "PageSpeed Insights v5",
     "crux": "Chrome UX Report (CrUX) API",
     "crux_history": "CrUX History API",
+    "youtube": "YouTube Data API v3",
+    "nlp": "Cloud Natural Language API",
     "gsc": "Google Search Console API",
     "indexing": "Google Indexing API v3",
     "ga4": "GA4 Data API v1beta",
+    "keywords": "Google Ads Keyword Planner",
 }
+
+
+def _retry_delay(headers: dict, attempt: int) -> float:
+    retry_after = None
+    if headers:
+        retry_after = headers.get("Retry-After") or headers.get("retry-after")
+    if retry_after:
+        try:
+            return min(float(retry_after), 60.0)
+        except ValueError:
+            pass
+    return min(2 ** attempt, 16) + random.uniform(0, 0.5)
+
+
+def request_with_retries(method: str, url: str, max_attempts: int = 5, **kwargs):
+    """Run a requests call with Google-friendly Retry-After backoff."""
+    try:
+        import requests
+    except ImportError:
+        raise RuntimeError("requests library required")
+
+    retry_statuses = {429, 500, 502, 503, 504}
+    last_response = None
+    for attempt in range(max_attempts):
+        response = requests.request(method, url, **kwargs)
+        last_response = response
+        if response.status_code not in retry_statuses:
+            return response
+        if attempt == max_attempts - 1:
+            return response
+        time.sleep(_retry_delay(response.headers, attempt))
+    return last_response
+
+
+def execute_with_retries(request, max_attempts: int = 5):
+    """Execute a googleapiclient request with Retry-After backoff."""
+    retry_statuses = {429, 500, 502, 503, 504}
+    for attempt in range(max_attempts):
+        try:
+            return request.execute()
+        except Exception as exc:
+            status = getattr(getattr(exc, "resp", None), "status", None)
+            headers = getattr(getattr(exc, "resp", None), "headers", {}) or {}
+            if status not in retry_statuses or attempt == max_attempts - 1:
+                raise
+            time.sleep(_retry_delay(headers, attempt))
 
 
 def load_config() -> dict:
@@ -114,8 +167,12 @@ def load_config() -> dict:
     config = {
         "service_account_path": None,
         "api_key": None,
+        "oauth_client_path": None,
         "default_property": None,
         "ga4_property_id": None,
+        "ads_developer_token": None,
+        "ads_customer_id": None,
+        "ads_login_customer_id": None,
     }
 
     # Load from config file
@@ -140,7 +197,32 @@ def load_config() -> dict:
     if not config["default_property"]:
         config["default_property"] = os.environ.get("GSC_PROPERTY")
 
+    if not config["oauth_client_path"]:
+        config["oauth_client_path"] = os.environ.get("GOOGLE_OAUTH_CLIENT_PATH")
+
+    if not config["ads_developer_token"]:
+        config["ads_developer_token"] = os.environ.get("GOOGLE_ADS_DEVELOPER_TOKEN")
+
+    if not config["ads_customer_id"]:
+        config["ads_customer_id"] = os.environ.get("GOOGLE_ADS_CUSTOMER_ID")
+
+    if not config["ads_login_customer_id"]:
+        config["ads_login_customer_id"] = os.environ.get("GOOGLE_ADS_LOGIN_CUSTOMER_ID")
+
     return config
+
+
+def _save_config_value(key: str, value: str) -> None:
+    """Persist one config value without weakening file permissions."""
+    config = {}
+    if os.path.exists(CONFIG_PATH):
+        try:
+            with open(CONFIG_PATH, "r") as f:
+                config = json.load(f)
+        except (json.JSONDecodeError, IOError):
+            config = {}
+    config[key] = value
+    _write_secret_atomic(CONFIG_PATH, json.dumps(config, indent=2))
 
 
 def get_service_account_credentials(scopes: list):
@@ -231,12 +313,15 @@ def _refresh_oauth_token(client: dict, token_data: dict) -> Optional[dict]:
 
     try:
         req = urllib.request.Request(client.get("token_uri", "https://oauth2.googleapis.com/token"), data=params)
-        with urllib.request.urlopen(req) as resp:
+        with urllib.request.urlopen(req, timeout=30) as resp:
             new_data = json.loads(resp.read())
         token_data["access_token"] = new_data["access_token"]
         token_data["expires_at"] = time.time() + new_data.get("expires_in", 3600)
         if "refresh_token" in new_data:  # Google now sometimes rotates these
             token_data["refresh_token"] = new_data["refresh_token"]
+        # AUTH-001 (v1.9.1): strip client_secret on every save so older
+        # token files migrate forward the first time they're refreshed.
+        token_data.pop("client_secret", None)
         _save_oauth_token(token_data)
         return token_data
     except Exception as e:
@@ -275,12 +360,27 @@ def get_oauth_credentials(scopes: list):
         if token_data and token_data.get("access_token"):
             try:
                 from google.oauth2.credentials import Credentials
+                # AUTH-001 (v1.9.1): client_secret is no longer stored in
+                # the token file. Re-read from config["oauth_client_path"]
+                # so the long-lived app credential stays in its own
+                # 0o600 file (and is referenced, not duplicated).
+                # Backwards-compat: legacy token files still containing
+                # client_secret are honored (token_data.get fallback)
+                # until v1.10.0 makes oauth_client_path mandatory.
+                client_secret = None
+                oauth_creds_path = config.get("oauth_client_path")
+                if oauth_creds_path:
+                    client = _load_oauth_client(os.path.expanduser(oauth_creds_path))
+                    if client:
+                        client_secret = client.get("client_secret")
+                if client_secret is None:
+                    client_secret = token_data.get("client_secret")  # legacy compat
                 return Credentials(
                     token=token_data["access_token"],
                     refresh_token=token_data.get("refresh_token"),
                     token_uri="https://oauth2.googleapis.com/token",
                     client_id=token_data.get("client_id"),
-                    client_secret=token_data.get("client_secret"),
+                    client_secret=client_secret,
                 )
             except ImportError:
                 print("Error: google-auth required. Install with: pip install google-auth", file=sys.stderr)
@@ -339,7 +439,7 @@ def run_oauth_flow(creds_path: str, services: list = None):
                 self.send_response(403)
                 self.send_header("Content-Type", "text/plain")
                 self.end_headers()
-                self.wfile.write(b"State mismatch -- possible CSRF. Aborted.")
+                self.wfile.write(b"State mismatch - possible CSRF. Aborted.")
                 return
             if "code" in params:
                 auth_code[0] = params["code"][0]
@@ -371,14 +471,14 @@ def run_oauth_flow(creds_path: str, services: list = None):
         print("\nAuthentication failed or timed out.", file=sys.stderr)
         print("If the browser showed '127.0.0.1 refused to connect', copy the full URL")
         print("from the browser address bar and run:")
-        print(f"  python scripts/google_auth.py --exchange --creds {creds_path} --code 'THE_CODE'")
+        print(f"  python3 scripts/google_auth.py --exchange --creds {creds_path} --code 'THE_CODE'")
         sys.exit(1)
 
     # Exchange code for tokens
-    _exchange_code(client, auth_code[0])
+    _exchange_code(client, auth_code[0], creds_path=creds_path)
 
 
-def _exchange_code(client: dict, code: str):
+def _exchange_code(client: dict, code: str, creds_path: str | None = None):
     """Exchange an authorization code for tokens."""
     import urllib.parse
     import urllib.request
@@ -395,17 +495,21 @@ def _exchange_code(client: dict, code: str):
         req = urllib.request.Request(
             client.get("token_uri", "https://oauth2.googleapis.com/token"), data=params
         )
-        with urllib.request.urlopen(req) as resp:
+        with urllib.request.urlopen(req, timeout=30) as resp:
             token_data = json.loads(resp.read())
         token_data["expires_at"] = time.time() + token_data.get("expires_in", 3600)
         token_data["client_id"] = client["client_id"]
-        token_data["client_secret"] = client["client_secret"]
+        # AUTH-001 (v1.9.1): client_secret is NO LONGER stored in the token
+        # file. Co-locating the long-lived app credential with the
+        # short-lived access token expands blast radius if the token file
+        # leaks. Refresh paths re-read client_secret from
+        # config["oauth_client_path"] instead. See get_oauth_credentials.
+        token_data.pop("client_secret", None)
         _save_oauth_token(token_data)
         print("OAuth token saved successfully!")
 
-        # Also save the OAuth client path to config
-        config = load_config()
-        # Don't overwrite existing config, just suggest
+        if creds_path:
+            _save_config_value("oauth_client_path", os.path.abspath(os.path.expanduser(creds_path)))
         print(f"\nToken saved to: {TOKEN_PATH}")
     except Exception as e:
         print(f"Error exchanging authorization code: {e}", file=sys.stderr)
@@ -508,7 +612,7 @@ def check_credentials(service: str) -> dict:
             if not sa_path:
                 result["error"] = (
                     "No OAuth token or service account found. Either:\n"
-                    "         1. Run: python scripts/google_auth.py --auth --creds /path/to/client_secret.json\n"
+                    "         1. Run: python3 scripts/google_auth.py --auth --creds /path/to/client_secret.json\n"
                     f"         2. Or add 'service_account_path' to {CONFIG_PATH}"
                 )
             else:
@@ -537,6 +641,22 @@ def check_credentials(service: str) -> dict:
                     "Credentials found but no GA4 property ID configured. "
                     f"Set GA4_PROPERTY_ID or add 'ga4_property_id' to {CONFIG_PATH}"
                 )
+    elif SERVICE_AUTH.get(service) == "ads":
+        missing = []
+        if not config.get("ads_developer_token"):
+            missing.append("ads_developer_token")
+        if not config.get("ads_customer_id"):
+            missing.append("ads_customer_id")
+        token_data = _load_oauth_token()
+        if not token_data or not token_data.get("refresh_token"):
+            missing.append("OAuth refresh token from --auth")
+        if not config.get("oauth_client_path"):
+            missing.append("oauth_client_path")
+        if missing:
+            result["error"] = f"Missing Google Ads config: {', '.join(missing)}"
+        else:
+            result["available"] = True
+            result["method"] = "google_ads_oauth"
     else:
         result["error"] = f"Unknown service: {service}"
 
@@ -559,6 +679,7 @@ def detect_tier() -> dict:
     has_api_key = bool(config.get("api_key"))
     has_authenticated = False
     has_ga4 = False
+    has_ads = False
     auth_method = None
 
     # Check OAuth token
@@ -585,35 +706,60 @@ def detect_tier() -> dict:
     if has_authenticated and config.get("ga4_property_id"):
         has_ga4 = True
 
-    if has_ga4:
+    token_data = _load_oauth_token()
+    has_ads = all([
+        config.get("ads_developer_token"),
+        config.get("ads_customer_id"),
+        config.get("oauth_client_path"),
+        token_data and token_data.get("refresh_token"),
+    ])
+
+    tier0_caps = [
+        "PageSpeed Insights", "CrUX", "CrUX History",
+        "YouTube Data", "Cloud Natural Language",
+    ]
+    auth_caps = [
+        "Search Console", "URL Inspection", "Sitemaps",
+        "Indexing API",
+    ]
+
+    if has_ads:
+        capabilities = []
+        if has_api_key:
+            capabilities.extend(tier0_caps)
+        if has_authenticated:
+            capabilities.extend(auth_caps)
+        if has_ga4:
+            capabilities.append("GA4 Organic Traffic")
+        capabilities.append("Google Ads Keyword Planner")
+        missing = None
+        if not has_ga4:
+            missing = "Add 'ga4_property_id' if GA4 reports are also needed"
+        return {
+            "tier": 3,
+            "description": "Ads (Google Ads OAuth + developer token)",
+            "capabilities": capabilities,
+            "missing": missing,
+        }
+    elif has_ga4:
         return {
             "tier": 2,
             "description": "Full (API key + Service Account + GA4)",
-            "capabilities": [
-                "PageSpeed Insights", "CrUX", "CrUX History",
-                "Search Console", "URL Inspection", "Sitemaps",
-                "Indexing API", "GA4 Organic Traffic",
-            ],
+            "capabilities": tier0_caps + auth_caps + ["GA4 Organic Traffic"],
             "missing": None,
         }
     elif has_authenticated:
         return {
             "tier": 1,
             "description": "Authenticated (API key + OAuth/Service Account)",
-            "capabilities": [
-                "PageSpeed Insights", "CrUX", "CrUX History",
-                "Search Console", "URL Inspection", "Sitemaps",
-                "Indexing API",
-            ],
+            "capabilities": (tier0_caps if has_api_key else []) + auth_caps,
             "missing": "Add 'ga4_property_id' to unlock GA4 organic traffic reports",
         }
     elif has_api_key:
         return {
             "tier": 0,
             "description": "API Key Only",
-            "capabilities": [
-                "PageSpeed Insights", "CrUX", "CrUX History",
-            ],
+            "capabilities": tier0_caps,
             "missing": "Add a service account to unlock Search Console, URL Inspection, and Indexing API",
         }
     else:
@@ -646,10 +792,13 @@ Google SEO API Setup Instructions
    - Chrome UX Report API
    - Web Search Indexing API (for Indexing API)
    - Google Analytics Data API (for GA4)
+   - YouTube Data API v3
+   - Cloud Natural Language API
 
-3. CREATE AN API KEY (for PSI, CrUX -- free, no service account needed)
+3. CREATE AN API KEY (for PSI, CrUX, YouTube, NLP)
    - APIs & Services > Credentials > Create Credentials > API key
-   - Restrict to: PageSpeed Insights API, Chrome UX Report API
+   - Restrict to: PageSpeed Insights API, Chrome UX Report API,
+     YouTube Data API v3, Cloud Natural Language API
 
 4. CREATE A SERVICE ACCOUNT (for GSC, Indexing API, GA4)
    - IAM & Admin > Service Accounts > Create Service Account
@@ -667,19 +816,30 @@ Google SEO API Setup Instructions
 
    {
      "service_account_path": "/path/to/service_account.json",
-     "api_key": "AIzaSy...",
+     "api_key": "YOUR_GOOGLE_API_KEY",
+     "oauth_client_path": "/path/to/oauth_client.json",
      "default_property": "sc-domain:example.com",
-     "ga4_property_id": "properties/123456789"
+     "ga4_property_id": "properties/123456789",
+     "ads_developer_token": "YOUR_DEV_TOKEN",
+     "ads_customer_id": "123-456-7890",
+     "ads_login_customer_id": "123-456-7890"
    }
 
+   chmod 700 ~/.config/claude-seo
+   chmod 600 ~/.config/claude-seo/google-api.json
+
 7. VERIFY
-   python scripts/google_auth.py --check
+   python3 scripts/google_auth.py --check
 
 ENVIRONMENT VARIABLE ALTERNATIVES:
    GOOGLE_API_KEY              - API key
    GOOGLE_APPLICATION_CREDENTIALS - Path to service account JSON
+   GOOGLE_OAUTH_CLIENT_PATH    - Path to OAuth client JSON
    GA4_PROPERTY_ID             - GA4 property ID (e.g., properties/123456789)
    GSC_PROPERTY                - Default Search Console property
+   GOOGLE_ADS_DEVELOPER_TOKEN  - Google Ads developer token
+   GOOGLE_ADS_CUSTOMER_ID      - Google Ads customer ID
+   GOOGLE_ADS_LOGIN_CUSTOMER_ID - Optional manager account login customer ID
 """)
 
 
@@ -692,7 +852,7 @@ def main():
         nargs="?",
         const="all",
         metavar="SERVICE",
-        help="Check credentials. Optionally specify service: psi, crux, gsc, indexing, ga4",
+        help="Check credentials. Optionally specify service: psi, crux, crux_history, youtube, nlp, gsc, indexing, ga4, keywords",
     )
     parser.add_argument(
         "--setup",
@@ -764,7 +924,7 @@ def main():
             sys.exit(1)
         client = _load_oauth_client(args.creds)
         if client:
-            _exchange_code(client, args.code)
+            _exchange_code(client, args.code, creds_path=args.creds)
         return
 
     if args.setup:
@@ -776,7 +936,7 @@ def main():
         if args.json:
             print(json.dumps(tier_info, indent=2))
         else:
-            print(f"Credential Tier: {tier_info['tier']} -- {tier_info['description']}")
+            print(f"Credential Tier: {tier_info['tier']} - {tier_info['description']}")
             if tier_info["capabilities"]:
                 print(f"Available APIs: {', '.join(tier_info['capabilities'])}")
             if tier_info["missing"]:
@@ -803,7 +963,7 @@ def main():
             print(json.dumps(output, indent=2))
         else:
             tier_info = detect_tier()
-            print(f"Credential Tier: {tier_info['tier']} -- {tier_info['description']}")
+            print(f"Credential Tier: {tier_info['tier']} - {tier_info['description']}")
             print()
             for svc, result in results.items():
                 status = "OK" if result["available"] else "MISSING"
@@ -822,7 +982,7 @@ def main():
     if args.json:
         print(json.dumps(tier_info, indent=2))
     else:
-        print(f"Credential Tier: {tier_info['tier']} -- {tier_info['description']}")
+        print(f"Credential Tier: {tier_info['tier']} - {tier_info['description']}")
         if tier_info["missing"]:
             print(f"Run --setup for configuration instructions.")
 

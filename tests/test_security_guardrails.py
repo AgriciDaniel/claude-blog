@@ -540,7 +540,7 @@ def test_user_invokable_skills_have_complete_frontmatter() -> None:
     ``argument-hint``, and ``license`` in frontmatter.
 
     This test was added after a meta-audit found 15 user-invokable skills
-    missing one or both of ``argument-hint`` / ``license`` -- a class issue
+    missing one or both of ``argument-hint`` / ``license``, a class issue
     that the chair's verifier (a single-skill check on blog-rewrite) had
     missed. Static-presence test using the project's stdlib-only frontmatter
     parser; no PyYAML dependency added.
@@ -586,4 +586,93 @@ def test_user_invokable_skills_have_complete_frontmatter() -> None:
         "User-invokable SKILL.md files are missing required frontmatter "
         "fields. Every user-invokable skill MUST declare description, "
         "argument-hint, and license:\n  - " + "\n  - ".join(offenders)
+    )
+
+
+# ---------------------------------------------------------------------------
+# Test 9: the shipped MCP config carries no credential (v2.3.0, Cowork port)
+# ---------------------------------------------------------------------------
+
+
+def test_shipped_mcp_config_carries_no_literal_credential() -> None:
+    """``mcp-servers.json`` is committed and shipped inside the plugin, so a
+    literal credential here would be published to every user.
+
+    Values must stay ``${...}`` placeholders that Claude resolves at runtime
+    from secure storage (``userConfig``) or the environment.
+
+    The file is deliberately not named ``.mcp.json``: that filename is also read
+    as a *project-scoped* config, so a contributor working in this repo would
+    have Claude try to launch it with ``${CLAUDE_PLUGIN_ROOT}`` unresolved.
+    Keeping the distributed name distinct also lets ``.gitignore`` keep its
+    blanket ``.mcp.json`` rule with no exception.
+    """
+    import json as _json
+
+    mcp_path = REPO_ROOT / "mcp-servers.json"
+    assert mcp_path.is_file(), "mcp-servers.json must exist at the plugin root"
+
+    config = _json.loads(_read(mcp_path))
+    servers = config.get("mcpServers", {})
+    assert servers, "mcp-servers.json must declare at least one MCP server"
+
+    offenders: list[str] = []
+    for name, server in servers.items():
+        for key, value in (server.get("env") or {}).items():
+            if not isinstance(value, str):
+                continue
+            unresolved = value.startswith("${") and value.endswith("}")
+            if not unresolved and value.strip():
+                offenders.append(f"{name}.env.{key} = {value!r}")
+
+    assert not offenders, (
+        "mcp-servers.json contains literal env values where only `${...}` "
+        "placeholders are allowed:\n  - " + "\n  - ".join(offenders)
+    )
+
+    manifest = _json.loads(_read(REPO_ROOT / ".claude-plugin" / "plugin.json"))
+    assert manifest.get("mcpServers") == "./mcp-servers.json", (
+        "plugin.json must point `mcpServers` at ./mcp-servers.json, otherwise "
+        "the server is never registered for plugin installs."
+    )
+
+
+def test_mcp_server_is_opt_in_via_launcher() -> None:
+    """Enabling the plugin must not download or run third-party code.
+
+    A plugin's MCP servers start as soon as the plugin is enabled. Pointing the
+    config straight at ``npx @ycse/nanobanana-mcp`` would mean every install
+    fetches and executes a third-party npm package unprompted - a reasonable
+    thing for a security review to reject. The launcher gates that behind a
+    configured API key and pins an exact version.
+    """
+    import json as _json
+
+    config = _json.loads(_read(REPO_ROOT / "mcp-servers.json"))
+    for name, server in config.get("mcpServers", {}).items():
+        argv = [server.get("command", "")] + list(server.get("args") or [])
+        joined = " ".join(argv)
+        assert "npx" not in joined, (
+            f"MCP server {name!r} invokes npx directly. Route it through "
+            "scripts/nanobanana-launcher.mjs so it stays opt-in."
+        )
+
+    launcher = REPO_ROOT / "scripts" / "nanobanana-launcher.mjs"
+    assert launcher.is_file(), "scripts/nanobanana-launcher.mjs must exist"
+    source = _read(launcher)
+
+    assert re.search(r"@ycse/nanobanana-mcp@\d+\.\d+\.\d+", source), (
+        "The launcher must pin an exact nanobanana version, never `latest`."
+    )
+    assert "shell: false" in source, (
+        "The launcher must spawn with shell:false so argv is never handed to "
+        "a shell."
+    )
+    assert "serveInert" in source, (
+        "With no API key the launcher must serve an inert MCP session (zero "
+        "tools) rather than exiting, so the client does not report the plugin "
+        "as a failed connection on every session."
+    )
+    assert "tools: []" in source or '"tools": []' in source or "tools/list" in source, (
+        "The inert path must answer tools/list with an empty tool set."
     )

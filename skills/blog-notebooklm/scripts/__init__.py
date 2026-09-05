@@ -53,7 +53,7 @@ def ensure_venv_and_run():
         venv.create(venv_dir, with_pip=True)
 
         # Install requirements
-        requirements_file = skill_dir / "requirements.txt"
+        requirements_file = skill_dir / "scripts" / "requirements.txt"
         if requirements_file.exists():
             if os.name == 'nt':  # Windows
                 pip_exe = venv_dir / "Scripts" / "pip.exe"
@@ -66,7 +66,7 @@ def ensure_venv_and_run():
                 check=True
             )
 
-            # Also install patchright's chromium
+            # Also install Patchright's Chrome channel
             print("   Setting up browser automation...")
             if os.name == 'nt':
                 python_exe = venv_dir / "Scripts" / "python.exe"
@@ -74,7 +74,7 @@ def ensure_venv_and_run():
                 python_exe = venv_dir / "bin" / "python"
 
             subprocess.run(
-                [str(python_exe), "-m", "patchright", "install", "chromium"],
+                [str(python_exe), "-m", "patchright", "install", "chrome"],
                 check=True,
                 capture_output=True
             )

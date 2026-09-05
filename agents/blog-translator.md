@@ -47,12 +47,12 @@ into N languages, spawn N agents.
 The orchestrator provides:
 
 - **`source_file`**, absolute path to the source blog post.
-- **`target_lang`**, ISO 639-1 code (e.g. `de`, `fr`, `pt-BR`).
-- **`source_lang`**, ISO 639-1 code, autodetected if missing.
+- **`target_lang`**, BCP 47 tag with ISO 639-1 base code (e.g. `de`, `fr`, `pt-BR`).
+- **`source_lang`**, BCP 47 tag with ISO 639-1 base code, autodetected if missing.
 - **`keyword_map`**, optional, decisions about which terms stay in the
   source language (loanwords) and which get a localized equivalent.
 - **`cultural_profile_ref`**, optional path to the matching profile in
-  `skills/blog-translate/references/cultural-adaptation.md`.
+  `${CLAUDE_PLUGIN_ROOT}/skills/blog-translate/references/cultural-adaptation.md`.
 - **`output_path`**, where to write the translated file.
 
 If any of these are missing, derive them by reading the source file's
@@ -67,16 +67,18 @@ Read the source file. Extract:
 - Title, meta description, all headings, body paragraphs.
 - Image alt text and `<figcaption>` content.
 - FAQ questions and answers.
-- Citation capsule text.
+- Evidence-backed explanation text.
 - SVG chart `<text>` and `<tspan>` content.
 - CTA text.
 - Key Takeaways or summary box.
 - Internal-link zone anchor text (translate the anchor, not the marker).
 
 Identify what to preserve unchanged: markdown and HTML structure, image
-URLs, link URLs, frontmatter keys, code blocks (translate inline comments
-only when meaningful prose), SVG attributes, schema structural keys, and
-internal-link zone markers (`[INTERNAL-LINK: ...]`).
+URLs, external link URLs, frontmatter keys, code blocks (translate inline
+comments only when meaningful prose), SVG attributes, schema structural keys,
+and internal-link zone markers (`[INTERNAL-LINK: ...]`). For internal links,
+translate anchor text and map URLs to localized equivalents when the target
+locale has a matching page.
 
 ### Step 2: Keyword Localization
 
@@ -94,10 +96,11 @@ keyword consistently.
 - Write naturally in the target language. Do not translate word by word.
 - Match the tone and register of the original (formal, casual, technical).
 - Apply locale-specific number, date, currency, and quote formats. Use the
-  table in `skills/blog-translate/references/translation-rules.md`.
+  table in `${CLAUDE_PLUGIN_ROOT}/skills/blog-translate/references/translation-rules.md`.
 - Translate idioms into equivalent local expressions, never literal.
 - Maintain paragraph structure and approximate length ratios.
-- Preserve sentence-length variance (burstiness) from the original.
+- Preserve natural pacing where it fits the target language; sentence-length
+  variance is an editorial observation, not an authorship or scoring metric.
 - Translate all SVG `<text>` and `<tspan>` content. Adjust character
   length per locale (DE +25-30%, FR +10-15%, JA -20%, ZH -25%). Never
   truncate, raise the SVG `viewBox` width or reduce `font-size` if needed.
@@ -107,16 +110,19 @@ keyword consistently.
 For each translated post, set frontmatter independently:
 
 ```yaml
-title: "[Localized title with local keyword, 50-60 chars]"
-description: "[Localized description with stat, 150-160 chars]"
+title: "[Clear localized title that matches the visible page]"
+description: "[Accurate, page-specific localized summary]"
 slug: "[localized-slug-in-target-language]"
-lang: "[ISO 639-1 code]"
-translatedFrom: "[source ISO 639-1 code]"
+lang: "[BCP 47 target tag]"
+translatedFrom: "[BCP 47 source tag]"
 translatedDate: "YYYY-MM-DD"
 ```
 
 If the source has schema JSON-LD, update `inLanguage` and add
 `translationOfWork` pointing back to the source URL.
+Add reciprocal `hreflang` metadata when the output format supports it, including
+the source language, target language, and `x-default` when a default canonical
+exists.
 
 ### Step 5: Quality Self-Check
 
@@ -131,7 +137,7 @@ Before writing the file, verify every item:
 - [ ] All SVG `<text>` and `<tspan>` translated; lengths adjusted; no
       overflow.
 - [ ] FAQ questions and answers natural in target language.
-- [ ] Citation capsules self-contained in target language (40-60 words).
+- [ ] Evidence-backed explanations remain self-contained in the target language.
 - [ ] No mixed-language sentences other than loanwords.
 - [ ] No literal idiom translations.
 - [ ] Markdown and HTML structure intact.

@@ -52,7 +52,7 @@ Do NOT use this template for:
 
 ---
 
-### TL;DR Box (40-60 words)
+### TL;DR Box (concise; length follows the material)
 
 [ANSWER-FIRST] Distill the key implications into 2-3 sentences. Focus on what the reader should know and do, not on rehashing the event.
 
@@ -222,7 +222,7 @@ Do NOT use this template for:
 
 ---
 
-### FAQ (3 Questions)
+### Optional Reader Questions (count by reader need)
 
 [ANSWER-FIRST] for each question. Optimize for the exact queries people will search in the hours/days after the event.
 
@@ -248,25 +248,26 @@ Do NOT use this template for:
 
 **FAQ Rules:**
 - Use questions people are actually searching for right now
-- Answers must be self-contained and extractable for Featured Snippets
-- Keep answers to 40-60 words for snippet optimization
-- Only 3 questions - speed over comprehensiveness for this template
+- Answers must be self-contained and extractable for search snippets and AI citations
+- Keep answers concise and complete; Google has no required answer length
+- Include only questions that add useful material; count follows reader need
 
 ---
 
-### Sources
+### References and Retrieval Notes
 
 ```markdown
-## Sources
+## References and Retrieval Notes
 
-- [Source 1 title]([URL]) - [Organization], [Date]
-- [Source 2 title]([URL]) - [Organization], [Date]
-- [Source 3 title]([URL]) - [Organization], [Date]
-- [Source 4 title]([URL]) - [Organization], [Date]
+- [Source 1 title]([URL]) - [Organization], [Date], retrieved YYYY-MM-DD
+- [Source 2 title]([URL]) - [Organization], [Date], retrieved YYYY-MM-DD
+- [Source 3 title]([URL]) - [Organization], [Date], retrieved YYYY-MM-DD
+- [Source 4 title]([URL]) - [Organization], [Date], retrieved YYYY-MM-DD
 ```
 
 **Rules:**
-- Every factual claim in the article must have a source listed here
+- Every factual claim in the article must have an inline citation
+- Retrieval notes provide provenance and must not duplicate inline citations as a raw source dump
 - Use primary sources (official announcements, press releases) over secondary coverage
 - Include the date of each source
 - Aim for 4-8 sources minimum
@@ -282,7 +283,7 @@ Before publishing, verify:
 - [ ] TL;DR focuses on implications, not just restating the news
 - [ ] "What Happened" section is purely factual with source citations
 - [ ] At least one direct quote from a primary source
-- [ ] At least 2 [STAT] markers with relevant data points
+- [ ] Statistics appear only when material to the analysis and are verified
 - [ ] At least 2 [INFO-GAIN] sections with original analysis or predictions
 - [ ] "What to Do Now" has 3-5 concrete, prioritized action steps
 - [ ] At least 3 [INTERNAL-LINK] zones connecting to existing content

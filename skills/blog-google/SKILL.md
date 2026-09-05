@@ -15,7 +15,7 @@ argument-hint: "[setup|pagespeed|crux|crux-history|gsc|inspect|index|ga4|nlp|you
 license: MIT
 metadata:
   author: AgriciDaniel
-  version: "1.0.0"
+  version: "2.3.0"
   category: blog
 ---
 
@@ -25,29 +25,44 @@ Direct access to Google's SEO APIs for blog performance analysis. Provides real
 Chrome user metrics, indexation status, search performance, entity analysis, YouTube
 video discovery, keyword volumes, and PDF/HTML performance reports.
 
-All APIs are free at normal usage levels. Setup requires a Google Cloud project
-with an API key and/or service account.
+Most integrations have no usage fee within their documented quotas. Cloud
+Natural Language requires billing and can incur charges after its free monthly
+tier. Google Ads requires an eligible account and developer token. Never enable
+billing or make a paid request without explicit user approval.
+
+## Runtime check
+
+Run `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/runtime_capabilities.py" --check google --json`
+before any command in this skill. If `available` is `false`, report exactly what
+is missing (Python packages, credential, or both) and stop - do not run the
+scripts.
+
+On a hosted Claude Cowork session the home directory may not persist between
+sessions, so a config file written by `/blog google setup` can disappear. There,
+set credentials through the plugin's options or environment variables. See
+`${CLAUDE_PLUGIN_ROOT}/skills/blog/references/cowork-runtime.md`.
 
 ## Prerequisites
 
 **Always check credentials before running any command:**
 ```bash
-python3 skills/blog-google/scripts/run.py google_auth --check --json
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-google/scripts/run.py google_auth --check --json
 ```
 
 **Config file:** `~/.config/claude-seo/google-api.json` (shared with claude-seo)
 ```json
 {
-  "api_key": "AIzaSy...",
+  "api_key": "YOUR_GOOGLE_API_KEY",
   "oauth_client_path": "/path/to/client_secret.json",
   "default_property": "sc-domain:example.com",
   "ga4_property_id": "properties/123456789",
   "ads_developer_token": "...",
-  "ads_customer_id": "123-456-7890"
+  "ads_customer_id": "123-456-7890",
+  "ads_login_customer_id": "123-456-7890"
 }
 ```
 
-If missing, read `references/auth-setup.md` and walk the user through setup.
+If missing, read `${CLAUDE_PLUGIN_ROOT}/skills/blog-google/references/auth-setup.md` and walk the user through setup.
 
 ### Credential Tiers
 
@@ -64,7 +79,7 @@ Always communicate the detected tier before running commands.
 
 | Command | What it does | Tier |
 |---------|-------------|------|
-| `/blog google setup` | Check/configure API credentials | -- |
+| `/blog google setup` | Check/configure API credentials |: |
 | `/blog google pagespeed <url>` | PSI Lighthouse + CrUX field data | 0 |
 | `/blog google crux <url>` | CrUX field data only (p75 metrics) | 0 |
 | `/blog google crux-history <url>` | 25-week CWV trend analysis | 0 |
@@ -75,8 +90,8 @@ Always communicate the detected tier before running commands.
 | `/blog google index <url>` | Submit URL to Indexing API | 1 |
 | `/blog google ga4 [property-id]` | GA4 organic traffic report | 2 |
 | `/blog google keywords <seed>` | Keyword ideas from Google Ads Keyword Planner | 3 |
-| `/blog google report <type>` | PDF/HTML performance report | -- |
-| `/blog google quotas` | Show rate limits for all APIs | -- |
+| `/blog google report <type>` | PDF/HTML performance report |: |
+| `/blog google quotas` | Show rate limits for all APIs |: |
 
 ---
 
@@ -86,8 +101,8 @@ Always communicate the detected tier before running commands.
 
 Combined Lighthouse lab data + CrUX field data for a published blog post.
 
-**Script:** `python3 skills/blog-google/scripts/run.py pagespeed_check <url> --json`
-**Reference:** `references/api-reference.md`
+**Script:** `python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-google/scripts/run.py pagespeed_check <url> --json`
+**Reference:** `${CLAUDE_PLUGIN_ROOT}/skills/blog-google/references/api-reference.md`
 
 Output merges lab scores (point-in-time Lighthouse) with field data (28-day
 Chrome user metrics). CrUX tries URL-level first, falls back to origin-level.
@@ -96,13 +111,13 @@ Chrome user metrics). CrUX tries URL-level first, falls back to origin-level.
 
 CrUX field data only (no Lighthouse run). Faster.
 
-**Script:** `python3 skills/blog-google/scripts/run.py pagespeed_check <url> --crux-only --json`
+**Script:** `python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-google/scripts/run.py pagespeed_check <url> --crux-only --json`
 
 ### `/blog google crux-history <url>`
 
 25-week CrUX History trends. Shows whether CWV metrics are improving, stable, or degrading.
 
-**Script:** `python3 skills/blog-google/scripts/run.py crux_history <url> --json`
+**Script:** `python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-google/scripts/run.py crux_history <url> --json`
 
 ---
 
@@ -112,21 +127,39 @@ CrUX field data only (no Lighthouse run). Faster.
 
 Search Analytics: clicks, impressions, CTR, position for last 28 days.
 
-**Script:** `python3 skills/blog-google/scripts/run.py gsc_query --property <property> --json`
+**Script:** `python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-google/scripts/run.py gsc_query --property <property> --json`
 **Default:** 28 days, dimensions=query,page, type=web, limit=1000.
 
 Includes quick-win detection: queries at position 4-10 with high impressions.
+
+The dedicated Search Console generative-AI reports are a gradual, subset
+rollout in the Search Console UI. They have separate Search and Discover views;
+the Search view covers AI Overviews and AI Mode. Do not promise clicks, queries,
+or API retrieval from these dedicated views. Until Google documents an API,
+report that capability as `SKIPPED` or unavailable and point the user to the UI.
+
+Google's July 29 Search Central announcement says Search Console platform
+properties for Instagram, TikTok, X, and YouTube are globally available. The
+current Help Center still says gradual rollout. Report this as a Google-source
+conflict, verify availability in the user's account, and do not claim that
+`/blog google gsc` retrieves these platform reports through the current API.
 
 ### `/blog google inspect <url>`
 
 URL Inspection: real indexation status from Google.
 
-**Script:** `python3 skills/blog-google/scripts/run.py gsc_inspect <url> --json`
+**Script:** `python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-google/scripts/run.py gsc_inspect <url> --json`
 
 Returns: verdict (PASS/FAIL), coverage state, robots.txt status, indexing state,
 page fetch state, canonical selection, mobile usability, rich results.
 
-For batch inspection: `python3 skills/blog-google/scripts/run.py gsc_inspect --batch <file> --json`
+After a canonicalization fix, Google may retain the URL in a duplicate cluster
+for up to two weeks. If the implementation is now correct and the fix is within
+that window, report `PENDING_REEVALUATION` rather than an immediate failure.
+Search Console's Request Indexing feature is quota-limited; reserve it for
+important URLs.
+
+For batch inspection: `python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-google/scripts/run.py gsc_inspect --batch <file> --json`
 
 ---
 
@@ -134,15 +167,17 @@ For batch inspection: `python3 skills/blog-google/scripts/run.py gsc_inspect --b
 
 ### `/blog google index <url>`
 
-Notify Google of a URL update. Submit new blog posts for faster indexation.
+Notify Google of a URL update through the Indexing API.
 
-**Script:** `python3 skills/blog-google/scripts/run.py indexing_notify <url> --json`
-**Reference:** `references/api-reference.md`
+**Script:** `python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-google/scripts/run.py indexing_notify <url> --json`
+**Reference:** `${CLAUDE_PLUGIN_ROOT}/skills/blog-google/references/api-reference.md`
 
 The Indexing API is officially for JobPosting and BroadcastEvent/VideoObject pages.
 Always inform the user of this restriction. Daily quota: 200 publish requests.
+Do not present it as a general-purpose replacement for URL Inspection's Request
+Indexing feature.
 
-For batch: `python3 skills/blog-google/scripts/run.py indexing_notify --batch <file> --json`
+For batch: `python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-google/scripts/run.py indexing_notify --batch <file> --json`
 
 ---
 
@@ -152,43 +187,47 @@ For batch: `python3 skills/blog-google/scripts/run.py indexing_notify --batch <f
 
 Organic traffic report: daily sessions, users, pageviews, bounce rate, engagement.
 
-**Script:** `python3 skills/blog-google/scripts/run.py ga4_report --property <id> --json`
+**Script:** `python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-google/scripts/run.py ga4_report --property <id> --json`
 **Default:** 28 days, filtered to Organic Search channel group.
 
-For top landing pages: `python3 skills/blog-google/scripts/run.py ga4_report --property <id> --report top-pages --json`
+For top landing pages: `python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-google/scripts/run.py ga4_report --property <id> --report top-pages --json`
 
 ---
 
 ## YouTube (Video Discovery)
 
-YouTube mentions have the strongest AI visibility correlation (0.737, Ahrefs 75K brands).
-Free, API key only. Used by blog-write and blog-rewrite for video embedding.
+YouTube research can add useful, relevant media and distribution context. Any
+third-party visibility correlation is observational, not a Google ranking or
+citation requirement. Free, API key only. Used by blog-write and blog-rewrite
+for video embedding.
 
 ### `/blog google youtube <query>`
 
 Search YouTube for videos relevant to a blog topic.
 
-**Script:** `python3 skills/blog-google/scripts/run.py youtube_search search "<query>" --json`
+**Script:** `python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-google/scripts/run.py youtube_search search "<query>" --json`
 **Quota:** 100 units per search (10,000 units/day free).
 
 Returns: title, channel, views, likes, duration, description, tags.
 
-For video details + comments: `python3 skills/blog-google/scripts/run.py youtube_search video <video_id> --json`
+For video details + comments: `python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-google/scripts/run.py youtube_search video <video_id> --json`
 
 ---
 
 ## NLP Content Analysis
 
-Google's own entity/sentiment analysis. Enhances E-E-A-T scoring for blog content.
+Google's entity and sentiment analysis can support topic and editorial review.
+It does not expose ranking-system scores, and E-E-A-T is not a numeric Google
+ranking factor.
 
 ### `/blog google nlp <url-or-text>`
 
 Full NLP analysis: entities, sentiment, content classification.
 
-**Script:** `python3 skills/blog-google/scripts/run.py nlp_analyze --url <url> --json`
+**Script:** `python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-google/scripts/run.py nlp_analyze --url <url> --json`
 **Free tier:** 5,000 units/month. Requires billing enabled on GCP project.
 
-For entity extraction only: `python3 skills/blog-google/scripts/run.py nlp_analyze --url <url> --features entities --json`
+For entity extraction only: `python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-google/scripts/run.py nlp_analyze --url <url> --features entities --json`
 
 ---
 
@@ -200,9 +239,9 @@ Gold-standard keyword volume data. Requires Google Ads account (Tier 3).
 
 Generate keyword ideas from seed terms for blog topic research.
 
-**Script:** `python3 skills/blog-google/scripts/run.py keyword_planner ideas "<seed>" --json`
+**Script:** `python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-google/scripts/run.py keyword_planner ideas "<seed>" --json`
 
-For volume lookup: `python3 skills/blog-google/scripts/run.py keyword_planner volume "<kw1>,<kw2>" --json`
+For volume lookup: `python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-google/scripts/run.py keyword_planner volume "<kw1>,<kw2>" --json`
 
 ---
 
@@ -210,9 +249,9 @@ For volume lookup: `python3 skills/blog-google/scripts/run.py keyword_planner vo
 
 ### `/blog google report <type>`
 
-Generate a professional PDF/HTML report with charts.
+Generate a PDF/HTML report with charts and tables.
 
-**Script:** `python3 skills/blog-google/scripts/run.py google_report --type <type> --data <json> --domain <domain> --format pdf`
+**Script:** `python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-google/scripts/run.py google_report --type <type> --data <json> --domain <domain> --format pdf`
 
 | Type | Input | Output |
 |------|-------|--------|
@@ -222,7 +261,7 @@ Generate a professional PDF/HTML report with charts.
 | `full` | All data combined | Comprehensive Google SEO report |
 
 **Note:** PDF generation requires system libraries: `sudo apt install libpango1.0-dev libcairo2-dev`.
-Falls back to HTML if weasyprint is unavailable.
+Falls back to HTML if WeasyPrint is unavailable or PDF rendering fails.
 
 ---
 
@@ -236,10 +275,10 @@ Falls back to HTML if weasyprint is unavailable.
 | GSC URL Inspection | 600 QPM | 2,000 QPD/site | Service Account |
 | Indexing API | 380 RPM | 200 publish/day | Service Account |
 | GA4 Data API | 10 concurrent (50 for 360) | 200K Core Tokens/day (2M for 360) | Service Account |
-| YouTube Data | -- | 10,000 units/day | API Key |
-| NLP API | -- | 5,000 units/month | API Key (billing) |
+| YouTube Data |: | 10,000 units/day | API Key |
+| NLP API |: | 5,000 units/month | API Key (billing) |
 
-Read `references/rate-limits-quotas.md` for detailed quota management.
+Read `${CLAUDE_PLUGIN_ROOT}/skills/blog-google/references/rate-limits-quotas.md` for detailed quota management.
 
 ## Blog Workflow Integration
 
@@ -254,6 +293,16 @@ internally by other blog sub-skills:
 
 Falls back gracefully when credentials are not configured.
 
+## Report Templates
+
+Use the bundled templates when a workflow requests a durable human-readable
+report. Keep unavailable account data marked `SKIPPED`; never fill an empty
+section with estimated metrics.
+
+- `assets/templates/cwv-audit-report.md` for PageSpeed and CrUX evidence.
+- `assets/templates/gsc-performance-report.md` for Search Analytics exports.
+- `assets/templates/indexation-status-report.md` for URL Inspection evidence.
+
 ## Technical Notes
 
 - INP replaced FID on March 12, 2024. Never reference FID.
@@ -261,7 +310,17 @@ Falls back gracefully when credentials are not configured.
 - CrUX 404 = insufficient Chrome traffic, not an auth error.
 - Search Analytics data has 2-3 day lag.
 - Indexing API is officially for JobPosting/BroadcastEvent pages only.
-- All Google APIs used are FREE at normal usage levels.
+- Most integrations have no usage fee within quota. Cloud Natural Language
+  requires billing and can incur charges; Google Ads requires account and
+  developer-token access.
+- Read `${CLAUDE_PLUGIN_ROOT}/skills/blog-google/references/search-currentness.md` before diagnosing a named update,
+  canonical change, Discover visibility, Google generative-AI reporting,
+  platform properties, Preferred Sources, AMP, or crawler byte-limit issue.
+- A named update's dates do not prove what caused an individual site's change.
+  Wait one full week after rollout before comparing data, and separate Web,
+  Image, Video, and News performance.
+- Googlebot processes only the first 2MB of supported files and first 64MB of
+  PDFs. Keep critical metadata and primary content before the cutoff.
 
 ## Error Handling
 

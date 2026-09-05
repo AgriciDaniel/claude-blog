@@ -1,0 +1,134 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/AgriciDaniel/claude-blog-brain/schemas/blog-post-input.schema.json",
+  "title": "Blog Post Input",
+  "description": "Normalized blog post or audit input consumed by Claude Blog Brain blog adapters.",
+  "type": "object",
+  "required": ["title", "url", "target_keyword", "locale"],
+  "anyOf": [
+    {"required": ["body_markdown"]},
+    {"required": ["body_html"]}
+  ],
+  "properties": {
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Post title or H1."
+    },
+    "url": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^https?://",
+      "description": "Canonical URL or draft URL for the post."
+    },
+    "body_markdown": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Markdown or MDX body."
+    },
+    "body_html": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Rendered HTML body or article fragment."
+    },
+    "frontmatter": {
+      "type": "object",
+      "description": "Parsed YAML, TOML, JSON, or platform metadata.",
+      "additionalProperties": true,
+      "properties": {
+        "description": {"type": "string"},
+        "author": {"type": "string"},
+        "date": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}(?:[T ]\\d{2}:\\d{2}:\\d{2}(?:Z|[+-]\\d{2}:\\d{2})?)?$"},
+        "dateModified": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}(?:[T ]\\d{2}:\\d{2}:\\d{2}(?:Z|[+-]\\d{2}:\\d{2})?)?$"},
+        "tags": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "category": {"type": "string"},
+        "coverImage": {"type": "string", "pattern": "^https?://"}
+      }
+    },
+    "target_keyword": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Primary keyword or query intent for the blog post."
+    },
+    "secondary_keywords": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Optional secondary keywords, entities, or question variants."
+    },
+    "locale": {
+      "type": "string",
+      "pattern": "^[a-z]{2,3}(-[A-Z]{2})?$",
+      "description": "BCP 47 style locale such as en, en-US, de-DE, or fr-FR."
+    },
+    "platform": {
+      "type": "string",
+      "description": "Optional source platform such as wordpress, next-mdx, hugo, ghost, astro, jekyll, eleventy, gatsby, or html."
+    },
+    "author": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "name": {"type": "string"},
+        "url": {"type": "string", "format": "uri", "pattern": "^https?://"},
+        "bio": {"type": "string"},
+        "sameAs": {
+          "type": "array",
+          "items": {"type": "string", "format": "uri", "pattern": "^https?://"}
+        }
+      }
+    },
+    "published_at": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}(?:[T ]\\d{2}:\\d{2}:\\d{2}(?:Z|[+-]\\d{2}:\\d{2})?)?$",
+      "description": "Original publish date in ISO 8601 date or date-time format."
+    },
+    "modified_at": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}(?:[T ]\\d{2}:\\d{2}:\\d{2}(?:Z|[+-]\\d{2}:\\d{2})?)?$",
+      "description": "Last modified date in ISO 8601 date or date-time format."
+    },
+    "sources": {
+      "type": "array",
+      "description": "Dated evidence used by the post.",
+      "items": {
+        "type": "object",
+        "required": ["url", "title", "retrieved"],
+        "properties": {
+          "url": {"type": "string", "format": "uri", "pattern": "^https?://"},
+          "title": {"type": "string"},
+          "publisher": {"type": "string"},
+          "published": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}(?:[T ]\\d{2}:\\d{2}:\\d{2}(?:Z|[+-]\\d{2}:\\d{2})?)?$"},
+          "retrieved": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}(?:[T ]\\d{2}:\\d{2}:\\d{2}(?:Z|[+-]\\d{2}:\\d{2})?)?$"},
+          "confidence": {"type": "string"},
+          "supports_claims": {
+            "type": "array",
+            "items": {"type": "string"}
+          }
+        }
+      }
+    },
+    "audit_findings": {
+      "type": "array",
+      "description": "Optional findings from claude-blog quality, SEO, schema, or GEO checks.",
+      "items": {
+        "type": "object",
+        "required": ["id", "category", "severity", "summary"],
+        "properties": {
+          "id": {"type": "string"},
+          "category": {
+            "type": "string",
+            "description": "content | seo | eeat | technical | schema | geo | multilingual | distribution | delivery"
+          },
+          "severity": {"type": "string", "enum": ["critical", "high", "medium", "low"]},
+          "summary": {"type": "string"},
+          "recommendation": {"type": "string"},
+          "source": {"type": "string", "description": "Dated source backing the recommendation."}
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

@@ -40,7 +40,7 @@
 
 ---
 
-### TL;DR Box (40-60 words)
+### TL;DR Box (concise; length follows the material)
 
 [ANSWER-FIRST] Provide a concise summary that directly answers the searcher's core question. A reader should be able to stop here and walk away informed. This box improves dwell time by immediately delivering value and earns featured snippet potential.
 
@@ -65,7 +65,7 @@ Auto-generated from H2 headings. Use anchor links for jump navigation. This impr
 - [Core Section 4](#core-section-4)
 - [Core Section 5](#core-section-5)
 - [Core Section 6](#core-section-6)
-- [Advanced: [Expert-Level Sub-topic]](#advanced-section)
+- [Advanced: [Expert-Level Sub-topic]](#advanced-expert-level-sub-topic)
 - [Tools & Resources](#tools-resources)
 - [Getting Started](#getting-started)
 - [FAQ](#faq)
@@ -85,7 +85,9 @@ Auto-generated from H2 headings. Use anchor links for jump navigation. This impr
 4. **What the reader will learn** (2-3 sentences): Preview the guide's coverage - set expectations so the reader commits to reading
 5. **Credibility indicator** (1 sentence): Why should the reader trust this guide? (experience, data sources, methodology)
 
-[INFO-GAIN: personal experience] Include a brief mention of your direct experience or research that qualifies this guide.
+[INFO-GAIN: personal experience] Include direct experience only when the author
+supplies methodology, evidence, and results. Otherwise state the research basis
+and source set without first-person framing.
 
 [INTERNAL-LINK] If you have a related "Why [Topic] Matters" article, link it from the relevance statement.
 
@@ -154,7 +156,8 @@ Each core section covers a major sub-topic within the pillar. These sections sho
 4. **Common mistakes or pitfalls** (50-75 words): What do people get wrong about this sub-topic?
 5. **Transition to deeper content** (1-2 sentences): Bridge to the next section or to a supporting article
 
-[STAT: sub-topic-specific statistic] Include at least one data point per core section.
+[STAT when useful: include a verified sub-topic-specific data point only when
+it materially improves the section.]
 
 [IMAGE] Where applicable, include screenshots, process diagrams, or example visuals that support the explanation.
 
@@ -174,7 +177,11 @@ Each core section covers a major sub-topic within the pillar. These sections sho
 3. **Evidence or application** (50-75 words): Where this has been applied successfully
 4. **Caution or prerequisite** (25-50 words): What you need to have in place before attempting this
 
-[INFO-GAIN: expert knowledge] This section MUST contain original insight from direct experience, proprietary data, or expert interviews. This is where the pillar page differentiates from competitors.
+[INFO-GAIN: expert knowledge] Differentiate with supported original material
+when it is genuinely available, such as documented direct experience,
+proprietary data with methodology, or attributable expert interviews. A
+research-only article may instead contribute distinctive synthesis, comparison,
+or application without implying first-hand experience.
 
 [INTERNAL-LINK] Link to advanced-level supporting articles or case studies.
 
@@ -192,7 +199,9 @@ Each core section covers a major sub-topic within the pillar. These sections sho
   - **Best for:** Who should use this tool
   - **Price:** Free, freemium, or pricing tier
 
-[INFO-GAIN: personal experience] Note which tools you have personally used and your honest assessment.
+[INFO-GAIN: personal experience] Note personal tool use only when the author
+supplies the context, methodology, evidence, and results. Otherwise provide a
+research-only comparison with attributed sources.
 
 [INTERNAL-LINK] Link to any dedicated tool reviews or comparison articles in the cluster.
 
@@ -212,15 +221,16 @@ Each core section covers a major sub-topic within the pillar. These sections sho
 
 ---
 
-### FAQ (5-7 questions)
+### Optional Reader Questions (count by reader need)
 
-[FAQ] Each Q&A pair should be structured for featured snippet eligibility. Use the `<details>` pattern or H3 headings.
+[FAQ] If reader questions warrant this section, answer them directly. Use the
+`<details>` pattern or H3 headings according to the platform and accessibility needs.
 
 **Guidelines for FAQ questions:**
 - Source questions from People Also Ask, forums, and comment sections
-- Each answer should be 40-80 words - concise and direct
+- Each answer should be complete and direct; no fixed word band
 - The first sentence of each answer should be a standalone answer (featured snippet format)
-- Include [STAT: supporting statistic] in at least 2 answers
+- Include a verified statistic only when it materially improves an answer
 - Cover a range: basic definitions, practical how-tos, comparisons, and cost/time questions
 
 ```
@@ -294,16 +304,16 @@ List all supporting articles in the topic cluster, organized by category:
 
 ## Pre-Publish Checklist
 
-- [ ] Total word count is 3,000-4,000 words
+- [ ] Length is sufficient for the reader task without padding; planning ranges are optional
 - [ ] All [ANSWER-FIRST] prompts have been fulfilled - every section leads with the answer
 - [ ] All [STAT] markers replaced with real, cited statistics (with source and year)
 - [ ] All [VISUAL] markers replaced with actual charts or diagrams
 - [ ] All [IMAGE] markers replaced with relevant, optimized images with alt text
 - [ ] All [INFO-GAIN] markers replaced with original data, experience, or insight
 - [ ] All [INTERNAL-LINK] zones populated with real links to supporting articles
-- [ ] All [FAQ] answers are concise (40-80 words) and lead with a direct answer
+- [ ] All [FAQ] answers are complete and lead with a direct answer
 - [ ] Table of Contents links are functional
-- [ ] Meta title is under 60 characters and includes primary keyword
-- [ ] Meta description is 150-160 characters with primary keyword and CTA
+- [ ] Meta title clearly identifies the page and matches visible content
+- [ ] Meta description accurately summarizes the visible page
 - [ ] At least 6 supporting articles exist (or are planned) for the internal link hub
 - [ ] Content has been reviewed for E-E-A-T signals (experience, expertise, authority, trust)

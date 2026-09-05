@@ -164,18 +164,27 @@ AI Visibility Report (DataForSEO AI Optimization)
 
 **One-command install (recommended):**
 
+Load credentials from a local secret file first so they are not written inline:
+
+```bash
+set -a
+. ~/.config/dataforseo.env
+set +a
+```
+
 ```bash
 claude mcp add dataforseo \
-  --env DATAFORSEO_USERNAME=your_username \
-  --env DATAFORSEO_PASSWORD=your_password \
+  --env DATAFORSEO_USERNAME="${DATAFORSEO_USERNAME}" \
+  --env DATAFORSEO_PASSWORD="${DATAFORSEO_PASSWORD}" \
   -- npx -y dataforseo-mcp-server
 ```
 
 **Or remote server (no local install needed):**
 
 ```bash
+DATAFORSEO_BASIC_AUTH="$(printf '%s:%s' "$DATAFORSEO_USERNAME" "$DATAFORSEO_PASSWORD" | base64)"
 claude mcp add --transport http dataforseo https://mcp.dataforseo.com/http \
-  --header "Authorization: Basic $(echo -n 'username:password' | base64)"
+  --header "Authorization: Basic ${DATAFORSEO_BASIC_AUTH}"
 ```
 
 **Or add to `~/.claude/settings.json` manually:**
@@ -187,8 +196,8 @@ claude mcp add --transport http dataforseo https://mcp.dataforseo.com/http \
       "command": "npx",
       "args": ["-y", "dataforseo-mcp-server"],
       "env": {
-        "DATAFORSEO_USERNAME": "your-username",
-        "DATAFORSEO_PASSWORD": "your-password",
+        "DATAFORSEO_USERNAME": "${DATAFORSEO_USERNAME}",
+        "DATAFORSEO_PASSWORD": "${DATAFORSEO_PASSWORD}",
         "ENABLED_MODULES": "SERP,KEYWORDS_DATA,ONPAGE,DATAFORSEO_LABS,BACKLINKS,DOMAIN_ANALYTICS,BUSINESS_DATA,CONTENT_ANALYSIS,AI_OPTIMIZATION"
       }
     }
@@ -200,9 +209,11 @@ claude mcp add --transport http dataforseo https://mcp.dataforseo.com/http \
 
 1. **Store credentials in environment variables** (not in settings.json):
    ```bash
-   # Add to ~/.bashrc or ~/.zshrc
-   export DATAFORSEO_USERNAME="your-username"
-   export DATAFORSEO_PASSWORD="your-password"
+   # Store DATAFORSEO_USERNAME and DATAFORSEO_PASSWORD in this 0600 file.
+   chmod 600 ~/.config/dataforseo.env
+   set -a
+   . ~/.config/dataforseo.env
+   set +a
    ```
 
 2. **Use field filtering** to reduce token usage (~75%):
@@ -342,8 +353,8 @@ Target Keywords
 Competitor Content Gap
 | Keyword                    | Competitor A | Competitor B | You  |
 |---------------------------|-------------|-------------|------|
-| kubernetes alerting setup  | #3          | #7          | --   |
-| prometheus vs datadog      | #5          | #2          | --   |
+| kubernetes alerting setup  | #3          | #7          |:   |
+| prometheus vs datadog      | #5          | #2          |:   |
 | k8s monitoring best practices | #1       | #4          | #12  |
 ```
 
@@ -611,4 +622,4 @@ Validate both content quality and technical readiness for AI crawlers:
 | Contentful / Sanity CMS | Future | Low |
 
 Community contributions for MCP server implementations are welcome.
-See [CONTRIBUTING.md](../CONTRIBUTING.md) for guidelines.
+See [CONTRIBUTING.md](../.github/CONTRIBUTING.md) for guidelines.

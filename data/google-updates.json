@@ -1,0 +1,365 @@
+{
+  "schema_version": 2,
+  "last_verified": "2026-08-25",
+  "policy": "Only Google-supported facts in verified[] may inform guidance. Event timing never proves site impact. Product announcements never become ranking factors. Source conflicts remain explicit. Unverified entries are research leads and must never change scoring, gates, or recommendations.",
+  "source_watch": [
+    {
+      "id": "search-status",
+      "url": "https://status.search.google.com/incidents.json",
+      "review_mode": "automated",
+      "scope": "Latest Google Search ranking incidents"
+    },
+    {
+      "id": "search-docs-updates",
+      "url": "https://developers.google.com/search/updates/search_docs_updates.rss",
+      "review_mode": "automated",
+      "scope": "Latest Google Search Central documentation changes"
+    },
+    {
+      "id": "search-console-anomalies",
+      "url": "https://support.google.com/webmasters/answer/6211453?hl=en",
+      "review_mode": "manual",
+      "scope": "Search Console logging and reporting anomalies"
+    },
+    {
+      "id": "search-console-platform-help",
+      "url": "https://support.google.com/webmasters/answer/17148418?hl=en-GB",
+      "review_mode": "manual",
+      "scope": "Platform property availability and reporting"
+    },
+    {
+      "id": "google-ads-release-notes",
+      "url": "https://developers.google.com/google-ads/api/docs/release-notes",
+      "review_mode": "manual",
+      "scope": "Google Ads API releases"
+    },
+    {
+      "id": "google-ads-client-support",
+      "url": "https://developers.google.com/google-ads/api/docs/sunset-dates",
+      "review_mode": "manual",
+      "scope": "Supported Google Ads API and client-library versions"
+    }
+  ],
+  "verified": [
+    {
+      "id": "ranking-august-2026-spam",
+      "event_date": "2026-08-18",
+      "title": "August 2026 spam update",
+      "source_url": "https://status.search.google.com/incidents/LEubPCm2octf2uMqCFKE",
+      "category": "ranking-update",
+      "applicability": "all-sites",
+      "affected_components": [
+        "blog-audit",
+        "blog-google"
+      ],
+      "evidence_status": "confirmed-event-pending-impact",
+      "summary": "Google reports a global, all-language spam update from August 18 to August 21. The event is confirmed, but its targets and any site-level impact are not. Wait through August 28 before making the first full-week comparison."
+    },
+    {
+      "id": "preferred-sources-custom-button-2026-08-20",
+      "event_date": "2026-08-20",
+      "title": "Preferred Sources custom button guidance",
+      "source_url": "https://developers.google.com/search/docs/appearance/preferred-sources",
+      "category": "search-appearance",
+      "applicability": "publishers-using-preferred-sources",
+      "affected_components": [
+        "blog-strategy",
+        "blog-repurpose"
+      ],
+      "evidence_status": "confirmed",
+      "summary": "Google documents standard and custom interactive buttons plus a deeplink for asking a reader to select a domain or subdomain as a Preferred Source. This is reader-controlled audience development, not a general ranking signal."
+    },
+    {
+      "id": "google-ads-api-v25-1-2026-08-19",
+      "event_date": "2026-08-19",
+      "title": "Google Ads API v25.1",
+      "source_url": "https://developers.google.com/google-ads/api/docs/release-notes",
+      "additional_source_urls": [
+        "https://developers.google.com/google-ads/api/docs/sunset-dates"
+      ],
+      "category": "api-currentness",
+      "applicability": "google-ads-keyword-planner-users",
+      "affected_components": [
+        "blog-google"
+      ],
+      "evidence_status": "confirmed",
+      "summary": "Google released Ads API v25.1 on August 19. Google lists Python client 31.2.0 as the minimum for v25; version and dependency changes still require offline compatibility tests before adoption."
+    },
+    {
+      "id": "gsc-reporting-anomalies-2026-08-13",
+      "event_date": "2026-08-13",
+      "title": "Search Console August reporting anomalies",
+      "source_url": "https://support.google.com/webmasters/answer/6211453?hl=en",
+      "category": "reporting-anomaly",
+      "applicability": "properties-with-discover-or-generative-ai-reports",
+      "affected_components": [
+        "blog-google",
+        "blog-audit",
+        "blog-geo"
+      ],
+      "evidence_status": "confirmed-data-anomaly",
+      "summary": "Google reports reduced Discover clicks and impressions for August 13 and reduced generative-AI Search impressions for August 13 through August 17 because of logging errors. These are reporting defects, not ranking events."
+    },
+    {
+      "id": "search-console-platform-properties-2026-07-29",
+      "event_date": "2026-07-29",
+      "title": "Search Console platform properties availability",
+      "source_url": "https://developers.google.com/search/blog/2026/07/platform-properties-social-video-guide",
+      "additional_source_urls": [
+        "https://support.google.com/webmasters/answer/17148418?hl=en-GB"
+      ],
+      "category": "search-console",
+      "applicability": "creators-on-supported-platforms",
+      "affected_components": [
+        "blog-google",
+        "blog-repurpose"
+      ],
+      "evidence_status": "confirmed-with-source-conflict",
+      "summary": "Search Central's July 29 announcement says Instagram, TikTok, X, and YouTube platform properties are globally available to everyone. The current Help Center still says gradual rollout. Verify availability in the actual account and do not promise API support."
+    },
+    {
+      "id": "review-snippet-integrity-2026-07-24",
+      "event_date": "2026-07-24",
+      "title": "Review snippet authenticity and disclosure guidance",
+      "source_url": "https://developers.google.com/search/docs/appearance/structured-data/review-snippet",
+      "category": "structured-data",
+      "applicability": "pages-with-review-or-aggregate-rating-markup",
+      "affected_components": [
+        "blog-schema",
+        "blog-seo-check",
+        "blog-write",
+        "blog-rewrite"
+      ],
+      "evidence_status": "confirmed",
+      "summary": "Google says pages and structured data must not include fake reviews or incentivized reviews without clear and prominent disclosure. Review content and ratings in markup must remain visible to users."
+    },
+    {
+      "id": "ranking-june-2026-spam",
+      "event_date": "2026-06-24",
+      "title": "June 2026 spam update",
+      "source_url": "https://status.search.google.com/products/rGHU1u87FJnkP6W2GwMi/history",
+      "category": "ranking-update",
+      "applicability": "all-sites",
+      "affected_components": [
+        "blog-audit",
+        "blog-google"
+      ],
+      "summary": "Latest confirmed ranking event as of verification; rollout lasted 2 days and 1 hour. Dashboard dates do not establish site-level causation."
+    },
+    {
+      "id": "canonical-reevaluation-2026-07-10",
+      "event_date": "2026-07-10",
+      "title": "Canonicalization reevaluation timing clarified",
+      "source_url": "https://developers.google.com/search/docs/crawling-indexing/canonicalization-troubleshooting",
+      "category": "crawling-indexing",
+      "applicability": "sites-fixing-duplicate-clusters",
+      "affected_components": [
+        "blog-google",
+        "blog-cannibalization",
+        "blog-multilingual"
+      ],
+      "summary": "Google may keep corrected pages in a duplicate cluster for up to two weeks; Request Indexing is quota-limited and should be reserved for important URLs."
+    },
+    {
+      "id": "amp-direct-publisher-host-2026-07-01",
+      "event_date": "2026-07-01",
+      "title": "AMP links open on publisher hosts",
+      "source_url": "https://developers.google.com/search/updates",
+      "category": "search-appearance",
+      "applicability": "amp-publishers",
+      "affected_components": [
+        "blog-seo-check",
+        "blog-audit"
+      ],
+      "summary": "Google Search now links directly to publisher-hosted AMP pages. AMP remains supported and ranks like other pages but is not required."
+    },
+    {
+      "id": "gsc-generative-ai-reports-2026-06-03",
+      "event_date": "2026-06-03",
+      "title": "Search Console generative AI reports",
+      "source_url": "https://developers.google.com/search/blog/2026/06/gen-ai-performance-reports",
+      "category": "search-console",
+      "applicability": "subset-rollout",
+      "affected_components": [
+        "blog-google",
+        "blog-geo",
+        "blog-strategy"
+      ],
+      "summary": "Separate Search and Discover views show generative-AI impressions plus page, country, device where applicable, and date dimensions. The rollout is limited and no dedicated API is documented."
+    },
+    {
+      "id": "preferred-sources-ai-search-2026-05-27",
+      "event_date": "2026-05-27",
+      "title": "Preferred Sources in AI Mode and AI Overviews",
+      "source_url": "https://developers.google.com/search/docs/appearance/preferred-sources",
+      "category": "search-appearance",
+      "applicability": "publishers",
+      "affected_components": [
+        "blog-strategy",
+        "blog-repurpose"
+      ],
+      "summary": "Reader-selected domains and subdomains may receive preferred treatment or badges for that reader. This is optional audience development, not a general ranking signal."
+    },
+    {
+      "id": "search-io-product-context-2026-05-19",
+      "event_date": "2026-05-19",
+      "title": "Google Search I/O 2026 product updates",
+      "source_url": "https://blog.google/products-and-platforms/products/search/search-io-2026/",
+      "category": "product-context",
+      "applicability": "landscape-only",
+      "affected_components": [
+        "blog-strategy",
+        "blog-geo"
+      ],
+      "summary": "AI Mode uses Gemini 3.5 Flash globally and adds conversational, multimodal, and agentic capabilities. These announcements are not ranking factors."
+    },
+    {
+      "id": "google-ai-optimization-guide-2026-05-15",
+      "event_date": "2026-05-15",
+      "title": "Generative AI optimization guide",
+      "source_url": "https://developers.google.com/search/docs/fundamentals/ai-optimization-guide",
+      "category": "content-guidance",
+      "applicability": "all-sites",
+      "affected_components": [
+        "blog",
+        "blog-geo",
+        "blog-schema",
+        "blog-strategy"
+      ],
+      "summary": "Google says generative AI optimization is foundational SEO: create non-commodity content and avoid chunking myths, special AI schema, and scaled fan-out pages."
+    },
+    {
+      "id": "faq-rich-result-retired-2026-05-07",
+      "event_date": "2026-05-07",
+      "title": "FAQ rich results retired",
+      "source_url": "https://developers.google.com/search/updates",
+      "category": "structured-data",
+      "applicability": "all-sites",
+      "affected_components": [
+        "blog-schema",
+        "blog-seo-check"
+      ],
+      "summary": "FAQ rich results are no longer shown in Google Search. FAQPage may remain schema.org-valid but provides no Google rich-result or generative-AI advantage."
+    },
+    {
+      "id": "explore-web-product-context-2026-05-06",
+      "event_date": "2026-05-06",
+      "title": "Explore the web with generative AI",
+      "source_url": "https://blog.google/products-and-platforms/products/search/explore-web-generative-ai-search/",
+      "category": "product-context",
+      "applicability": "landscape-only",
+      "affected_components": [
+        "blog-strategy",
+        "blog-geo",
+        "blog-repurpose"
+      ],
+      "summary": "Google described deeper article links, public discussions, inline links, and previews. These are product features, not content-scoring factors."
+    },
+    {
+      "id": "read-more-deep-links-2026-04-20",
+      "event_date": "2026-04-20",
+      "title": "Read more deep-link guidance",
+      "source_url": "https://developers.google.com/search/docs/appearance/snippet",
+      "category": "search-appearance",
+      "applicability": "pages-targeting-section-deep-links",
+      "affected_components": [
+        "blog-seo-check",
+        "blog-audit"
+      ],
+      "summary": "Target content should be immediately visible; scripts should not reset scroll position or remove the hash on page load."
+    },
+    {
+      "id": "back-button-hijacking-2026-04-13",
+      "event_date": "2026-04-13",
+      "title": "Back-button hijacking spam policy",
+      "source_url": "https://developers.google.com/search/blog/2026/04/back-button-hijacking",
+      "category": "spam-policy",
+      "applicability": "sites-with-history-manipulation",
+      "affected_components": [
+        "blog-seo-check",
+        "blog-audit"
+      ],
+      "summary": "Deceptive browser-history interference became an explicit malicious-practices violation. Detection must be based on obstructive behavior, not normal History API syntax."
+    },
+    {
+      "id": "qapage-properties-2026-03-24",
+      "event_date": "2026-03-24",
+      "title": "Discussion Forum and QAPage properties clarified",
+      "source_url": "https://developers.google.com/search/updates",
+      "category": "structured-data",
+      "applicability": "community-question-pages",
+      "affected_components": [
+        "blog-schema"
+      ],
+      "summary": "QAPage remains a narrow supported type for a page focused on one question where users can submit answers; it is not a replacement for editorial FAQ content."
+    },
+    {
+      "id": "discover-guidance-2026-03-09",
+      "event_date": "2026-03-09",
+      "title": "Discover content and preferred-image guidance",
+      "source_url": "https://developers.google.com/search/docs/appearance/google-discover",
+      "category": "discover",
+      "applicability": "discover-targets",
+      "affected_components": [
+        "blog-seo-check",
+        "blog-image",
+        "blog-google"
+      ],
+      "summary": "Discover requires no special schema. Preferred images are at least 1200px wide, over 300,000 pixels, preferably 16:9, relevant, and enabled for large previews."
+    },
+    {
+      "id": "googlebot-file-size-2026-02-03",
+      "event_date": "2026-02-03",
+      "title": "Googlebot file-size limits clarified",
+      "source_url": "https://developers.google.com/search/docs/crawling-indexing/googlebot",
+      "category": "crawling-indexing",
+      "applicability": "all-sites",
+      "affected_components": [
+        "blog-seo-check",
+        "blog-audit",
+        "blog-render"
+      ],
+      "summary": "Googlebot processes the first 2MB of supported files and first 64MB of PDFs, using uncompressed size; later bytes are ignored."
+    },
+    {
+      "id": "core-update-analysis-2025-12-10",
+      "event_date": "2025-12-10",
+      "title": "Core update analysis guidance",
+      "source_url": "https://developers.google.com/search/docs/appearance/core-updates",
+      "category": "ranking-guidance",
+      "applicability": "sites-diagnosing-ranking-changes",
+      "affected_components": [
+        "blog-audit",
+        "blog-google"
+      ],
+      "summary": "Wait a full week after rollout, compare the correct periods, separate Web, Image, Video, and News performance, and avoid quick fixes or mass deletion."
+    },
+    {
+      "id": "javascript-structured-data-2025-12-10",
+      "event_date": "2025-12-10",
+      "title": "JavaScript-generated structured data guidance",
+      "source_url": "https://developers.google.com/search/docs/appearance/structured-data/generate-structured-data-with-javascript",
+      "category": "structured-data",
+      "applicability": "javascript-sites",
+      "affected_components": [
+        "blog-schema",
+        "blog-seo-check"
+      ],
+      "summary": "Google can process structured data generated with JavaScript when it is present in the rendered DOM and validated against the visible page."
+    },
+    {
+      "id": "structured-data-retirements-2025-09-09",
+      "event_date": "2025-09-09",
+      "title": "Retired structured data Search experiences",
+      "source_url": "https://developers.google.com/search/updates",
+      "category": "structured-data",
+      "applicability": "sites-using-former-search-experiences",
+      "affected_components": [
+        "blog-schema",
+        "blog-seo-check"
+      ],
+      "summary": "Course Info, Estimated Salary, Learning Video, SpecialAnnouncement, and Vehicle Listing were removed as Google Search experiences. ClaimReview was part of the same simplification; PracticeProblem was removed in January 2026. Course list and schema.org validity are separate."
+    }
+  ],
+  "unverified": []
+}

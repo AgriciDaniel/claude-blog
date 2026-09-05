@@ -10,14 +10,14 @@
 - [Trust Indicators](#trust-indicators)
 - [September 2025 QRG Key Principle](#september-2025-qrg-key-principle)
 - [E-E-A-T Scoring Rubric](#e-e-a-t-scoring-rubric)
-- [E-E-A-T Applies to ALL Queries (December 2025)](#e-e-a-t-applies-to-all-queries-december-2025)
+- [E-E-A-T Framing by Topic Risk](#e-e-a-t-framing-by-topic-risk)
 - [E-E-A-T Signals by Content Type](#e-e-a-t-signals-by-content-type)
 
 ## Named Author Attribution
 
-Every blog post requires a named human author. Anonymous or generic attribution
-destroys trust signals and triggers quality demotion in both traditional search
-and AI systems.
+A named accountable author or editor is strongly preferred for every blog post.
+Organization attribution is acceptable when the organization is the accountable
+publisher and the page also exposes clear editorial ownership.
 
 ### Never Use
 
@@ -27,12 +27,12 @@ and AI systems.
 | "Staff" | Indistinguishable from auto-generated |
 | "Team" | No individual accountability |
 | "Editor" | Not an author signal |
-| No byline | Worst case -- page appears authorless |
+| No byline | Worst case: page appears authorless |
 
-### Required
+### Preferred
 
 - Full real name (first + last)
-- Consistent name slug across the site (e.g., `/author/sarah-chen`)
+- Crawlable author or profile page with a stable URL
 - Same name used on social profiles linked via `sameAs`
 - One author per post (co-authors acceptable with both named)
 
@@ -65,19 +65,20 @@ and AI systems.
 ### Bad Examples (Anti-Patterns)
 
 > "John is passionate about helping businesses grow through innovative digital
-> solutions." -- Vague, no credentials, sounds like marketing copy.
+> solutions.": Vague, no credentials, sounds like marketing copy.
 
 > "Our team of experts delivers world-class content marketing services."
-> -- Not a person, promotional, no specific expertise.
+>: Not a person, promotional, no specific expertise.
 
 > "Jane is the CEO of GrowthMax Inc., the leading AI-powered marketing
-> platform." -- Sales pitch disguised as bio.
+> platform.": Sales pitch disguised as bio.
 
 ---
 
 ## Author Page Requirements
 
-Every named author must have a dedicated author page at `/author/{name-slug}`.
+Every named author should have a crawlable author or profile page. The URL path
+can follow the site's existing information architecture.
 
 ### Page Must Include
 
@@ -172,17 +173,19 @@ The Person schema embedded in BlogPosting and on author pages.
 
 ---
 
-## Experience Signal Markers
+## Supported First-Hand Evidence
 
-Phrases that demonstrate first-hand experience. Use these naturally throughout
-content to signal genuine expertise to both human readers and quality raters.
+First-hand claims can add value only when they are true and supported by
+methodology, measurements, screenshots, records, or other inspectable evidence.
+Never add first-person phrasing merely to earn E-E-A-T points. Neutral,
+well-sourced explainers are valid.
 
 ### Use These Patterns
 
-| Pattern | When to Use |
+| Pattern | Use Only When |
 |---------|-------------|
-| "When we tested..." | Describing an experiment or A/B test |
-| "In our experience..." | Sharing practitioner insight |
+| "When we tested..." | The test setup, sample, and result can be described |
+| "In our experience..." | The relevant work and observation can be substantiated |
 | "After implementing this for [client]..." | Case study context |
 | "Over the past [N] years, I've found..." | Long-term observation |
 | "Here's what our data shows..." | Introducing proprietary findings |
@@ -202,7 +205,7 @@ content to signal genuine expertise to both human readers and quality raters.
 | "Everyone agrees..." | Unfalsifiable |
 | "Trust us when we say..." | Demands trust rather than earning it |
 | Generic "top tips" language | Could have been written by anyone |
-| No first-person perspective | Reads like encyclopedia, not experience |
+| Unsupported first-person claim | Performs experience without evidence |
 | "In this article, we will..." | Filler, not experience signal |
 
 ---
@@ -218,7 +221,7 @@ Trust encompasses and validates all other signals.
 |--------|----------|----------------|
 | Contact page | Critical | Real email, phone, or contact form |
 | About page | Critical | Company/author info, mission, team |
-| Privacy policy | Critical | Required by law in most jurisdictions |
+| Privacy policy | Critical | Required depending on jurisdiction, tracking, and data collection |
 | Terms of service | High | Legal framework for content use |
 | Editorial policy | High | How content is created, reviewed, updated |
 | Physical address | High (local) | Required for LocalBusiness, helpful for all |
@@ -237,13 +240,23 @@ Trust encompasses and validates all other signals.
 | Expert review | "Reviewed by [Expert Name], [credentials]" |
 | Date transparency | Publish date AND last updated date visible |
 
-**Trustworthiness requires the FLOW evidence triple.** Experience and authority signals only land when the underlying claims are verifiable: year anchor in prose, inline citation with publisher and title, URL with retrieval date in the source block. See `flow-alignment.md`.
+**Trustworthiness requires source fidelity and claim-appropriate provenance.**
+Experience and authority signals only land when the underlying claims are
+verifiable. Include source identity, relevant dates, methodology, limitations,
+stable URLs, and retrieval notes when those details are needed to identify or
+interpret the evidence. No fixed citation form is required. See
+`flow-alignment.md`.
 
 ---
 
 ## September 2025 QRG Key Principle
 
-Google's Quality Rater Guidelines (September 2025 revision) established:
+Google's Quality Rater Guidelines (September 11, 2025 revision) remain the
+current QRG in mid-2026 as of 2026-07-07. That 182-page version renamed "YMYL
+Society" to "YMYL Government, Civics & Society," added AI Overview evaluation
+examples, and assigned lowest ratings to value-less auto or AI content.
+
+The E-E-A-T framing is stable. Google's September 2025 revision established:
 
 > "Trust is the most important member of the E-E-A-T family because untrustworthy
 > pages have low E-E-A-T no matter how Experienced, Expert, or Authoritative they
@@ -257,8 +270,11 @@ Trust is the foundation; the other three factors build on it.
 
 ## E-E-A-T Scoring Rubric
 
-| Factor | Weight | Key Signals |
-|--------|--------|-------------|
+These are internal scoring weights for the claude-blog quality rubric. Google
+does not publish numeric E-E-A-T weights.
+
+| Factor | Internal Weight | Key Signals |
+|--------|-----------------|-------------|
 | Experience | 20% | First-hand knowledge, original content, case studies, personal testing, process documentation |
 | Expertise | 25% | Credentials, technical depth, accuracy, comprehensiveness, professional background |
 | Authoritativeness | 25% | Industry recognition, external citations, backlinks, reputation, speaking/publication history |
@@ -276,22 +292,28 @@ Trust Assessment → If Low → Cap at "Low E-E-A-T"
 
 ---
 
-## E-E-A-T Applies to ALL Queries (December 2025)
+## E-E-A-T Framing by Topic Risk
 
-The December 2025 core update expanded E-E-A-T evaluation beyond YMYL topics
-to all competitive queries. This means:
+Helpful, trustworthy content matters broadly, but evidence expectations scale
+with topic risk and likely user harm. YMYL topics still carry the highest
+scrutiny.
 
-- **Before December 2025**: E-E-A-T scrutiny primarily for health, finance, legal,
-  safety topics (Your Money or Your Life).
-- **After December 2025**: Any query where multiple pages compete for ranking now
-  undergoes E-E-A-T evaluation. This includes technology, marketing, entertainment,
-  hobby, and general informational content.
+- **Highest risk**: health, finance, legal, safety, elections, civics, and other
+  YMYL topics need strong credentials, sourcing, review, and harm-prevention
+  language.
+- **Medium risk**: technical, business, and product guidance needs evidence
+  proportionate to the claim and potential harm. First-hand testing and a
+  transparent methodology are required when the article claims a test or
+  recommends a consequential action; neutral sourced analysis can rely on
+  current, appropriate sources without inventing personal experience.
+- **Lower risk**: hobby and entertainment topics still benefit from experience
+  signals, but they do not need the same proof burden as health or finance.
 
 ### Practical Impact
 
-A blog post about "best mechanical keyboards" now faces the same E-E-A-T
-scrutiny as a post about "best health insurance plans." Author credentials,
-first-hand testing, original photography, and trust signals all matter.
+A blog post about "best mechanical keyboards" should show first-hand testing and
+transparent recommendations. A post about "best health insurance plans" needs a
+much higher bar for credentials, review, sourcing, and legal or financial caveats.
 
 ---
 

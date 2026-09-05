@@ -84,8 +84,15 @@ system."
 **Fix**:
 ```powershell
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-irm https://raw.githubusercontent.com/AgriciDaniel/claude-blog/main/install.ps1 | iex
+Invoke-WebRequest `
+  -Uri https://raw.githubusercontent.com/AgriciDaniel/claude-blog/main/install.ps1 `
+  -OutFile install.ps1
+Get-FileHash ./install.ps1 -Algorithm SHA256
+pwsh -File ./install.ps1
 ```
+
+Inspect the downloaded file and compare its digest with the release
+documentation before running it.
 
 ---
 
@@ -99,14 +106,14 @@ irm https://raw.githubusercontent.com/AgriciDaniel/claude-blog/main/install.ps1 
 
 | Issue | Impact | Fix |
 |-------|--------|-----|
-| No answer-first formatting | -20 pts max | Add a 40-60 word stat paragraph at the start of every H2 section |
-| Fabricated statistics | -8 pts + Critical flag | Replace every unsourced number with a real stat from a tier 1-3 source |
-| Missing images | -4 to -7 pts | Add 3-5 images from Pixabay/Unsplash with descriptive alt text |
-| Missing charts | -5 to -8 pts | Generate 2-4 SVG charts via built-in `blog-chart` (diverse types) |
-| No FAQ section | -4 pts | Add 3-5 FAQ items with 40-60 word answers containing statistics |
-| Long paragraphs (>150 words) | -8 pts | Split into 40-80 word paragraphs |
-| Missing `lastUpdated` | -4 pts | Add `lastUpdated: "YYYY-MM-DD"` to frontmatter |
-| Excessive self-promotion | -3 pts | Remove brand mentions except 1 in author bio context |
+| Important claims lack clarity or support | Readiness and content points vary | State the point early and add verified evidence where needed; no fixed length |
+| Fabricated statistics | Critical integrity issue | Remove or replace with verified support |
+| Missing images | Context-dependent | Add an image only when it improves understanding |
+| Missing charts | Context-dependent | Add a chart only when data relationships need one |
+| No FAQ section | No score penalty | Add Q&A only when genuine reader questions warrant it |
+| Difficult paragraph pacing | Advisory only | Split or combine passages when comprehension improves |
+| Missing `lastUpdated` | No automatic penalty | Add it only after a substantive update and keep it truthful |
+| Excessive self-promotion | Editorial issue | Remove promotion that distracts from the reader task |
 
 **Quick fix workflow**:
 ```
@@ -115,25 +122,27 @@ irm https://raw.githubusercontent.com/AgriciDaniel/claude-blog/main/install.ps1 
 3. /blog analyze <file>           # Verify improvement
 ```
 
-### Answer-first formatting not detected
+### Important section point not detected
 
-**Symptom**: Score report says "Missing answer-first formatting" even though
-sections have statistics.
+**Symptom**: Score report says an important section lacks a clear, supported
+point even though the section contains data.
 
-**Cause**: The statistic must be in the FIRST paragraph under the H2 heading,
-not in the second or third paragraph.
+**Cause**: A material claim needs source support close enough for readers to
+identify what the source substantiates. Put evidence where it best supports
+comprehension; it may appear in the first or a later paragraph.
 
-**Correct pattern**:
+**Supported placement example**:
 ```markdown
 ## How Does AI Search Impact Blog Traffic?
 
-AI Overviews caused a 61% decline in organic CTR across 3,119 queries
-([Seer Interactive](https://seerinteractive.com), 2025). This shift means
-blog publishers must optimize for both traditional rankings and AI citation
-to maintain visibility.
+AI Overviews initially caused a 61% decline in organic CTR across 3,119 queries
+in a 2025 Seer Interactive study
+([Seer Interactive](https://seerinteractive.com), 2025). Later 2026 reporting
+showed partial CTR rebound in some query sets, so treat this as historical
+context rather than a universal current rate.
 ```
 
-**Incorrect pattern** (stat buried):
+**Unsupported attribution example**:
 ```markdown
 ## How Does AI Search Impact Blog Traffic?
 
@@ -142,6 +151,9 @@ about the future of organic traffic.
 
 According to Seer Interactive, CTR declined 61%.
 ```
+
+The problem in the second example is not paragraph position. The material
+measurement lacks a usable citation and enough study context to verify it.
 
 ### Statistics flagged as "fabricated"
 
@@ -152,7 +164,7 @@ characters of a number. Missing or malformed citations trigger this flag.
 
 **Correct attribution format**:
 ```markdown
-61% decline in organic CTR ([Seer Interactive](https://seerinteractive.com), 2025)
+initial 61% decline in organic CTR ([Seer Interactive](https://seerinteractive.com), 2025)
 ```
 
 **Formats that may not be detected**:
@@ -219,14 +231,17 @@ blog-writer, etc.), and instead tries to do everything inline.
    ls ~/.claude/agents/blog-*.md
    ```
    Expected: `blog-researcher.md`, `blog-writer.md`, `blog-seo.md`,
-   `blog-reviewer.md`
+   `blog-reviewer.md`, `blog-translator.md`
 
-2. **Missing `Task` in allowed-tools**: The sub-skill's YAML frontmatter must
-   include `Task` in its `allowed-tools` list. Check the sub-skill file:
+2. **Unsupported skill frontmatter**: `allowed-tools` is not a valid
+   `SKILL.md` field and does not enable delegation. Check the sub-skill file:
    ```bash
    head -20 ~/.claude/skills/blog-write/SKILL.md
    ```
-   The `allowed-tools` section should include `Task`.
+   Valid skill fields include `name`, `description`, `user-invokable`,
+   `argument-hint`, `license`, `compatibility`, `metadata`, and
+   `disable-model-invocation`. Agent tools live in
+   `~/.claude/agents/blog-*.md`.
 
 3. **Claude Code version**: Agent spawning via `Task` requires a recent
    version of Claude Code. Update to the latest version.
@@ -237,7 +252,7 @@ blog-writer, etc.), and instead tries to do everything inline.
 answer-first formatting or other rules.
 
 **Fix**: This typically means the agent did not load the relevant reference
-files. Run the command again -- the orchestrator should load references
+files. Run the command again: the orchestrator should load references
 before spawning the agent. If the issue persists:
 
 1. Verify reference files exist:

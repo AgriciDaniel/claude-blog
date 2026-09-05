@@ -1,0 +1,32 @@
+cff-version: 1.2.0
+title: claude-blog
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Daniel
+    family-names: Agrici
+    alias: AgriciDaniel
+repository-code: "https://github.com/AgriciDaniel/claude-blog"
+url: "https://claude-blog.md"
+license: MIT
+version: 1.11.0
+date-released: "2026-05-18"
+keywords:
+  - claude-code
+  - blog
+  - seo
+  - geo
+  - aeo
+  - ai-citations
+  - content-optimization
+  - e-e-a-t
+  - skill
+  - plugin
+  - mdx
+  - wordpress
+  - multilingual
+  - hreflang
+  - flow-framework
+  - discourse-research

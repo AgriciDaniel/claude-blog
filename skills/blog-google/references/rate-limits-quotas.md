@@ -1,6 +1,6 @@
 # Blog Google - Rate Limits & Quotas
 
-## Consolidated Quota Table
+## Implemented API Quota Table
 
 | API | Per-Minute | Per-Day | Cost | Auth Type | Scope |
 |-----|-----------|---------|------|-----------|-------|
@@ -12,9 +12,9 @@
 | CrUX History API | 150 QPM (shared with CrUX) | Unlimited | Free | API Key | Per project |
 | Indexing API | 380 RPM total, 180 read/min | 200 publish/day | Free | Service Account | Per project |
 | GA4 Data API | 10 concurrent (50 for 360) | 200,000 Core Tokens/day (std); 2M (360) | Free | Service Account | Per property/project |
-| Knowledge Graph | -- | 100,000 QPD | Free | API Key | Per project |
-| Custom Search | -- | 10,000 QPD max | 100 free, $5/1K | API Key | Per project |
-| Web Risk | 6,000 QPM | 100K/month | Free tier | API Key | Per project |
+| YouTube Data API v3 |: | 10,000 units/day | Free | API Key | Per project |
+| Cloud Natural Language API |: | 5,000 units/month free tier | Paid after free tier | API Key | Per project |
+| Google Ads API | Account dependent | Account dependent | Free API access | OAuth + developer token | Per developer token and account |
 
 **Key distinction:** "Per site" quotas are scoped to a specific GSC property. "Per project" quotas are shared across all properties in a GCP project. "Per user" quotas are per authenticated user (service account).
 
@@ -66,11 +66,15 @@ The CrUX API and CrUX History API share the same 150 QPM quota per project. Plan
 
 ## Cost Summary
 
-**All APIs used by blog-google are free** at normal usage levels. No billing is required for:
+**Most APIs used by blog-google are free** at normal usage levels. No billing is required for:
 - PSI, CrUX, CrUX History (API key, unlimited free)
 - GSC (service account, 30M QPD)
 - Indexing API (service account, 200 publish/day)
 - GA4 Data API (service account, 200K tokens/day standard)
-- Knowledge Graph (API key, 100K QPD)
+- YouTube Data API (API key, 10,000 units/day)
 
-Only Custom Search and Web Risk have paid tiers at high volumes.
+Cloud Natural Language requires billing enabled, with a free monthly tier. Google Ads API access is free, but Keyword Planner data quality depends on the Google Ads account.
+
+## Planned or Out-of-Scope APIs
+
+Knowledge Graph, Custom Search, and Web Risk are not implemented by scoped blog-google scripts. Do not count their quotas as available capabilities until a script and command surface exist.

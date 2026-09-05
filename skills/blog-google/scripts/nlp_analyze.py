@@ -12,9 +12,12 @@ Usage:
 """
 
 import argparse
+import ipaddress
 import json
+import socket
 import sys
 from typing import Optional
+from urllib.parse import urljoin, urlparse
 
 try:
     import requests
@@ -23,13 +26,15 @@ except ImportError:
     sys.exit(1)
 
 try:
-    from google_auth import get_api_key
+    from google_auth import get_api_key, request_with_retries
 except ImportError:
     import os
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-    from google_auth import get_api_key
+    from google_auth import get_api_key, request_with_retries
 
 NLP_ENDPOINT = "https://language.googleapis.com/v2/documents:annotateText"
+MAX_TEXT_CHARS = 100000
+MAX_FETCH_BYTES = 1_000_000
 
 # Free tier: 5,000 units/month per feature
 # Paid: $0.001 per 1,000-character unit for entity/sentiment
@@ -52,7 +57,7 @@ def analyze_text(
     Analyze text using Google Cloud Natural Language API.
 
     Args:
-        text: Text content to analyze (max 1M characters).
+        text: Text content to analyze (max 100,000 characters).
         features: List of features: entities, sentiment, classify, moderate.
         api_key: Google API key.
         language: Language code (default: en).
@@ -88,7 +93,7 @@ def analyze_text(
     body = {
         "document": {
             "type": "PLAIN_TEXT",
-            "content": text[:100000],  # API limit
+            "content": text[:MAX_TEXT_CHARS],
             "languageCode": language,
         },
         "features": feature_map,
@@ -96,7 +101,8 @@ def analyze_text(
     }
 
     try:
-        resp = requests.post(
+        resp = request_with_retries(
+            "POST",
             f"{NLP_ENDPOINT}?key={key}",
             json=body,
             timeout=30,
@@ -186,6 +192,57 @@ def analyze_text(
     return result
 
 
+def _validate_fetch_url(url: str) -> str:
+    parsed = urlparse(url)
+    if parsed.scheme not in {"http", "https"}:
+        raise ValueError("URL must use http or https")
+    if parsed.username or parsed.password:
+        raise ValueError("URL must not contain credentials")
+    if not parsed.hostname:
+        raise ValueError("URL must include a host")
+    try:
+        infos = socket.getaddrinfo(parsed.hostname, parsed.port or (443 if parsed.scheme == "https" else 80), type=socket.SOCK_STREAM)
+    except socket.gaierror as exc:
+        raise ValueError(f"Could not resolve host: {exc}") from exc
+    for info in infos:
+        ip = ipaddress.ip_address(info[4][0])
+        if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved or ip.is_multicast or ip.is_unspecified:
+            raise ValueError("URL resolves to a blocked network address")
+    return url
+
+
+def _fetch_url_text(url: str, max_redirects: int = 3) -> str:
+    current = _validate_fetch_url(url)
+    headers = {"User-Agent": "Mozilla/5.0 (compatible; ClaudeSEO/1.10 NLP Analyzer)"}
+    for _ in range(max_redirects + 1):
+        resp = requests.get(
+            current,
+            timeout=(5, 15),
+            headers=headers,
+            allow_redirects=False,
+            stream=True,
+        )
+        if 300 <= resp.status_code < 400:
+            location = resp.headers.get("Location")
+            if not location:
+                raise ValueError("Redirect response missing Location header")
+            current = _validate_fetch_url(urljoin(current, location))
+            continue
+        resp.raise_for_status()
+        chunks = []
+        total = 0
+        for chunk in resp.iter_content(chunk_size=65536):
+            if not chunk:
+                continue
+            total += len(chunk)
+            if total > MAX_FETCH_BYTES:
+                raise ValueError("Fetched response exceeded 1 MB")
+            chunks.append(chunk)
+        encoding = resp.encoding or "utf-8"
+        return b"".join(chunks).decode(encoding, errors="replace")
+    raise ValueError("Too many redirects")
+
+
 def analyze_url(
     url: str,
     features: Optional[list] = None,
@@ -202,14 +259,9 @@ def analyze_url(
     Returns:
         Dictionary with NLP analysis results.
     """
-    # Fetch the page text
     try:
-        resp = requests.get(url, timeout=30, headers={
-            "User-Agent": "Mozilla/5.0 (compatible; ClaudeSEO/1.7 NLP Analyzer)"
-        })
-        resp.raise_for_status()
-        html = resp.text
-    except requests.exceptions.RequestException as e:
+        html = _fetch_url_text(url)
+    except (requests.exceptions.RequestException, ValueError) as e:
         return {"error": f"Could not fetch URL: {e}"}
 
     # Extract text from HTML (simple approach)

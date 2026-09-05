@@ -1,0 +1,99 @@
+claude-blog
+Copyright (c) 2025-2026 AgriciDaniel
+
+This product includes methodology adapted from third-party open-source projects.
+Per the Apache License 2.0 attribution requirement (Section 4(d)), the following
+notices apply:
+
+================================================================================
+
+impeccable (v3.1.1)
+Copyright (c) 2024-2026 Paul Bakaus
+Licensed under the Apache License, Version 2.0
+Source: https://github.com/pbakaus/impeccable
+License: https://www.apache.org/licenses/LICENSE-2.0
+
+The following methodologies in claude-blog v1.8.0 are adapted from impeccable:
+
+- Two-tier AI slop detection (first-order + second-order reflex check)
+  Source: skills/impeccable/SKILL.md (category-reflex check section)
+  Adapted to: skills/blog/references/ai-slop-detection.md
+
+- Ordinal 0-4 heuristic rubric with P0-P3 severity scoring
+  Source: skills/impeccable/reference/heuristics-scoring.md
+  Adapted to: skills/blog/references/editorial-heuristics.md
+
+- Cognitive load assessment framework (intrinsic / extraneous / germane,
+  4-item working-memory ceiling per Cowan 2001)
+  Source: skills/impeccable/reference/cognitive-load.md
+  Adapted to: skills/blog/references/cognitive-load.md and
+              scripts/cognitive_load.py
+
+- Durable context-loading pattern (PRODUCT.md / DESIGN.md auto-loaded by
+  every command, here generalized to BRAND.md / VOICE.md)
+  Source: skills/impeccable/scripts/load-context.mjs and
+          skills/impeccable/reference/teach.md
+  Adapted to: skills/blog-brand/SKILL.md
+
+The impeccable plugin polishes user interfaces. claude-blog adapts the same
+mental models to prose editorial work. No code is copied verbatim; methodology
+adaptation only. Each adapted file references its impeccable source in its
+own Attribution section.
+
+================================================================================
+
+last30days-skill (v3.2.1)
+Copyright (c) 2024-2026 Matt Van Horn
+Licensed under the MIT License
+Source: https://github.com/mvanhorn/last30days-skill
+
+The following methodologies in claude-blog v1.8.0 are adapted from
+last30days-skill:
+
+- 5-dimension research quality rubric (groundedness, specificity, coverage,
+  actionability, format compliance)
+  Source: skills/last30days/SKILL.md scoring section
+  Adapted to: skills/blog/references/research-quality.md
+
+- 6 portable LAWs for synthesis output (of 8 upstream; LAWs 5 and 7 are
+  runtime-specific and not ported)
+  Source: skills/last30days/SKILL.md "VOICE CONTRACT LAW" section
+  Adapted to: skills/blog/references/synthesis-contract.md
+
+- Pre-flight keyword-trap classification (demographic, numeric, overly-literal,
+  generic single-noun)
+  Source: skills/last30days/SKILL.md "Step 0.45"
+  Adapted to: skills/blog/references/research-quality.md
+
+- Named-entity topic decomposition pattern ("Step 0.55")
+  Source: skills/last30days/SKILL.md "Step 0.55"
+  Adapted to: skills/blog/references/research-quality.md +
+              agents/blog-researcher.md
+
+- Multi-platform discourse research workflow (API-free adaptation)
+  Source: skills/last30days/SKILL.md + scripts/last30days.py
+  Adapted to: skills/blog-discourse/SKILL.md +
+              scripts/discourse_research.py
+
+The last30days-skill plugin requires platform APIs (Reddit, X, YouTube, etc.).
+claude-blog adapts the editorial methodology only; the engine and API plumbing
+are not ported. Each adapted file references its last30days-skill source in its
+own Attribution section.
+
+================================================================================
+
+FLOW framework (v1.0.0)
+Copyright (c) 2026 Daniel Agrici
+Licensed under Creative Commons Attribution 4.0 (CC BY 4.0) for prompt content
+                + MIT for skill code
+Source: https://github.com/AgriciDaniel/flow
+
+Prompt content from FLOW is synced into skills/blog-flow/references/ via
+scripts/sync_flow.py. Every synced markdown file (and the auto-generated index
+README) carries an HTML-comment header crediting Daniel Agrici / FLOW / CC BY 4.0.
+
+================================================================================
+
+For details on how each adaptation maps source to target, including the exact
+methodology elements adopted and the rationale for non-ported elements, see
+docs/CONTRIBUTORS.md in this repository.

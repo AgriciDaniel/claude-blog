@@ -14,14 +14,21 @@ argument-hint: "[generate|voices|setup] [file-or-text] [--mode summary|full|dial
 license: MIT
 metadata:
   author: AgriciDaniel
-  version: "1.0.0"
+  version: "2.3.0"
 ---
 
-# Blog Audio -- Gemini TTS Narration for Blog Posts
+# Blog Audio: Gemini TTS Narration for Blog Posts
 
 Generate professional audio narration of blog content using Google's Gemini TTS.
 Three modes: summary (200-300 word spoken overview), full article read-aloud,
 or two-speaker podcast dialogue. 30 voices, 80+ languages, HTML5 embed output.
+
+## Runtime check
+
+Run `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/runtime_capabilities.py" --check audio --json`
+before generating. Audio uses the Gemini TTS API directly - no MCP server - so
+it works on every surface once a Google AI API key is configured. Without one,
+write the narration script and say that generating the audio file needs a key.
 
 ## Quick Reference
 
@@ -41,10 +48,10 @@ or two-speaker podcast dialogue. 30 voices, 80+ languages, HTML5 embed output.
 
 ```bash
 # CORRECT:
-python3 scripts/run.py generate_audio.py --text "..." --voice Charon --json
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-audio/scripts/run.py generate_audio.py --text "..." --voice Charon --json
 
 # WRONG:
-python3 scripts/generate_audio.py --text "..."  # Fails without venv
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-audio/scripts/generate_audio.py --text "..."  # Fails without venv
 ```
 
 ## API Key Check (Gate Pattern)
@@ -52,14 +59,14 @@ python3 scripts/generate_audio.py --text "..."  # Fails without venv
 Before generating audio, check for the API key:
 
 ```bash
-echo $GOOGLE_AI_API_KEY
+test -n "${GOOGLE_AI_API_KEY:-}" && echo "GOOGLE_AI_API_KEY is set" || echo "GOOGLE_AI_API_KEY is not set"
 ```
 
 - If set: proceed with generation
 - If not set: guide the user:
   "Audio generation requires a Google AI API key. Get one free at https://aistudio.google.com/apikey
    Then set it: `export GOOGLE_AI_API_KEY=your-key`
-   This is the same key used by `/blog image` -- if image generation works, audio works too."
+   This can be the same key used by `/blog image`, but it must be exported in the shell."
 - **When called internally** (from blog-write): return silently if key is missing.
   Never block the writing workflow.
 
@@ -68,15 +75,15 @@ echo $GOOGLE_AI_API_KEY
 For `/blog audio setup`:
 
 1. Check if `GOOGLE_AI_API_KEY` is set in environment
-2. If blog-image is configured (check `.mcp.json`), the key is already available
+2. If blog-image uses project `.mcp.json`, confirm the referenced env var is exported
 3. If not, guide user to https://aistudio.google.com/apikey
-4. Verify with a dry run: `python3 scripts/run.py generate_audio.py --text "Test" --dry-run --json`
+4. Verify with a dry run: `python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-audio/scripts/run.py generate_audio.py --text "Test" --dry-run --json`
 
 ## Voice Selection
 
 For `/blog audio voices`:
 
-Load `references/voices.md` and present the voice catalog to the user.
+Load `${CLAUDE_PLUGIN_ROOT}/skills/blog-audio/references/voices.md` and present the voice catalog to the user.
 
 Ask the user which voice they prefer, or recommend based on content type:
 - **Article narration**: Charon (Informative) or Sadaltager (Knowledgeable)
@@ -109,7 +116,7 @@ Ask the user (or auto-select if they specified `--mode`):
 
 ### Step 3: Prepare Text
 
-**CRITICAL:** Claude prepares the text. The script does TTS only.
+Claude prepares the text; the script does TTS only.
 
 **Summary mode:**
 Write a 200-300 word spoken summary of the article. Rules:
@@ -134,7 +141,7 @@ Strip the markdown content to clean spoken text:
 Write a 2-person conversation script about the article:
 - Speaker1 = Host (curious, asks good questions)
 - Speaker2 = Expert (knowledgeable, gives clear answers)
-- Format each line as: `[Speaker1] What's the key takeaway here?`
+- Format each line as: `Speaker1: What's the key takeaway here?`
 - Cover the article's main points conversationally
 - 15-25 exchanges (produces ~3-8 minutes)
 - Natural, not stilted ("That's a great point" over "Indeed, as the research indicates")
@@ -147,39 +154,41 @@ If the user chose a voice, use it. Otherwise, recommend based on mode:
 
 ### Step 5: Generate Audio
 
-Write the prepared text to a temp file, then call:
+Write the prepared text to a file under the working directory, then call:
 
 ```bash
 # Single voice (summary or full mode)
-python3 scripts/run.py generate_audio.py \
-  --text-file /tmp/blog_audio_prepared.txt \
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-audio/scripts/run.py generate_audio.py \
+  --text-file blog_audio_prepared.txt \
   --voice Charon \
   --model flash \
-  --output /path/to/audio/post-slug.mp3 \
+  --output audio/post-slug.mp3 \
   --json
 
 # Two voices (dialogue mode)
-python3 scripts/run.py generate_audio.py \
-  --text-file /tmp/blog_audio_dialogue.txt \
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-audio/scripts/run.py generate_audio.py \
+  --text-file blog_audio_dialogue.txt \
   --voice Puck \
   --voice2 Kore \
   --model pro \
-  --output /path/to/audio/post-slug-dialogue.mp3 \
+  --output audio/post-slug-dialogue.mp3 \
   --json
 ```
 
 **Model selection:**
-- `flash` (default): Fast, cheap. Good for summaries and standard narration.
-- `pro`: Higher quality. Use for dialogue mode or premium content.
+- `flash` (default): maps to `gemini-3.1-flash-tts-preview`, good for summaries and standard narration.
+- `flash31`: explicit alias for `gemini-3.1-flash-tts-preview`.
+- `legacy-flash25`: retained only for older compatibility.
+- `pro` or `legacy-pro25`: maps to `gemini-2.5-pro-preview-tts`, use only when needed.
 
 ### Step 6: Deliver
 
 Present the result to the user:
-1. **File path** -- where the audio was saved
-2. **Duration** -- human-readable (e.g., "3:42")
-3. **Embed code** -- ready-to-paste HTML5 audio tag
-4. **Cost** -- estimated API cost
-5. **Placement suggestion** -- where to insert the embed in the blog post
+1. **File path**: where the audio was saved
+2. **Duration**: human-readable (e.g., "3:42")
+3. **Embed code**: ready-to-paste HTML5 audio tag
+4. **Cost**: estimated API cost
+5. **Placement suggestion**: where to insert the embed in the blog post
 
 ## Embedding Guide
 
@@ -238,12 +247,12 @@ blog-write because audio generation is unavailable.
 | GOOGLE_AI_API_KEY not set | Get key at https://aistudio.google.com/apikey |
 | FFmpeg not found | Install: `sudo apt install ffmpeg`. Falls back to WAV output. |
 | Rate limited | Wait and retry. Check limits at https://aistudio.google.com/rate-limit |
-| Text too long (>32k tokens) | Split into sections, generate separately |
+| Text too long (>8,192 input tokens) | Split into sections around 7,800 tokens; the script chunks and stitches prepared text |
 | Unknown voice name | Run `/blog audio voices` to see valid options |
-| API error | Check key validity, model availability (preview models) |
-| API key missing (internal call) | Return silently -- writing workflow continues |
+| API error | Check key validity and model availability |
+| API key missing (internal call) | Return silently: writing workflow continues |
 
 ## Reference Documentation
 
-Load on-demand -- do NOT load all at startup:
-- `references/voices.md` -- Full 30-voice catalog, recommendations by content type, dialogue pairings
+Load on-demand: do NOT load all at startup:
+- `${CLAUDE_PLUGIN_ROOT}/skills/blog-audio/references/voices.md`: Full 30-voice catalog, recommendations by content type, dialogue pairings

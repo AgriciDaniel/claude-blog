@@ -1,0 +1,13 @@
+AI Citation Readiness Subscore.md -> deepen; added Citation Readiness Evidence Matrix; sources: g-ai-features, g-ai-opt-guide, ziptie-aio-source-selection, seer-aio-impact-ctr-2026.
+Blog Quality Score.md -> deepen; added Blog Quality Score Spoke Map; sources: g-helpful-content, g-qrg-full, wd-vitals, g-ai-opt-guide.
+Content Quality Subscore.md -> deepen; added Content Quality Evidence Table; sources: g-helpful-content, g-qrg-full, g-spam-policies, nng-editorial-heuristics.
+Delivery Contract Gate.md -> deepen; added Delivery Gate Acceptance Table; sources: g-helpful-content, g-update-2026-06-05-guidance-on-third-party-seo-tools-services-and-advice, g-gsc-api, g-genai-reports.
+E-E-A-T Trust Subscore.md -> deepen; added E-E-A-T Evidence Matrix; sources: g-helpful-content, g-qrg-full, g-update-2025-09-11-qrg-update-sept-2025, nng-editorial-heuristics.
+Quality Gate Failure Modes.md -> deepen; added Quality Gate Failure Modes Pass Fail Table; sources: g-helpful-content, g-ai-opt-guide, g-spam-policies, seer-aio-impact-ctr-2026.
+Quality Review Evidence Log.md -> deepen; added Quality Review Evidence Log Register Table; sources: g-helpful-content, g-ai-opt-guide, g-gsc-api, seer-aio-impact-ctr-2026.
+Quality Score Rubric.md -> deepen; added Quality Score Rubric Evidence Table; sources: g-helpful-content, g-qrg-full, g-intro-sd, g-ai-features.
+Recommendation Confidence Labels.md -> deepen; added Recommendation Confidence Labels Scorecard Evidence Table; sources: g-ai-opt-guide, g-update-2026-06-05-guidance-on-third-party-seo-tools-services-and-advice, g-gsc-api, seer-aio-impact-ctr-2026.
+Rollback Note Patterns.md -> deepen; added Rollback Note Patterns Scorecard Evidence Table; sources: g-helpful-content, g-ai-opt-guide, g-canonical, seer-aio-impact-ctr-2026.
+SEO Intent Subscore.md -> deepen; added SEO Intent Evidence Grid; sources: g-helpful-content, g-gsc-api, g-ads-kw, dfs-labs.
+Technical Schema Subscore.md -> deepen; added Technical Evidence Grid; sources: g-intro-sd, g-canonical, g-mobile-first, wd-vitals.
+Merge/prune decisions: none; all 12 notes map to distinct operating deliverables in the quality gate.

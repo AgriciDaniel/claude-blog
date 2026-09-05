@@ -31,18 +31,16 @@ body:
       label: Area
       description: Which part of claude-blog does this affect?
       options:
-        - Writing (/blog write)
-        - Rewriting (/blog rewrite)
-        - Analysis (/blog analyze)
-        - SEO (/blog seo-check)
-        - Schema (/blog schema)
-        - Briefs (/blog brief)
-        - Calendar (/blog calendar)
-        - Strategy (/blog strategy)
-        - Repurposing (/blog repurpose)
-        - AI Citations (/blog geo)
-        - Audit (/blog audit)
-        - Charts (blog-chart)
+        - Writing and editing
+        - SEO, schema, and AI citations
+        - Research, briefs, and strategy
+        - Media, audio, images, and charts
+        - Google, analytics, and content decay
+        - Multilingual and localization
+        - Brand, persona, discourse, and style
+        - Topic clusters, FLOW, and planning
+        - CMS, taxonomy, and repurposing
+        - Quality gates, audit, and fact-checking
         - Installer / setup
         - Documentation
         - New command / skill

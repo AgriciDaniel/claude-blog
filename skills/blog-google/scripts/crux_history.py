@@ -24,11 +24,11 @@ except ImportError:
     sys.exit(1)
 
 try:
-    from google_auth import get_api_key
+    from google_auth import get_api_key, request_with_retries
 except ImportError:
     import os
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-    from google_auth import get_api_key
+    from google_auth import get_api_key, request_with_retries
 
 CRUX_HISTORY_ENDPOINT = "https://chromeuxreport.googleapis.com/v1/records:queryHistoryRecord"
 
@@ -45,6 +45,7 @@ def query_history(
     url_or_origin: str,
     api_key: str,
     form_factor: Optional[str] = None,
+    periods: int = 25,
 ) -> dict:
     """
     Query CrUX History API for weekly CWV trends.
@@ -60,6 +61,7 @@ def query_history(
     result = {
         "target": url_or_origin,
         "form_factor": form_factor or "ALL",
+        "periods_requested": periods,
         "metrics": {},
         "collection_periods": [],
         "trends": {},
@@ -77,9 +79,11 @@ def query_history(
 
     if form_factor:
         body["formFactor"] = form_factor.upper()
+    body["collectionPeriodCount"] = periods
 
     try:
-        resp = requests.post(
+        resp = request_with_retries(
+            "POST",
             f"{CRUX_HISTORY_ENDPOINT}?key={api_key}",
             json=body,
             timeout=30,
@@ -265,12 +269,21 @@ def main():
         help="Force origin-level query (strip path/query)",
     )
     parser.add_argument(
+        "--periods",
+        type=int,
+        default=25,
+        help="Weekly collection periods to request, 1-40 (default: 25)",
+    )
+    parser.add_argument(
         "--json", "-j",
         action="store_true",
         help="Output as JSON",
     )
 
     args = parser.parse_args()
+    if not 1 <= args.periods <= 40:
+        print("Error: --periods must be between 1 and 40.", file=sys.stderr)
+        sys.exit(1)
 
     api_key = args.api_key or get_api_key()
     if not api_key:
@@ -282,7 +295,7 @@ def main():
         parsed = urlparse(target)
         target = f"{parsed.scheme}://{parsed.netloc}"
 
-    result = query_history(target, api_key, form_factor=args.form_factor)
+    result = query_history(target, api_key, form_factor=args.form_factor, periods=args.periods)
 
     if args.json:
         print(json.dumps(result, indent=2))

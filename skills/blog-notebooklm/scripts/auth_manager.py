@@ -75,7 +75,7 @@ class AuthManager:
         self.browser_state_dir = BROWSER_STATE_DIR
 
     def is_authenticated(self) -> bool:
-        """Check if valid authentication exists"""
+        """Check whether a local browser state file exists."""
         if not self.state_file.exists():
             return False
 
@@ -90,6 +90,7 @@ class AuthManager:
         """Get authentication information"""
         info = {
             'authenticated': self.is_authenticated(),
+            'state_file_present': self.state_file.exists(),
             'state_file': str(self.state_file),
             'state_exists': self.state_file.exists()
         }
@@ -317,6 +318,7 @@ class AuthManager:
 def main():
     """Command-line interface for authentication management"""
     parser = argparse.ArgumentParser(description='Manage NotebookLM authentication')
+    parser.add_argument('--json', action='store_true', help='Output structured JSON')
 
     subparsers = parser.add_subparsers(dest='command', help='Commands')
 
@@ -345,7 +347,10 @@ def main():
 
     # Execute command
     if args.command == 'setup':
-        if auth.setup_auth(headless=args.headless, timeout_minutes=args.timeout):
+        ok = auth.setup_auth(headless=args.headless, timeout_minutes=args.timeout)
+        if args.json:
+            print(json.dumps({"status": "success" if ok else "error", "command": "setup"}, indent=2))
+        if ok:
             print("\n✅ Authentication setup complete!")
             print("You can now use ask_question.py to query NotebookLM")
         else:
@@ -354,8 +359,12 @@ def main():
 
     elif args.command == 'status':
         info = auth.get_auth_info()
+        if args.json:
+            print(json.dumps({"status": "success", "auth": info}, indent=2))
+            return
         print("\n🔐 Authentication Status:")
-        print(f"  Authenticated: {'Yes' if info['authenticated'] else 'No'}")
+        print(f"  State file present: {'Yes' if info['state_file_present'] else 'No'}")
+        print("  Run validate to confirm the Google login still works.")
         if info.get('state_age_hours'):
             print(f"  State age: {info['state_age_hours']:.1f} hours")
         if info.get('authenticated_at_iso'):
@@ -363,18 +372,29 @@ def main():
         print(f"  State file: {info['state_file']}")
 
     elif args.command == 'validate':
-        if auth.validate_auth():
+        ok = auth.validate_auth()
+        if args.json:
+            print(json.dumps({"status": "success" if ok else "error", "valid": ok}, indent=2))
+            return
+        if ok:
             print("Authentication is valid and working")
         else:
             print("Authentication is invalid or expired")
             print("Run: auth_manager.py setup")
 
     elif args.command == 'clear':
-        if auth.clear_auth():
+        ok = auth.clear_auth()
+        if args.json:
+            print(json.dumps({"status": "success" if ok else "error", "command": "clear"}, indent=2))
+            return
+        if ok:
             print("Authentication cleared")
 
     elif args.command == 'reauth':
-        if auth.re_auth(timeout_minutes=args.timeout):
+        ok = auth.re_auth(timeout_minutes=args.timeout)
+        if args.json:
+            print(json.dumps({"status": "success" if ok else "error", "command": "reauth"}, indent=2))
+        if ok:
             print("\n✅ Re-authentication complete!")
         else:
             print("\n❌ Re-authentication failed")

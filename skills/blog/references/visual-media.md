@@ -1,4 +1,4 @@
-# Visual Media Integration -- Images, Charts & Cover Images
+# Visual Media Integration: Images, Charts & Cover Images
 
 ## Contents
 
@@ -14,10 +14,10 @@ Every blog post should have a cover image for social sharing and blog listings.
 
 ### Option 1: Photo Cover (Pixabay/Unsplash/Pexels)
 
-Search for a wide, high-quality image relevant to the topic:
-1. Pixabay: `site:pixabay.com [topic] wide banner`
-2. Unsplash: `site:unsplash.com [topic] wide`
-3. Pexels: `site:pexels.com [topic] wide banner`
+Search for a wide, high-quality image relevant to the topic through official
+APIs when keys are available, or through Openverse for CC assets. Download the
+chosen asset locally, store attribution/license metadata, and do not hotlink raw
+CDN URLs.
 
 **Sizing requirements:**
 | Use Case | Dimensions | Aspect Ratio |
@@ -26,16 +26,18 @@ Search for a wide, high-quality image relevant to the topic:
 | Open Graph (OG) | 1200x630 | 1.91:1 (required) |
 | Twitter card | 1200x628 | ~1.91:1 |
 
-Unsplash resize: `?w=1200&h=630&fit=crop&q=80`
-Pixabay/Pexels: use original if wide enough, or crop.
+Resize/crop locally to the target dimensions and keep `hero-credit.txt` or
+equivalent attribution next to the downloaded asset.
 
-### Option 2: Generated SVG Cover (via blog-chart)
+### Option 2: Generated Chart Cover (via blog-chart)
 
 For branded or data-driven covers, generate via `blog-chart`:
 - Text-on-gradient with title and key statistic
 - Dark-mode compatible (use `currentColor` where possible)
 - Include blog name/author subtle branding
 - ViewBox: `0 0 1200 630` for OG compatibility
+- Render the final social image to PNG or WebP at 1200x630. Do not use raw SVG
+  as `og:image`; many social parsers do not reliably render SVG previews.
 
 ### Option 3: AI-Generated Cover (via blog-image)
 
@@ -43,7 +45,8 @@ For custom, topic-specific covers when stock photos don't match:
 1. Requires nanobanana-mcp configured (see `/blog image setup`)
 2. Uses 6-component Reasoning Brief for optimized Gemini prompts
 3. Supports 14 aspect ratios (16:9 for hero, 1.91:1 for OG)
-4. Up to 4K resolution via Gemini 3.1 Flash
+4. Use current Gemini image models: `gemini-3.1-flash-image`,
+   `gemini-3.1-flash-lite-image`, or `gemini-3-pro-image`
 5. Post-processing: auto-resize to 1200x630, convert to WebP/AVIF
 
 Best for: Abstract topics, branded imagery, niche subjects with poor stock results.
@@ -54,9 +57,9 @@ Best for: Abstract topics, branded imagery, niche subjects with poor stock resul
 ---
 title: "..."
 description: "..."
-coverImage: "https://cdn.pixabay.com/photo/.../cover.jpg"
+coverImage: "/images/blog/topic-cover.jpg"
 coverImageAlt: "Descriptive sentence about the cover image"
-ogImage: "https://cdn.pixabay.com/photo/.../cover.jpg"  # Same as cover or custom OG
+ogImage: "/images/blog/topic-og.jpg"  # Same as cover or custom OG
 date: "YYYY-MM-DD"
 ---
 ```
@@ -83,28 +86,28 @@ date: "YYYY-MM-DD"
 ### Pixabay (Preferred)
 - **License**: Pixabay Content License - free for commercial use, no attribution required
 - **URL**: https://pixabay.com
-- **Hotlinking**: Allowed via CDN URLs
+- **Hotlinking**: Not allowed by claude-blog policy. Use the source URL only to download a local asset, then serve the local file.
 
 **Finding images:**
-1. WebSearch: `site:pixabay.com [topic keywords]`
-2. Visit the image page to get the direct CDN URL
-3. Direct URL pattern: `https://cdn.pixabay.com/photo/YYYY/MM/DD/HH/MM/filename.jpg`
-4. Verify: `curl -sI "<url>" | head -1` - must return HTTP 200
+1. Prefer the official API when a key is available; otherwise use Openverse for CC assets.
+2. Download the selected image into the draft or site asset folder.
+3. Store attribution/license metadata next to the downloaded file.
+4. Verify the local file exists and renders before delivery.
 
-**Sizing**: Append query params for optimization:
-- Blog hero: original size (typically 1920px wide)
-- Inline images: use as-is (most are 1280px+)
+**Sizing**: Download a source large enough for local optimization:
+- Blog hero: source width at least 1200px, preferably 1920px+
+- Inline images: source width at least 1280px when available
 
 ### Unsplash (Alternative)
 - **License**: Unsplash License - free for commercial use, no attribution required
 - **URL**: https://unsplash.com
-- **Hotlinking**: Required - must use their CDN
+- **Hotlinking**: Not allowed by claude-blog policy. Use official API metadata to select an image, then download/cache it locally and keep source metadata.
 
 **Finding images:**
-1. WebSearch: `site:unsplash.com [topic keywords]`
-2. Extract photo ID from URL (e.g., `photo-1234567890123-abcdef`)
-3. Build direct URL: `https://images.unsplash.com/photo-<id>?w=1200&h=630&fit=crop&q=80`
-4. Verify: `curl -sI "<url>" | head -1` - must return HTTP 200
+1. Use the official API when `UNSPLASH_ACCESS_KEY` is present.
+2. Select a relevant 1.91:1 or crop-friendly image with license/source metadata.
+3. Download to the draft or site asset folder and write attribution/source notes.
+4. Verify the local file exists and renders before delivery.
 
 ### Pexels (Fallback)
 - **License**: Pexels License - free for commercial use, no attribution required
@@ -118,24 +121,25 @@ date: "YYYY-MM-DD"
 | Alt text | Required on ALL images - full descriptive sentence |
 | Placement | After H2 headings, before body text |
 | Distribution | Spread evenly - never cluster images |
-| Count | 3-5 images per 2,000-word post |
+| Count | Intent-based density within the page-weight budget |
 | Relevance | Must relate to adjacent content |
 | Format | AVIF preferred, WebP fallback, JPEG last resort |
 
 ### Image Density by Content Type
 
-Optimal image frequency varies by post format (THM SEO Agency data):
+Use one density model: add visuals where they clarify, prove, or summarize the
+adjacent section, while keeping total image payload under the page budget.
 
-| Content Type | Image Density | Example (2,000-word post) |
-|-------------|---------------|---------------------------|
-| Listicles | 1 image per 133 words | ~15 images |
-| How-to guides | 1 image per 179 words | ~11 images |
-| Long-form analysis | 1 image per 200-250 words | ~8-10 images |
-| Case studies | 1 image per 307 words | ~6-7 images |
+| Content Type | Typical Density | Example (2,000-word post) |
+|-------------|-----------------|---------------------------|
+| Standard article | 1 visual per 400-600 words | 3-5 visuals |
+| How-to or tutorial | 1 visual per major step | 5-8 visuals |
+| Listicle or product roundup | 1 visual per item only when useful | 5-10 visuals |
+| Case study or data post | charts/screenshots for proof points | 4-7 visuals |
 
-Articles with an image every 75-100 words get 2x more social shares (BuzzSumo).
-Balance density against page weight - use optimized formats (AVIF/WebP) to keep
-total image payload under 500KB.
+Avoid mechanical image-every-75-100-word targets. Use optimized formats
+(AVIF/WebP) and responsive sizes; if the post exceeds the page-weight budget,
+reduce decorative media before cutting proof screenshots or charts.
 
 ### SVG Impact on Engagement
 
@@ -153,38 +157,35 @@ D.C. Thomson case study results after replacing raster images with contextual SV
 Good: `Marketing team analyzing AI search traffic data on a dashboard showing citation metrics`
 Bad: `SEO AI marketing blog optimization image`
 
-**AI Systems and Images**: AI crawlers read alt text and captions, NOT the images
-themselves. Write context-rich alt text that conveys the data or insight the image
-represents. For charts, include the key data point in the alt text. For screenshots,
-describe what the screenshot demonstrates.
+**AI Systems and Images**: Multimodal systems may process images, while crawler
+and product capabilities vary. Alt text, captions, and visible surrounding
+context remain important accessibility and semantic support. For charts,
+describe the meaningful takeaway in accessible text. For screenshots, explain
+what the screenshot demonstrates.
 
 ### Embedding Images
 
 **Standard Markdown:**
 ```markdown
-![Descriptive alt text sentence](https://cdn.pixabay.com/photo/.../image.jpg)
+![Descriptive alt text sentence](/images/blog/topic-hero.jpg)
 ```
 
 **MDX (Next.js):**
 ```mdx
-![Descriptive alt text sentence](https://cdn.pixabay.com/photo/.../image.jpg)
+![Descriptive alt text sentence](/images/blog/topic-hero.jpg)
 ```
 
-For Next.js projects, verify `next.config.ts` includes the image domain:
+For Next.js projects, generated or downloaded assets should live under
+`public/images/blog/` or be imported from the local asset tree. Remote image
+domains are not required for claude-blog generated assets:
 ```typescript
-images: {
-  remotePatterns: [
-    { protocol: 'https', hostname: 'cdn.pixabay.com' },
-    { protocol: 'https', hostname: 'images.unsplash.com' },
-    { protocol: 'https', hostname: 'images.pexels.com' },
-  ],
-}
+const hero = "/images/blog/topic-hero.jpg"
 ```
 
 **HTML:**
 ```html
 <figure>
-  <img src="https://cdn.pixabay.com/photo/.../image.jpg"
+  <img src="/images/blog/topic-hero.jpg"
        alt="Descriptive alt text sentence"
        width="1200" height="630" loading="lazy">
   <figcaption>Photo via Pixabay</figcaption>
@@ -416,10 +417,10 @@ The sub-skill returns complete SVG wrapped in a `<figure>`. Verify before embedd
 ## YouTube Video Embeds
 
 YouTube videos are part of the visual media mix alongside images, charts, and
-AI-generated images. YouTube has the strongest AI visibility correlation (0.737)
-of any signal (Ahrefs 75K brands).
+AI-generated images. Vendor studies report a strong correlation with AI
+visibility, but treat that as directional and use videos only when relevant.
 
-See `references/video-embeds.md` for:
+See `video-embeds.md` for:
 - Embed patterns (srcdoc lazy loading for MDX, HTML, Markdown, Hugo)
 - Video quality criteria and scoring (min 50/100)
 - Placement strategy (2-3 per post, 500+ words apart)

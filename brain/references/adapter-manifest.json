@@ -1,0 +1,241 @@
+{
+  "version": 1,
+  "status": "market-ready",
+  "domain": "blog content creation, optimization, and management dual-optimized for Google rankings (E-E-A-T, the 2026 core updates) and AI citations (GEO/AEO), spanning writing, rewriting and freshness, SERP-informed briefs and outlines, editorial calendars and strategy, semantic topic clusters, schema and internal linking, multilingual publishing, the FLOW framework, factchecking, personas, distribution, and the blog delivery contract, grounded in the claude-blog skill",
+  "generic_only": false,
+  "last_verified": "2026-08-25",
+  "release_note": "Blog post, topic cluster, and GEO citation audit JSON adapter paths are implemented, CLI-wired, and covered by subprocess tests. Market-ready verification passed after all 118 due source-ledger entries received explicit content, manual, or corrected review decisions on 2026-08-25.",
+  "raw_input_types": [
+    "blog-post input JSON using schemas/blog-post-input.schema.json",
+    "Markdown body supplied through blog-post input JSON",
+    "HTML body supplied through blog-post input JSON",
+    "topic-cluster plan JSON using schemas/topic-cluster-input.schema.json",
+    "GEO citation audit JSON using schemas/geo-citation-audit-input.schema.json"
+  ],
+  "rules": {
+    "domain_adapted_requires": [
+      "one real domain importer or ingestion path",
+      "one domain-specific synthesis module",
+      "one report renderer",
+      "one fixture per supported input type",
+      "tests for valid input, malformed input, rendering, credentials boundary, deterministic output, and citation coverage",
+      "URL, local path, HTML sanitization, symlink, SSRF, and secret-handling gates"
+    ]
+  },
+  "input_schemas": [
+    {
+      "name": "blog-post-input",
+      "path": "schemas/blog-post-input.schema.json",
+      "status": "implemented",
+      "planned": false,
+      "enforces": [
+        "required title, url, target_keyword, and locale",
+        "one of body_markdown or body_html",
+        "HTTP(S) URL patterns",
+        "ISO date or date-time patterns"
+      ]
+    },
+    {
+      "name": "topic-cluster-input",
+      "path": "schemas/topic-cluster-input.schema.json",
+      "status": "implemented",
+      "planned": false,
+      "enforces": [
+        "required cluster_name, primary_topic, locale, hub, and spokes",
+        "at least two spoke pages",
+        "HTTP(S) URLs for hub, spokes, and existing links",
+        "locale pattern and unique spoke IDs"
+      ]
+    },
+    {
+      "name": "geo-citation-audit-input",
+      "path": "schemas/geo-citation-audit-input.schema.json",
+      "status": "implemented",
+      "planned": false,
+      "enforces": [
+        "required audit_name, URL, title, locale, target queries, passages, and page signals",
+        "at least one target query and one passage",
+        "HTTP(S) URLs for page and passage citations",
+        "boolean page signals and ISO citation dates"
+      ]
+    }
+  ],
+  "importers": [
+    {
+      "name": "ingest_blog_input",
+      "path": "scripts/ingest_blog_input.py",
+      "cli": "claude-blog-brain blog-ingest",
+      "status": "implemented",
+      "planned": false,
+      "output_schema": "claude-blog-brain.ingested-blog-post.v1"
+    },
+    {
+      "name": "ingest_topic_cluster_input",
+      "path": "scripts/ingest_topic_cluster_input.py",
+      "cli": "claude-blog-brain cluster-ingest",
+      "status": "implemented",
+      "planned": false,
+      "output_schema": "claude-blog-brain.ingested-topic-cluster.v1"
+    },
+    {
+      "name": "ingest_geo_citation_audit",
+      "path": "scripts/ingest_geo_citation_audit.py",
+      "cli": "claude-blog-brain geo-ingest",
+      "status": "implemented",
+      "planned": false,
+      "output_schema": "claude-blog-brain.ingested-geo-citation-audit.v1"
+    }
+  ],
+  "synthesis_modules": [
+    {
+      "name": "synthesize_blog_plan",
+      "path": "scripts/synthesize_blog_plan.py",
+      "cli": "claude-blog-brain blog-synthesize",
+      "status": "implemented",
+      "planned": false,
+      "output_schema": "claude-blog-brain.blog-optimization-plan.v1"
+    },
+    {
+      "name": "synthesize_topic_cluster",
+      "path": "scripts/synthesize_topic_cluster.py",
+      "cli": "claude-blog-brain cluster-synthesize",
+      "status": "implemented",
+      "planned": false,
+      "output_schema": "claude-blog-brain.topic-cluster-plan.v1"
+    },
+    {
+      "name": "synthesize_geo_citation_readiness",
+      "path": "scripts/synthesize_geo_citation_readiness.py",
+      "cli": "claude-blog-brain geo-synthesize",
+      "status": "implemented",
+      "planned": false,
+      "output_schema": "claude-blog-brain.geo-citation-readiness.v1"
+    }
+  ],
+  "report_renderers": [
+    {
+      "name": "render_blog_report",
+      "path": "scripts/render_blog_report.py",
+      "cli": "claude-blog-brain blog-report",
+      "status": "implemented",
+      "planned": false,
+      "output_format": "markdown"
+    },
+    {
+      "name": "render_topic_cluster_report",
+      "path": "scripts/render_topic_cluster_report.py",
+      "cli": "claude-blog-brain cluster-report",
+      "status": "implemented",
+      "planned": false,
+      "output_format": "markdown"
+    },
+    {
+      "name": "render_geo_citation_report",
+      "path": "scripts/render_geo_citation_report.py",
+      "cli": "claude-blog-brain geo-report",
+      "status": "implemented",
+      "planned": false,
+      "output_format": "markdown"
+    }
+  ],
+  "fixtures": [
+    {
+      "name": "sample-blog-post",
+      "path": "tests/fixtures/sample-blog-post.json",
+      "status": "implemented",
+      "planned": false
+    },
+    {
+      "name": "sample-topic-cluster-plan",
+      "path": "tests/fixtures/sample-topic-cluster-plan.json",
+      "status": "implemented",
+      "planned": false
+    },
+    {
+      "name": "sample-geo-citation-audit",
+      "path": "tests/fixtures/sample-geo-citation-audit.json",
+      "status": "implemented",
+      "planned": false
+    }
+  ],
+  "tests": [
+    {
+      "name": "valid_input",
+      "path": "tests/test_blog_adapters.py",
+      "status": "implemented",
+      "planned": false
+    },
+    {
+      "name": "malformed_input_json_error_envelope",
+      "path": "tests/test_blog_adapters.py",
+      "status": "implemented",
+      "planned": false
+    },
+    {
+      "name": "output_file_assertions",
+      "path": "tests/test_blog_adapters.py",
+      "status": "implemented",
+      "planned": false
+    },
+    {
+      "name": "deterministic_output",
+      "path": "tests/test_blog_adapters.py",
+      "status": "implemented",
+      "planned": false
+    },
+    {
+      "name": "citation_coverage",
+      "path": "tests/test_blog_adapters.py",
+      "status": "implemented",
+      "planned": false
+    },
+    {
+      "name": "domain_specific_end_to_end_output",
+      "path": "tests/test_blog_adapters.py",
+      "status": "implemented",
+      "planned": false
+    },
+    {
+      "name": "package_cli_blog_pipeline",
+      "path": "tests/test_blog_adapters.py",
+      "status": "implemented",
+      "planned": false
+    },
+    {
+      "name": "topic_cluster_valid_deterministic_output_and_citation_coverage",
+      "path": "tests/test_domain_adapters.py",
+      "status": "implemented",
+      "planned": false
+    },
+    {
+      "name": "topic_cluster_malformed_input_json_error_envelope",
+      "path": "tests/test_domain_adapters.py",
+      "status": "implemented",
+      "planned": false
+    },
+    {
+      "name": "geo_valid_deterministic_output_and_citation_coverage",
+      "path": "tests/test_domain_adapters.py",
+      "status": "implemented",
+      "planned": false
+    },
+    {
+      "name": "geo_malformed_input_json_error_envelope",
+      "path": "tests/test_domain_adapters.py",
+      "status": "implemented",
+      "planned": false
+    },
+    {
+      "name": "package_cli_new_adapter_subcommands",
+      "path": "tests/test_domain_adapters.py",
+      "status": "implemented",
+      "planned": false
+    },
+    {
+      "name": "package_cli_new_pipelines",
+      "path": "tests/test_domain_adapters.py",
+      "status": "implemented",
+      "planned": false
+    }
+  ]
+}

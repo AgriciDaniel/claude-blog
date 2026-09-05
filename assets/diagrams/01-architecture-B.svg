@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 760" width="100%"
+     preserveAspectRatio="xMidYMid meet" role="img"
+     aria-label="claude-blog system architecture: a command feeds one orchestrator that dispatches to sub-skills, agents, the delivery contract, and the published post">
+<title>claude-blog — system architecture</title>
+<desc>Hub layout. A Command card feeds a central Orchestrator card, which dispatches along a soft rail to a column of outputs: Sub-skills, Agents, Delivery Contract, and Published.</desc>
+<defs>
+  <style type="text/css"><![CDATA[
+    .t { font-family:'Inter',system-ui,-apple-system,sans-serif; }
+    .b { font-family:'Poppins','Inter',system-ui,sans-serif; font-weight:700; }
+    .flow { stroke-dasharray:2 12; animation: flow 2.4s linear infinite; }
+    .fl { transform-box:fill-box; transform-origin:center; }
+    .fl1{ animation: floaty 6.4s ease-in-out infinite; }
+    .fl2{ animation: floaty 7.6s ease-in-out -3s infinite; }
+    @keyframes flow { to { stroke-dashoffset:-42; } }
+    @keyframes floaty { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+    @media (prefers-reduced-motion: reduce){ .flow,.fl1,.fl2{animation:none} }
+  ]]></style>
+  <filter id="sh" x="-40%" y="-40%" width="180%" height="200%">
+    <feDropShadow dx="0" dy="10" stdDeviation="16" flood-color="#26313f" flood-opacity="0.12"/>
+  </filter>
+</defs>
+
+<rect x="0" y="0" width="1600" height="760" fill="#F6F5F0"/>
+
+<!-- header -->
+<text x="96" y="92" class="t" font-size="15" letter-spacing="4" fill="#8A93A0">SYSTEM ARCHITECTURE</text>
+<text x="94" y="140" class="b" font-size="34" fill="#1E242B">One orchestrator routes it all.</text>
+
+<!-- peeking shapes -->
+<rect class="fl fl1" x="360" y="220" width="120" height="120" rx="30" fill="#4C86EF"/>
+<rect class="fl fl2" x="672" y="512" width="120" height="120" rx="30" fill="#F5B62A"/>
+<rect class="fl fl1" x="1300" y="238" width="120" height="120" rx="30" fill="#E8503C"/>
+<rect class="fl fl2" x="1330" y="470" width="120" height="120" rx="30" fill="#33A457"/>
+
+<!-- connectors -->
+<line x1="316" y1="420" x2="430" y2="420" stroke="#C7CBD2" stroke-width="3" stroke-linecap="round"/>
+<line x1="316" y1="420" x2="430" y2="420" class="flow" stroke="#4C86EF" stroke-width="3" stroke-linecap="round"/>
+<line x1="730" y1="420" x2="852" y2="420" stroke="#C7CBD2" stroke-width="3" stroke-linecap="round"/>
+<line x1="852" y1="320" x2="852" y2="536" stroke="#C7CBD2" stroke-width="3" stroke-linecap="round"/>
+<line x1="730" y1="420" x2="852" y2="420" class="flow" stroke="#4C86EF" stroke-width="3" stroke-linecap="round"/>
+<line x1="852" y1="320" x2="852" y2="536" class="flow" stroke="#4C86EF" stroke-width="3" stroke-linecap="round"/>
+<g stroke="#C7CBD2" stroke-width="3" stroke-linecap="round">
+  <line x1="852" y1="320" x2="900" y2="320"/>
+  <line x1="852" y1="392" x2="900" y2="392"/>
+  <line x1="852" y1="464" x2="900" y2="464"/>
+  <line x1="852" y1="536" x2="900" y2="536"/>
+</g>
+
+<!-- Command card -->
+<g filter="url(#sh)"><rect x="96" y="332" width="220" height="176" rx="24" fill="#FFFFFF"/></g>
+<rect x="122" y="360" width="52" height="52" rx="14" fill="#4C86EF"/>
+<text x="136" y="394" class="b" font-size="22" fill="#FFFFFF">&gt;_</text>
+<text x="122" y="452" class="b" font-size="21" fill="#1E242B">Command</text>
+<text x="122" y="480" class="t" font-size="15" fill="#6B7480">/blog write</text>
+
+<!-- Orchestrator hub -->
+<g filter="url(#sh)"><rect x="430" y="270" width="300" height="300" rx="28" fill="#FFFFFF"/></g>
+<rect x="466" y="304" width="60" height="60" rx="16" fill="#1E242B"/>
+<g stroke="#FFFFFF" stroke-width="2.4"><line x1="496" y1="334" x2="482" y2="320"/><line x1="496" y1="334" x2="512" y2="322"/><line x1="496" y1="334" x2="498" y2="352"/></g>
+<g fill="#FFFFFF"><circle cx="496" cy="334" r="5.5"/><circle cx="482" cy="320" r="4"/><circle cx="512" cy="322" r="4"/><circle cx="498" cy="352" r="4"/></g>
+<text x="466" y="410" class="b" font-size="25" fill="#1E242B">Orchestrator</text>
+<text x="466" y="440" class="t" font-size="15" fill="#6B7480">blog/SKILL.md · routes /blog *</text>
+<rect x="466" y="470" width="228" height="60" rx="14" fill="#F4F3EE"/>
+<text x="484" y="497" class="t" font-size="13" letter-spacing="1.5" fill="#8A93A0">CONTEXT</text>
+<text x="484" y="518" class="b" font-size="16" fill="#3B424B">BRAND · VOICE</text>
+
+<!-- output column -->
+<!-- 1 Sub-skills -->
+<g filter="url(#sh)"><rect x="900" y="290" width="430" height="60" rx="16" fill="#FFFFFF"/></g>
+<rect x="920" y="300" width="40" height="40" rx="11" fill="#F5B62A"/>
+<g fill="#FFFFFF"><circle cx="932" cy="313" r="3"/><circle cx="940" cy="313" r="3"/><circle cx="948" cy="313" r="3"/><circle cx="932" cy="321" r="3"/><circle cx="940" cy="321" r="3"/><circle cx="948" cy="321" r="3"/><circle cx="932" cy="329" r="3"/><circle cx="940" cy="329" r="3"/><circle cx="948" cy="329" r="3"/></g>
+<text x="974" y="316" class="b" font-size="18" fill="#1E242B">Sub-skills</text>
+<text x="974" y="337" class="t" font-size="14" fill="#6B7480">30 modules · 8 clusters</text>
+
+<!-- 2 Agents -->
+<g filter="url(#sh)"><rect x="900" y="362" width="430" height="60" rx="16" fill="#FFFFFF"/></g>
+<rect x="920" y="372" width="40" height="40" rx="11" fill="#4C86EF"/>
+<circle cx="940" cy="388" r="6" fill="#FFFFFF"/><path d="M929 404 a11 9 0 0 1 22 0 z" fill="#FFFFFF"/>
+<text x="974" y="388" class="b" font-size="18" fill="#1E242B">Agents</text>
+<text x="974" y="409" class="t" font-size="14" fill="#6B7480">5 specialists dispatched</text>
+
+<!-- 3 Delivery Contract -->
+<g filter="url(#sh)"><rect x="900" y="434" width="430" height="60" rx="16" fill="#FFFFFF"/></g>
+<rect x="920" y="444" width="40" height="40" rx="11" fill="#33A457"/>
+<path d="M932 464 l6 7 l11 -13" fill="none" stroke="#FFFFFF" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="974" y="460" class="b" font-size="18" fill="#1E242B">Delivery Contract</text>
+<text x="974" y="481" class="t" font-size="14" fill="#6B7480">5 gates · blocks below 90</text>
+
+<!-- 4 Published -->
+<g filter="url(#sh)"><rect x="900" y="506" width="430" height="60" rx="16" fill="#FFFFFF"/></g>
+<rect x="920" y="516" width="40" height="40" rx="11" fill="#E8503C"/>
+<rect x="932" y="526" width="16" height="20" rx="3" fill="#FFFFFF"/>
+<text x="974" y="532" class="b" font-size="18" fill="#1E242B">Published</text>
+<text x="974" y="553" class="t" font-size="14" fill="#6B7480">md · schema · assets</text>
+</svg>

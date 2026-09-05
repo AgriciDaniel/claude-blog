@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 520" role="img" aria-labelledby="title desc">
+<title id="title">Claude Blog Brain frontispiece</title>
+<desc id="desc">Editorial visual showing a source-cited brain product pipeline.</desc>
+<rect width="1200" height="520" fill="#f6f4ef"/>
+<rect x="70" y="70" width="1060" height="380" fill="#ffffff" stroke="#172033" stroke-width="3"/>
+<text x="110" y="150" font-family="Inter,Arial" font-size="54" font-weight="800" fill="#172033">Claude Blog Brain</text>
+<text x="112" y="205" font-family="Inter,Arial" font-size="22" fill="#334155">Source-cited Obsidian operating brain for blog content creation, optimization, and management dual-optimized for Google rankings (E-E-A-T, the 2026 core updates) and AI citations (GEO/AEO), spanning writing, rewriting and freshness, SERP-informed briefs and outlines, editorial calendars and strategy, semantic topic clusters, schema and internal linking, multilingual publishing, the FLOW framework, factchecking, personas, distribution, and the blog delivery contract, grounded in the claude-blog skill.</text>
+<g font-family="Inter,Arial" font-size="18" font-weight="700">
+<rect x="120" y="285" width="180" height="74" fill="#e7f0f1" stroke="#2f7f87" stroke-width="3"/><text x="152" y="330" fill="#172033">Sources</text>
+<rect x="365" y="285" width="180" height="74" fill="#fff5e0" stroke="#f0b33d" stroke-width="3"/><text x="405" y="330" fill="#172033">Memory</text>
+<rect x="610" y="285" width="180" height="74" fill="#f9e7e2" stroke="#c85f4d" stroke-width="3"/><text x="650" y="330" fill="#172033">Gates</text>
+<rect x="855" y="285" width="180" height="74" fill="#ece7f3" stroke="#8d6bb3" stroke-width="3"/><text x="888" y="330" fill="#172033">Reports</text>
+</g>
+<path d="M300 322 H365 M545 322 H610 M790 322 H855" stroke="#64748b" stroke-width="4"/>
+</svg>

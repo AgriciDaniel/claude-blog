@@ -1,0 +1,58 @@
+{
+  "cluster_name": "AI citation ready blog cluster",
+  "primary_topic": "AI citation ready blog strategy",
+  "locale": "en-US",
+  "audience": "SEO editors and blog operators",
+  "objective": "Plan a source-cited cluster that helps editors improve AI citation readiness without promising rankings.",
+  "hub": {
+    "title": "AI Citation Ready Blog Strategy",
+    "url": "https://example.com/blog/ai-citation-ready-blog-strategy",
+    "target_keyword": "AI citation ready blog strategy"
+  },
+  "spokes": [
+    {
+      "id": "answer-passages",
+      "title": "How to Write Answer Passages for AI Search",
+      "url": "https://example.com/blog/answer-passages-ai-search",
+      "target_keyword": "AI citation ready answer passages",
+      "intent": "Teach editors to structure self-contained answer blocks",
+      "stage": "optimize",
+      "priority": "high",
+      "source_ids": ["ziptie-aio-source-selection"]
+    },
+    {
+      "id": "source-ledger",
+      "title": "How to Maintain a Blog Source Ledger",
+      "url": "https://example.com/blog/blog-source-ledger",
+      "target_keyword": "blog source ledger",
+      "intent": "Show how to record dated source evidence for claims",
+      "stage": "govern",
+      "priority": "high",
+      "source_ids": ["g-helpful-content"]
+    },
+    {
+      "id": "measurement",
+      "title": "How to Measure AI Citation Visibility",
+      "url": "https://example.com/blog/measure-ai-citation-visibility",
+      "target_keyword": "AI citation measurement",
+      "intent": "Explain AI Overview and AI Mode measurement boundaries",
+      "stage": "measure",
+      "priority": "medium",
+      "source_ids": ["g-genai-reports"]
+    }
+  ],
+  "existing_links": [
+    {
+      "from_url": "https://example.com/blog/ai-citation-ready-blog-strategy",
+      "to_url": "https://example.com/blog/answer-passages-ai-search",
+      "anchor": "AI citation ready answer passages"
+    },
+    {
+      "from_url": "https://example.com/blog/blog-source-ledger",
+      "to_url": "https://example.com/blog/ai-citation-ready-blog-strategy",
+      "anchor": "AI citation ready blog strategy"
+    }
+  ],
+  "entity_terms": ["AI Overviews", "AI Mode", "Search Console", "source ledger"],
+  "source_ids": ["dfs-labs", "g-helpful-content", "g-gsc-api", "g-nlp"]
+}

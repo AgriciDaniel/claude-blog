@@ -21,10 +21,10 @@ Works with long-context reasoning models. For smaller models, provide narrower i
 
 ## Inputs
 
-- Business or website name.
-- Target page, profile, query set, or campaign.
+- Blog, publication, product, or website name.
+- Target article, hub page, query set, or campaign.
 - Audience and geography where relevant.
-- Existing evidence: analytics, search results, calls, reviews, profile facts, or source notes.
+- Existing evidence: analytics, search results, reader research, source notes, sales objections, or content inventory.
 - Constraints, exclusions, and required sources.
 
 ## Prompt
@@ -32,7 +32,7 @@ Works with long-context reasoning models. For smaller models, provide narrower i
 ```text
 Act as a senior SEO strategist using the FLOW model.
 
-Task: create a optimize deliverable for: [BUSINESS OR ASSET].
+Task: create an Optimize-stage blog deliverable for: [ARTICLE, HUB, OR SITE].
 
 Use only the supplied inputs and clearly label any assumption. Do not invent statistics. Do not reuse private examples. Build the answer around:
 1. Searcher or buyer intent.
@@ -56,16 +56,16 @@ Return a concise working document the team can execute.
 
 ## Example
 
-Input: a local service page with weak proof and inconsistent profile details.
+Input: a blog post or hub page with weak proof, thin source support, and an unclear conversion path.
 
-Expected output: a prioritized rewrite brief, facts to reconcile, internal links to add, and the conversion event to measure.
+Expected output: a prioritized content brief, claims to verify, internal links to add, and the conversion event to measure.
 
 ## See Also
 
 - [Prompt Library](../README.md)
-- [FLOW Framework](../../01-framework/flow-framework.md)
-- [Bibliography](../../10-references/bibliography.md)
+- [FLOW Framework](../../flow-framework.md)
+- [Bibliography](../../bibliography.md)
 
 ## Source Note
 
-Derived from the Local SEO Knowledge Base structure and rewritten for public use with the repository evidence standard.
+Adapted from the FLOW repository structure and rewritten for blog use with the repository evidence standard.

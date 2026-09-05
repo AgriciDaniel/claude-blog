@@ -62,8 +62,8 @@ Input: commercial repair page for facility managers with objections around respo
 ## See Also
 
 - [Prompt Library](../README.md)
-- [BOFU and Conversion Content](../../06-win/bofu-and-conversion-content.md)
-- [Dual-Surface Scorecard](../../06-win/dual-surface-scorecard.md)
+- [Conversion Audit Prompt](conversion-audit-prompt.md)
+- [Dual-Surface Content Scorecard](dual-surface-content-scorecard.md)
 
 ## Source Note
 

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Google SEO Report Generator - Professional PDF/HTML reports from API data.
+Google SEO Report Generator - PDF/HTML reports from API data.
 
-Consumes JSON output from seo-google scripts and generates formatted reports
-with charts, analytics, and actionable recommendations.
+Consumes JSON output from blog-google scripts and generates formatted reports
+with charts, analytics tables, and priority findings.
 
 Usage:
     python google_report.py --type cwv-audit --data cwv-data.json --domain example.com
@@ -14,6 +14,7 @@ Usage:
 """
 
 import argparse
+import html
 import json
 import os
 import sys
@@ -34,8 +35,7 @@ except ImportError:
 try:
     from weasyprint import HTML
 except ImportError:
-    print("Error: weasyprint required. Install with: pip install weasyprint", file=sys.stderr)
-    sys.exit(1)
+    HTML = None
 
 # ─── Brand Colors ────────────────────────────────────────────────────────────
 
@@ -68,6 +68,14 @@ def _rating_color(rating):
     elif r in ("needs_improvement", "needs-improvement", "average", "warn"):
         return BRAND["warning"]
     return BRAND["danger"]
+
+
+def _h(value) -> str:
+    return html.escape(str(value), quote=True)
+
+
+def _css_string(value) -> str:
+    return str(value).replace("\\", "\\\\").replace('"', '\\"').replace("\n", " ")
 
 
 # ─── Chart Setup ─────────────────────────────────────────────────────────────
@@ -324,10 +332,11 @@ def chart_index_status(data: dict, output_dir: Path) -> str:
 
 def _base_css(domain: str) -> str:
     """Battle-tested A4 report CSS extracted from generate_pdf.py."""
+    css_domain = _css_string(domain)
     return f"""
     @page {{ size: A4; margin: 22mm 18mm 25mm 18mm;
       @bottom-center {{ content: counter(page); font-size: 9pt; color: #94a3b8; font-family: 'DejaVu Sans', Arial, sans-serif; }}
-      @bottom-right {{ content: "{domain} Google SEO Report"; font-size: 8pt; color: #cbd5e1; font-family: 'DejaVu Sans', Arial, sans-serif; }}
+      @bottom-right {{ content: "{css_domain} Google SEO Report"; font-size: 8pt; color: #cbd5e1; font-family: 'DejaVu Sans', Arial, sans-serif; }}
     }}
     @page :first {{ margin: 0; @bottom-center {{ content: none; }} @bottom-right {{ content: none; }} }}
     * {{ box-sizing: border-box; margin: 0; padding: 0; }}
@@ -386,12 +395,13 @@ def _img(path):
     """Convert file path to file:// URI for WeasyPrint."""
     if not path:
         return ""
-    return f'<div class="chart-container"><img src="file://{path}"></div>'
+    uri = Path(path).resolve().as_uri()
+    return f'<div class="chart-container"><img src="{_h(uri)}"></div>'
 
 
 def _metric_card(value, label, color=None):
-    style = f' style="color: {color};"' if color else ""
-    return f'<div class="metric-card"><div class="value"{style}>{value}</div><div class="label">{label}</div></div>'
+    style = f' style="color: {_h(color)};"' if color else ""
+    return f'<div class="metric-card"><div class="value"{style}>{_h(value)}</div><div class="label">{_h(label)}</div></div>'
 
 
 def _rating_class(rating):
@@ -408,21 +418,21 @@ def section_title_page(domain, report_title, subtitle, score=None, meta_items=No
     if score is not None:
         score_html = f'''
         <div class="score-box">
-            <div class="score-number">{score}</div>
+            <div class="score-number">{_h(score)}</div>
             <div class="score-label">Lighthouse Performance Score</div>
         </div>'''
 
     meta_html = ""
     if meta_items:
-        spans = " &bull; ".join(f"<span>{item}</span>" for item in meta_items)
+        spans = " &bull; ".join(f"<span>{_h(item)}</span>" for item in meta_items)
         meta_html = f'<div class="meta">{spans}</div>'
 
     return f'''
     <div class="title-page">
-        <div class="badge">{report_title}</div>
+        <div class="badge">{_h(report_title)}</div>
         <h1>Google SEO Report</h1>
-        <div class="subtitle">{subtitle}</div>
-        <div class="url">{domain}</div>
+        <div class="subtitle">{_h(subtitle)}</div>
+        <div class="url">{_h(domain)}</div>
         {score_html}
         {meta_html}
     </div>'''
@@ -448,7 +458,7 @@ def section_cwv_audit(psi_data, crux_data, charts, history_data=None):
             score_val = v.get("score")
             score_pct = f"{score_val:.0%}" if score_val is not None else "N/A"
             cls = "status-pass" if score_val and score_val >= 0.9 else ("status-warn" if score_val and score_val >= 0.5 else "status-fail")
-            html += f'<tr><td>{k}</td><td>{v.get("display", "")}</td><td class="{cls}">{score_pct}</td></tr>'
+            html += f'<tr><td>{_h(k)}</td><td>{_h(v.get("display", ""))}</td><td class="{_h(cls)}">{_h(score_pct)}</td></tr>'
         html += '</tbody></table>'
 
     # CrUX field data
@@ -464,15 +474,15 @@ def section_cwv_audit(psi_data, crux_data, charts, history_data=None):
             unit = m.get("unit", "")
             p75 = m.get("p75", "?")
             display_val = f"{p75:.3f}" if name == "cumulative_layout_shift" else f"{p75}{unit}"
-            html += f'<tr><td>{m.get("label", name)}</td><td>{display_val}</td>'
-            html += f'<td class="{_rating_class(rating)}">{rating.upper()}</td>'
-            html += f'<td>{dist.get("good", "N/A")}%</td><td>{dist.get("needs_improvement", "N/A")}%</td><td>{dist.get("poor", "N/A")}%</td></tr>'
+            html += f'<tr><td>{_h(m.get("label", name))}</td><td>{_h(display_val)}</td>'
+            html += f'<td class="{_h(_rating_class(rating))}">{_h(str(rating).upper())}</td>'
+            html += f'<td>{_h(dist.get("good", "N/A"))}%</td><td>{_h(dist.get("needs_improvement", "N/A"))}%</td><td>{_h(dist.get("poor", "N/A"))}%</td></tr>'
         html += '</tbody></table>'
         cp = crux.get("collection_period", {})
         if cp:
-            html += f'<p class="data-freshness">Collection period: {cp.get("first", "?")} to {cp.get("last", "?")}. CrUX data is a 28-day rolling average updated daily ~04:00 UTC.</p>'
+            html += f'<p class="data-freshness">Collection period: {_h(cp.get("first", "?"))} to {_h(cp.get("last", "?"))}. CrUX data is a 28-day rolling average updated daily ~04:00 UTC.</p>'
     elif crux.get("error"):
-        html += f'<div class="highlight"><strong>CrUX Field Data:</strong> {crux["error"]}</div>'
+        html += f'<div class="highlight"><strong>CrUX Field Data:</strong> {_h(crux["error"])}</div>'
 
     # CrUX History timeline
     if history_data and not history_data.get("error"):
@@ -484,8 +494,9 @@ def section_cwv_audit(psi_data, crux_data, charts, history_data=None):
             for name, t in trends.items():
                 direction = t.get("direction", "?")
                 cls = "status-pass" if direction == "improving" else ("status-fail" if direction == "degrading" else "")
-                html += f'<tr><td>{t.get("label", name)}</td><td class="{cls}">{direction.upper()}</td>'
-                html += f'<td>{t.get("change_pct", 0):+.1f}%</td><td>{t.get("earliest_avg", "?")}</td><td>{t.get("latest_avg", "?")}</td></tr>'
+                change_pct = f"{t.get('change_pct', 0):+.1f}"
+                html += f'<tr><td>{_h(t.get("label", name))}</td><td class="{_h(cls)}">{_h(str(direction).upper())}</td>'
+                html += f'<td>{_h(change_pct)}%</td><td>{_h(t.get("earliest_avg", "?"))}</td><td>{_h(t.get("latest_avg", "?"))}</td></tr>'
             html += '</tbody></table>'
 
     # Failed audits
@@ -495,7 +506,7 @@ def section_cwv_audit(psi_data, crux_data, charts, history_data=None):
         html += '<table><thead><tr><th>Audit</th><th>Score</th><th>Details</th></tr></thead><tbody>'
         for a in failed[:20]:
             score_pct = f"{a['score']:.0%}" if a.get("score") is not None else "?"
-            html += f'<tr><td>{a.get("title", "")}</td><td class="status-fail">{score_pct}</td><td>{a.get("display", "")}</td></tr>'
+            html += f'<tr><td>{_h(a.get("title", ""))}</td><td class="status-fail">{_h(score_pct)}</td><td>{_h(a.get("display", ""))}</td></tr>'
         html += '</tbody></table>'
 
     # SEO audits
@@ -505,7 +516,7 @@ def section_cwv_audit(psi_data, crux_data, charts, history_data=None):
         if seo_failed:
             html += f'<h3>SEO Audit Issues ({len(seo_failed)})</h3>'
             for a in seo_failed:
-                html += f'<div class="action-item critical"><h4>{a.get("title", "")}</h4></div>'
+                html += f'<div class="action-item critical"><h4>{_h(a.get("title", ""))}</h4></div>'
         else:
             html += f'<div class="success-box"><strong>SEO:</strong> All {len(seo_audits)} Lighthouse SEO checks passed.</div>'
 
@@ -515,7 +526,8 @@ def section_cwv_audit(psi_data, crux_data, charts, history_data=None):
         html += f'<h3>Accessibility Issues ({len(a11y)})</h3>'
         html += '<table><thead><tr><th>Issue</th><th>Score</th></tr></thead><tbody>'
         for a in a11y:
-            html += f'<tr><td>{a.get("title", "")}</td><td class="status-fail">{a.get("score", 0):.0%}</td></tr>'
+            score_text = f"{a.get('score', 0):.0%}"
+            html += f'<tr><td>{_h(a.get("title", ""))}</td><td class="status-fail">{_h(score_text)}</td></tr>'
         html += '</tbody></table>'
 
     # Opportunities
@@ -524,7 +536,7 @@ def section_cwv_audit(psi_data, crux_data, charts, history_data=None):
         html += f'<h3>Optimization Opportunities ({len(opps)})</h3>'
         html += '<table><thead><tr><th>Opportunity</th><th>Estimated Savings</th></tr></thead><tbody>'
         for o in opps:
-            html += f'<tr><td>{o.get("title", "")}</td><td>{o.get("savings_ms", 0)}ms</td></tr>'
+            html += f'<tr><td>{_h(o.get("title", ""))}</td><td>{_h(o.get("savings_ms", 0))}ms</td></tr>'
         html += '</tbody></table>'
 
     html += '</div>'
@@ -539,7 +551,7 @@ def section_gsc_performance(gsc_data, charts):
     dr = gsc_data.get("date_range", {})
 
     if totals:
-        html += f'<p>Period: {dr.get("start", "?")} to {dr.get("end", "?")} | Property: {gsc_data.get("property", "?")}</p>'
+        html += f'<p>Period: {_h(dr.get("start", "?"))} to {_h(dr.get("end", "?"))} | Property: {_h(gsc_data.get("property", "?"))}</p>'
         clicks_val = f'{totals.get("clicks", 0):,}'
         impr_val = f'{totals.get("impressions", 0):,}'
         ctr_val = f'{totals.get("ctr", 0)}%'
@@ -563,8 +575,9 @@ def section_gsc_performance(gsc_data, charts):
         sorted_rows = sorted(rows, key=lambda r: r.get("clicks", 0), reverse=True)
         for i, r in enumerate(sorted_rows[:25], 1):
             query = r.get("query", r.get("keys", ["?"])[0])
-            html += f'<tr><td>{i}</td><td>{query}</td><td>{r.get("clicks", 0)}</td><td>{r.get("impressions", 0):,}</td>'
-            html += f'<td>{r.get("ctr", 0)}%</td><td>{r.get("position", 0)}</td></tr>'
+            impressions = f'{r.get("impressions", 0):,}'
+            html += f'<tr><td>{_h(i)}</td><td>{_h(query)}</td><td>{_h(r.get("clicks", 0))}</td><td>{_h(impressions)}</td>'
+            html += f'<td>{_h(r.get("ctr", 0))}%</td><td>{_h(r.get("position", 0))}</td></tr>'
         html += '</tbody></table>'
 
     # Quick wins
@@ -575,7 +588,8 @@ def section_gsc_performance(gsc_data, charts):
         html += '<table><thead><tr><th>Query</th><th>Position</th><th>Impressions</th><th>Clicks</th></tr></thead><tbody>'
         for w in qw:
             query = w.get("keys", ["?"])[0] if w.get("keys") else "?"
-            html += f'<tr><td>{query}</td><td>{w.get("position", 0)}</td><td>{w.get("impressions", 0):,}</td><td>{w.get("clicks", 0)}</td></tr>'
+            impressions = f'{w.get("impressions", 0):,}'
+            html += f'<tr><td>{_h(query)}</td><td>{_h(w.get("position", 0))}</td><td>{_h(impressions)}</td><td>{_h(w.get("clicks", 0))}</td></tr>'
         html += '</tbody></table>'
 
     html += f'<p class="data-freshness">Search Analytics data has a 2-3 day lag. Data available for ~16 months.</p>'
@@ -592,7 +606,7 @@ def section_indexation(inspect_data, charts):
 
     if summary:
         html += charts.get("index_status", "")
-        html += f'<p>Total URLs inspected: {total}</p>'
+        html += f'<p>Total URLs inspected: {_h(total)}</p>'
         html += '<div class="two-col">'
         html += f'<div class="col">{_metric_card(summary.get("pass", 0), "Indexed", BRAND["success"])}</div>'
         html += f'<div class="col">{_metric_card(summary.get("fail", 0), "Not Indexed", BRAND["danger"])}</div>'
@@ -610,8 +624,8 @@ def section_indexation(inspect_data, charts):
             crawl = idx.get("last_crawl_time", "N/A")
             if crawl and crawl != "N/A":
                 crawl = crawl[:10]
-            html += f'<tr><td style="word-break:break-all;font-size:8pt;">{r.get("url", "?")}</td>'
-            html += f'<td class="{cls}">{verdict}</td><td>{cov}</td><td>{crawl}</td></tr>'
+            html += f'<tr><td style="word-break:break-all;font-size:8pt;">{_h(r.get("url", "?"))}</td>'
+            html += f'<td class="{_h(cls)}">{_h(verdict)}</td><td>{_h(cov)}</td><td>{_h(crawl)}</td></tr>'
         html += '</tbody></table>'
 
     html += f'<p class="data-freshness">URL Inspection API: 2,000 inspections/day per site.</p>'
@@ -721,19 +735,30 @@ def generate_report(report_type, data, domain, output_dir, output_format="pdf"):
             )
         return candidate
 
+    html_path = _safe_path(f"{base_name}.html")
+
+    def _write_html_once() -> str:
+        if str(html_path) not in result["files"]:
+            with open(html_path, "w", encoding="utf-8") as f:
+                f.write(html_content)
+            result["files"].append(str(html_path))
+        return str(html_path)
+
     if output_format in ("html", "both"):
-        html_path = _safe_path(f"{base_name}.html")
-        with open(html_path, "w") as f:
-            f.write(html_content)
-        result["files"].append(str(html_path))
+        _write_html_once()
 
     if output_format in ("pdf", "both"):
         pdf_path = _safe_path(f"{base_name}.pdf")
-        try:
-            HTML(string=html_content).write_pdf(str(pdf_path))
-            result["files"].append(str(pdf_path))
-        except Exception as e:
-            result["error"] = f"PDF generation failed: {e}"
+        if HTML is None:
+            _write_html_once()
+            result["error"] = "PDF generation skipped: weasyprint is not installed. HTML report generated."
+        else:
+            try:
+                HTML(string=html_content).write_pdf(str(pdf_path))
+                result["files"].append(str(pdf_path))
+            except Exception as e:
+                _write_html_once()
+                result["error"] = f"PDF generation failed: {e}. HTML report generated."
 
     return result
 
@@ -742,7 +767,7 @@ def generate_report(report_type, data, domain, output_dir, output_format="pdf"):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Google SEO Report Generator - Professional PDF/HTML reports"
+        description="Google SEO Report Generator - PDF/HTML reports"
     )
     parser.add_argument(
         "--type", "-t",

@@ -1,7 +1,7 @@
 {
   "name": "claude-blog",
-  "description": "AI-powered blog skill suite with 28 sub-skills and 5 agents. FLOW framework integration (Find/Optimize/Win, 30 evidence-led prompts), semantic topic-cluster planning + execution, multilingual publishing (translate/localize/locale-audit), Google API integration (PageSpeed, CrUX, GSC, GA4, YouTube, NLP, Keywords), YouTube video embedding, persona-driven writing, fact-checking, cannibalization detection, CMS taxonomy sync, NotebookLM research, Gemini TTS audio narration, 5-category scoring, and Gemini image generation. Optimized for Google rankings and AI citations (GEO/AEO).",
-  "version": "1.7.1",
+  "description": "AI-powered blog skill suite: 32 skill directories (1 orchestrator + 31 sub-skills) and 5 agents for writing, rewriting, auditing, and optimizing content for Google rankings and AI citations (GEO/AEO). Includes the FLOW framework, semantic topic-cluster planning, multilingual publishing, Google API integration, persona writing, fact-checking, cannibalization detection, CMS taxonomy, NotebookLM research, Gemini TTS narration, image generation, and 5-category quality scoring.",
+  "version": "2.3.0",
   "author": {
     "name": "AgriciDaniel",
     "url": "https://github.com/AgriciDaniel"
@@ -10,11 +10,59 @@
   "repository": "https://github.com/AgriciDaniel/claude-blog",
   "license": "MIT",
   "keywords": [
-    "blog", "seo", "content", "writing", "ai-citations",
-    "geo", "aeo", "eeat", "google-rankings", "content-optimization",
-    "blog-writing", "markdown", "mdx", "wordpress",
-    "google-api", "youtube", "pagespeed", "search-console",
-    "flow-framework", "topic-clusters", "hub-and-spoke",
-    "multilingual", "translation", "localization", "hreflang", "i18n"
-  ]
+    "blog",
+    "seo",
+    "content",
+    "writing",
+    "ai-citations",
+    "geo",
+    "aeo",
+    "eeat",
+    "google-rankings",
+    "content-optimization",
+    "blog-writing",
+    "markdown",
+    "mdx",
+    "wordpress",
+    "google-api",
+    "youtube",
+    "pagespeed",
+    "search-console",
+    "flow-framework",
+    "topic-clusters",
+    "hub-and-spoke",
+    "multilingual",
+    "translation",
+    "localization",
+    "hreflang",
+    "i18n",
+    "discourse-research",
+    "voice-of-customer",
+    "social-listening",
+    "research-quality",
+    "synthesis-contract",
+    "ai-slop-detection",
+    "editorial-heuristics",
+    "cognitive-load",
+    "brand-context",
+    "cowork"
+  ],
+  "displayName": "Claude Blog",
+  "mcpServers": "./mcp-servers.json",
+  "userConfig": {
+    "google_ai_api_key": {
+      "type": "string",
+      "title": "Google AI API key (optional)",
+      "description": "Enables /blog image (Gemini image generation) and /blog audio (Gemini TTS). Leave blank to keep both disabled -- while blank, nothing is downloaded and no MCP server is started. Free key: https://aistudio.google.com/apikey",
+      "sensitive": true,
+      "required": false
+    },
+    "gemini_image_model": {
+      "type": "string",
+      "title": "Gemini image model",
+      "description": "Model used for /blog image. Only takes effect once an API key is set.",
+      "default": "gemini-3.1-flash-image-preview",
+      "required": false
+    }
+  }
 }

@@ -29,11 +29,11 @@ except ImportError:
     sys.exit(1)
 
 try:
-    from google_auth import get_oauth_credentials, load_config
+    from google_auth import get_oauth_credentials, load_config, execute_with_retries
 except ImportError:
     import os
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-    from google_auth import get_oauth_credentials, load_config
+    from google_auth import get_oauth_credentials, load_config, execute_with_retries
 
 GSC_SCOPES = ["https://www.googleapis.com/auth/webmasters.readonly"]
 
@@ -71,7 +71,7 @@ def query_search_analytics(
         search_type: web, image, video, news, discover, googleNews.
         row_limit: Max rows per request (1-25000). Auto-paginates if more.
         filters: List of filter dicts with dimension, operator, expression.
-        data_state: 'final' or 'all' (includes fresh/unfinalized data).
+        data_state: 'final', 'all', or 'hourly_all'. hourly_all requires hour dimension.
 
     Returns:
         Dictionary with rows, totals, and quick_wins.
@@ -96,6 +96,10 @@ def query_search_analytics(
         end_date = (datetime.now() - timedelta(days=3)).strftime("%Y-%m-%d")
     if dimensions is None:
         dimensions = ["query", "page"]
+    dims_lower = {d.lower() for d in dimensions}
+    if data_state == "hourly_all" and "hour" not in dims_lower:
+        result["error"] = "data_state=hourly_all requires the hour dimension."
+        return result
 
     result["date_range"] = {"start": start_date, "end": end_date}
 
@@ -121,9 +125,9 @@ def query_search_analytics(
             body["startRow"] = start_row
             body["rowLimit"] = page_size
 
-            response = service.searchanalytics().query(
+            response = execute_with_retries(service.searchanalytics().query(
                 siteUrl=site_url, body=body
-            ).execute()
+            ))
 
             rows = response.get("rows", [])
             all_rows.extend(rows)
@@ -201,7 +205,7 @@ def query_search_analytics(
                     "impressions": row.get("impressions", 0),
                     "clicks": row.get("clicks", 0),
                     "ctr": round(row.get("ctr", 0) * 100, 2),
-                    "opportunity": "Position 4-10 with high impressions -- small ranking improvement yields significant traffic gain",
+                    "opportunity": "Position 4-10 with high impressions - small ranking improvement yields significant traffic gain",
                 })
 
         result["quick_wins"] = result["quick_wins"][:20]
@@ -227,7 +231,7 @@ def list_sitemaps(site_url: str) -> dict:
         return result
 
     try:
-        response = service.sitemaps().list(siteUrl=site_url).execute()
+        response = execute_with_retries(service.sitemaps().list(siteUrl=site_url))
         for sm in response.get("sitemap", []):
             result["sitemaps"].append({
                 "path": sm.get("path"),
@@ -260,7 +264,7 @@ def list_sites() -> dict:
         return result
 
     try:
-        response = service.sites().list().execute()
+        response = execute_with_retries(service.sites().list())
         for site in response.get("siteEntry", []):
             result["sites"].append({
                 "url": site.get("siteUrl"),
@@ -297,6 +301,12 @@ def main():
     )
     parser.add_argument("--type", default="web", help="Search type (default: web)")
     parser.add_argument("--limit", type=int, default=1000, help="Row limit (default: 1000)")
+    parser.add_argument(
+        "--data-state",
+        choices=["final", "all", "hourly_all"],
+        default="final",
+        help="Search Analytics data state (default: final)",
+    )
     parser.add_argument(
         "--device",
         choices=["desktop", "mobile", "tablet"],
@@ -341,6 +351,7 @@ def main():
             prop, start_date=start, end_date=end,
             dimensions=dims, search_type=args.type, row_limit=args.limit,
             filters=filters if filters else None,
+            data_state=args.data_state,
         )
 
     if result.get("error"):

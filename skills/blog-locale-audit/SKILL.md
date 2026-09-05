@@ -14,7 +14,7 @@ license: MIT
 compatibility: Standalone within claude-blog. Optional richer hreflang validation via claude-seo seo-hreflang.
 metadata:
   author: AgriciDaniel
-  version: "1.7.0"
+  version: "2.3.0"
   category: blog
 ---
 
@@ -31,12 +31,24 @@ Catches international content issues before they hurt rankings.
 
 ### Phase 1: Discovery
 
-1. Scan the target directory. Group blog posts by language using:
+1. Resolve the target directory inside the project root/current working
+   directory. Reject symlinked directories and traversal outside the root,
+   then scan blog content and group posts by language using:
    - Subdirectory names (`en/`, `de/`, `fr/`).
    - Frontmatter `lang` and `translatedFrom` fields.
    - `hreflang-map.json` if present.
-2. Build a content matrix mapping which post exists in which languages.
-3. Detect the source language (most common `translatedFrom` target, or the
+2. Normalize detected language codes with the shared multilingual locale rules
+   used by `blog-translate`, `blog-localize`, and `blog-multilingual`: ISO
+   639-1 language in lowercase, optional ISO 15924 script in title case,
+   optional ISO 3166-1 Alpha-2 region in uppercase. Flag ambiguous
+   language-only codes such as `es`, `pt`, and `zh` unless the content
+   declares an explicit neutral mode.
+3. Build a content matrix mapping which post exists in which languages. Use a
+   stable translation-group key before comparing slugs: `translationGroupId`,
+   `sourceSlug`, schema `translationOfWork.url`, or the IDs and URLs in
+   `hreflang-map.json`. Fall back to normalized source slug only when no
+   stable key exists.
+4. Detect the source language (most common `translatedFrom` target, or the
    `sourceLanguage` field in `hreflang-map.json` if present).
 
 ### Phase 2: Completeness Audit
@@ -67,7 +79,7 @@ For every post that exists in multiple languages:
 | Chart count | Same number of charts (SVG figures) | High |
 | Word count ratio | Within expected band for language pair (DE +20% to +30%, JA -20%, ES +10%) | Medium |
 | Link count | Similar internal and external link counts | Medium |
-| Citation capsule count | Same number per H2 across versions | Medium |
+| Evidence-backed claims | Same supported claims and citations across versions | Medium |
 | Frontmatter parity | All required fields present per version | High |
 
 Flag every significant deviation as an issue.
@@ -78,9 +90,10 @@ For every language version verify:
 
 | Element | Check | Severity |
 |---------|-------|----------|
-| Title tag | Present, correct length for the language | Critical |
-| Meta description | Present, correct length, contains a stat | Critical |
-| `lang` attribute or frontmatter `lang` | Present, valid ISO 639-1 | Critical |
+| Title tag | Present, localized, clear, and appropriate for the page | Critical |
+| Meta description | Present, localized, accurate, and consistent with visible content | Critical |
+| `lang` attribute or frontmatter `lang` | Present, valid Google-compatible hreflang or BCP 47 language tag | Critical |
+| Canonical URL | Points to the same-language page, not the source-language page or x-default | Critical |
 | Schema `inLanguage` | Matches `lang` | High |
 | Schema `translationOfWork` | Points to the source URL | High |
 | Alt text | Translated (no English alt in non-EN posts) | High |
@@ -97,8 +110,9 @@ exists in the directory:
 |-------|------|----------|
 | Self-referencing | Each page references itself | Critical |
 | Return tags | Every relationship is bidirectional | Critical |
-| `x-default` | Present, points to source language | Critical |
-| Language codes | Valid ISO 639-1 (with optional region) | High |
+| Canonical consistency | Every hreflang page canonicalizes to its same-language URL | Critical |
+| `x-default` | Present, points to the unmatched-language fallback such as a language selector or default market page | Critical |
+| Language codes | Valid Google-compatible hreflang tags: ISO 639-1 language plus optional ISO 15924 script or ISO 3166-1 Alpha-2 region | High |
 | URL consistency | Same protocol, same trailing-slash convention | Medium |
 | Completeness | Every language version represented | High |
 
@@ -116,9 +130,14 @@ For posts with `translatedDate` in frontmatter:
 | Check | What | Severity |
 |-------|------|----------|
 | Source updated after translation | Source modified after `translatedDate` | Critical |
+| Source content drift | Stored source hash or source `dateModified` differs from current source | Critical |
+| Translation drift | Stored translation hash differs from current localized file | Medium |
 | Translation older than 90 days | May need refresh | Medium |
 | `lastUpdated` mismatch across versions | Versions out of sync | Medium |
-| File mtime newer than `translatedDate` | Content changed without frontmatter update | Warning |
+| Git or file mtime newer than `translatedDate` | Content changed without frontmatter update | Warning |
+
+When available, store and compare `sourceHash`, source `dateModified`,
+`translationHash`, and Git mtime before relying only on `translatedDate`.
 
 Emit actionable commands per stale file:
 
@@ -135,7 +154,10 @@ Emit actionable commands per stale file:
 ### Phase 7: Report
 
 Output as markdown by default. If the user passes `--html`, also write the
-report to `locale-audit-report.html` with the same content.
+report to `locale-audit-report.html` only inside the audited project root.
+Escape all dynamic filenames, titles, URLs, and issue text with
+`html.escape(value, quote=True)` before rendering HTML, and reject symlinked
+or outside-root report paths.
 
 ```
 ## Multilingual content audit report

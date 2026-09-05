@@ -4,9 +4,9 @@
 
 | Error | Solution |
 |-------|----------|
-| ModuleNotFoundError | Always use `python3 scripts/run.py [script].py` |
-| Not authenticated | `python3 scripts/run.py auth_manager.py setup` (browser visible) |
-| Browser crash | Kill Chrome, cleanup with `--preserve-library`, re-auth |
+| ModuleNotFoundError | Always use `python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py [script].py` |
+| Not authenticated | `python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py auth_manager.py setup` (browser visible) |
+| Browser crash | Close the skill browser window, cleanup with `--preserve-library`, re-auth |
 | Rate limit (50/day) | Wait until midnight PST or switch Google account |
 | Notebook not found | Check with `notebook_manager.py list` |
 | Query timeout | Retry with simpler question or `--show-browser` to debug |
@@ -15,15 +15,15 @@
 
 ### Not authenticated error
 ```bash
-python3 scripts/run.py auth_manager.py status   # Confirm status
-python3 scripts/run.py auth_manager.py setup     # Browser visible for login
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py auth_manager.py status   # Confirm status
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py auth_manager.py setup     # Browser visible for login
 ```
 User must manually log in to Google in the browser window.
 
 ### Authentication expires frequently
 ```bash
-python3 scripts/run.py cleanup_manager.py --confirm --preserve-library
-python3 scripts/run.py auth_manager.py setup     # Fresh login
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py cleanup_manager.py --confirm --preserve-library
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py auth_manager.py setup     # Fresh login
 ```
 Uses hybrid auth: persistent browser profile + cookie injection
 (workaround for Playwright bug #36139).
@@ -36,19 +36,20 @@ Uses hybrid auth: persistent browser profile + cookie injection
 ## Browser Issues
 
 ### Browser crashes or hangs
+Close the Chrome window opened by this skill, then run:
+
 ```bash
-pkill -f chromium && pkill -f chrome             # Kill hanging processes
-python3 scripts/run.py cleanup_manager.py --confirm --preserve-library
-python3 scripts/run.py auth_manager.py reauth    # Re-authenticate
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py cleanup_manager.py --confirm --preserve-library
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py auth_manager.py reauth    # Re-authenticate
 ```
 
 ### Browser not found
 ```bash
 # run.py installs Chrome automatically on first run
-python3 scripts/run.py auth_manager.py status
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py auth_manager.py status
 # If still failing, manual install:
 source .venv/bin/activate
-python -m patchright install chromium
+python3 -m patchright install chrome
 ```
 
 ### Timeout waiting for selector
@@ -60,78 +61,76 @@ Use `--show-browser` to visually debug.
 
 ### Rate limit exceeded (50 queries/day)
 
-**Option 1: Wait** -- resets at midnight PST
+**Option 1: Wait**: resets at midnight PST
 
 **Option 2: Switch accounts**
 ```bash
-python3 scripts/run.py auth_manager.py clear
-python3 scripts/run.py auth_manager.py setup     # Login with different account
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py auth_manager.py clear
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py auth_manager.py setup     # Login with different account
 ```
 
 ## Notebook Access Issues
 
 ### Notebook not found in library
 ```bash
-python3 scripts/run.py notebook_manager.py list
-python3 scripts/run.py notebook_manager.py search --query "keyword"
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py notebook_manager.py list
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py notebook_manager.py search --query "keyword"
 ```
 
 ### Wrong notebook being queried
 ```bash
-python3 scripts/run.py notebook_manager.py list            # Check active
-python3 scripts/run.py notebook_manager.py activate --id correct-id
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py notebook_manager.py list            # Check active
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py notebook_manager.py activate --id correct-id
 ```
 
 ## Virtual Environment Issues
 
 ### ModuleNotFoundError
-**Always use `run.py`** -- it handles venv automatically:
+**Always use `run.py`**: it handles venv automatically:
 ```bash
-python3 scripts/run.py [any_script].py   # Creates .venv if needed
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py [any_script].py   # Creates .venv if needed
 ```
 
 ### Corrupted venv
 ```bash
 rm -rf .venv                              # Remove broken venv
-python3 scripts/run.py auth_manager.py status   # Auto-recreates
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py auth_manager.py status   # Auto-recreates
 ```
 
 ## Data Issues
 
 ### Corrupted notebook library
 ```bash
-cp data/library.json library.backup.json  # Backup first
-rm data/library.json                      # Reset
-python3 scripts/run.py notebook_manager.py add --url ... --name ...  # Re-add
+cp "$CLAUDE_PLUGIN_DATA/notebooklm/library.json" library.backup.json  # Backup first
+rm "$CLAUDE_PLUGIN_DATA/notebooklm/library.json"                      # Reset
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py notebook_manager.py add --url ... --name ...  # Re-add
 ```
 
 ## Recovery Procedures
 
 ### Complete reset (keep library)
 ```bash
-pkill -f chromium
-python3 scripts/run.py cleanup_manager.py --confirm --preserve-library
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py cleanup_manager.py --confirm --preserve-library
 rm -rf .venv
-python3 scripts/run.py auth_manager.py setup     # Rebuilds everything
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py auth_manager.py setup     # Rebuilds everything
 ```
 
 ### Complete reset (fresh start)
 ```bash
-pkill -f chromium
-python3 scripts/run.py cleanup_manager.py --confirm --force
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py cleanup_manager.py --confirm --force
 rm -rf .venv
-python3 scripts/run.py auth_manager.py setup
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py auth_manager.py setup
 ```
 
 ## Debugging
 
 ```bash
 # Enable visible browser for debugging
-python3 scripts/run.py ask_question.py --question "test" --show-browser
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py ask_question.py --question "test" --show-browser
 
 # Check individual components
-python3 scripts/run.py auth_manager.py status
-python3 scripts/run.py notebook_manager.py list
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py auth_manager.py status
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-notebooklm/scripts/run.py notebook_manager.py list
 ```
 
 ## Common Questions

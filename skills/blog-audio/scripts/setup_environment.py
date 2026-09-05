@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 """
-Environment Setup for Blog Audio Skill
-Manages virtual environment and dependencies automatically
+Environment Setup for Blog Audio Skill.
+
+Manages virtual environment and dependencies automatically.
 """
 
+import json
 import os
-import sys
 import subprocess
+import sys
 import venv
 from pathlib import Path
 
@@ -14,9 +16,10 @@ from pathlib import Path
 class SkillEnvironment:
     """Manages skill-specific virtual environment"""
 
-    def __init__(self):
+    def __init__(self, quiet: bool = False):
         self.skill_dir = Path(__file__).parent.parent
         self.venv_dir = self.skill_dir / ".venv"
+        self.quiet = quiet
         # Prefer the lock file (hash-verified). Fall back to loose
         # requirements.txt if no lock present (closes audit VULN-006).
         self.lock_file = self.skill_dir / "scripts" / "requirements.lock"
@@ -29,17 +32,22 @@ class SkillEnvironment:
             self.venv_python = self.venv_dir / "bin" / "python"
             self.venv_pip = self.venv_dir / "bin" / "pip"
 
+    def say(self, message: str) -> None:
+        """Print a message unless JSON mode requested quiet output."""
+        if not self.quiet:
+            print(message)
+
     def ensure_venv(self) -> bool:
         """Ensure virtual environment exists and is set up"""
         if self.is_in_skill_venv():
             return True
 
         if not self.venv_dir.exists():
-            print(f"Creating virtual environment in {self.venv_dir.name}/")
+            self.say(f"Creating virtual environment in {self.venv_dir.name}/")
             try:
                 venv.create(self.venv_dir, with_pip=True)
             except Exception as e:
-                print(f"Failed to create venv: {e}")
+                self.say(f"Failed to create venv: {e}")
                 return False
 
         # Use lock file when available (hash-verified, reproducible).
@@ -50,23 +58,19 @@ class SkillEnvironment:
             install_args = ["install", "-r", str(self.requirements_file)]
             install_label = "requirements.txt (no hash verification)"
         else:
-            print("No requirements.txt or requirements.lock found; skipping install")
+            self.say("No requirements.txt or requirements.lock found; skipping install")
             return True
 
-        print(f"Installing dependencies from {install_label}...")
+        self.say(f"Installing dependencies from {install_label}...")
         try:
-            subprocess.run(
-                [str(self.venv_pip), "install", "--upgrade", "pip"],
-                check=True, capture_output=True, text=True,
-            )
             subprocess.run(
                 [str(self.venv_pip)] + install_args,
                 check=True, capture_output=True, text=True,
             )
-            print("Dependencies installed")
+            self.say("Dependencies installed")
             return True
         except subprocess.CalledProcessError as e:
-            print(f"Failed to install dependencies: {e}")
+            self.say(f"Failed to install dependencies: {e}")
             return False
 
     def is_in_skill_venv(self) -> bool:
@@ -90,23 +94,46 @@ def main():
 
     parser = argparse.ArgumentParser(description='Setup Blog Audio skill environment')
     parser.add_argument('--check', action='store_true', help='Check if environment is set up')
+    parser.add_argument('--json', action='store_true', help='Output structured JSON')
     args = parser.parse_args()
 
-    env = SkillEnvironment()
+    env = SkillEnvironment(quiet=args.json)
 
     if args.check:
+        data = {
+            "status": "ok" if env.venv_dir.exists() else "missing",
+            "venv_dir": str(env.venv_dir),
+            "python": env.get_python_executable() if env.venv_dir.exists() else None,
+        }
+        if args.json:
+            print(json.dumps(data, indent=2))
+            return 0 if env.venv_dir.exists() else 1
         if env.venv_dir.exists():
             print(f"Virtual environment exists: {env.venv_dir}")
             print(f"   Python: {env.get_python_executable()}")
         else:
             print("No virtual environment found")
-        return
+        return 0 if env.venv_dir.exists() else 1
 
     if env.ensure_venv():
+        if args.json:
+            print(json.dumps({
+                "status": "success",
+                "venv_dir": str(env.venv_dir),
+                "python": env.get_python_executable(),
+            }, indent=2))
+            return 0
         print(f"\nEnvironment ready!")
         print(f"   Virtual env: {env.venv_dir}")
         print(f"   Python: {env.get_python_executable()}")
     else:
+        if args.json:
+            print(json.dumps({
+                "status": "error",
+                "error": "Environment setup failed",
+                "venv_dir": str(env.venv_dir),
+            }, indent=2))
+            return 1
         print("\nEnvironment setup failed")
         return 1
 

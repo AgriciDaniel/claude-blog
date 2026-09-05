@@ -4,7 +4,7 @@ description: >
   Translate existing blog posts into one or more target languages with
   SEO-optimized localization. Produces native-quality translations that
   preserve markdown structure, frontmatter, schema JSON-LD, image and chart
-  embeds, and citation capsules. Localizes keywords, meta tags, numbers,
+  embeds, and evidence-backed explanations. Localizes keywords, meta tags, numbers,
   dates, currencies, and quote styles per locale. Flags machine-translation
   artifacts for review. Run BEFORE blog-localize: this handles language
   conversion; localize handles cultural adaptation after translation
@@ -18,7 +18,7 @@ license: MIT
 compatibility: Standalone within claude-blog. Invoked by blog-multilingual.
 metadata:
   author: AgriciDaniel
-  version: "1.7.0"
+  version: "2.3.0"
   category: blog
 ---
 
@@ -36,9 +36,9 @@ formatting.
 
 Load on demand:
 
-- `references/translation-rules.md`, format preservation, number/date/currency
+- `${CLAUDE_PLUGIN_ROOT}/skills/blog-translate/references/translation-rules.md`, format preservation, number/date/currency
   formats per locale, quote handling, quality criteria.
-- `references/cultural-adaptation.md`, cultural profiles per locale (DACH,
+- `${CLAUDE_PLUGIN_ROOT}/skills/blog-translate/references/cultural-adaptation.md`, cultural profiles per locale (DACH,
   Francophone, Hispanic, Japanese, custom). This file is shared with
   `blog-localize` (do not duplicate).
 
@@ -46,18 +46,25 @@ Load on demand:
 
 ### Phase 1: Input Parsing
 
-1. Read the source file (markdown, MDX, or HTML).
+1. Read the source file (markdown, MDX, or HTML) only after resolving it
+   against the project root/current working directory. Reject symlinked paths,
+   traversal outside the root, files over 10 MB, and binary files.
 2. Auto-detect source language. Order of preference:
    - Frontmatter `lang` field.
    - HTML `lang` attribute.
    - Content analysis (script, common stop words).
-3. Parse target languages from `--to` as comma-separated ISO 639-1 codes
-   (`de,fr,es,ja,pt-BR`). If `--to` is missing, ask the user once: "Which
-   languages should I translate to? Provide ISO 639-1 codes (e.g., de, fr,
-   es, ja, pt-BR)."
-4. Validate every code. Reject invalid ones with a suggestion (`jp` becomes
-   "Did you mean `ja` for Japanese?"). If a target equals the source
-   language, skip it with a notice.
+3. Parse target languages from `--to` as comma-separated Google-compatible
+   hreflang tags (`de`, `fr`, `es-MX`, `ja`, `pt-BR`, `zh-Hant`).
+   If `--to` is missing, ask the user once: "Which languages should I
+   translate to? Provide hreflang tags such as de, fr, es-MX, ja, pt-BR."
+4. Normalize every code with the shared multilingual locale rules used by
+   `blog-multilingual`, `blog-localize`, and `blog-locale-audit`: ISO 639-1
+   language in lowercase, optional ISO 15924 script in title case, optional
+   ISO 3166-1 Alpha-2 region in uppercase. Reject invalid codes with a
+   suggestion (`jp` becomes "Did you mean `ja` for Japanese?"). Require a
+   region or explicit neutral mode for ambiguous language-only targets such as
+   `es`, `pt`, and `zh`. If a target equals the normalized source language,
+   skip it with a notice.
 
 ### Phase 2: Content Analysis
 
@@ -71,7 +78,7 @@ Extract the translatable surface:
 - Chart `<text>` and `<tspan>` content; preserve every SVG attribute (`x`,
   `y`, `font-size`, `fill`, `transform`).
 - FAQ questions and answers.
-- Citation capsule text.
+- Evidence-backed explanation text.
 - Key Takeaways or summary box.
 - CTA text.
 - Internal-link zone anchor text.
@@ -80,11 +87,15 @@ Preserve unchanged:
 
 - Markdown and HTML structure, tags, attributes.
 - Image URLs, link URLs, frontmatter keys.
-- Code blocks (translate inline comments only when meaningful).
+- Executable code fences and inline code. Translate comments only outside
+  executable code, or when the user explicitly asks for localized tutorial
+  comments.
 - Internal-link zone markers (`[INTERNAL-LINK: ...]`).
 - Source organization names in citations (Gartner, McKinsey, etc.).
 - Person names.
-- Schema JSON-LD blocks (translate only the user-facing string values).
+- Schema JSON-LD blocks (translate user-facing content strings only; never
+  translate Person, Organization, or Brand names, URLs, IDs, `@id`, or
+  `sameAs`).
 
 Identify the primary and secondary keywords for Phase 3.
 
@@ -106,8 +117,10 @@ Spawn the `blog-translator` agent (via Task) for each target language with:
 - The source content.
 - The keyword localization map from Phase 3.
 - The target language code.
-- Pointers to `references/translation-rules.md` and the cultural profile in
-  `references/cultural-adaptation.md` if one exists for the target locale.
+- Pointer to `${CLAUDE_PLUGIN_ROOT}/skills/blog-translate/references/translation-rules.md`.
+- Instruction to limit this phase to language, register, natural topical
+  coverage, and formatting. Reserve brand, legal, statistic, and cultural
+  substitutions for `blog-localize`.
 
 Run agents in parallel when translating into multiple languages.
 
@@ -128,9 +141,9 @@ For each translated version:
    - Same number of H2 and H3 sections as the original.
    - All images present with translated alt text.
    - All SVG charts present with translated text labels (length-adjusted:
-     DE +30%, FR +15%, JA -20%, others see `references/translation-rules.md`).
+     DE +30%, FR +15%, JA -20%, others see `${CLAUDE_PLUGIN_ROOT}/skills/blog-translate/references/translation-rules.md`).
    - FAQ count matches.
-   - Citation capsules present in each H2.
+   - Evidence-backed explanations from the source remain intact where present.
 3. Save translated files:
    ```
    translations/
@@ -138,6 +151,11 @@ For each translated version:
    ```
    When invoked from `blog-multilingual`, save into
    `multilingual/{lang}/{localized-slug}.{ext}` instead.
+   Before writing, slugify `{localized-slug}` to lowercase ASCII with only
+   `a-z`, `0-9`, and hyphens, rejecting empty or reserved names. Create the
+   language directory from the normalized hreflang code only. Resolve the
+   final path and require it to stay inside the intended output root; reject
+   symlinked output paths.
 
 ### Phase 6: Translation-Quality Guardrails
 
@@ -186,7 +204,7 @@ translator agent should re-pass any flagged passage before delivery.
 
 | Scenario | Action |
 |----------|--------|
-| Unsupported language code | Suggest the correct ISO 639-1 code |
+| Unsupported language code | Suggest the correct Google-compatible hreflang code |
 | Source equals a target | Skip with "Source is already in [lang]" |
 | File not found | Report error with suggested path |
 | Translator agent timeout | Retry once, then report partial results |

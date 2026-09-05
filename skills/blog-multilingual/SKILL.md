@@ -15,7 +15,7 @@ license: MIT
 compatibility: Requires claude-blog (blog-write). Optional integration with claude-seo (seo-hreflang) for richer hreflang validation.
 metadata:
   author: AgriciDaniel
-  version: "1.7.0"
+  version: "2.3.0"
   category: blog
 ---
 
@@ -57,24 +57,28 @@ deeper validation `seo-hreflang` provides.
 
 | Argument | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `<topic>` | Yes | , | Blog topic or working title |
-| `--languages` | Yes | , | Comma-separated ISO 639-1 codes (e.g. `de,fr,es,ja,pt-BR`) |
+| `<topic>` | Yes | required | Blog topic or working title |
+| `--languages` | Yes | required | Comma-separated Google-compatible hreflang tags (e.g. `de,fr,es-MX,ja,pt-BR`) |
 | `--source` | No | `en` | Source language to write the original in |
 | `--no-localize` | No | off | Skip cultural adaptation (translation only) |
 | `--format` | No | auto | Output format: `md`, `mdx`, or `html` |
 
 If `--languages` is missing, ask the user once before running anything:
-"Which languages should the blog be published in? Provide ISO 639-1 codes
-separated by commas (e.g., `de,fr,es,ja,pt-BR`). The post will be written in
-`<source>` first, then translated."
+"Which languages should the blog be published in? Provide hreflang tags
+separated by commas (e.g., `de,fr,es-MX,ja,pt-BR`). The post will be written
+in `<source>` first, then translated."
 
 ## Workflow
 
 ### Phase 1: Configuration
 
 1. Parse arguments. Extract topic, target languages, source, format.
-2. Validate each language code against ISO 639-1 (region suffixes like
-   `pt-BR`, `es-MX`, `zh-TW` are also accepted).
+2. Validate each language code with the shared multilingual locale rules used
+   by `blog-translate`, `blog-localize`, and `blog-locale-audit`: ISO 639-1
+   language in lowercase, optional ISO 15924 script in title case, optional
+   ISO 3166-1 Alpha-2 region in uppercase. Require a region or explicit
+   neutral mode for ambiguous language-only targets such as `es`, `pt`, and
+   `zh`.
 3. Detect output format from the project (frontmatter convention, file
    extensions, framework hints) or use `--format`.
 4. Resolve source language. If a target language equals `--source`, drop it
@@ -87,7 +91,7 @@ separated by commas (e.g., `de,fr,es,ja,pt-BR`). The post will be written in
      {lang-2}/
      ...
    ```
-   Output MUST stay inside the project root. Never write outside the cwd.
+   Keep all output inside the project root; do not write outside the cwd.
 
 Progress: `Phase 1: Configuration complete, [N] languages selected ([codes])`
 
@@ -95,7 +99,8 @@ Progress: `Phase 1: Configuration complete, [N] languages selected ([codes])`
 
 Invoke the `blog-write` sub-skill (route through `/blog write` so all
 existing rules apply: template auto-selection, sourced statistics, citation
-capsules, FAQ schema, internal-link zones, charts, image embedding). Pass the
+capsules, Article schema priority, FAQPage only as an entity signal when
+visible FAQ content exists, internal-link zones, charts, image embedding). Pass the
 topic and any blog-write parameters surfaced by the user.
 
 Save the original to `multilingual/{source-lang}/{slug}.{ext}`.
@@ -125,8 +130,10 @@ post:
 - Locale: the target language or region code.
 - Run in parallel.
 
-Update files in place. The localizer swaps brand examples, adapts CTAs,
-substitutes legal references, and adjusts formality. See
+Apply the localized output only after resolving the generated path inside
+`multilingual/`, rejecting symlinks, and creating a backup when overwriting.
+The localizer swaps brand examples, adapts CTAs, substitutes legal
+references, and adjusts formality. See
 `../blog-localize/SKILL.md` for the full adaptation pass.
 
 Progress: `Phase 4: Cultural adaptation complete for [N] languages`.
@@ -143,16 +150,20 @@ Copy-paste ready tags for `<head>`:
 
 ```html
 <!-- Hreflang tags. Paste into <head> of each language version. -->
-<link rel="alternate" hreflang="{source}" href="{source-url}" />
-<link rel="alternate" hreflang="{lang-1}" href="{lang-1-url}" />
-<link rel="alternate" hreflang="{lang-2}" href="{lang-2-url}" />
-<link rel="alternate" hreflang="x-default" href="{source-url}" />
+<link rel="alternate" hreflang="{source}" href="https://example.com/{source-url}" />
+<link rel="alternate" hreflang="{lang-1}" href="https://example.com/{lang-1-url}" />
+<link rel="alternate" hreflang="{lang-2}" href="https://example.com/{lang-2-url}" />
+<link rel="alternate" hreflang="x-default" href="https://example.com/{fallback-url}" />
 ```
 
 Rules (mirrored from `seo-hreflang`):
 
 - Every page references all alternates including itself (self-referencing).
-- `x-default` points to the source-language version.
+- Every `href`, including `x-default`, is a fully qualified absolute
+  `https://...` URL.
+- `x-default` points to the unmatched-language fallback, such as a global
+  language selector or default market page. It does not have to be the source
+  language version.
 - All URLs use the same protocol (HTTPS) and trailing-slash convention.
 - Bidirectional: every relationship is reciprocal.
 
@@ -165,14 +176,32 @@ Save to `multilingual/hreflang-tags.html`.
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>{source-url}</loc>
-    <xhtml:link rel="alternate" hreflang="{source}" href="{source-url}" />
-    <xhtml:link rel="alternate" hreflang="{lang-1}" href="{lang-1-url}" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="{source-url}" />
+    <loc>https://example.com/{source-url}</loc>
+    <xhtml:link rel="alternate" hreflang="{source}" href="https://example.com/{source-url}" />
+    <xhtml:link rel="alternate" hreflang="{lang-1}" href="https://example.com/{lang-1-url}" />
+    <xhtml:link rel="alternate" hreflang="{lang-2}" href="https://example.com/{lang-2-url}" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://example.com/{fallback-url}" />
   </url>
-  <!-- Repeat one <url> block per language version -->
+  <url>
+    <loc>https://example.com/{lang-1-url}</loc>
+    <xhtml:link rel="alternate" hreflang="{source}" href="https://example.com/{source-url}" />
+    <xhtml:link rel="alternate" hreflang="{lang-1}" href="https://example.com/{lang-1-url}" />
+    <xhtml:link rel="alternate" hreflang="{lang-2}" href="https://example.com/{lang-2-url}" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://example.com/{fallback-url}" />
+  </url>
+  <url>
+    <loc>https://example.com/{lang-2-url}</loc>
+    <xhtml:link rel="alternate" hreflang="{source}" href="https://example.com/{source-url}" />
+    <xhtml:link rel="alternate" hreflang="{lang-1}" href="https://example.com/{lang-1-url}" />
+    <xhtml:link rel="alternate" hreflang="{lang-2}" href="https://example.com/{lang-2-url}" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://example.com/{fallback-url}" />
+  </url>
 </urlset>
 ```
+
+Generate one `<url>` block per locale. Every block must contain the identical
+complete set of `<xhtml:link>` alternates for every locale, plus self and
+optional `x-default`, using fully qualified `https://...` URLs.
 
 Save to `multilingual/hreflang-sitemap.xml`.
 
@@ -188,33 +217,42 @@ Machine-readable mapping for CMS integration:
   "versions": [
     {
       "lang": "en",
+      "locale": "en",
+      "hreflang": "en",
       "slug": "how-to-avoid-ai-slop",
       "file": "en/how-to-avoid-ai-slop.md",
+      "url": "https://example.com/en/how-to-avoid-ai-slop/",
+      "canonical": "https://example.com/en/how-to-avoid-ai-slop/",
+      "xDefault": true,
       "title": "How to Avoid AI Slop in 2026",
       "description": "..."
     },
     {
       "lang": "de",
+      "locale": "de-DE",
+      "hreflang": "de-DE",
       "slug": "wie-man-ki-slop-vermeidet",
       "file": "de/wie-man-ki-slop-vermeidet.md",
+      "url": "https://example.com/de/wie-man-ki-slop-vermeidet/",
+      "canonical": "https://example.com/de/wie-man-ki-slop-vermeidet/",
+      "xDefault": false,
       "title": "KI-Slop vermeiden in 2026",
       "description": "..."
     }
   ],
   "hreflang": {
     "method": "html",
-    "x-default": "en"
+    "x-default": "https://example.com/"
   }
 }
 ```
 
 Save to `multilingual/hreflang-map.json`.
 
-#### 5d. Localized Schema (Optional)
+#### 5d. Localized Article Schema (Required)
 
-If the user asks, or if a frontmatter `schema: true` flag is present, attach
-or update JSON-LD on every language version with `inLanguage` and
-`translationOfWork` fields:
+Attach or update Article/BlogPosting JSON-LD on every language version with
+`inLanguage` and `translationOfWork` fields:
 
 ```json
 {
@@ -232,8 +270,10 @@ or update JSON-LD on every language version with `inLanguage` and
 }
 ```
 
-Use the existing `/blog schema` sub-skill if richer schema (FAQ, Person,
-Breadcrumb) is wanted on each version.
+Use the existing `/blog schema` sub-skill for richer schema on each version.
+Keep Article/BlogPosting, Person, Organization, and BreadcrumbList as the
+priority stack. FAQPage is optional and only for visible FAQ content as an
+entity and AI-citation signal, not a Google rich result target.
 
 ### Phase 6: Delivery Summary
 
@@ -255,14 +295,16 @@ Breadcrumb) is wanted on each version.
 - multilingual/hreflang-tags.html
 - multilingual/hreflang-sitemap.xml
 - multilingual/hreflang-map.json
-- Localized schema embedded per version (if requested)
+- Localized Article schema embedded per version
 
 ### Total
 - [N] posts in [N] languages
 - [N] SEO assets generated
 
 ### Next steps
-- Replace `{url}` placeholders in hreflang tags with your real URLs.
+- Replace `{source-url}`, `{lang-1-url}`, `{lang-2-url}`, and
+  `{fallback-url}` placeholders in hreflang tags with real absolute HTTPS
+  URLs.
 - Merge `hreflang-sitemap.xml` into your existing sitemap.
 - Run `/blog locale-audit multilingual/` to verify completeness.
 - Resolve `[INTERNAL-LINK]` placeholders with locale-specific URLs.
@@ -287,7 +329,7 @@ Breadcrumb) is wanted on each version.
 | `blog-write` missing | Error: "This skill requires `blog-write`. Reinstall claude-blog." |
 | One translation fails | Complete the rest, report partial results, suggest a retry command |
 | Source language equals a target | Skip that target, log a notice |
-| More than 10 target languages | Warn about wall-clock time, proceed if confirmed |
+| 10 or more target languages | Stop before writing. Explain scaled-content-abuse risk and require reviewed batches of at most 9 target languages |
 | `seo-hreflang` not installed | Use the self-contained generator, note it in the summary |
 
 ## Commands Recap

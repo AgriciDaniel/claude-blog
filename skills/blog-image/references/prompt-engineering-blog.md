@@ -72,7 +72,7 @@ Map blog use cases to domain modes and aspect ratios:
 | OG/Social Card | 16:9 (1200x630) | Editorial or Infographic | Clean, readable at small sizes, topic icon |
 | Inline Illustration | 16:9 or 4:3 | Varies by topic | Supports adjacent H2 content, contextual |
 | Inline Product Shot | 4:3 or 1:1 | Product | Clean background, product focus |
-| Section Divider | 8:1 or 4:1 | Abstract or Landscape | Wide strip, atmospheric, non-distracting |
+| Section Divider | 21:9, then crop | Abstract or Landscape | Wide strip, atmospheric, non-distracting |
 
 ## Blog-Specific Prompt Templates
 
@@ -156,7 +156,9 @@ data-driven infographics), use Google Search grounding with this 3-part formula:
 
 **Example:** "Search for the top 5 AI coding tools by GitHub stars in 2026, analyze their relative popularity, then generate a clean infographic comparison chart in a modern dark theme."
 
-Requires `googleSearch` tool enabled in the API call. MCP server handles this when available.
+Requires `googleSearch` enabled in a direct API call or an MCP package version
+that explicitly exposes search-grounded image generation. Verify support before
+promising grounded output.
 
 ## Advanced Techniques
 

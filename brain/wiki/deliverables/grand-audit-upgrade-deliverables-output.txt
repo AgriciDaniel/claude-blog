@@ -1,0 +1,40 @@
+Claude Blog Brain deliverables output, 2026-07-09
+
+Blog Write Article Contract -> deepen; added article acceptance table with component, field, validator, signal, owner, blocker; source_ids: g-helpful-content, g-ai-opt-guide, g-qrg-full, ziptie-aio-source-selection.
+Blog Rewrite Refresh Plan -> deepen; added refresh execution table with phase, input, output, owner, evidence, follow-up; source_ids: g-helpful-content, g-gsc-api, g-ranking-history, g-canonical.
+Blog Analyzer Score Report -> deepen; added score findings table with section, input, evidence, severity, status; source_ids: g-helpful-content, g-qrg-full, wd-vitals, g-ai-opt-guide.
+Content Brief Output Contract -> deepen; added brief acceptance table with field, detail, validator, criterion, owner; source_ids: g-helpful-content, g-ai-opt-guide, sparktoro-zero-click-2026, g-qrg-full.
+SERP Outline Output Contract -> deepen; added outline acceptance table with element, value, check, ready state, blocker; source_ids: g-helpful-content, g-ai-opt-guide, g-qrg-full, sparktoro-zero-click-2026.
+Editorial Calendar Planning Matrix -> deepen; added calendar execution table with phase, input, output, owner, evidence, follow-up; source_ids: g-helpful-content, g-ranking-history, sparktoro-zero-click-2026, g-gsc-api.
+Blog Strategy Architecture Blueprint -> deepen; added architecture execution table with phase, question, evidence, output, owner, trigger; source_ids: g-helpful-content, g-ai-opt-guide, sparktoro-zero-click-2026, seer-aio-impact-ctr-2026.
+SEO Check Validation Checklist -> deepen; added pass-fail control table with check, condition, evidence, severity, owner, status; source_ids: g-helpful-content, g-canonical, g-intro-sd, g-google-images.
+Schema Generation Output Contract -> deepen; added schema acceptance table with object, fields, validator, criterion, owner, blocker; source_ids: g-intro-sd, g-search-gallery, schema-full, w3c-jsonld.
+Blog Chart Specification -> deepen; added chart deliverable table with asset requirement, evidence, accessibility, placement, review result; source_ids: g-helpful-content, nng-editorial-heuristics, schema-full, g-google-images.
+Repurposing Asset Matrix -> deepen; added cross-platform matrix with row, intent, fidelity, caveat, link, owner, approval; source_ids: similarweb-gen-ai-stats-2026, sparktoro-zero-click-2026, blog-io2026, g-ai-features.
+GEO Citation Readiness Register -> deepen; added register table with item, source ID, confidence, owner, status, review date, rollback trigger; source_ids: g-ai-opt-guide, g-ai-features, seer-aio-impact-ctr-2026, sparktoro-zero-click-2026.
+Blog Image Brief And Disclosure Checklist -> deepen; added image pass-fail table with check, condition, evidence, severity, owner, status; source_ids: g-google-images, g-ai-opt-guide, g-common-crawlers, schema-full.
+Full Site Blog Audit Report -> deepen; added audit findings table with section, input, evidence, severity, recommendation, status; source_ids: g-helpful-content, g-qrg-full, g-gsc-api, wd-vitals.
+Cannibalization Resolution Matrix -> deepen; added resolution matrix with URL group, intent, query evidence, canonical evidence, action, confidence, next step; source_ids: g-helpful-content, g-canonical, g-gsc-api, dfs-api.
+Factcheck Claim Register -> deepen; added verification register with claim, source ID, verdict, confidence, owner, status, date, rollback; source_ids: g-helpful-content, g-qrg-full, g-ai-opt-guide.
+Persona Profile Contract -> deepen; added persona acceptance table with field, evidence, validator, criterion, owner; source_ids: g-helpful-content, g-qrg-full, nng-editorial-heuristics, g-ai-opt-guide.
+Taxonomy Governance Matrix -> deepen; added governance decision matrix with object, question, evidence, source IDs, next action; source_ids: g-helpful-content, g-canonical, g-sitemaps, g-robots-intro.
+NotebookLM Research Brief Contract -> deepen; added required sections table plus handoff procedure for source-bound brief review; source_ids: g-helpful-content, g-ai-opt-guide, g-qrg-full, sparktoro-zero-click-2026.
+Audio Narration Production Checklist -> deepen; added narration pass-fail checklist for script mode, claim fidelity, accessibility, embeds, schema, fallback; source_ids: g-helpful-content, g-ai-opt-guide, schema-full, g-intro-sd.
+Google API Evidence Matrix -> deepen; added API evidence matrix with credential tier, accepted evidence, decision use, source state; source_ids: g-gsc-api, g-urlinspect, g-psi, g-ga4-data.
+Semantic Cluster Execution Plan -> deepen; added cluster execution table with phase, input, output, evidence, owner; source_ids: g-helpful-content, g-canonical, g-gsc-api, sparktoro-zero-click-2026.
+FLOW Stage Prompt Map -> deepen; added FLOW prompt handoff table for brief, outline, draft, review, factcheck, rewrite, report; source_ids: gh-flow-framework, g-helpful-content, g-ai-opt-guide, g-qrg-full.
+Multilingual Publishing Runbook -> deepen; added multilingual execution table for source write, translate, localize, hreflang, URL structure, schema, sitemap-ready list; source_ids: g-localized, g-multiregional, g-helpful-content, schema-full.
+Translation QA Matrix -> deepen; added translation QA pass-fail matrix for structure, keywords, meta, numbers, schema, artifacts, hreflang readiness; source_ids: g-localized, g-multiregional, g-helpful-content, schema-full.
+Localization Adaptation Checklist -> deepen; added localization pass-fail table for examples, CTAs, legal references, statistics, formality, sources, escalation; source_ids: g-localized, g-multiregional, g-qrg-full, g-helpful-content.
+Locale Audit Coverage Matrix -> deepen; added locale coverage matrix with evidence, confidence, dry-run fix lane, next action; source_ids: g-localized, g-multiregional, g-canonical, sitemaps-org.
+Brand Context Contract -> deepen; added brand acceptance table plus update procedure for BRAND.md and VOICE.md handoff; source_ids: g-helpful-content, g-qrg-full, nng-editorial-heuristics, g-ai-opt-guide.
+Discourse Research Brief Contract -> deepen; added discourse acceptance table for recency, operators, snippets, clusters, escalation, synthesis, handoff; source_ids: g-helpful-content, g-ai-opt-guide, nng-editorial-heuristics, sparktoro-zero-click-2026.
+Style Learning Voice Profile -> deepen; added voice profile contract table plus update procedure for cadence, vocabulary, passive voice, transitions, phrases, trust, AI boundary; source_ids: g-helpful-content, nng-editorial-heuristics, g-qrg-full, g-ai-opt-guide.
+Content Decay Triage Register -> deepen; added triage register table for query loss, page drop, position slide, canonical confusion, helpfulness gap, update overlap; source_ids: g-gsc-api, g-helpful-content, g-ranking-history, g-canonical.
+Content Template Selection Matrix -> deepen; added twelve-template selection matrix for write, brief, and outline routing; source_ids: g-helpful-content, g-ai-opt-guide, g-qrg-full.
+Platform Output Formatting Matrix -> deepen; added platform formatting matrix for WordPress, MDX, Hugo, Ghost, Astro, Jekyll, 11ty, Gatsby, static HTML; source_ids: g-helpful-content, g-intro-sd, g-google-images, g-ai-opt-guide.
+
+Merge decisions: none. Reason: every brief maps to a distinct operating deliverable with separate handoff, evidence, and owner logic.
+Prune decisions: none. Reason: no assigned note was source-empty or duplicative after the distinct contracts were written.
+
+Verification: python3 scripts/lint_vault.py passed. Root --vault . lint reported pre-existing frontmatter/source-citation errors outside this batch and no new dead-wikilink errors from these notes.

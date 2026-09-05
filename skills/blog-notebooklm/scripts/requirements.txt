@@ -3,13 +3,13 @@
 #
 # For reproducible installs with hash verification, use the lock file:
 #   pip install --require-hashes -r requirements.lock
-# Closes audit VULN-006 (lock file presence) and VULN-016 (patchright
-# integrity verification via the lock's per-wheel sha256 hashes).
+# Closes audit VULN-006 for Python packages. Browser artifacts downloaded by
+# `patchright install chrome` are a separate trust boundary outside this lock.
 
 # Core browser automation with anti-detection
 # Note: After installation, run: patchright install chrome
 # (Chrome is required, not Chromium, for cross-platform reliability)
-patchright==1.55.2
+patchright==1.61.2
 
 # Environment management
-python-dotenv==1.0.0
+python-dotenv==1.2.2

@@ -1,0 +1,57 @@
+{
+  "nodes": [
+    {
+      "id": "hot",
+      "type": "file",
+      "file": "wiki/hot.md",
+      "x": 0,
+      "y": 0,
+      "width": 300,
+      "height": 180
+    },
+    {
+      "id": "dashboard",
+      "type": "file",
+      "file": "wiki/meta/dashboard.md",
+      "x": 360,
+      "y": 0,
+      "width": 320,
+      "height": 220
+    },
+    {
+      "id": "sources",
+      "type": "file",
+      "file": "wiki/flows/Source Intake Workflow.md",
+      "x": 0,
+      "y": 260,
+      "width": 320,
+      "height": 220
+    },
+    {
+      "id": "report",
+      "type": "file",
+      "file": "wiki/reports/Weekly Report.md",
+      "x": 720,
+      "y": 260,
+      "width": 320,
+      "height": 220
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "fromNode": "hot",
+      "toNode": "dashboard"
+    },
+    {
+      "id": "e2",
+      "fromNode": "sources",
+      "toNode": "dashboard"
+    },
+    {
+      "id": "e3",
+      "fromNode": "dashboard",
+      "toNode": "report"
+    }
+  ]
+}

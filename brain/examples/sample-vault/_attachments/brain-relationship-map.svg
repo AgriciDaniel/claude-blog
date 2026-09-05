@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 420" role="img" aria-labelledby="title desc">
+<title id="title">Claude Blog Brain relationship map</title>
+<desc id="desc">Current source, wiki, gate, and deliverable counts.</desc>
+<rect width="980" height="420" fill="#f8fafc"/>
+<text x="40" y="58" font-size="28" font-family="Inter,Arial" font-weight="700" fill="#172033">Claude Blog Brain Relationship Map</text>
+<g font-family="Inter,Arial" font-size="14" font-weight="700">
+<rect x="50" y="130" width="160" height="88" rx="8" fill="#fff" stroke="#586f92" stroke-width="3"/><text x="82" y="164" fill="#172033">Raw Sources</text><text x="110" y="194" fill="#586f92">1</text>
+<rect x="290" y="130" width="160" height="88" rx="8" fill="#fff" stroke="#2f7f87" stroke-width="3"/><text x="324" y="164" fill="#172033">Wiki Memory</text><text x="326" y="194" fill="#2f7f87">30 notes</text>
+<rect x="530" y="130" width="160" height="88" rx="8" fill="#fff" stroke="#c85f4d" stroke-width="3"/><text x="560" y="164" fill="#172033">Checks + Gates</text><text x="578" y="194" fill="#c85f4d">183 links</text>
+<rect x="770" y="130" width="160" height="88" rx="8" fill="#fff" stroke="#f0b33d" stroke-width="3"/><text x="800" y="164" fill="#172033">Deliverables</text><text x="835" y="194" fill="#946200">3</text>
+</g>
+<path d="M210 174 H290 M450 174 H530 M690 174 H770" stroke="#64748b" stroke-width="3"/>
+</svg>

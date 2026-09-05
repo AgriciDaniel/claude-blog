@@ -1,0 +1,16 @@
+wiki/writing/6-Pillar Dual Optimization.md -> deepen; added 6-row operating decision table; source_ids: g-helpful-content, g-ai-opt-guide, g-qrg-full, ziptie-aio-source-selection.
+wiki/writing/Answer First Section Pattern.md -> deepen; added section-element table plus 6-step editing procedure; source_ids: g-helpful-content, g-ai-opt-guide, g-qrg-full, ziptie-aio-source-selection.
+wiki/writing/Blog Conclusion Patterns.md -> deepen; added conclusion-choice table plus 5-step rewrite procedure; source_ids: g-helpful-content, g-ai-opt-guide, g-update-2026-06-15-llms-txt-clarified-as-unused-by-google-search, g-qrg-full.
+wiki/writing/Blog Introduction Patterns.md -> deepen; added introduction-pattern matrix plus 6-step editing pass; source_ids: g-helpful-content, g-ai-opt-guide, g-update-2026-06-15-llms-txt-clarified-as-unused-by-google-search, g-qrg-full.
+wiki/writing/Citation Ready Paragraphs.md -> deepen; added paragraph-construction table plus 6-step editing procedure; source_ids: g-helpful-content, g-ai-opt-guide, g-qrg-full, ziptie-aio-source-selection.
+wiki/writing/Claim Source Pairing Pattern.md -> deepen; added source-pairing table plus 6-step refresh procedure; source_ids: g-helpful-content, g-ai-opt-guide, g-update-2026-06-15-llms-txt-clarified-as-unused-by-google-search, g-qrg-full.
+wiki/writing/Evidence Density For Blog Posts.md -> deepen; added evidence-density review table plus 6-step editing procedure; source_ids: g-helpful-content, g-ai-opt-guide, g-update-2026-06-15-llms-txt-clarified-as-unused-by-google-search, g-qrg-full.
+wiki/writing/Experience Signal Placement.md -> deepen; added experience-placement table plus 6-step editing procedure; source_ids: g-helpful-content, g-ai-opt-guide, g-qrg-full, ziptie-aio-source-selection.
+wiki/writing/Information Gain Checklist.md -> deepen; added pass-fail checklist table plus 5 handoff rules; source_ids: g-helpful-content, g-ai-opt-guide, g-qrg-full, ziptie-aio-source-selection.
+wiki/writing/Intent Fit Writing Pass.md -> deepen; added intent-fit mapping table plus 6-step editing procedure; source_ids: g-helpful-content, g-ai-opt-guide, g-qrg-full, ziptie-aio-source-selection.
+wiki/writing/Internal Link Placement Rules.md -> deepen; added internal-link rule table plus 6-step review and rollback procedure; source_ids: g-helpful-content, g-ai-opt-guide, g-qrg-full, ziptie-aio-source-selection.
+wiki/writing/Reader Satisfaction Test.md -> deepen; added reader-satisfaction review table plus 6-step test procedure; source_ids: g-helpful-content, g-ai-opt-guide, g-update-2026-06-15-llms-txt-clarified-as-unused-by-google-search, g-qrg-full.
+wiki/writing/Six Pillar Editing Rubric.md -> deepen; added scoring evidence table plus 6-step review procedure; source_ids: g-helpful-content, g-ai-opt-guide, g-update-2026-06-15-llms-txt-clarified-as-unused-by-google-search, g-qrg-full.
+
+Merge/prune decisions:
+None. All 13 assigned notes now own distinct writing jobs: hub frame, section openings, introductions, conclusions, paragraphs, evidence pairing, density, experience, information gain, intent fit, links, satisfaction, and scoring.

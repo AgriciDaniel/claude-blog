@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2000 800" width="100%"
+     preserveAspectRatio="xMidYMid meet" role="img"
+     aria-label="claude-blog — write, optimize, and audit blog content at scale">
+<title>claude-blog</title>
+<desc>Wide clean off-white banner. A four-dot app tile and a bold lowercase claude-blog wordmark with a short subtitle on the left; a friendly static illustration on the right showing an article card, soft colorful shapes peeking at the edges, and three clearly separated chips: SEO Optimization, Quality Score, and AI Citation Ready.</desc>
+<defs>
+  <style type="text/css"><![CDATA[
+    .word { font-family:'Poppins','Product Sans','Nunito','Inter',system-ui,sans-serif; font-weight:800; }
+    .ui   { font-family:'Inter',system-ui,-apple-system,'Helvetica Neue',sans-serif; }
+    .box1,.box2,.box3,.spark { transform-box:fill-box; transform-origin:center; }
+    .spark { animation: twinkle 3.4s ease-in-out infinite; }
+    .sun   { animation: sunset 12s ease-in-out infinite; }
+    .skydim  { animation: skydim 12s ease-in-out infinite; }
+    @keyframes twinkle{ 0%,100%{transform:scale(1);opacity:.85} 50%{transform:scale(1.18);opacity:1} }
+    @keyframes sunset { 0%{transform:translate(7px,86px)} 50%{transform:translate(0,-18px)} 100%{transform:translate(-7px,86px)} }
+    @keyframes skydim { 0%{opacity:.06} 50%{opacity:0} 100%{opacity:.06} }
+    @media (prefers-reduced-motion: reduce){ .box1,.box2,.box3,.spark,.sun,.skydim{animation:none} }
+  ]]></style>
+  <filter id="soft" x="-40%" y="-40%" width="180%" height="200%">
+    <feDropShadow dx="0" dy="12" stdDeviation="20" flood-color="#26313f" flood-opacity="0.13"/>
+  </filter>
+  <filter id="soft2" x="-40%" y="-40%" width="180%" height="200%">
+    <feDropShadow dx="0" dy="8" stdDeviation="14" flood-color="#26313f" flood-opacity="0.14"/>
+  </filter>
+  <clipPath id="imgClip"><rect x="1216" y="298" width="448" height="146" rx="16"/></clipPath>
+</defs>
+
+<rect x="0" y="0" width="2000" height="800" fill="#F6F5F0"/>
+
+<!-- ===== soft colorful shapes: peek only at outer edges ===== -->
+<rect x="1150" y="120" width="180" height="220" rx="56" fill="#4C86EF"/>
+<rect x="1670" y="180" width="170" height="215" rx="54" fill="#E8503C"/>
+<rect x="1620" y="470" width="190" height="190" rx="52" fill="#33A457"/>
+<rect x="1150" y="520" width="180" height="170" rx="50" fill="#F5B62A"/>
+
+<!-- ===== main article card (clean white backdrop for the chips) ===== -->
+<g filter="url(#soft)">
+  <rect x="1180" y="150" width="520" height="520" rx="30" fill="#FFFFFF"/>
+</g>
+<!-- doc icon -->
+<rect x="1216" y="196" width="70" height="70" rx="16" fill="#E8503C"/>
+<rect x="1234" y="211" width="38" height="46" rx="5" fill="#FFFFFF"/>
+<g fill="#F3A99B">
+  <rect x="1241" y="222" width="24" height="4" rx="2"/>
+  <rect x="1241" y="231" width="24" height="4" rx="2"/>
+  <rect x="1241" y="240" width="16" height="4" rx="2"/>
+</g>
+<!-- header lines -->
+<rect x="1304" y="214" width="160" height="13" rx="6.5" fill="#E4E6EA"/>
+<rect x="1304" y="240" width="120" height="13" rx="6.5" fill="#EBECEF"/>
+<!-- image placeholder -->
+<rect x="1216" y="298" width="448" height="146" rx="16" fill="#EDEFF3"/>
+<g clip-path="url(#imgClip)">
+  <g class="sun"><circle cx="1432" cy="338" r="22" fill="#F6C65A"/></g>
+  <rect class="skydim" x="1216" y="298" width="448" height="146" fill="#6B7A9C" opacity="0"/>
+  <polygon points="1360,444 1470,372 1620,444" fill="#C4D8F4"/>
+  <polygon points="1216,444 1330,368 1470,444" fill="#A9C6EE"/>
+</g>
+<!-- body lines -->
+<g>
+  <rect x="1216" y="474" width="448" height="12" rx="6" fill="#E5E7EA"/>
+  <rect x="1216" y="502" width="410" height="12" rx="6" fill="#ECEEF1"/>
+  <rect x="1216" y="530" width="360" height="12" rx="6" fill="#E5E7EA"/>
+</g>
+
+<!-- ===== SEO Optimization chip (left) ===== -->
+<g class="box1">
+  <g filter="url(#soft2)"><rect x="1080" y="380" width="280" height="250" rx="22" fill="#FFFFFF"/></g>
+  <circle cx="1116" cy="418" r="19" fill="#E8F0FE"/>
+  <circle cx="1114" cy="416" r="7" fill="none" stroke="#4C86EF" stroke-width="3"/>
+  <line x1="1119" y1="421" x2="1126" y2="428" stroke="#4C86EF" stroke-width="3" stroke-linecap="round"/>
+  <text x="1148" y="425" class="ui" font-size="18" font-weight="700" fill="#1E242B">SEO Optimization</text>
+
+  <text x="1106" y="472" class="ui" font-size="16" fill="#49535F">Keywords</text>
+  <circle cx="1320" cy="467" r="13" fill="#33A457"/><path d="M1315 467 l3.5 4 l7 -8" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <text x="1106" y="510" class="ui" font-size="16" fill="#49535F">Readability</text>
+  <circle cx="1320" cy="505" r="13" fill="#33A457"/><path d="M1315 505 l3.5 4 l7 -8" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <text x="1106" y="548" class="ui" font-size="16" fill="#49535F">Meta Title</text>
+  <circle cx="1320" cy="543" r="13" fill="#33A457"/><path d="M1315 543 l3.5 4 l7 -8" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <text x="1106" y="586" class="ui" font-size="16" fill="#49535F">Internal Links</text>
+  <circle cx="1320" cy="581" r="13" fill="#4C86EF"/><line x1="1314" y1="581" x2="1326" y2="581" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/>
+</g>
+
+<!-- ===== Quality Score chip (top-right) ===== -->
+<g class="box2">
+  <g filter="url(#soft2)"><rect x="1500" y="150" width="210" height="210" rx="22" fill="#FFFFFF"/></g>
+  <path d="M1560 295 A 64 64 0 1 1 1650 295" fill="none" stroke="#E9EBEE" stroke-width="11" stroke-linecap="round"/>
+  <path d="M1560 295 A 64 64 0 1 1 1650 295" fill="none" stroke="#33A457" stroke-width="11" stroke-linecap="round"/>
+  <text x="1605" y="258" text-anchor="middle" class="ui" font-size="40" font-weight="800" fill="#1E242B">90+</text>
+  <text x="1605" y="284" text-anchor="middle" class="ui" font-size="13" fill="#6B7480">Quality Score</text>
+  <circle cx="1605" cy="333" r="15" fill="#33A457"/><path d="M1599 333 l4 4.5 l8 -9" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+
+<!-- ===== AI Citation Ready chip (bottom-right) ===== -->
+<g class="box3">
+  <g filter="url(#soft2)"><rect x="1470" y="470" width="330" height="175" rx="22" fill="#FFFFFF"/></g>
+  <g class="spark" fill="#4C86EF">
+    <path d="M1512 494 C1515 508 1518 511 1532 514 C1518 517 1515 520 1512 534 C1509 520 1506 517 1492 514 C1506 511 1509 508 1512 494 Z"/>
+    <path d="M1537 532 C1538.5 538 1540 539.5 1546 541 C1540 542.5 1538.5 544 1537 550 C1535.5 544 1534 542.5 1528 541 C1534 539.5 1535.5 538 1537 532 Z"/>
+  </g>
+  <text x="1556" y="520" class="ui" font-size="19" font-weight="700" fill="#1E242B">AI Citation Ready</text>
+  <rect x="1512" y="548" width="252" height="11" rx="5.5" fill="#E5E7EA"/>
+  <rect x="1512" y="572" width="210" height="11" rx="5.5" fill="#ECEEF1"/>
+  <rect x="1512" y="600" width="116" height="34" rx="17" fill="#E8F0FE"/>
+  <text x="1530" y="623" class="ui" font-size="16" font-weight="600" fill="#3B6FD6">Cited</text>
+  <circle cx="1612" cy="617" r="12" fill="#4C86EF"/><path d="M1607 617 l3.2 3.8 l6.4 -7.4" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+
+<!-- ===== left lockup ===== -->
+<text x="116" y="438" class="word" font-size="108" letter-spacing="-4" fill="#1E242B">claude-blog</text>
+<text x="122" y="496" class="ui" font-size="26" font-weight="500" fill="#5B6672">Write, optimize, and audit blog content at scale</text>
+</svg>

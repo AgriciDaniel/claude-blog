@@ -1,0 +1,9 @@
+:root {
+  --brain-accent: #2f7f87;
+  --brain-warn: #c85f4d;
+  --brain-gold: #f0b33d;
+}
+
+.markdown-preview-view h1 {
+  color: var(--brain-accent);
+}

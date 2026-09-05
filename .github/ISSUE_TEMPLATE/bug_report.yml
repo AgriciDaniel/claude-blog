@@ -75,6 +75,7 @@ body:
     attributes:
       label: Install method
       options:
+        - Plugin marketplace install (/plugin install)
         - curl | bash (one-command installer)
         - Manual clone
         - Windows PowerShell installer

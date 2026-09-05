@@ -7,9 +7,8 @@ SEO and format rules for blog translation. Loaded on demand by
 
 1. Localize, do not transliterate. Pick the term native speakers actually
    search for in the target market.
-2. Preserve keyword density, not word-for-word match. The localized
-   keyword should appear with similar frequency to the source keyword,
-   not the same count.
+2. Preserve topical and entity coverage, not keyword density. Match the
+   search intent and localized SERP phrasing without forcing repeated terms.
 3. Independently optimize the title tag and meta description per language.
    Don't translate, rewrite for the target SERP.
 4. Keep slugs in the target language using the locale's romanization rules.
@@ -25,13 +24,13 @@ Preserve unchanged:
 - HTML tags and attributes.
 - Frontmatter keys (translate values, not keys).
 - Image and link URLs.
-- Code blocks. Translate inline comments only when the comment is
-  human-facing prose.
+- Executable code fences and inline code. Keep them unchanged unless the user
+  explicitly asks for localized tutorial comments.
 - SVG attributes (`x`, `y`, `font-size`, `fill`, `transform`,
   `viewBox`). Translate only `<text>` and `<tspan>` content.
-- Schema JSON-LD blocks. Translate user-facing string values
-  (`headline`, `description`, `name`); leave structural fields
-  (`@type`, `@context`, URLs) untouched.
+- Schema JSON-LD blocks. Translate user-facing content strings such as
+  `headline` and `description`; never translate Person, Organization, or
+  Brand names, URLs, IDs, `@id`, or `sameAs`.
 - Internal-link zone markers (`[INTERNAL-LINK: ...]`).
 
 Adjust SVG text length where the translation is meaningfully longer or
@@ -59,25 +58,25 @@ If text overflows the chart frame, raise `viewBox` width or reduce
 | en-GB | `.` | `,` | DD/MM/YYYY or "25 March 2026" | GBP 1,234.56 | '...' |
 | de-DE | `,` | `.` | DD.MM.YYYY | 1.234,56 EUR | "..." |
 | de-CH | `.` | `'` | DD.MM.YYYY | CHF 1'234.56 | "..." |
-| fr-FR | `,` | ` ` (NBSP) | DD/MM/YYYY | 1 234,56 EUR | <<...>> |
-| fr-CA | `,` | ` ` (NBSP) | YYYY-MM-DD | 1 234,56 $ | <<...>> |
-| es-ES | `,` | `.` | DD/MM/YYYY | 1.234,56 EUR | <<...>> |
+| fr-FR | `,` | ` ` (NBSP) | DD/MM/YYYY | 1 234,56 EUR | « ... » |
+| fr-CA | `,` | ` ` (NBSP) | YYYY-MM-DD | 1 234,56 $ | « ... » |
+| es-ES | `,` | `.` | DD/MM/YYYY | 1.234,56 EUR | «...» or "..." by publication style |
 | es-MX | `.` | `,` | DD/MM/YYYY | $1,234.56 MXN | "..." |
 | pt-BR | `,` | `.` | DD/MM/YYYY | R$ 1.234,56 | "..." |
-| pt-PT | `,` | ` ` (NBSP) | DD/MM/YYYY | 1 234,56 EUR | <<...>> |
-| it-IT | `,` | `.` | DD/MM/YYYY | 1.234,56 EUR | <<...>> |
-| ja-JP | `.` | `,` | YYYY/MM/DD or YYYY-MM-DD | 1,234 yen | square brackets |
-| zh-CN | `.` | `,` | YYYY-MM-DD | 1,234.56 RMB | square brackets |
+| pt-PT | `,` | ` ` (NBSP) | DD/MM/YYYY | 1 234,56 EUR | «...» or "..." by publication style |
+| it-IT | `,` | `.` | DD/MM/YYYY | 1.234,56 EUR | «...» or "..." by publication style |
+| ja-JP | `.` | `,` | YYYY/MM/DD or YYYY-MM-DD | 1,234円 or JPY 1,234 | 「...」 |
+| zh-CN | `.` | `,` | YYYY-MM-DD | CNY 1,234.56, ¥1,234.56, or 1,234.56元 | “...” or 「...」 by market style |
 | nl-NL | `,` | `.` | DD-MM-YYYY | 1.234,56 EUR | '...' |
-| pl-PL | `,` | ` ` (NBSP) | DD.MM.YYYY | 1 234,56 PLN | "..." then ,,..." |
+| pl-PL | `,` | ` ` (NBSP) | DD.MM.YYYY | 1 234,56 PLN | „...” |
 
 Notes:
 
-- Always use the locale's currency unless the source explicitly compares
-  values across currencies.
-- Convert USD figures only when the audience benefits. If the source is
-  reporting "the global tech sector earned $X", keep USD with locale
-  number formatting.
+- Preserve reported facts and original amounts for sourced claims.
+- Convert currency only when it helps the local reader, keep the original
+  amount nearby, and include exchange date and source in the note or citation.
+- If the source reports a factual claim such as "the global tech sector earned
+  $X", keep USD with locale number formatting.
 - For dates inside frontmatter (`date`, `lastUpdated`, `translatedDate`),
   always use ISO 8601 (`YYYY-MM-DD`) regardless of locale. Locale
   formatting applies to dates inside body copy only.
@@ -85,12 +84,15 @@ Notes:
 ## Quote Handling
 
 - en: `"..."` and `'...'`.
-- de: `"..."` (with low-9 opening, high-6 closing in print-quality copy
-  the writer can simplify to `"..."` for web).
-- fr: <<...>> with non-breaking spaces inside (`<< ... >>`).
-- es and it: <<...>> for primary, "..." for nested.
-- ja: square brackets for primary, round brackets for nested.
-- pl: ,,..." (low-9 opening, high-6 closing).
+- de: prefer `„...“` or `»...«`; straight quotes are only an explicit ASCII
+  fallback.
+- fr: `« ... »` with non-breaking or narrow no-break spaces inside.
+- es, it, and pt-PT: use `«...»` or `"..."` according to publication style.
+- ja: `「...」` primary and `『...』` nested.
+- zh: use Chinese quote conventions such as `“...”` or `「...」` by market
+  style.
+- pl: `„...”` primary, with accepted nested forms such as `«...»` or
+  `»...«` by publication style.
 
 When the source uses straight quotes, the translator should switch to the
 locale's primary style above. Preserve nesting depth (outer vs. inner).
@@ -110,10 +112,11 @@ Before reporting a translation as done, verify:
 - [ ] All SVG `<text>` and `<tspan>` content translated, lengths
       adjusted per the table above.
 - [ ] FAQ questions and answers natural in target language.
-- [ ] Citation capsules self-contained in target language.
+- [ ] Evidence-backed explanations remain accurate and self-contained in the
+      target language where present.
 - [ ] No mixed-language sentences (other than loanwords).
 - [ ] No literal idiom translations; idioms adapted to local equivalents.
-- [ ] Sentence-length parity within +/- 25% of source paragraph length.
+- [ ] Information parity, section coverage, and readability are preserved.
 - [ ] Markdown and HTML structure intact.
 - [ ] Schema JSON-LD `inLanguage` updated and `translationOfWork` added.
 
@@ -129,16 +132,8 @@ Never produce:
 - English source-attribution like "(Source)" left untranslated where the
   locale uses a different convention.
 
-## Output Metadata Comment
+## Translation Provenance
 
-Append at the very end of the translated file:
-
-```markdown
-<!-- translated: {source_lang} -> {target_lang} | date: {YYYY-MM-DD} | translator: blog-translator -->
-```
-
-For HTML output, use a standard HTML comment:
-
-```html
-<!-- translated: en -> de | date: 2026-04-27 | translator: blog-translator -->
-```
+Store translation provenance in frontmatter or CMS metadata, not rendered
+comments. Use fields such as `translatedFrom`, `translatedDate`,
+`translationTool`, `sourceHash`, and `translationHash`.

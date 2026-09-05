@@ -1,0 +1,69 @@
+{
+  "title": "AI Citation Ready Blog Optimization Checklist",
+  "url": "https://example.org/blog/ai-citation-ready-blog-optimization",
+  "body_markdown": "# AI Citation Ready Blog Optimization Checklist\n\nAn AI citation ready blog gives readers a direct answer, shows who is responsible for the advice, and backs current search claims with dated sources.\n\n## AI citation ready blog sections\n\nAI citation ready blog sections should open with a compact answer that names the entity, the task, and the evidence source in one place.\n\nTeams can then add examples, screenshots, or editorial notes after the first paragraph. In our data review example, the editor checks whether each section can be lifted as a standalone answer without losing context.\n\n## Article schema and visible entities\n\nArticle schema should match visible page facts such as headline, author, publisher, dates, and the canonical URL.\n\nThe schema is not a separate promise of ranking performance. It supports machine understanding when the visible content already helps readers.\n\n## E-E-A-T review notes\n\nThe review should identify the author, state when the article was updated, and explain why the team is qualified to make the recommendation.\n\nThis checklist links to Google guidance on helpful content and AI features so reviewers can verify the advice before publishing. See [Google helpful content guidance](https://developers.google.com/search/docs/fundamentals/creating-helpful-content) and [Google AI features guidance](https://developers.google.com/search/docs/appearance/ai-features).\n",
+  "frontmatter": {
+    "description": "A practical checklist for improving blog quality, Article schema, and AI citation readiness.",
+    "author": "Mira Chen",
+    "date": "2026-06-10",
+    "dateModified": "2026-06-28",
+    "tags": ["SEO", "GEO", "Blog operations"],
+    "category": "Content Strategy"
+  },
+  "target_keyword": "AI citation ready blog",
+  "secondary_keywords": [
+    "Article schema",
+    "E-E-A-T",
+    "passage extractability",
+    "Google AI Overviews"
+  ],
+  "locale": "en-US",
+  "platform": "next-mdx",
+  "author": {
+    "name": "Mira Chen",
+    "url": "https://example.org/authors/mira-chen",
+    "bio": "Content strategist who reviews editorial operations and search quality workflows.",
+    "sameAs": ["https://www.linkedin.com/in/mira-chen-example"]
+  },
+  "published_at": "2026-06-10",
+  "modified_at": "2026-06-28",
+  "sources": [
+    {
+      "url": "https://developers.google.com/search/docs/fundamentals/creating-helpful-content",
+      "title": "Creating helpful, reliable, people-first content",
+      "publisher": "Google Search Central",
+      "published": "2026-06-30",
+      "retrieved": "2026-07-06",
+      "confidence": "high",
+      "supports_claims": ["Helpful content and E-E-A-T review guidance for blog quality checks."]
+    },
+    {
+      "url": "https://developers.google.com/search/docs/appearance/structured-data/intro-structured-data",
+      "title": "Intro to structured data markup",
+      "publisher": "Google Search Central",
+      "published": "2026-06-30",
+      "retrieved": "2026-07-06",
+      "confidence": "high",
+      "supports_claims": ["JSON-LD and structured data guidelines for Article schema recommendations."]
+    },
+    {
+      "url": "https://ziptie.dev/blog/google-ai-overviews-source-selection/",
+      "title": "Google AI Overviews source selection",
+      "publisher": "ZipTie",
+      "published": "2026-03-25",
+      "retrieved": "2026-07-06",
+      "confidence": "practitioner",
+      "supports_claims": ["Passage extractability and source context guidance for AI citation readiness."]
+    }
+  ],
+  "audit_findings": [
+    {
+      "id": "geo-source-context",
+      "category": "geo",
+      "severity": "medium",
+      "summary": "One section needs clearer source context in its opening paragraph.",
+      "recommendation": "Add source context to the first paragraph of the E-E-A-T review section.",
+      "source": "ziptie-aio-source-selection"
+    }
+  ]
+}

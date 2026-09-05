@@ -1,0 +1,27 @@
+Schema folder deepening report, 2026-07-09
+
+Per-note actions:
+- Article Schema Baseline -> deepen; added Article Schema Baseline Schema Table; source_ids wired: g-intro-sd, g-search-gallery, schema-full, w3c-jsonld.
+- Author Person Markup -> deepen; added Person Property Evidence Map plus 4-step profile review; source_ids wired: g-intro-sd, g-search-gallery, schema-full, w3c-jsonld.
+- Blog Schema Stack -> deepen; added Blog Schema Stack Spoke Map; source_ids wired: g-intro-sd, g-search-gallery, schema-full, w3c-jsonld.
+- BlogPosting Versus Article -> deepen; added Decision Table For Article Types; source_ids wired: g-intro-sd, g-search-gallery, schema-full, w3c-jsonld.
+- BreadcrumbList For Blogs -> deepen; added BreadcrumbList For Blogs Schema Table; source_ids wired: g-intro-sd, g-search-gallery, schema-full, w3c-jsonld.
+- JSON-LD Publishing Checklist -> deepen; added JSON-LD Publishing Checklist Pass Fail Table; source_ids wired: g-intro-sd, g-search-gallery, schema-full, w3c-jsonld.
+- Organization Entity Graph -> deepen; added Organization Entity Graph Schema Table; source_ids wired: g-intro-sd, g-search-gallery, schema-full, w3c-jsonld.
+- Product Mentions In Blog Schema -> deepen; added Product Mentions In Blog Schema Schema Table plus 4-step evidence procedure; source_ids wired: g-intro-sd, g-search-gallery, schema-full, w3c-jsonld.
+- Schema And E-E-A-T Alignment -> deepen; added Trust Signal To Schema Map plus 4-step review procedure; source_ids wired: g-intro-sd, g-search-gallery, schema-full, w3c-jsonld.
+- Schema Validation Workflow -> deepen; added Concrete Validation Procedure and Pass Fail Table; source_ids wired: g-intro-sd, g-search-gallery, schema-full, w3c-jsonld.
+- Structured Data Deprecation Register -> deepen; added register table with owner, confidence, status, review date, and rollback trigger; source_ids wired: g-intro-sd, g-search-gallery, schema-full, w3c-jsonld.
+- VideoObject For Blog Posts -> deepen; added VideoObject For Blog Posts Schema Table plus 4-step qualification procedure; source_ids wired: g-intro-sd, g-search-gallery, schema-full, w3c-jsonld.
+- Visible Q And A Without FAQ Rich Results -> deepen; added Q and A schema table plus 4-step editorial procedure; source_ids wired: g-intro-sd, g-search-gallery, schema-full, w3c-jsonld.
+
+Merge and prune decisions:
+- No merges. All 13 notes have distinct schema jobs and deliverables.
+- No prunes. Each note could be given sourced, note-specific operating substance.
+
+Verification:
+- Removed generic FAQ/Product frontmatter source URLs from the 13 notes and kept the four assigned schema sources.
+- Old Acceptance Criteria and Failure Modes skeletons removed.
+- Duplicate long-line scan found no repeated line of 12 or more words across schema notes.
+- python3 scripts/lint_vault.py passed.
+- Root-vault lint filtered for schema dead wikilinks returned no introduced dead links.

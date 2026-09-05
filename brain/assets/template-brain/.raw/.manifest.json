@@ -1,0 +1,5 @@
+{
+  "brain_schema": "claude-blog-brain.v1",
+  "sources": [],
+  "notes": "Template manifest. Client vaults append immutable source entries here."
+}

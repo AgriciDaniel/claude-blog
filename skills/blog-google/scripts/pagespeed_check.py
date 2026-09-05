@@ -26,12 +26,12 @@ except ImportError:
 
 # Import credential helper (same directory)
 try:
-    from google_auth import get_api_key, load_config
+    from google_auth import get_api_key, load_config, request_with_retries
 except ImportError:
     # Fallback: try relative import from scripts/
     import os
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-    from google_auth import get_api_key, load_config
+    from google_auth import get_api_key, load_config, request_with_retries
 
 PSI_ENDPOINT = "https://www.googleapis.com/pagespeedonline/v5/runPagespeed"
 CRUX_ENDPOINT = "https://chromeuxreport.googleapis.com/v1/records:queryRecord"
@@ -92,6 +92,7 @@ def run_pagespeed(
         "lighthouse_scores": {},
         "lab_metrics": {},
         "field_metrics": {},
+        "audit_details": {},
         "opportunities": [],
         "diagnostics": [],
         "failed_audits": [],
@@ -118,7 +119,7 @@ def run_pagespeed(
         params["key"] = api_key
 
     try:
-        resp = requests.get(PSI_ENDPOINT, params=params, timeout=120)
+        resp = request_with_retries("GET", PSI_ENDPOINT, params=params, timeout=120)
         resp.raise_for_status()
         data = resp.json()
     except requests.exceptions.Timeout:
@@ -331,7 +332,8 @@ def query_crux(
         body["formFactor"] = form_factor.upper()
 
     try:
-        resp = requests.post(
+        resp = request_with_retries(
+            "POST",
             f"{CRUX_ENDPOINT}?key={api_key}",
             json=body,
             timeout=30,
@@ -374,7 +376,7 @@ def query_crux(
         if p75 is None:
             continue
 
-        # CLS is string-encoded in CrUX -- parse carefully
+        # CLS is string-encoded in CrUX - parse carefully
         if metric_name == "cumulative_layout_shift":
             try:
                 p75_val = float(str(p75))
@@ -419,6 +421,7 @@ def combined_check(
     url: str,
     api_key: Optional[str] = None,
     strategy: str = "both",
+    form_factor: Optional[str] = None,
 ) -> dict:
     """
     Run combined PSI + CrUX check.
@@ -448,13 +451,13 @@ def combined_check(
 
     # CrUX (separate call for accurate field data)
     if api_key:
-        crux_result = query_crux(url, api_key)
+        crux_result = query_crux(url, api_key, form_factor=form_factor)
         result["crux"] = crux_result
         # Also try origin-level if URL-level has no data
         if crux_result.get("error") and "insufficient" in crux_result.get("error", ""):
             parsed = urlparse(url)
             origin = f"{parsed.scheme}://{parsed.netloc}"
-            origin_result = query_crux(origin, api_key)
+            origin_result = query_crux(origin, api_key, form_factor=form_factor)
             if not origin_result.get("error"):
                 result["crux"] = origin_result
                 result["crux"]["note"] = "URL-level data unavailable; showing origin-level data"
@@ -513,7 +516,7 @@ def main():
         for strat in strategies:
             result["psi"][strat] = run_pagespeed(args.url, strategy=strat, api_key=api_key)
     else:
-        result = combined_check(args.url, api_key=api_key, strategy=args.strategy)
+        result = combined_check(args.url, api_key=api_key, strategy=args.strategy, form_factor=args.form_factor)
 
     if args.json:
         print(json.dumps(result, indent=2))

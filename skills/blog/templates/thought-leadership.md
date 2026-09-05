@@ -98,7 +98,10 @@
    - **Evidence** (2-3 sentences): The most compelling evidence saved for last
 5. **Synthesis** (1-2 sentences): Tie the three problems together into a coherent critique
 
-[INFO-GAIN: unique analysis] At least one of the three problems MUST be based on original observation - your own data, a pattern you noticed firsthand, or an insight from direct experience. Aggregating other people's arguments is not thought leadership.
+[INFO-GAIN: unique analysis] Use original observation only when the author
+supplies methodology, evidence, and results. A research-only alternative may
+offer a distinctive, well-supported synthesis without pretending first-hand
+experience.
 
 [IMAGE] Include a visual that illustrates one of the problems - a failed example, a misleading chart corrected, or a before/after comparison.
 
@@ -155,7 +158,9 @@
 3. **Measurement** (1-2 sentences): How will the reader know if the new approach is working? What metrics should they track?
 4. **Timeline** (1 sentence): Set realistic expectations for when they will see results
 
-[INFO-GAIN: personal experience] Share a specific detail from when you implemented this approach yourself - what was the first thing you changed and what happened?
+[INFO-GAIN: personal experience] Include an implementation detail only when the
+author supplies the method, evidence, and result. Otherwise provide a sourced
+implementation example labeled as research-only.
 
 [INTERNAL-LINK] Link to tactical how-to articles, tools, or templates that support implementation.
 
@@ -178,13 +183,13 @@
 
 ---
 
-### FAQ (3 questions)
+### Optional Reader Questions (count by reader need)
 
 [FAQ] Focus on the most likely objections and follow-up questions a skeptical reader would have.
 
 **Guidelines:**
 - Frame questions as pushback: "But doesn't [counter-argument]?"
-- Answers should be 40-80 words, direct, and evidence-based
+- Answers should be complete, direct, and evidence-based; no fixed word band
 - This is your chance to address objections you did not cover in the main body
 
 ```
@@ -221,7 +226,7 @@
 
 ## Pre-Publish Checklist
 
-- [ ] Total word count is 1,500-2,500 words
+- [ ] Length is sufficient for the argument without padding; planning ranges are optional
 - [ ] All [ANSWER-FIRST] prompts have been fulfilled - every section leads with the answer
 - [ ] All [STAT] markers replaced with real, cited statistics (with source and year)
 - [ ] All [VISUAL] markers replaced with actual charts or diagrams (especially the "What the Data Shows" chart)
@@ -234,6 +239,9 @@
 - [ ] The caveats section is honest without undermining the core argument
 - [ ] The alternative approach is specific and actionable (not just "do the opposite")
 - [ ] The tone is confident but respectful - persuade, do not antagonize
-- [ ] At least one piece of original data, analysis, or experience is included
+- [ ] Distinctive value comes from supported original material or a clearly
+      research-only synthesis; no first-hand experience is implied without
+      evidence
 - [ ] Meta title signals the contrarian angle and includes primary keyword
-- [ ] Meta description is 150-160 characters with the hook and a CTA
+- [ ] Meta description accurately and specifically summarizes the visible
+      argument

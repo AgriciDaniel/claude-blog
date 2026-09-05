@@ -1,0 +1,9 @@
+repos:
+  - repo: local
+    hooks:
+      - id: blog-quality-gate
+        name: Blog quality gate (score >= 70)
+        entry: python3 scripts/quality_gate.py
+        language: system
+        files: \.(md|mdx)$
+        pass_filenames: true

@@ -5,10 +5,19 @@ Centralizes constants, selectors, and paths
 
 import os
 from pathlib import Path
+from urllib.parse import urlparse
 
 # Paths
 SKILL_DIR = Path(__file__).parent.parent
-DATA_DIR = SKILL_DIR / "data"
+
+# Auth state, cookies and the notebook library are user data, not plugin
+# content. Under a plugin install the plugin directory is read-only (Claude
+# Cowork) and is replaced wholesale on every update, which would drop the
+# saved session and force a re-login. CLAUDE_PLUGIN_DATA is Claude's
+# per-plugin directory that survives updates; fall back to the in-skill path
+# so a bare checkout keeps working unchanged.
+_PLUGIN_DATA = os.environ.get("CLAUDE_PLUGIN_DATA", "").strip()
+DATA_DIR = Path(_PLUGIN_DATA) / "notebooklm" if _PLUGIN_DATA else SKILL_DIR / "data"
 BROWSER_STATE_DIR = DATA_DIR / "browser_state"
 BROWSER_PROFILE_DIR = BROWSER_STATE_DIR / "browser_profile"
 STATE_FILE = BROWSER_STATE_DIR / "state.json"
@@ -50,3 +59,17 @@ USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
 LOGIN_TIMEOUT_MINUTES = 10
 QUERY_TIMEOUT_SECONDS = 120
 PAGE_LOAD_TIMEOUT = 30000
+
+
+def validate_notebook_url(url: str) -> str:
+    """Allow only first-party NotebookLM notebook URLs."""
+    parsed = urlparse(url.strip())
+    if parsed.scheme != "https":
+        raise ValueError("Notebook URL must use https")
+    if parsed.netloc != "notebooklm.google.com":
+        raise ValueError("Notebook URL must be on notebooklm.google.com")
+    if not parsed.path.startswith("/notebook/") or parsed.path == "/notebook/":
+        raise ValueError("Notebook URL must start with https://notebooklm.google.com/notebook/")
+    if parsed.username or parsed.password:
+        raise ValueError("Notebook URL must not contain credentials")
+    return url.strip()

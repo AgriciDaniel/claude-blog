@@ -9,15 +9,19 @@
 
 # Core Google API client
 google-api-python-client>=2.100.0,<3.0.0
-google-auth>=2.20.0,<3.0.0
-google-auth-oauthlib>=1.0.0,<2.0.0
+google-auth>=2.53.0,<3.0.0
+google-auth-oauthlib>=1.3.1,<2.0.0
 google-auth-httplib2>=0.2.0,<1.0.0
 
 # GA4 Data API
-google-analytics-data>=0.18.0,<1.0.0
+google-analytics-data>=0.22.0,<1.0.0
+
+# Google Ads Keyword Planner
+# Google Ads API v25 requires Python client 31.2.0 or newer.
+google-ads>=31.2.0,<32.0.0
 
 # HTTP requests (PSI, CrUX, NLP)
-requests>=2.32.4,<3.0.0
+requests>=2.34.2,<3.0.0
 
 # Report generation (optional - graceful fallback if unavailable)
 matplotlib>=3.8.0,<4.0.0

@@ -20,26 +20,28 @@ Do NOT use this template for:
 - Reference/FAQ content (use faq-knowledge)
 - Analysis based entirely on someone else's data (write a news-analysis instead)
 
-**Value Note:** This is the highest-value template for AI citations and backlinks. Original data is a top-tier information gain signal. Invest extra time in methodology and visualization quality.
+**Value Note:** Original research can be useful when the methodology, evidence,
+limitations, and results are transparent. The template itself carries no
+ranking, backlink, or AI-citation guarantee.
 
 ---
 
 ## Title Format
 
 ```
-[Study Title]: We Analyzed [N] [Things] - Here's What We Found
+[Study Title]: We Analyzed [N] [Things] - Key Findings
 ```
 
 **Examples:**
-- "AI Code Review Study: We Analyzed 10,000 Pull Requests - Here's What We Found"
-- "Blog SEO Benchmark: We Analyzed 500 Technical Blogs - Here's What We Found"
-- "Developer Tooling Survey: We Asked 2,000 Engineers - Here's What We Found"
+- "AI Code Review Study: 10,000 Pull Request Findings"
+- "Blog SEO Benchmark: Lessons From 500 Technical Blogs"
+- "Developer Tooling Survey: What 2,000 Engineers Reported"
 
 **Title Rules:**
 - Include the specific sample size (N) - this is your credibility signal
 - Name what was analyzed (pull requests, blogs, engineers, etc.)
 - "We Analyzed/Studied/Surveyed" establishes original research
-- "Here's What We Found" signals actionable insights
+- Use a specific finding-led promise instead of generic reveal phrasing
 - Keep under 70 characters for SERP display when possible
 
 **Alternative Title Formats:**
@@ -53,9 +55,11 @@ Do NOT use this template for:
 
 ---
 
-### TL;DR Box (60 words)
+### Optional TL;DR Box
 
-[ANSWER-FIRST] Present the 3 most important findings as headline-style data points. Every sentence should contain a number.
+[ANSWER-FIRST] Summarize the findings most important to the reader. Include
+numbers only where they are verified and necessary to understand the result.
+Use as much space as completeness requires without padding.
 
 ```markdown
 > **TL;DR:** We analyzed [N] [things] and found [Finding 1 with specific number].
@@ -64,16 +68,18 @@ Do NOT use this template for:
 ```
 
 **Rules:**
-- Every sentence must contain a data point (number, percentage, comparison)
-- Lead with the most surprising or impactful finding
-- Include "most surprisingly" or equivalent to hook readers
-- This box will be the most-cited part of the study - make it quotable
+- State the primary result and practical implication clearly.
+- Keep methodology or limitation context when omission would mislead.
+- Do not force a number, surprise framing, or fixed finding count.
+- Do not predict citation performance.
 
 ---
 
 ### Key Findings (200-300 words)
 
-[ANSWER-FIRST] Present 5-7 headline findings as bullet points. Each bullet is a self-contained, citable data point.
+[ANSWER-FIRST] Present the supported headline findings as useful bullet points.
+Each bullet should retain enough context to avoid misleading reuse; no fixed
+count or citation prediction applies.
 
 ```markdown
 ## Key Findings
@@ -112,7 +118,8 @@ Do NOT use this template for:
 
 [Where the data came from, how it was collected, any selection criteria]
 
-[INFO-GAIN: proprietary data source or unique collection method - this is what makes the study unreproducible and therefore valuable]
+[INFO-GAIN: proprietary data source or unique collection method, documented
+well enough for readers to evaluate and, where possible, reproduce the work]
 
 ### Sample
 
@@ -141,19 +148,22 @@ Do NOT use this template for:
 - Include enough detail that another researcher could evaluate (not necessarily reproduce) the study
 - State exclusion criteria explicitly - readers will ask about selection bias
 
-**FLOW evidence triple (required for every statistic in this template):**
+**Claim provenance:**
 
-- Year anchor in prose: write "In 2026, ..." or "As of Q1 2026, ..." BEFORE the number, not in a parenthetical.
-- Inline citation: name the publisher AND the document or report title.
-- Source block at the bottom: include the full URL plus `retrieved YYYY-MM-DD` for every cited source.
-
-Drop unverifiable stats. Replace contradicted stats with verified alternatives. Reference: `skills/blog/references/flow-alignment.md`.
+Give every statistic enough context and source detail to identify, verify, and
+interpret it. Relevant details may include the publisher or report title,
+publication date or study period, methodology and limitations, a stable URL,
+and a retrieval date for changeable or undated material. No fixed citation form
+is required. Drop unverifiable statistics and replace contradicted statistics
+with verified alternatives. Reference:
+`${CLAUDE_PLUGIN_ROOT}/skills/blog/references/flow-alignment.md`.
 
 ---
 
 ### Finding Sections (300-400 words each, 4 findings)
 
-Each finding is an H2 phrased as a question. Follow this structure for each:
+Each finding uses an intent-matched H2. Questions and declarative findings are
+both valid. Follow this structure for each:
 
 ```markdown
 ## [Finding as a Question]?
@@ -284,7 +294,7 @@ We expected [expected result], but the data showed [actual result]. [Brief expla
 
 ---
 
-### FAQ (3-5 Questions)
+### Optional Reader Questions (count by reader need)
 
 [ANSWER-FIRST] for each question. Anticipate questions about methodology, applicability, and specific findings.
 
@@ -318,7 +328,7 @@ We expected [expected result], but the data showed [actual result]. [Brief expla
 - Include a methodology question (most common reader concern)
 - Include a scope/applicability question
 - Include a citation question (encourage backlinks)
-- Answers should be 40-60 words for Featured Snippet optimization
+- Answers should be concise and complete; Google has no required answer length
 
 ---
 
@@ -355,8 +365,8 @@ We expected [expected result], but the data showed [actual result]. [Brief expla
 Before publishing, verify:
 
 - [ ] Title includes specific sample size (N)
-- [ ] TL;DR contains 3 data points and is under 60 words
-- [ ] Key Findings has 5-7 self-contained, citable bullet points
+- [ ] Optional TL;DR accurately summarizes the result and material limitations
+- [ ] Key Findings contains the supported findings needed by the reader
 - [ ] Methodology section includes sample size, time period, source, and limitations
 - [ ] At least 1 [INFO-GAIN] in methodology (proprietary data/method)
 - [ ] 4 Finding sections, each with a unique chart type
@@ -364,7 +374,8 @@ Before publishing, verify:
 - [ ] Every finding includes a benchmark comparison
 - [ ] Every finding ends with a practical implication
 - [ ] At least 4 [VISUAL] markers with varied chart types
-- [ ] At least 3 [STAT] markers with external data points
+- [ ] External statistics are included only when material and verified; no
+      minimum applies
 - [ ] Surprises section includes 2+ counter-intuitive findings
 - [ ] Limitations are honestly stated
 - [ ] Recommendations are tied to specific findings

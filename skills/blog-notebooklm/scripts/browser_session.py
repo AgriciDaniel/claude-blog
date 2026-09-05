@@ -16,6 +16,7 @@ from patchright.sync_api import BrowserContext, Page
 sys.path.insert(0, str(Path(__file__).parent))
 
 from browser_utils import StealthUtils
+from config import validate_notebook_url
 
 
 class BrowserSession:
@@ -40,7 +41,7 @@ class BrowserSession:
         self.created_at = time.time()
         self.last_activity = time.time()
         self.message_count = 0
-        self.notebook_url = notebook_url
+        self.notebook_url = validate_notebook_url(notebook_url)
         self.context = context
         self.page = None
         self.stealth = StealthUtils()

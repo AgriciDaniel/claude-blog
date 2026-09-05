@@ -1,0 +1,107 @@
+{
+  "collapse-filter": false,
+  "search": "path:wiki",
+  "showTags": false,
+  "showAttachments": false,
+  "hideUnresolved": true,
+  "showOrphans": true,
+  "collapse-color-groups": false,
+  "colorGroups": [
+    {
+      "query": "path:wiki/meta",
+      "color": {
+        "a": 1,
+        "rgb": 743376
+      }
+    },
+    {
+      "query": "path:wiki/concepts",
+      "color": {
+        "a": 1,
+        "rgb": 5431518
+      }
+    },
+    {
+      "query": "path:wiki/writing OR path:wiki/rewriting",
+      "color": {
+        "a": 1,
+        "rgb": 10568436
+      }
+    },
+    {
+      "query": "path:wiki/eeat",
+      "color": {
+        "a": 1,
+        "rgb": 15233290
+      }
+    },
+    {
+      "query": "path:wiki/geo-aeo",
+      "color": {
+        "a": 1,
+        "rgb": 16362240
+      }
+    },
+    {
+      "query": "path:wiki/schema",
+      "color": {
+        "a": 1,
+        "rgb": 1226187
+      }
+    },
+    {
+      "query": "path:wiki/clusters OR path:wiki/briefs-outlines",
+      "color": {
+        "a": 1,
+        "rgb": 14233637
+      }
+    },
+    {
+      "query": "path:wiki/quality",
+      "color": {
+        "a": 1,
+        "rgb": 11621088
+      }
+    },
+    {
+      "query": "path:wiki/distribution OR path:wiki/flow",
+      "color": {
+        "a": 1,
+        "rgb": 5419488
+      }
+    },
+    {
+      "query": "path:wiki/multilingual OR path:wiki/personas",
+      "color": {
+        "a": 1,
+        "rgb": 9013641
+      }
+    },
+    {
+      "query": "path:wiki/data-integrations OR path:wiki/media",
+      "color": {
+        "a": 1,
+        "rgb": 7255551
+      }
+    },
+    {
+      "query": "path:wiki/monitoring OR path:wiki/sources",
+      "color": {
+        "a": 1,
+        "rgb": 16711680
+      }
+    }
+  ],
+  "collapse-display": true,
+  "showArrow": false,
+  "textFadeMultiplier": 0,
+  "nodeSizeMultiplier": 1,
+  "lineSizeMultiplier": 1,
+  "collapse-forces": true,
+  "centerStrength": 0.518713248970312,
+  "repelStrength": 10,
+  "linkStrength": 1,
+  "linkDistance": 250,
+  "scale": 0.1316872427983539,
+  "close": true
+}

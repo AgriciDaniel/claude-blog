@@ -45,6 +45,24 @@ sources.
 
 ## Process
 
+### Step 0.45: Topic Pre-Flight (v1.8.0)
+
+Before any search, run the four keyword-trap checks from `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/research-quality.md`. If the topic matches one of the four classes (Class 1 demographic shopping, Class 2 numeric trap, Class 3 overly-literal phrase, Class 4 generic single-noun), return a clarification request to the orchestrator BEFORE running searches.
+
+Skipping this pre-flight on a trap topic is the named failure mode of wasted research effort. One turn of reframe is worth 5 minutes of doomed searches.
+
+### Step 0.55: Named-Entity Decomposition (v1.8.0)
+
+For named-entity topics (proper nouns, products, people, projects), decompose the topic into discrete searchable entities before searching. Document the decomposition at the top of the research output. Use the checklist in `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/research-quality.md`:
+
+- [ ] Primary entity (official statements, vendor site)
+- [ ] Counter-perspective (critics, competitors, contrarians)
+- [ ] Practitioner discourse (subreddits, forums, dev.to)
+- [ ] Tangential entities (founder, parent org, related people)
+- [ ] Time anchor (last 30 or 90 days)
+
+When the topic resolves to a person who ships code, also resolve their GitHub username and their org's X / Twitter handle.
+
 ### When Finding Statistics
 
 1. Search for current data: `[topic] study 2025 2026 data statistics research`
@@ -60,6 +78,31 @@ sources.
 4. Verify the statistic exists on the source page using WebFetch
 5. Flag any statistics that cannot be verified
 
+### Freshness Review (v2.1.0)
+
+For time-sensitive content (news, trend analysis, "state of X" posts, product
+updates), use sources recent enough to support the claim at the time of
+publication. Evergreen content may rely on older authoritative sources when
+their facts remain current. Report the freshness summary and any material
+currency gaps at the top of the research output. See
+`${CLAUDE_PLUGIN_ROOT}/skills/blog/references/research-quality.md` for the full classification table.
+
+### Quality Rubric (v1.8.0)
+
+Before passing research to `blog-writer`, score the output against the 5-dimension rubric in `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/research-quality.md`:
+
+- 30% groundedness (claim-appropriate, verifiable source support)
+- 25% specificity (named entities, exact numbers)
+- 20% coverage (>=2 independent sources per load-bearing claim; cross-source clustering applied)
+- 15% actionability (the reader can do something concrete)
+- 10% format compliance (per `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/synthesis-contract.md`)
+
+A research output scoring below 70 is sent back for remediation. Below 50 is a do-over.
+
+### Cross-Source Clustering (v1.8.0)
+
+When multiple retrieved sources cite the same upstream source (e.g. five articles all paraphrasing one BrightEdge report), they are ONE source for coverage scoring purposes, not five. Group retrieved sources by upstream; surface the upstream as the primary citation; mention secondary sources only when they add original analysis. See `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/research-quality.md` for the clustering procedure and reporting format.
+
 ### When Finding Images
 
 1. Search Pixabay first: `site:pixabay.com [topic keywords]`
@@ -70,20 +113,23 @@ sources.
    - Write a descriptive alt text sentence
    - Note relevance to the blog topic
 
-### Image URL Verification (Required -- Never Skip)
+### Image URL Verification (Required, Never Skip)
 
 After finding each candidate image URL:
 
-1. Verify it's a direct image file URL (ends in .jpg, .jpeg, .png, .webp, or is a CDN URL)
+1. Verify it is a direct image file URL. It must return an image `Content-Type`,
+   have usable dimensions, and must not be an HTML page
    - Pixabay page URLs (`pixabay.com/photos/...`) are NOT image URLs
    - Unsplash photo pages (`unsplash.com/photos/...`) are NOT image URLs
 2. If you have a page URL, extract the direct image URL:
-   - WebFetch the page and look for the `og:image` meta tag -- this is the most reliable source
+   - WebFetch the page and look for the `og:image` meta tag: this is the most reliable source
    - Pixabay CDN pattern: `https://cdn.pixabay.com/photo/YYYY/MM/DD/HH/MM/filename.jpg`
    - Unsplash CDN pattern: `https://images.unsplash.com/photo-<id>?w=1200&h=630&fit=crop&q=80`
-3. Verify the URL resolves: `curl -sI "<url>" | head -1`
-   - Must return HTTP 200 (or 301/302 -- follow redirect and use final URL)
-   - If 403/404: discard and find replacement
+3. Do not run shell commands for URL checks. Mark direct image URLs as
+   candidate URLs, then ask the orchestrator to run `${CLAUDE_PLUGIN_ROOT}/scripts/blog_preflight.py`
+   Gate 5 or another safe URL validator with SSRF protection
+   - Must return HTTP 200 with an image content type
+   - If 403/404 or non-image content: discard and find replacement
 4. Mark each image as Verified (HTTP 200) or Unverified in your output table
 5. Never include more than 1 Unverified image in a research packet
 
@@ -100,26 +146,22 @@ If fewer than 3 suitable stock images are found, or the topic is too niche/abstr
 ### When Querying NotebookLM
 
 If the user has NotebookLM notebooks relevant to the blog topic, use them for
-Tier 1 research data (user-uploaded primary sources). This is optional and
-should never block the research workflow.
+source-grounded research context. This is optional and should never block the
+research workflow.
 
-1. Check if `blog-notebooklm` is configured:
-   ```bash
-   python3 skills/blog-notebooklm/scripts/run.py auth_manager.py status
-   ```
-2. If authenticated, check for relevant notebooks:
-   ```bash
-   python3 skills/blog-notebooklm/scripts/run.py notebook_manager.py search --query "[topic]"
-   ```
-3. If a matching notebook exists, query it:
-   ```bash
-   python3 skills/blog-notebooklm/scripts/run.py ask_question.py --question "[research question]" --notebook-id [id] --json
-   ```
-4. Parse the JSON response and include findings as Tier 1 sources
+1. Ask the orchestrator to check whether `blog-notebooklm` is configured.
+2. If authenticated, ask the orchestrator to search for relevant notebooks.
+3. If a matching notebook exists, ask the orchestrator to query it and return
+   the JSON response.
+4. Parse the JSON response and pass through the underlying source title, public
+   source URL, publication date or retrieval date, and document type for each
+   finding. Do not import the NotebookLM answer itself as the source.
 5. If auth is missing or no notebooks match, skip silently and continue with WebSearch
 
-**Source classification:** NotebookLM answers are Tier 1 because they come
-exclusively from the user's own uploaded documents -- zero hallucination risk.
+**Source classification:** NotebookLM answers are source-grounded model output.
+Classify the underlying document using the normal Tier 1-3 system. If the
+response lacks a verifiable underlying source URL and date, use it only as
+internal context and do not include it as a public citation.
 
 ### When Analyzing Competition
 
@@ -214,12 +256,9 @@ Verification process:
 
 When researching for blog posts, find 2-3 relevant YouTube videos for embedding:
 
-1. Use blog-google if available:
-   ```bash
-   python3 skills/blog-google/scripts/run.py youtube_search search "[primary keyword]" --json
-   ```
-2. If blog-google unavailable, use WebSearch: `site:youtube.com [topic] [year] -shorts`
-3. Apply quality criteria (from `references/video-embeds.md`):
+1. Ask the orchestrator to use blog-google if available.
+2. If blog-google is unavailable, use WebSearch: `site:youtube.com [topic] [year] -shorts`
+3. Apply quality criteria (from `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/video-embeds.md`):
    - Minimum 1,000 views, published within last 3 years
    - Title or description contains the topic keyword
    - From a channel with > 1,000 subscribers

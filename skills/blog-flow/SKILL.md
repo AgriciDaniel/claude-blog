@@ -12,24 +12,29 @@ license: MIT
 compatibility: Requires Claude Code and Python 3.11+ for the sync script
 metadata:
   author: AgriciDaniel
-  version: "1.7.0"
+  version: "2.3.0"
   category: blog
 ---
 
 # FLOW Framework for Bloggers (Find, Optimize, Win)
 
+Runs FLOW Find/Optimize/Win prompts for a blog topic or URL, turning query data,
+source notes, and page evidence into structured decisions instead of improvised
+prompts.
+
 > Framework and prompts (c) Daniel Agrici, CC BY 4.0. Source: github.com/AgriciDaniel/flow
 
-FLOW is an evidence-led operating model built for the AI-search era. Claude Blog
-integrates the FLOW prompt library so writers can drive their workflow with
-structured, source-backed AI prompts instead of improvised queries.
+FLOW is an evidence-led operating model for retrieval, citation, and conversion
+workflows. Claude Blog integrates the FLOW prompt library so writers can turn
+query data, source notes, and page evidence into structured decisions instead of
+improvised prompts.
 
 This skill exposes the three blog-relevant stages (Find, Optimize, Win) and keeps
 the single Leverage prompt available through the prompts index. The local-SEO
 prompts (GBP, citations, local audits) are intentionally excluded because they
 target brick-and-mortar work, not blogs.
 
-**Runtime context.** Load `references/flow-framework.md` on every `/blog flow`
+**Runtime context.** Load `${CLAUDE_PLUGIN_ROOT}/skills/blog-flow/references/flow-framework.md` on every `/blog flow`
 activation. Load prompt files on demand only, scoped to the stage the user
 requests.
 
@@ -55,7 +60,7 @@ blog workflows route off-site work elsewhere.
 ## Orchestration Logic
 
 ### On `/blog flow` (no sub-command)
-1. Read `references/flow-framework.md`.
+1. Read `${CLAUDE_PLUGIN_ROOT}/skills/blog-flow/references/flow-framework.md`.
 2. Show the FLOW stage overview with a one-line description of each stage.
 3. Ask the user which stage matches their current situation.
 
@@ -91,7 +96,7 @@ blog workflows route off-site work elsewhere.
    `claude-seo` (`/seo flow local`) if they need them.
 
 ### On `/blog flow sync`
-1. Run: `python3 scripts/sync_flow.py`.
+1. Run: `python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-flow/scripts/sync_flow.py`.
 2. Display the JSON summary (files added, updated, unchanged).
 3. Show the attribution notice after the sync completes.
 
@@ -117,9 +122,9 @@ Always surface exactly 2 to 3 prompts. State which prompts you chose and why.
 
 Load on demand. Do NOT load all at startup.
 
-- `references/flow-framework.md`. FLOW operating model. Load on every `/blog
+- `${CLAUDE_PLUGIN_ROOT}/skills/blog-flow/references/flow-framework.md`. FLOW operating model. Load on every `/blog
   flow` activation.
-- `references/bibliography.md`. Evidence sources. Load when citing studies or
+- `${CLAUDE_PLUGIN_ROOT}/skills/blog-flow/references/bibliography.md`. Evidence sources. Load when citing studies or
   statistics.
 - `references/prompts/README.md`. Prompt index. Load for `/blog flow prompts`.
 - `references/prompts/find/`. 5 prompts. Load for `/blog flow find`.
@@ -135,22 +140,22 @@ If `references/` is missing, instruct the user to run `/blog flow sync` first.
 
 ## Sync Script
 
-`scripts/sync_flow.py` pulls prompt files from github.com/AgriciDaniel/flow and
-writes them under `skills/blog-flow/references/`. Stdlib only, HTTPS only,
+`${CLAUDE_PLUGIN_ROOT}/skills/blog-flow/scripts/sync_flow.py` pulls prompt files from github.com/AgriciDaniel/flow and
+writes them under `${CLAUDE_PLUGIN_ROOT}/skills/blog-flow/references/`. Stdlib only, HTTPS only,
 host-allowlisted to `api.github.com`, 5 MB response cap, atomic writes,
 path-traversal guarded.
 
 Modes:
 
-- `python3 scripts/sync_flow.py`. Sync the latest version of every blog-relevant
+- `python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-flow/scripts/sync_flow.py`. Sync the latest version of every blog-relevant
   stage to disk and refresh the lockfile.
-- `python3 scripts/sync_flow.py --dry-run`. Report planned changes without
+- `python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-flow/scripts/sync_flow.py --dry-run`. Report planned changes without
   writing.
-- `python3 scripts/sync_flow.py --ref <sha>`. Pin fetches to a specific FLOW
+- `python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-flow/scripts/sync_flow.py --ref <sha>`. Pin fetches to a specific FLOW
   commit SHA for reproducible installs.
 
 The lockfile lives at
-`skills/blog-flow/references/flow-prompts.lock` and uses sha256sum-compatible
+`${CLAUDE_PLUGIN_ROOT}/skills/blog-flow/references/flow-prompts.lock` and uses sha256sum-compatible
 format. Drift between the on-disk content and the lockfile is reported on every
 sync run.
 
@@ -181,7 +186,7 @@ license header injected by the sync script.
 
 | Scenario | Action |
 |----------|--------|
-| `references/flow-framework.md` missing | "FLOW reference files not synced. Run: `/blog flow sync`." |
+| `${CLAUDE_PLUGIN_ROOT}/skills/blog-flow/references/flow-framework.md` missing | "FLOW reference files not synced. Run: `/blog flow sync`." |
 | Prompt file missing | "Run `/blog flow sync` to pull the latest prompts from the FLOW repo." |
 | `sync_flow.py` network error | Display the script's stderr. Check rate limits with `gh api rate_limit` if `gh` is installed. |
 | `sync_flow.py` 403 after retry | Set `GITHUB_TOKEN` or run `gh auth login`, then retry. |

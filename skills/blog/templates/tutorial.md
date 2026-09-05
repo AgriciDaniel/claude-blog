@@ -44,7 +44,7 @@ Do NOT use this template for:
 
 ---
 
-### TL;DR Box (40-60 words)
+### TL;DR Box (concise; length follows the material)
 
 [ANSWER-FIRST] Summarize what the reader will build or achieve in 2-3 sentences. State the end result, the primary tool, and the approximate time to complete. This box should be extractable as a standalone snippet.
 
@@ -307,7 +307,7 @@ Expected result:
 
 ---
 
-### FAQ (3-5 Technical Questions)
+### Optional Technical Questions (count by reader need)
 
 [ANSWER-FIRST] for each question. Each answer should be self-contained and extractable.
 
@@ -335,7 +335,7 @@ Expected result:
 - Phrase questions exactly as users would type them into a search engine
 - Answer in the first sentence - no throat-clearing
 - Include code snippets in answers when relevant
-- Target Google Featured Snippet extraction (40-60 word answers)
+- Answer the question directly and completely; Google has no required answer length
 
 ---
 
@@ -365,17 +365,17 @@ Expected result:
 Before publishing, verify:
 
 - [ ] Title includes tool name, specific outcome, and year
-- [ ] TL;DR is 40-60 words and extractable as a snippet
+- [ ] Optional TL;DR is concise, useful, and factually supported
 - [ ] All prerequisites are listed with exact versions
 - [ ] Every code block is complete and copy-pasteable
 - [ ] Every step produces a visible, testable result
 - [ ] Expected output is shown after each code block
 - [ ] At least 4 [IMAGE] markers placed at key visual moments
 - [ ] At least 2 [INFO-GAIN] sections with original tips/experience
-- [ ] At least 2 [STAT] markers with relevant data points
+- [ ] Statistics are optional, material to the tutorial, and verified when used
 - [ ] At least 1 [VISUAL] marker for architecture or flow diagrams
 - [ ] Troubleshooting table has 5+ common errors
-- [ ] FAQ has 3-5 questions phrased as search queries
+- [ ] Optional FAQ reflects genuine reader questions
 - [ ] [INTERNAL-LINK] zones placed in Prerequisites, Steps, Next Steps, and FAQ
 - [ ] Full source code is included at the end
 - [ ] All code tested and verified before publishing

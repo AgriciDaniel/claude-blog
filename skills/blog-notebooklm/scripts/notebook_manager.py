@@ -9,9 +9,14 @@ import json
 import argparse
 import uuid
 import os
+import re
+import sys
 from pathlib import Path
 from typing import Dict, List, Optional, Any
 from datetime import datetime
+
+sys.path.insert(0, str(Path(__file__).parent))
+from config import DATA_DIR, LIBRARY_FILE, validate_notebook_url
 
 
 class NotebookLibrary:
@@ -20,11 +25,14 @@ class NotebookLibrary:
     def __init__(self):
         """Initialize the notebook library"""
         # Store data within the skill directory
-        skill_dir = Path(__file__).parent.parent
-        self.data_dir = skill_dir / "data"
+        self.data_dir = DATA_DIR
         self.data_dir.mkdir(parents=True, exist_ok=True)
+        try:
+            self.data_dir.chmod(0o700)
+        except OSError:
+            pass
 
-        self.library_file = self.data_dir / "library.json"
+        self.library_file = LIBRARY_FILE
         self.notebooks: Dict[str, Dict[str, Any]] = {}
         self.active_notebook_id: Optional[str] = None
 
@@ -57,8 +65,17 @@ class NotebookLibrary:
             }
             with open(self.library_file, 'w') as f:
                 json.dump(data, f, indent=2)
+            try:
+                self.library_file.chmod(0o600)
+            except OSError:
+                pass
         except Exception as e:
             print(f"❌ Error saving library: {e}")
+
+    def _slugify(self, value: str) -> str:
+        """Create a bounded notebook ID safe for JSON keys and logs."""
+        slug = re.sub(r"[^a-z0-9]+", "-", value.lower()).strip("-")
+        return slug[:80] or f"notebook-{uuid.uuid4().hex[:8]}"
 
     def add_notebook(
         self,
@@ -85,8 +102,10 @@ class NotebookLibrary:
         Returns:
             The created notebook object
         """
+        url = validate_notebook_url(url)
+
         # Generate ID from name
-        notebook_id = name.lower().replace(' ', '-').replace('_', '-')
+        notebook_id = self._slugify(name)
 
         # Check for duplicates
         if notebook_id in self.notebooks:
@@ -187,7 +206,7 @@ class NotebookLibrary:
         if tags is not None:
             notebook['tags'] = tags
         if url is not None:
-            notebook['url'] = url
+            notebook['url'] = validate_notebook_url(url)
 
         notebook['updated_at'] = datetime.now().isoformat()
 
@@ -308,8 +327,11 @@ class NotebookLibrary:
 def main():
     """Command-line interface for notebook management"""
     parser = argparse.ArgumentParser(description='Manage NotebookLM library')
+    parser.add_argument('--json', action='store_true', help='Output structured JSON')
 
     subparsers = parser.add_subparsers(dest='command', help='Commands')
+    json_parent = argparse.ArgumentParser(add_help=False)
+    json_parent.add_argument('--json', action='store_true', help='Output structured JSON')
 
     # Closes audit VULN-037: input length caps on CLI string args.
     # `add_notebook` derives notebook_id = name.lower().replace(' ', '-')
@@ -325,7 +347,7 @@ def main():
         return _check
 
     # Add command
-    add_parser = subparsers.add_parser('add', help='Add a notebook')
+    add_parser = subparsers.add_parser('add', parents=[json_parent], help='Add a notebook')
     add_parser.add_argument('--url', required=True, type=_bounded(2000),
                             help='NotebookLM URL (max 2000 chars)')
     add_parser.add_argument('--name', required=True, type=_bounded(200),
@@ -340,22 +362,22 @@ def main():
                             help='Comma-separated tags (max 500 chars)')
 
     # List command
-    subparsers.add_parser('list', help='List all notebooks')
+    subparsers.add_parser('list', parents=[json_parent], help='List all notebooks')
 
     # Search command
-    search_parser = subparsers.add_parser('search', help='Search notebooks')
+    search_parser = subparsers.add_parser('search', parents=[json_parent], help='Search notebooks')
     search_parser.add_argument('--query', required=True, help='Search query')
 
     # Activate command
-    activate_parser = subparsers.add_parser('activate', help='Set active notebook')
+    activate_parser = subparsers.add_parser('activate', parents=[json_parent], help='Set active notebook')
     activate_parser.add_argument('--id', required=True, help='Notebook ID')
 
     # Remove command
-    remove_parser = subparsers.add_parser('remove', help='Remove a notebook')
+    remove_parser = subparsers.add_parser('remove', parents=[json_parent], help='Remove a notebook')
     remove_parser.add_argument('--id', required=True, help='Notebook ID')
 
     # Stats command
-    subparsers.add_parser('stats', help='Show library statistics')
+    subparsers.add_parser('stats', parents=[json_parent], help='Show library statistics')
 
     args = parser.parse_args()
 
@@ -380,6 +402,13 @@ def main():
 
     elif args.command == 'list':
         notebooks = library.list_notebooks()
+        if args.json:
+            print(json.dumps({
+                "status": "success",
+                "notebooks": notebooks,
+                "active_notebook_id": library.active_notebook_id,
+            }, indent=2))
+            return
         if notebooks:
             print("\n📚 Notebook Library:")
             for notebook in notebooks:
@@ -393,6 +422,9 @@ def main():
 
     elif args.command == 'search':
         results = library.search_notebooks(args.query)
+        if args.json:
+            print(json.dumps({"status": "success", "results": results}, indent=2))
+            return
         if results:
             print(f"\n🔍 Found {len(results)} notebooks:")
             for notebook in results:
@@ -403,14 +435,24 @@ def main():
 
     elif args.command == 'activate':
         notebook = library.select_notebook(args.id)
+        if args.json:
+            print(json.dumps({"status": "success", "active_notebook": notebook}, indent=2))
+            return
         print(f"Now using: {notebook['name']}")
 
     elif args.command == 'remove':
-        if library.remove_notebook(args.id):
+        removed = library.remove_notebook(args.id)
+        if args.json:
+            print(json.dumps({"status": "success" if removed else "error", "removed": removed, "id": args.id}, indent=2))
+            return
+        if removed:
             print("Notebook removed from library")
 
     elif args.command == 'stats':
         stats = library.get_stats()
+        if args.json:
+            print(json.dumps({"status": "success", "stats": stats}, indent=2))
+            return
         print("\n📊 Library Statistics:")
         print(f"  Total notebooks: {stats['total_notebooks']}")
         print(f"  Total topics: {stats['total_topics']}")

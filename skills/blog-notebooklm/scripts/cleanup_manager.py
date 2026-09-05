@@ -6,6 +6,7 @@ Manages cleanup of skill data and browser state
 
 import shutil
 import argparse
+import json
 from pathlib import Path
 from typing import Dict, List, Any
 
@@ -231,16 +232,16 @@ def main():
         epilog="""
 Examples:
   # Preview what will be deleted
-  python cleanup_manager.py
+  python3 cleanup_manager.py
 
   # Perform cleanup (delete everything)
-  python cleanup_manager.py --confirm
+  python3 cleanup_manager.py --confirm
 
   # Cleanup but keep library
-  python cleanup_manager.py --confirm --preserve-library
+  python3 cleanup_manager.py --confirm --preserve-library
 
   # Force cleanup without preview
-  python cleanup_manager.py --confirm --force
+  python3 cleanup_manager.py --confirm --force
         """
     )
 
@@ -261,6 +262,11 @@ Examples:
         action='store_true',
         help='Skip confirmation prompt'
     )
+    parser.add_argument(
+        '--json',
+        action='store_true',
+        help='Output structured JSON'
+    )
 
     args = parser.parse_args()
 
@@ -277,12 +283,19 @@ Examples:
             response = input("Are you sure? (yes/no): ")
 
             if response.lower() != 'yes':
+                if args.json:
+                    print(json.dumps({"status": "cancelled"}, indent=2))
+                    return
                 print("Cleanup cancelled.")
                 return
 
         # Perform cleanup
         print("\n🗑️ Performing cleanup...")
         result = manager.perform_cleanup(args.preserve_library, dry_run=False)
+        if args.json:
+            status = "success" if result.get("failed_count", 0) == 0 else "partial"
+            print(json.dumps({"status": status, "result": result}, indent=2))
+            return
 
         print(f"\n✅ Cleanup complete!")
         print(f"  Deleted: {result['deleted_count']} items")
@@ -292,6 +305,10 @@ Examples:
             print(f"  ⚠️ Failed: {result['failed_count']} items")
 
     else:
+        if args.json:
+            preview = manager.get_cleanup_paths(args.preserve_library)
+            print(json.dumps({"status": "success", "preview": preview}, indent=2))
+            return
         # Just show preview
         manager.print_cleanup_preview(args.preserve_library)
         print("\n💡 Note: Virtual environment (.venv) is never deleted")

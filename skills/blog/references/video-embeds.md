@@ -2,44 +2,33 @@
 
 ## Why YouTube Embeds Matter
 
-Video is the strongest signal for AI visibility. Key data points:
+Video can help readers when a demonstration, walkthrough, or expert explanation
+adds information the article cannot communicate as effectively in text or
+images. Vendor datasets report associations between video mentions and measured
+visibility, but those observations are non-causal, time-bound, and not ranking
+or readiness bonuses.
 
-- **0.737 correlation** with AI visibility, the strongest single signal (Ahrefs 75K-brand study)
-- Video citations in AI Overviews up **414%** year-over-year (NP Digital Q1 2025, 10K+ AIO analysis)
-- How-to video citations up **651%**, visual demo citations up **592%** (NP Digital)
-- YouTube is cited **200x more** than any other video platform by AI systems
-- Pages with embedded video have **53x higher chance** of front-page ranking (Forrester)
-
-Embedding relevant YouTube videos is not optional. It is a top-tier ranking and
-AI citation signal that every blog post should leverage when suitable videos exist.
+Embed a video only when it is relevant, accurate, accessible, and useful. Skip
+video when available options are stale, low quality, off-topic, duplicative, or
+distracting.
 
 ---
 
 ## Video Quality Criteria
 
-### Minimum Standards
+### Suitability Review
 
-| Criterion | Minimum | Preferred |
-|-----------|---------|-----------|
-| Views | >1,000 | >10,000 |
-| Like ratio | >90% | >95% |
-| Recency | <3 years | <18 months |
-| Channel subscribers | >1,000 | >10,000 |
-| Duration | >3 minutes | 5-15 minutes |
-| Captions | Present | Accurate/manual |
-| Relevance | Title keyword match | Title + description match |
+| Criterion | Review Question |
+|-----------|-----------------|
+| Relevance | Does the video directly support the section's reader task? |
+| Accuracy | Are material claims current and verifiable? |
+| Added value | Does it demonstrate or explain something beyond the surrounding text? |
+| Accessibility | Are accurate captions or a useful transcript available? |
+| Source transparency | Is the creator identifiable and are conflicts disclosed? |
+| User experience | Is the embed performant, privacy-conscious, and non-disruptive? |
 
-### Quality Scoring Formula (0-100)
-
-| Factor | Weight | Scoring Method |
-|--------|--------|---------------|
-| Relevance (title/description keyword match) | 35 pts | Exact keyword in title = 35, partial = 20, description only = 10 |
-| View count (log scale) | 20 pts | log10(views) / log10(10M) * 20, capped at 20 |
-| Recency (months since publish) | 20 pts | max(0, 20 - (months_old * 0.8)) |
-| Channel authority (subscribers, log scale) | 15 pts | log10(subs) / log10(1M) * 15, capped at 15 |
-| Engagement (like ratio) | 10 pts | (like_ratio - 0.80) / 0.20 * 10, capped at 10 |
-
-**Minimum score threshold: 50/100.** Videos scoring below 50 should be skipped.
+Views, likes, channel size, age, and duration may provide context, but none is a
+universal quality threshold or citation-readiness score.
 
 ---
 
@@ -47,14 +36,14 @@ AI citation signal that every blog post should leverage when suitable videos exi
 
 | Position | Video Purpose | When |
 |----------|--------------|------|
-| After introduction (before first H2 body) | Overview / explainer | Always place 1st video here |
+| After introduction (before first H2 body) | Overview / explainer | Only if it adds immediate context |
 | Mid-article (after 2nd or 3rd H2) | Tutorial / demo / how-to | If video shows a process |
 | Before FAQ or conclusion | Summary or expert opinion | Optional 3rd video |
 
 ### Placement Rules
 
-- **2-3 videos per post** (never more than 3)
-- Minimum **500 words** between video embeds
+- Use only as many videos as the reader task warrants
+- Space embeds according to surrounding content and page usability, not a word quota
 - Never place a video immediately before or after a chart
 - Videos **complement** text; they never replace written content
 
@@ -62,23 +51,29 @@ AI citation signal that every blog post should leverage when suitable videos exi
 
 ## Embed Code Patterns
 
-### MDX / Next.js (camelCase, srcdoc lazy loading)
+Before rendering any embed, validate `VIDEO_ID` against YouTube's ID pattern and
+escape title, channel, and description fields with `html.escape(value, quote=True)`.
+Reject untrusted `javascript:`, `data:`, and `file:` URLs.
+
+### MDX / Next.js (camelCase, srcDoc lazy loading)
 
 ```jsx
 <figure className="video-embed" style={{margin: '2.5rem 0', textAlign: 'center'}}>
   <div style={{position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', maxWidth: '100%', borderRadius: '12px'}}>
     <iframe
-      srcdoc="<style>*{padding:0;margin:0;overflow:hidden}html,body{height:100%}img,span{position:absolute;width:100%;top:0;bottom:0;margin:auto}span{height:1.5em;text-align:center;font:48px/1.5 sans-serif;color:white;text-shadow:0 0 0.5em black}</style><a href='https://www.youtube.com/embed/VIDEO_ID?autoplay=1'><img src='https://img.youtube.com/vi/VIDEO_ID/hqdefault.jpg' alt='VIDEO_TITLE'><span>&#x25BA;</span></a>"
+      srcDoc="<style>*{padding:0;margin:0;overflow:hidden}html,body{height:100%}img,span{position:absolute;width:100%;top:0;bottom:0;margin:auto}span{height:1.5em;text-align:center;font:48px/1.5 sans-serif;color:white;text-shadow:0 0 0.5em black}</style><a href='https://www.youtube.com/embed/VIDEO_ID?autoplay=1'><img src='https://img.youtube.com/vi/VIDEO_ID/hqdefault.jpg' alt='VIDEO_TITLE_ESC'><span>&#x25BA;</span></a>"
       style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none'}}
       loading="lazy"
       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      sandbox="allow-scripts allow-same-origin allow-presentation"
+      referrerPolicy="strict-origin-when-cross-origin"
       allowFullScreen
-      title="VIDEO_TITLE"
-      aria-label="YouTube video: VIDEO_TITLE"
+      title="VIDEO_TITLE_ESC"
+      aria-label="YouTube video: VIDEO_TITLE_ESC"
     />
   </div>
   <noscript>
-    <p><strong>Video:</strong> <a href="https://www.youtube.com/watch?v=VIDEO_ID">VIDEO_TITLE</a> by CHANNEL_NAME. DESCRIPTION_EXCERPT</p>
+    <p><strong>Video:</strong> <a href="https://www.youtube.com/watch?v=VIDEO_ID">VIDEO_TITLE_ESC</a> by CHANNEL_NAME_ESC. DESCRIPTION_EXCERPT_ESC</p>
   </noscript>
 </figure>
 ```
@@ -89,17 +84,19 @@ AI citation signal that every blog post should leverage when suitable videos exi
 <figure class="video-embed" style="margin: 2.5rem 0; text-align: center;">
   <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; border-radius: 12px;">
     <iframe
-      srcdoc="<style>*{padding:0;margin:0;overflow:hidden}html,body{height:100%}img,span{position:absolute;width:100%;top:0;bottom:0;margin:auto}span{height:1.5em;text-align:center;font:48px/1.5 sans-serif;color:white;text-shadow:0 0 0.5em black}</style><a href='https://www.youtube.com/embed/VIDEO_ID?autoplay=1'><img src='https://img.youtube.com/vi/VIDEO_ID/hqdefault.jpg' alt='VIDEO_TITLE'><span>&#x25BA;</span></a>"
+      srcdoc="<style>*{padding:0;margin:0;overflow:hidden}html,body{height:100%}img,span{position:absolute;width:100%;top:0;bottom:0;margin:auto}span{height:1.5em;text-align:center;font:48px/1.5 sans-serif;color:white;text-shadow:0 0 0.5em black}</style><a href='https://www.youtube.com/embed/VIDEO_ID?autoplay=1'><img src='https://img.youtube.com/vi/VIDEO_ID/hqdefault.jpg' alt='VIDEO_TITLE_ESC'><span>&#x25BA;</span></a>"
       style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;"
       loading="lazy"
       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      sandbox="allow-scripts allow-same-origin allow-presentation"
+      referrerpolicy="strict-origin-when-cross-origin"
       allowfullscreen
-      title="VIDEO_TITLE"
-      aria-label="YouTube video: VIDEO_TITLE">
+      title="VIDEO_TITLE_ESC"
+      aria-label="YouTube video: VIDEO_TITLE_ESC">
     </iframe>
   </div>
   <noscript>
-    <p><strong>Video:</strong> <a href="https://www.youtube.com/watch?v=VIDEO_ID">VIDEO_TITLE</a> by CHANNEL_NAME. DESCRIPTION_EXCERPT</p>
+    <p><strong>Video:</strong> <a href="https://www.youtube.com/watch?v=VIDEO_ID">VIDEO_TITLE_ESC</a> by CHANNEL_NAME_ESC. DESCRIPTION_EXCERPT_ESC</p>
   </noscript>
 </figure>
 ```
@@ -148,20 +145,21 @@ Add a VideoObject to the page `@graph` for each embedded video. Use the stable
   "interactionStatistic": {
     "@type": "InteractionCounter",
     "interactionType": { "@type": "WatchAction" },
-    "userInteractionCount": VIEW_COUNT
+    "userInteractionCount": 0
   }
 }
 ```
 
-Replace `{index}` with 1, 2, or 3 matching embed order. Include `duration` in
-ISO 8601 format (e.g., `PT12M30S` for 12 minutes 30 seconds).
+Replace `{index}` with 1, 2, or 3 matching embed order. Replace
+`userInteractionCount` with the numeric view count when available. Include
+`duration` in ISO 8601 format (e.g., `PT12M30S` for 12 minutes 30 seconds).
 
 ---
 
 ## Noscript Fallback for AI Crawlers
 
-AI crawlers (GPTBot, PerplexityBot, ClaudeBot, Google-Extended) do not execute
-JavaScript, so YouTube iframes are invisible to them. The `<noscript>` block
+Standard crawlers such as GPTBot, PerplexityBot, and ClaudeBot should be assumed
+not to execute JavaScript, so YouTube iframes may be invisible to them. The `<noscript>` block
 provides a text fallback containing:
 
 - Video title as anchor text linking to YouTube
@@ -177,7 +175,7 @@ rendering the embed. Every video embed must include a noscript fallback.
 
 | Scenario | Behavior |
 |----------|----------|
-| No GOOGLE_API_KEY available | Use WebSearch `site:youtube.com [topic] [year]` to find videos |
+| No GOOGLE_AI_API_KEY available | Use WebSearch `site:youtube.com [topic] [year]` to find videos |
 | No suitable videos found | Skip silently, continue blog generation without video |
 | API rate limit exceeded | Use cached/previously found videos, or skip |
 | Video removed after embedding | Noscript text provides graceful fallback with title and link |
