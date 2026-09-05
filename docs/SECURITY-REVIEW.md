@@ -15,10 +15,11 @@ no daemon, no telemetry, no analytics, no auto-update, and no phone-home.
 
 | Component | Count | What it is |
 |---|---|---|
-| Skills | 28 | Markdown with YAML frontmatter |
+| Skills | 32 | Markdown with YAML frontmatter |
 | Agents | 5 | Markdown subagent definitions |
-| References / templates | 27 | Markdown |
-| Python scripts | 24 | Optional; only run when a skill needs live data |
+| References | 23 | Markdown, loaded on demand |
+| Templates | 12 | Markdown content scaffolds |
+| Python scripts | 22 root + 33 per-skill | Optional; only run when a skill needs live data |
 | Node scripts | 1 | The opt-in MCP launcher described below |
 | Hooks | **0** | The plugin registers no lifecycle hooks |
 
@@ -31,24 +32,37 @@ working folder is opt-in and off until a credential is supplied.
 
 ### The MCP server is gated
 
-A plugin-root `.mcp.json` normally starts its servers the moment the plugin is
-enabled. Pointing it at `npx @ycse/nanobanana-mcp` would mean every install
-fetches and executes a third-party npm package unprompted. It does not:
+A plugin's MCP servers start the moment the plugin is enabled. Pointing the
+config at `npx @ycse/nanobanana-mcp` would mean every install fetches and
+executes a third-party npm package unprompted. It does not:
 
 ```json
 "command": "node",
 "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/nanobanana-launcher.mjs"]
 ```
 
-`scripts/nanobanana-launcher.mjs` is 90 lines of dependency-free Node. It reads
-the API key from the environment and, if unset, writes one line to stderr and
-`process.exit(0)`. No network, no download, no child process. Only with a key
-configured does it spawn the pinned version, with `shell: false` and the
-credential passed through the environment rather than argv.
+`scripts/nanobanana-launcher.mjs` is dependency-free Node. It reads the API key
+from the environment and, if unset, serves an inert but protocol-valid MCP
+session that advertises zero tools: no network, no download, no third-party
+code. Only with a key configured does it spawn the exact pinned version, with
+`shell: false` and the credential passed through the environment rather than
+argv.
+
+The inert session exists so a deliberately disabled optional feature does not
+surface as a failed connection on every session, which reads as a broken plugin.
+It answers `initialize`, `ping` and `tools/list` (with an empty list) and
+rejects everything else.
+
+The config file is `mcp-servers.json`, referenced from `plugin.json`. It is
+deliberately not named `.mcp.json`, because that filename is also read as a
+*project-scoped* config: a contributor working in this repository would have
+Claude try to launch it with `${CLAUDE_PLUGIN_ROOT}` unresolved. Keeping the
+distributed name distinct also lets `.gitignore` keep its blanket `.mcp.json`
+rule with no exception.
 
 Enforced by `tests/test_security_guardrails.py::test_mcp_server_is_opt_in_via_launcher`,
-which fails the build if `.mcp.json` ever invokes `npx` directly, if the version
-floats to `latest`, if `shell: false` is dropped, or if the no-key exit path is
+which fails the build if the config ever invokes `npx` directly, if the version
+floats to `latest`, if `shell: false` is dropped, or if the inert no-key path is
 removed.
 
 ## Network egress
@@ -88,10 +102,10 @@ translation command fully functional.
   mode `0600`. Enforced by
   `test_google_auth_write_secret_atomic_sets_mode_0600` and
   `test_notebooklm_credential_files_contain_chmod_hardening`.
-- The tracked `.mcp.json` may only contain `${...}` placeholders; a literal
-  value fails `test_tracked_mcp_json_carries_no_literal_credential`.
-- `.gitignore` blocks `.mcp.json` recursively with exactly one negation for the
-  plugin-root file, verified by `test_mcp_json_is_gitignored`.
+- The shipped `mcp-servers.json` may only contain `${...}` placeholders; a
+  literal value fails `test_shipped_mcp_config_carries_no_literal_credential`.
+- `.gitignore` blocks `.mcp.json` recursively with no exception, verified by
+  `test_mcp_json_is_gitignored`.
 - `scripts/package_plugin.py` refuses to build an archive containing anything
   credential-shaped (`*.pem`, `*.key`, `service_account.json`, `.env`, …).
 - `uninstall.sh` / `uninstall.ps1` purge stored OAuth tokens and API config.
@@ -140,7 +154,7 @@ git clone https://github.com/AgriciDaniel/claude-blog.git
 cd claude-blog
 git checkout v2.3.0            # pin an exact reviewed tag
 
-python3 -m pytest tests/       # 60 guardrail + unit tests
+python3 -m pytest tests/       # 350+ guardrail + unit tests
 python3 scripts/package_plugin.py
 # prints the SHA-256 of the artifact you are about to distribute
 ```

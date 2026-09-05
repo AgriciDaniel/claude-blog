@@ -235,3 +235,37 @@ def test_package_payload_has_manifest_at_archive_root(tmp_path) -> None:
         "must not bloat the distributed plugin."
     )
     assert not any(".git/" in n for n in names), "Git metadata must not ship."
+
+
+# ---------------------------------------------------------------------------
+# Test 6: the security brief only cites tests that exist
+# ---------------------------------------------------------------------------
+
+
+def test_security_review_cites_only_real_tests() -> None:
+    """``docs/SECURITY-REVIEW.md`` names the test enforcing each claim.
+
+    That is the document's whole value: a reviewer can check every assertion
+    against the suite. A citation that no longer resolves is worse than no
+    citation, because it looks verified and is not. This caught a real drift
+    when the v2.3.0 port renamed a guardrail and the brief kept the old name.
+    """
+    brief = REPO_ROOT / "docs" / "SECURITY-REVIEW.md"
+    if not brief.is_file():
+        pytest.skip("security brief not present")
+
+    defined = set()
+    for path in (REPO_ROOT / "tests").glob("test_*.py"):
+        defined.update(re.findall(r"^def (test_\w+)", _read(path), re.M))
+
+    # Citations are function names; bare module names (test_security_guardrails)
+    # appear as `tests/<module>.py::<function>` and are not functions themselves.
+    modules = {p.stem for p in (REPO_ROOT / "tests").glob("test_*.py")}
+    cited = {n for n in re.findall(r"\btest_\w+", _read(brief))} - modules
+
+    missing = sorted(cited - defined)
+    assert not missing, (
+        "docs/SECURITY-REVIEW.md cites tests that do not exist:\n  - "
+        + "\n  - ".join(missing)
+        + "\nUpdate the brief, or restore the guardrail it names."
+    )
