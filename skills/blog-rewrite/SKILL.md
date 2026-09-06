@@ -8,7 +8,7 @@ description: >
   adds images, generates SVG charts, and updates freshness signals. Works
   with any blog format (MDX, markdown, HTML). Use when user says "rewrite
   blog", "optimize blog", "update blog", "improve blog", "fix blog".
-user-invokable: true
+user-invocable: true
 argument-hint: "<file-path>"
 license: MIT
 ---

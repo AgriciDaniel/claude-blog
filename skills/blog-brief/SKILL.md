@@ -9,7 +9,7 @@ description: >
   Briefs are optimized for Google rankings and AI citation visibility as part of SEO. Use
   when user says "content brief", "blog brief", "write brief", "SEO brief",
   "article brief", or "content requirements".
-user-invokable: true
+user-invocable: true
 argument-hint: "<topic>"
 license: MIT
 ---

@@ -8,7 +8,7 @@ description: >
   platform.
   Use when user says "repurpose", "blog repurpose", "share blog", "social media",
   "twitter thread", "linkedin post", "youtube script", "reddit post".
-user-invokable: true
+user-invocable: true
 argument-hint: "<file-path>"
 license: MIT
 ---

@@ -6,6 +6,7 @@
 
 <p align="center">
   <a href="https://agentskills.io"><img src="https://img.shields.io/badge/Agent%20Skills-Compatible-blue" alt="Agent Skill"></a>
+  <a href="docs/COWORK.md"><img src="https://img.shields.io/badge/Claude%20Cowork-Compatible-blueviolet" alt="Claude Cowork compatible"></a>
   <a href="https://github.com/AgriciDaniel/claude-blog/releases"><img src="https://img.shields.io/github/v/release/AgriciDaniel/claude-blog?label=public%20release" alt="Version"></a>
   <a href="https://github.com/AgriciDaniel/claude-blog/actions"><img src="https://img.shields.io/github/actions/workflow/status/AgriciDaniel/claude-blog/ci.yml?branch=main&label=public%20CI" alt="CI"></a>
   <a href="https://github.com/AgriciDaniel/claude-blog/stargazers"><img src="https://img.shields.io/github/stars/AgriciDaniel/claude-blog?style=social" alt="GitHub stars"></a>
@@ -18,7 +19,7 @@
   <img src="https://img.shields.io/badge/Tests-250%2B%20passing-brightgreen" alt="Tests: more than 250 passing">
 </p>
 
-**claude-blog is a Claude Code skill suite that writes, optimizes, audits, localizes, and refreshes blog content at scale.** Every article is evaluated for Google-aligned usefulness and internal AI citation readiness heuristics. Version 2.2.0 was prepared on 2026-08-26.
+**claude-blog is a plugin that writes, optimizes, audits, localizes, and refreshes blog content at scale.** One install runs on Claude Cowork, Claude Code, and Claude Desktop. Every article is evaluated for Google-aligned usefulness and internal AI citation readiness heuristics. Version 2.3.0 was prepared on 2026-09-05.
 
 The core promise is simple: the user is never the first reviewer. A 5-gate Blog Delivery Contract scores every draft against a 100-point rubric, blocks delivery below 90, verifies artifacts and links, and iterates up to 3 times before escalation.
 
@@ -49,7 +50,7 @@ The publishing workflow is documented in
 
 claude-blog is a full-lifecycle blog engine for strategy, briefs, outlines, writing, rewriting, analysis, schema, AI citation readiness, site audits, topic clusters, multilingual publishing, audio narration, and content decay detection.
 
-Current v2.2.0 shape: **32 skill directories = 1 orchestrator + 31 sub-skills; 30 user-facing /blog commands (`blog-chart` is internal, not a command).** It also includes 5 specialized agents, repository consistency and public-release validators, 22 core references, 12 templates, a 250+ test suite, and the bundled Claude Blog Brain at `./brain`.
+Current v2.3.0 shape: **32 skill directories = 1 orchestrator + 31 sub-skills; 30 user-facing /blog commands (`blog-chart` is internal, not a command).** It also includes 5 specialized agents, repository consistency and public-release validators, 22 core references, 12 templates, a 250+ test suite, and the bundled Claude Blog Brain at `./brain`.
 
 Every draft ships as an artifact folder with the markdown source, rendered HTML, PDF, real `hero.<ext>`, 3 viewport screenshots, `review.md`, and `preflight-report.json`. The renderer uses XSS-safe JSON-LD handling, dark-mode-aware CSS, and the same source for every output format.
 
@@ -300,7 +301,7 @@ curl -fsSL https://raw.githubusercontent.com/AgriciDaniel/claude-blog/main/insta
 One-command install on Windows PowerShell:
 
 ```powershell
-$env:CLAUDE_BLOG_REF = "v2.2.0"
+$env:CLAUDE_BLOG_REF = "v2.3.0"
 irm https://raw.githubusercontent.com/AgriciDaniel/claude-blog/main/install.ps1 -OutFile install.ps1
 pwsh -File ./install.ps1
 ```
@@ -416,7 +417,7 @@ See [How To Cite](#how-to-cite) or [`CITATION.cff`](CITATION.cff). GitHub also s
 
 ### Is claude-blog secure to install?
 
-The recommended flow downloads the installer as a file so you can inspect it before execution. v2.2.0 uses pinned refs, allowlisted recursive payload copies, manifest-backed uninstall, prose lint, version coherence checks, repository consistency checks, and installer regression tests. See [`SECURITY.md`](.github/SECURITY.md).
+The recommended flow downloads the installer as a file so you can inspect it before execution. v2.3.0 uses pinned refs, allowlisted recursive payload copies, manifest-backed uninstall, prose lint, version coherence checks, repository consistency checks, and installer regression tests. See [`SECURITY.md`](.github/SECURITY.md).
 
 ## Documentation Index
 
@@ -439,7 +440,7 @@ If you use claude-blog in research or production, please cite the project:
   title        = {claude-blog: AI Blog Writing and SEO Optimization Skill for Claude Code},
   year         = {2026},
   url          = {https://github.com/AgriciDaniel/claude-blog},
-  version      = {2.2.0},
+  version      = {2.3.0},
   license      = {MIT}
 }
 ```

@@ -247,7 +247,7 @@ def test_no_bash_tool_in_any_agent_frontmatter() -> None:
 def test_no_allowed_tools_field_in_skills() -> None:
     """``allowed-tools`` is not a valid Claude Code SKILL.md frontmatter key.
 
-    Per CLAUDE.md, valid fields are: name, description, user-invokable,
+    Per CLAUDE.md, valid fields are: name, description, user-invocable,
     argument-hint, compatibility, license, metadata, disable-model-invocation.
     Setting ``allowed-tools`` silently does nothing and signals confusion
     with the Claude Code agent / settings schema.
@@ -531,15 +531,15 @@ def test_mcp_json_is_gitignored() -> None:
 
 
 # ---------------------------------------------------------------------------
-# Test 8: Every user-invokable SKILL.md has complete frontmatter
+# Test 8: Every user-invocable SKILL.md has complete frontmatter
 # ---------------------------------------------------------------------------
 
 
-def test_user_invokable_skills_have_complete_frontmatter() -> None:
-    """Every user-invokable SKILL.md must declare ``description``,
+def test_user_invocable_skills_have_complete_frontmatter() -> None:
+    """Every user-invocable SKILL.md must declare ``description``,
     ``argument-hint``, and ``license`` in frontmatter.
 
-    This test was added after a meta-audit found 15 user-invokable skills
+    This test was added after a meta-audit found 15 user-invocable skills
     missing one or both of ``argument-hint`` / ``license``, a class issue
     that the chair's verifier (a single-skill check on blog-rewrite) had
     missed. Static-presence test using the project's stdlib-only frontmatter
@@ -551,7 +551,7 @@ def test_user_invokable_skills_have_complete_frontmatter() -> None:
     skill_files = sorted(SKILLS_DIR.rglob("SKILL.md"))
     assert skill_files, f"No SKILL.md files found under {SKILLS_DIR}"
 
-    required_for_user_invokable = ("description", "argument-hint", "license")
+    required_for_user_invocable = ("description", "argument-hint", "license")
     offenders: list[str] = []
 
     for path in skill_files:
@@ -565,18 +565,18 @@ def test_user_invokable_skills_have_complete_frontmatter() -> None:
             )
             continue
 
-        # Skip non-user-invokable skills (internal helpers like blog-chart).
-        # Treat missing user-invokable as opt-out (the project rule is
+        # Skip non-user-invocable skills (internal helpers like blog-chart).
+        # Treat missing user-invocable as opt-out (the project rule is
         # explicit declaration; absence means "not a slash command").
-        user_inv = fm.get("user-invokable")
-        is_user_invokable = (
+        user_inv = fm.get("user-invocable")
+        is_user_invocable = (
             user_inv is True
             or (isinstance(user_inv, str) and user_inv.lower() == "true")
         )
-        if not is_user_invokable:
+        if not is_user_invocable:
             continue
 
-        missing = [field for field in required_for_user_invokable if field not in fm]
+        missing = [field for field in required_for_user_invocable if field not in fm]
         if missing:
             offenders.append(
                 f"{path.relative_to(REPO_ROOT)}: missing {missing}"
@@ -584,7 +584,7 @@ def test_user_invokable_skills_have_complete_frontmatter() -> None:
 
     assert not offenders, (
         "User-invokable SKILL.md files are missing required frontmatter "
-        "fields. Every user-invokable skill MUST declare description, "
+        "fields. Every user-invocable skill MUST declare description, "
         "argument-hint, and license:\n  - " + "\n  - ".join(offenders)
     )
 
@@ -675,4 +675,62 @@ def test_mcp_server_is_opt_in_via_launcher() -> None:
     )
     assert "tools: []" in source or '"tools": []' in source or "tools/list" in source, (
         "The inert path must answer tools/list with an empty tool set."
+    )
+
+
+# ---------------------------------------------------------------------------
+# Test 11: skills use the spec frontmatter field name, not a near-miss
+# ---------------------------------------------------------------------------
+
+
+def test_skills_use_spec_field_name_not_invokable() -> None:
+    """Frontmatter must say ``user-invocable``, never ``user-invokable``.
+
+    The Claude Code runtime reads ``user-invocable``. The near-miss spelling
+    ``user-invokable`` is not a field at all: it is silently ignored, and the
+    skill falls back to the default of being user-invocable.
+
+    That is not cosmetic. Up to v2.3.0 every skill here used the ignored
+    spelling, including ``blog-chart``, which sets the flag to ``false``
+    precisely because it is an internal helper and not a ``/blog`` command.
+    Because the field name was wrong, the ``false`` never took effect and
+    blog-chart was exposed in the slash menu on every install, contradicting
+    README, CLAUDE.md and docs/ARCHITECTURE.md.
+
+    A typo that silently disables a visibility control is exactly the kind of
+    thing a test should hold down.
+    """
+    if not SKILLS_DIR.is_dir():
+        pytest.skip(f"skills directory missing at {SKILLS_DIR}")
+
+    offenders = [
+        str(path.relative_to(REPO_ROOT))
+        for path in sorted(SKILLS_DIR.rglob("SKILL.md"))
+        if "user-invokable" in _read(path)
+    ]
+    assert not offenders, (
+        "SKILL.md files use `user-invokable`, which the runtime ignores. "
+        "The spec field is `user-invocable`:\n  - " + "\n  - ".join(offenders)
+    )
+
+
+def test_internal_only_skills_are_actually_hidden() -> None:
+    """A skill documented as internal must really set the flag to false.
+
+    README, CLAUDE.md and docs/ARCHITECTURE.md all state that blog-chart is an
+    internal capability rather than a user-facing command, and the published
+    command count (30 of 32 skill directories) depends on it. The only thing
+    enforcing that is this one frontmatter field, so assert it directly rather
+    than trusting three prose files to stay in step.
+    """
+    chart = SKILLS_DIR / "blog-chart" / "SKILL.md"
+    if not chart.is_file():
+        pytest.skip("blog-chart skill not present")
+
+    fm = parse_frontmatter(_read(chart))
+    assert fm is not None, "blog-chart SKILL.md must have parseable frontmatter"
+    value = str(fm.get("user-invocable", "")).lower()
+    assert value == "false", (
+        "blog-chart is documented as internal-only, so it must declare "
+        f"`user-invocable: false`. Found: {value or '<absent>'}"
     )

@@ -9,7 +9,7 @@ description: >
   Use when user says "blog audio", "narrate blog", "audio version",
   "text to speech", "tts", "podcast mode", "read aloud", "audio narration",
   "voice", "narration", "generate audio".
-user-invokable: true
+user-invocable: true
 argument-hint: "[generate|voices|setup] [file-or-text] [--mode summary|full|dialogue] [--voice name]"
 license: MIT
 metadata:

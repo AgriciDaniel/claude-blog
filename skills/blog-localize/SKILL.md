@@ -8,7 +8,7 @@ description: >
   DACH, Francophone, Hispanic, and Japanese markets.
   Use when user says "localize blog", "blog localize", "cultural adaptation",
   "adapt for Germany", "lokalisieren", "localiser", "adaptar".
-user-invokable: true
+user-invocable: true
 argument-hint: "<file> --locale <locale-code>"
 license: MIT
 compatibility: Standalone within claude-blog. Invoked by blog-multilingual.

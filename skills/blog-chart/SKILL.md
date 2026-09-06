@@ -8,7 +8,7 @@ description: >
   source attribution, and transparent backgrounds. Use when user says "blog
   chart", "generate chart", "data visualization", "svg chart", "blog graph",
   or "visualize data".
-user-invokable: false
+user-invocable: false
 license: MIT
 ---
 

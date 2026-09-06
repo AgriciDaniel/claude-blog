@@ -6,7 +6,7 @@ description: >
   knowledge base (30 blog-applicable prompts, CC BY 4.0). Use when user says
   "FLOW", "FLOW framework", "blog flow", "evidence-led blogging", "find optimize
   win", or wants stage-specific blog prompts.
-user-invokable: true
+user-invocable: true
 argument-hint: "[stage] [url|topic]"
 license: MIT
 compatibility: Requires Claude Code and Python 3.11+ for the sync script

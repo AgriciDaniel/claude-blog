@@ -98,7 +98,7 @@ jobs:
           allowed = {
               "name",
               "description",
-              "user-invokable",
+              "user-invocable",
               "argument-hint",
               "compatibility",
               "license",
@@ -127,15 +127,15 @@ jobs:
                       continue
                   fields[match.group(1)] = match.group(2).strip()
 
-              missing = {"name", "description", "user-invokable"} - set(fields)
+              missing = {"name", "description", "user-invocable"} - set(fields)
               for field in sorted(missing):
                   errors.append(f"{path}: missing required field {field}")
               for field in sorted(set(fields) - allowed):
                   errors.append(f"{path}: invalid frontmatter field {field}")
               if "allowed-tools" in fields:
                   errors.append(f"{path}: allowed-tools is not valid SKILL.md frontmatter")
-              if fields.get("user-invokable", "").lower() == "true" and "argument-hint" not in fields:
-                  errors.append(f"{path}: user-invokable skills must declare argument-hint")
+              if fields.get("user-invocable", "").lower() == "true" and "argument-hint" not in fields:
+                  errors.append(f"{path}: user-invocable skills must declare argument-hint")
               if len(lines) > 500:
                   errors.append(f"{path}: {len(lines)} lines exceeds 500 line cap")
               token_estimate = sum(len(line.split()) for line in lines)

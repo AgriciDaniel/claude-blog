@@ -11,7 +11,7 @@ description: >
   markdown, HTML, URL). Use when user says "analyze blog", "audit blog",
   "blog score", "check blog quality", "blog review", "rate this blog",
   "blog health check".
-user-invokable: true
+user-invocable: true
 argument-hint: "<file-path>"
 license: MIT
 ---

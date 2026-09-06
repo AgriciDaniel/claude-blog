@@ -96,11 +96,24 @@ release is portability and packaging work: no skill lost a capability.
 - README, `CLAUDE.md`, `docs/ARCHITECTURE.md` and the marketplace catalog updated
   for the multi-surface story; installer SHA-256 digests in README refreshed.
 
-#### Notes
-- The SKILL.md frontmatter field remains `user-invokable`, which CI requires and
-  treats as mandatory. The Agent Skills spec field is `user-invocable`; the two
-  behave identically here (both yield an invocable skill), so the rename was left
-  out of this release rather than breaking the CI gate for a cosmetic change.
+#### Fixed (frontmatter field name)
+- **`blog-chart` was exposed as a slash command despite being documented as
+  internal.** Every SKILL.md declared `user-invokable`, which is not a field the
+  Claude Code runtime reads; the spec field is `user-invocable`. The near-miss
+  spelling was silently ignored, so `blog-chart`'s `false` never took effect and
+  the skill appeared in the `/` menu on every install, contradicting README,
+  CLAUDE.md and `docs/ARCHITECTURE.md`, and making the advertised "30 user-facing
+  commands" actually 31.
+
+  Confirmed against the shipped CLI binary: `user-invocable` is present,
+  `invokable` does not occur anywhere in it. Renamed across all 32 skills, the CI
+  frontmatter validator, `.github/CONTRIBUTING.md`, `CLAUDE.md`, and the docs.
+  Two guardrails were added, both verified to fail on regression:
+  `test_skills_use_spec_field_name_not_invokable` and
+  `test_internal_only_skills_are_actually_hidden`.
+
+#### Added (README)
+- Claude Cowork compatibility badge, linking to `docs/COWORK.md`.
 
 #### Upgrading
 Existing flat installs are shadowed by, not merged with, the plugin install. Run

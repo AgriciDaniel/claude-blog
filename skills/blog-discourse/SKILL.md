@@ -12,7 +12,7 @@ description: >
   customer", "social listening", "30-day research", "trend research",
   "what's the discussion on", "real-time research", "practitioner discourse",
   "/blog discourse".
-user-invokable: true
+user-invocable: true
 argument-hint: "<topic> [--days 30|90] [--input results.json] [--output DISCOURSE.md] [--format markdown|json] [--decomposition questions.txt]"
 license: MIT
 ---

@@ -2,7 +2,7 @@
 name: blog-decay
 description: Detect content decay from Google Search Console exports by comparing current and previous page performance, flagging quarter-over-quarter traffic drops, dropped pages, and refresh, consolidate, prune, or query-shift actions. Use when the user says "/blog decay", "content decay", "traffic drop", "QoQ decline", "GSC decay", or "refresh declining posts".
 argument-hint: "<current-gsc.json> <previous-gsc.json> [threshold] [metric]"
-user-invokable: true
+user-invocable: true
 license: MIT
 ---
 

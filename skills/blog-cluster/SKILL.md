@@ -17,7 +17,7 @@ metadata:
   author: AgriciDaniel
   version: "2.3.0"
   category: blog
-user-invokable: true
+user-invocable: true
 argument-hint: "[plan|execute] [seed-keyword|cluster-plan.json]"
 ---
 

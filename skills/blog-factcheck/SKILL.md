@@ -9,7 +9,7 @@ description: >
   Flags uncited claims as UNVERIFIED. Use when user says "fact check",
   "verify statistics", "check sources", "validate claims", "factcheck",
   "source verification".
-user-invokable: true
+user-invocable: true
 argument-hint: "[file]"
 license: MIT
 ---

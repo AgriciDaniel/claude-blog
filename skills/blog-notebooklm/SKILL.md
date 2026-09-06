@@ -9,7 +9,7 @@ description: >
   Use when user says "notebooklm", "notebook", "query notebook",
   "ask notebook", "notebook research", "source grounded research",
   "document query", "notebook library".
-user-invokable: true
+user-invocable: true
 argument-hint: "[ask|discover|library|setup|status|cleanup] [question-or-url]"
 license: MIT
 metadata:

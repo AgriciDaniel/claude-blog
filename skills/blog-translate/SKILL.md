@@ -12,7 +12,7 @@ description: >
   Use when user says "translate blog", "blog translate", "uebersetzen",
   "traduire", "traducir", "translate post", "blog auf Deutsch", "blog en
   espanol".
-user-invokable: true
+user-invocable: true
 argument-hint: "<file> --to <comma-separated-codes>"
 license: MIT
 compatibility: Standalone within claude-blog. Invoked by blog-multilingual.

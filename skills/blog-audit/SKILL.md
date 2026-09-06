@@ -6,7 +6,7 @@ description: >
   Runs canonical batch analysis before site-wide checks. Produces per-post scores
   and a prioritized action queue. Use when user says "audit blog", "blog audit",
   "site audit", "blog health", "audit all posts", "check all blogs".
-user-invokable: true
+user-invocable: true
 argument-hint: "[directory]"
 license: MIT
 ---

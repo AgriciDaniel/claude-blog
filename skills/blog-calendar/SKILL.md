@@ -8,7 +8,7 @@ description: >
   evidence changes, and sustainable publishing capacity.
   Use when user says "editorial calendar", "content calendar", "blog calendar",
   "publishing schedule", "blog plan", "content plan", "what should I write".
-user-invokable: true
+user-invocable: true
 argument-hint: "[<niche>]"
 license: MIT
 ---

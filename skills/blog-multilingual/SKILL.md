@@ -9,7 +9,7 @@ description: >
   Use when user says "multilingual blog", "blog multilingual", "write in
   multiple languages", "international blog", "mehrsprachiger Blog", "blog
   multilingue", "blog multilingue", "create blog in German and French".
-user-invokable: true
+user-invocable: true
 argument-hint: "<topic> --languages <comma-separated-codes>"
 license: MIT
 compatibility: Requires claude-blog (blog-write). Optional integration with claude-seo (seo-hreflang) for richer hreflang validation.

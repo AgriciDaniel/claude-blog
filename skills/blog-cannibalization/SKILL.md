@@ -8,7 +8,7 @@ description: >
   severity-scored report with merge or differentiate recommendations. Use when
   user says "cannibalization", "keyword overlap", "competing pages", "duplicate
   keywords", "cannibalize".
-user-invokable: true
+user-invocable: true
 argument-hint: "[directory] [--api]"
 license: MIT
 ---

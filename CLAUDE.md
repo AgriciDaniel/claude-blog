@@ -160,7 +160,7 @@ and `/blog rewrite`; it is not a top-level user command.
 - **Never write user state into the plugin directory.** It is read-only in Claude Cowork and replaced wholesale on update. Deliverables go to the working directory; state that must survive updates goes to `${CLAUDE_PLUGIN_DATA}` (personas, NotebookLM auth/library)
 - Anything needing Python, a credential, or an MCP server must call `scripts/runtime_capabilities.py` first and degrade with an explanation rather than a traceback. See `skills/blog/references/cowork-runtime.md`
 - The shipped MCP config is `mcp-servers.json` (referenced from `plugin.json`), deliberately **not** `.mcp.json`: that filename is also read as a project-scoped config, so a contributor in this repo would have Claude launch it with `${CLAUDE_PLUGIN_ROOT}` unresolved
-- SKILL.md frontmatter: only valid fields (name, description, user-invokable, argument-hint, compatibility, license, metadata, disable-model-invocation). Do NOT use `allowed-tools`; it is not a Claude Code spec field
+- SKILL.md frontmatter: only valid fields (name, description, user-invocable, argument-hint, compatibility, license, metadata, disable-model-invocation). Do NOT use `allowed-tools`; it is not a Claude Code spec field
 - New reference files should be focused and under 200 lines. Existing comprehensive references (platform-guides, schema-stack, content-templates, distribution-playbook) are exempt from this guideline
 - Scripts must have docstrings, CLI interface, and JSON output
 - Follow kebab-case naming for all skill directories

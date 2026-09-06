@@ -9,7 +9,7 @@ description: >
   and HTML output.
   Use when user says "write blog", "new blog post", "create article",
   "write about", "draft blog", "generate blog post".
-user-invokable: true
+user-invocable: true
 argument-hint: "<topic>"
 license: MIT
 ---

@@ -99,7 +99,7 @@ name, description, trigger phrases, and allowed tools.
 
 Each sub-skill is a standalone Claude Code skill with its own:
 
-- YAML frontmatter (name, description, user-invokable, argument-hint, metadata.version)
+- YAML frontmatter (name, description, user-invocable, argument-hint, metadata.version)
 - Detailed workflow (step-by-step instructions)
 - Input/output specifications
 - Quality checks
