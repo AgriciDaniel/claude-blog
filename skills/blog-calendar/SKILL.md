@@ -8,7 +8,7 @@ description: >
   evidence changes, and sustainable publishing capacity.
   Use when user says "editorial calendar", "content calendar", "blog calendar",
   "publishing schedule", "blog plan", "content plan", "what should I write".
-user-invokable: true
+user-invocable: true
 argument-hint: "[<niche>]"
 license: MIT
 ---
@@ -149,7 +149,7 @@ For each new post entry, recommend a content template from these 12 available:
 `product-review`, `thought-leadership`, `roundup`, `tutorial`,
 `news-analysis`, `data-research`, `faq-knowledge`
 
-Reference: `skills/blog/references/content-templates.md` for full template details.
+Reference: `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/content-templates.md` for full template details.
 
 #### Monthly Calendar Format
 
@@ -268,7 +268,7 @@ Channel timing rules:
 - **YouTube**: Plan companion video for pillar posts only (resource-intensive)
 - **Twitter/X**: Same day as publish (thread key takeaways)
 
-Reference: `skills/blog/references/distribution-playbook.md` for detailed channel tactics.
+Reference: `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/distribution-playbook.md` for detailed channel tactics.
 
 ### Step 5.7: Freshness Automation
 

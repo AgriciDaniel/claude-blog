@@ -8,7 +8,7 @@ description: >
   platform.
   Use when user says "repurpose", "blog repurpose", "share blog", "social media",
   "twitter thread", "linkedin post", "youtube script", "reddit post".
-user-invokable: true
+user-invocable: true
 argument-hint: "<file-path>"
 license: MIT
 ---
@@ -19,7 +19,7 @@ Transforms blog posts into platform-optimized content for social media, email,
 video, and community channels. Each output adapts tone, format, and length to
 match platform conventions and audience expectations.
 
-**FLOW dual-surface thinking (when applicable).** When the original blog post targets a query that also surfaces in a community (Reddit thread, YouTube comment, LinkedIn discussion), repurpose for the community in a way that reinforces the blog only when platform rules allow it. Community linking is optional, disclosed, and rule-dependent. See `skills/blog/references/flow-alignment.md` and `/blog flow win` for the dual-surface scorecard.
+**FLOW dual-surface thinking (when applicable).** When the original blog post targets a query that also surfaces in a community (Reddit thread, YouTube comment, LinkedIn discussion), repurpose for the community in a way that reinforces the blog only when platform rules allow it. Community linking is optional, disclosed, and rule-dependent. See `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/flow-alignment.md` and `/blog flow win` for the dual-surface scorecard.
 
 ## Workflow
 

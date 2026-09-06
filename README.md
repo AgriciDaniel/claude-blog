@@ -1,4 +1,4 @@
-# AI Blog Writing & SEO Optimization Skill for Claude Code (`claude-blog`)
+# AI Blog Writing & SEO Optimization Plugin for Claude (`claude-blog`)
 
 <p align="center">
   <img src="assets/cover-blog.svg" alt="Claude Blog cover: AI blog writing, SEO optimization, AI citation readiness, and a 5-gate delivery contract for Claude Code" width="100%">
@@ -6,6 +6,7 @@
 
 <p align="center">
   <a href="https://agentskills.io"><img src="https://img.shields.io/badge/Agent%20Skills-Compatible-blue" alt="Agent Skill"></a>
+  <a href="docs/COWORK.md"><img src="https://img.shields.io/badge/Claude%20Cowork-Compatible-blueviolet" alt="Claude Cowork compatible"></a>
   <a href="https://github.com/AgriciDaniel/claude-blog/releases"><img src="https://img.shields.io/github/v/release/AgriciDaniel/claude-blog?label=public%20release" alt="Version"></a>
   <a href="https://github.com/AgriciDaniel/claude-blog/actions"><img src="https://img.shields.io/github/actions/workflow/status/AgriciDaniel/claude-blog/ci.yml?branch=main&label=public%20CI" alt="CI"></a>
   <a href="https://github.com/AgriciDaniel/claude-blog/stargazers"><img src="https://img.shields.io/github/stars/AgriciDaniel/claude-blog?style=social" alt="GitHub stars"></a>
@@ -18,7 +19,7 @@
   <img src="https://img.shields.io/badge/Tests-250%2B%20passing-brightgreen" alt="Tests: more than 250 passing">
 </p>
 
-**claude-blog is a Claude Code skill suite that writes, optimizes, audits, localizes, and refreshes blog content at scale.** Every article is evaluated for Google-aligned usefulness and internal AI citation readiness heuristics. Version 2.2.0 was prepared on 2026-08-26.
+**claude-blog is a plugin that writes, optimizes, audits, localizes, and refreshes blog content at scale.** One install runs on Claude Cowork, Claude Code, and Claude Desktop. Every article is evaluated for Google-aligned usefulness and internal AI citation readiness heuristics. Version 2.3.0 was prepared on 2026-09-05.
 
 The core promise is simple: the user is never the first reviewer. A 5-gate Blog Delivery Contract scores every draft against a 100-point rubric, blocks delivery below 90, verifies artifacts and links, and iterates up to 3 times before escalation.
 
@@ -49,7 +50,7 @@ The publishing workflow is documented in
 
 claude-blog is a full-lifecycle blog engine for strategy, briefs, outlines, writing, rewriting, analysis, schema, AI citation readiness, site audits, topic clusters, multilingual publishing, audio narration, and content decay detection.
 
-Current v2.2.0 shape: **32 skill directories = 1 orchestrator + 31 sub-skills; 30 user-facing /blog commands (`blog-chart` is internal, not a command).** It also includes 5 specialized agents, repository consistency and public-release validators, 22 core references, 12 templates, a 250+ test suite, and the bundled Claude Blog Brain at `./brain`.
+Current v2.3.0 shape: **32 skill directories = 1 orchestrator + 31 sub-skills; 30 user-facing /blog commands (`blog-chart` is internal, not a command).** It also includes 5 specialized agents, repository consistency and public-release validators, 22 core references, 12 templates, a 250+ test suite, and the bundled Claude Blog Brain at `./brain`.
 
 Every draft ships as an artifact folder with the markdown source, rendered HTML, PDF, real `hero.<ext>`, 3 viewport screenshots, `review.md`, and `preflight-report.json`. The renderer uses XSS-safe JSON-LD handling, dark-mode-aware CSS, and the same source for every output format.
 
@@ -66,6 +67,8 @@ Every draft ships as an artifact folder with the markdown source, rendered HTML,
 Most user-installable Claude Code skill plugins should ship to `~/.claude/skills/<name>/` for skill content, `~/.claude/agents/<name>.md` for agents, and `~/.claude/scripts/<helper>.py` for Python helpers.
 
 This answer is intentionally kept in the README because it demonstrates the GEO and SEO writing pattern claude-blog produces: answer-first summary, explicit paths, source-ready structure, and a compact FAQ-ready section that AI systems can quote without extra context.
+
+> Note: that specimen answers the *general* question. claude-blog itself moved to the plugin-directory layout in v2.3.0 - one self-contained tree at `~/.claude/skills/claude-blog/` - because every intra-plugin reference now uses `${CLAUDE_PLUGIN_ROOT}`, which only resolves for a directory Claude loads as a plugin. See [docs/COWORK.md](docs/COWORK.md).
 
 A condensed specimen of a generated article:
 
@@ -250,6 +253,26 @@ Adapted attribution lives in [`CONTRIBUTORS.md`](docs/CONTRIBUTORS.md).
 
 The Claude Blog Brain is vendored at `./brain` as a self-contained, evidence-gated Obsidian brain. It is not part of the plugin payload; all skill tooling remains scoped to `skills/`. Brain-derived updates land through reviewed reference, script, and documentation changes.
 
+## Install in Claude Cowork
+
+*Plugins > Add marketplace*, enter `AgriciDaniel/claude-blog`, then open
+**claude-blog** and choose **Install**. No terminal, no Python.
+
+For marketplace-restricted organizations, build an upload artifact from a
+checkout and install it from a file instead:
+
+```bash
+python3 scripts/package_plugin.py     # -> dist/claude-blog-<version>.plugin
+```
+
+Then *Plugins > Add plugin > Upload*. The script prints a SHA-256 so you can
+record exactly what was installed.
+
+Optionally set the **Google AI API key** plugin option to turn on `/blog image`
+and `/blog audio`; leave it blank and both stay off, with nothing downloaded and
+no MCP server started. Full detail: **[docs/COWORK.md](docs/COWORK.md)**.
+Security teams: **[docs/SECURITY-REVIEW.md](docs/SECURITY-REVIEW.md)**.
+
 ## Install
 
 Plugin install for Claude Code 1.0.33+:
@@ -264,7 +287,7 @@ Recommended clone, verify, then install flow:
 ```bash
 git clone https://github.com/AgriciDaniel/claude-blog.git
 cd claude-blog
-git checkout v2.2.0
+git checkout v2.3.0
 chmod +x install.sh
 ./install.sh
 ```
@@ -272,13 +295,13 @@ chmod +x install.sh
 One-command install on Unix and macOS:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/AgriciDaniel/claude-blog/main/install.sh | CLAUDE_BLOG_REF=v2.2.0 bash
+curl -fsSL https://raw.githubusercontent.com/AgriciDaniel/claude-blog/main/install.sh | CLAUDE_BLOG_REF=v2.3.0 bash
 ```
 
 One-command install on Windows PowerShell:
 
 ```powershell
-$env:CLAUDE_BLOG_REF = "v2.2.0"
+$env:CLAUDE_BLOG_REF = "v2.3.0"
 irm https://raw.githubusercontent.com/AgriciDaniel/claude-blog/main/install.ps1 -OutFile install.ps1
 pwsh -File ./install.ps1
 ```
@@ -287,11 +310,11 @@ Verify installer integrity before running:
 
 ```bash
 curl -fsSL -o install.sh https://raw.githubusercontent.com/AgriciDaniel/claude-blog/main/install.sh
-echo "25f73e7efbe9e714d00af34d2c6b48bd59d60a14976e2eb032b8ad5c2f756ce4  install.sh" | sha256sum -c
-CLAUDE_BLOG_REF=v2.2.0 bash install.sh
+echo "36e254e982d772b121fa8c6300f288422e3b8ba6a09ba4c202ce0a0a0998ac0b  install.sh" | sha256sum -c
+CLAUDE_BLOG_REF=v2.3.0 bash install.sh
 ```
 
-The SHA-256 above is for the current `install.sh` at HEAD on `main`; `CLAUDE_BLOG_REF` pins the repository clone performed by the installer. Verify against [the canonical file](https://github.com/AgriciDaniel/claude-blog/blob/main/install.sh) before running. The `install.ps1` companion hash is `a574688ba4ca27b7fbac7a26e6c95d1a6a596688f59d16ddbcc452d82f5fea7a`.
+The SHA-256 above is for the current `install.sh` at HEAD on `main`; `CLAUDE_BLOG_REF` pins the repository clone performed by the installer. Verify against [the canonical file](https://github.com/AgriciDaniel/claude-blog/blob/main/install.sh) before running. The `install.ps1` companion hash is `0ea12af24eb8c4bc51319c1427722bb285350d9565b6a3ba6de3fa3b56e8b054`.
 
 Restart Claude Code after installation to activate.
 
@@ -394,7 +417,7 @@ See [How To Cite](#how-to-cite) or [`CITATION.cff`](CITATION.cff). GitHub also s
 
 ### Is claude-blog secure to install?
 
-The recommended flow downloads the installer as a file so you can inspect it before execution. v2.2.0 uses pinned refs, allowlisted recursive payload copies, manifest-backed uninstall, prose lint, version coherence checks, repository consistency checks, and installer regression tests. See [`SECURITY.md`](.github/SECURITY.md).
+The recommended flow downloads the installer as a file so you can inspect it before execution. v2.3.0 uses pinned refs, allowlisted recursive payload copies, manifest-backed uninstall, prose lint, version coherence checks, repository consistency checks, and installer regression tests. See [`SECURITY.md`](.github/SECURITY.md).
 
 ## Documentation Index
 
@@ -417,7 +440,7 @@ If you use claude-blog in research or production, please cite the project:
   title        = {claude-blog: AI Blog Writing and SEO Optimization Skill for Claude Code},
   year         = {2026},
   url          = {https://github.com/AgriciDaniel/claude-blog},
-  version      = {2.2.0},
+  version      = {2.3.0},
   license      = {MIT}
 }
 ```

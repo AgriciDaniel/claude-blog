@@ -52,7 +52,7 @@ The orchestrator provides:
 - **`keyword_map`**, optional, decisions about which terms stay in the
   source language (loanwords) and which get a localized equivalent.
 - **`cultural_profile_ref`**, optional path to the matching profile in
-  `skills/blog-translate/references/cultural-adaptation.md`.
+  `${CLAUDE_PLUGIN_ROOT}/skills/blog-translate/references/cultural-adaptation.md`.
 - **`output_path`**, where to write the translated file.
 
 If any of these are missing, derive them by reading the source file's
@@ -96,7 +96,7 @@ keyword consistently.
 - Write naturally in the target language. Do not translate word by word.
 - Match the tone and register of the original (formal, casual, technical).
 - Apply locale-specific number, date, currency, and quote formats. Use the
-  table in `skills/blog-translate/references/translation-rules.md`.
+  table in `${CLAUDE_PLUGIN_ROOT}/skills/blog-translate/references/translation-rules.md`.
 - Translate idioms into equivalent local expressions, never literal.
 - Maintain paragraph structure and approximate length ratios.
 - Preserve natural pacing where it fits the target language; sentence-length

@@ -31,7 +31,7 @@ In 2026 a query reaches a buyer through 5 parallel surfaces, often without a sit
 | 2. SERP + AI Overviews | Google SERP including AIO panels | `blog-geo`, `blog-schema`, `blog-seo-check` |
 | 3. AI assistant citations | ChatGPT, Perplexity, Claude, Gemini, Copilot, You.com | `blog-geo` (citation readiness), `blog-flow optimize` (visibility prompts) |
 | 4. Local pack | Map listings, Google Business Profile | Out of scope for blog content. Use `claude-seo` (`/seo local`, `/seo maps`) for local SEO. |
-| 5. Communities + video | Reddit, YouTube, LinkedIn, Quora, niche forums | `blog-repurpose` (multi-platform), `skills/blog/references/distribution-playbook.md`, `blog-cluster` (interlinked content) |
+| 5. Communities + video | Reddit, YouTube, LinkedIn, Quora, niche forums | `blog-repurpose` (multi-platform), `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/distribution-playbook.md`, `blog-cluster` (interlinked content) |
 
 claude-blog operationalizes surfaces 1, 2, 3, and 5 directly. Surface 4 is delegated to claude-seo. When a blog post targets a query that also surfaces in a community (Reddit thread, YouTube comment), the writer should consider dual-surface thinking: optimize the post for extraction AND consider whether the same answer should also live in the community where the query is asked.
 
@@ -64,7 +64,7 @@ These additions implement the FLOW principles in production tooling; they do not
 ## 6. When to consult this doc vs. the synced FLOW source
 
 - This doc (`flow-alignment.md`): the orchestrator and any sub-skill loads this when the user asks "what does claude-blog do for AI citations / evidence / surfaces", to give a claude-blog-specific answer with skill names and routing.
-- The synced FLOW source (`skills/blog-flow/references/flow-framework.md` plus 30 prompts): load when applying a specific FLOW prompt or quoting the framework verbatim. CC BY 4.0 attribution is required for any quote.
-- The bibliography (`skills/blog-flow/references/bibliography.md`): load when verifying sources for a statistic.
+- The synced FLOW source (`${CLAUDE_PLUGIN_ROOT}/skills/blog-flow/references/flow-framework.md` plus 30 prompts): load when applying a specific FLOW prompt or quoting the framework verbatim. CC BY 4.0 attribution is required for any quote.
+- The bibliography (`${CLAUDE_PLUGIN_ROOT}/skills/blog-flow/references/bibliography.md`): load when verifying sources for a statistic.
 
 Last updated 2026-07-23 for claude-blog v2.1.0.

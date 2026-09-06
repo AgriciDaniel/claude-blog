@@ -34,7 +34,7 @@ The Claude Blog Brain is vendored at `./brain` as a self-contained, evidence-gat
 |  1 orchestrator + 31       |            |  skills/blog/references/*.md     |
 |  sub-skills                |            |  skills/blog/templates/*.md      |
 |  write    rewrite          |            |                           |
-|  analyze  brief            |            |  22 references loaded     |
+|  analyze  brief            |            |  23 references loaded     |
 |  calendar strategy         |            |  on demand (RAG pattern)  |
 |  outline  seo-check        |            |  12 content templates     |
 |  schema   repurpose        |            +---------------------------+
@@ -99,7 +99,7 @@ name, description, trigger phrases, and allowed tools.
 
 Each sub-skill is a standalone Claude Code skill with its own:
 
-- YAML frontmatter (name, description, user-invokable, argument-hint, metadata.version)
+- YAML frontmatter (name, description, user-invocable, argument-hint, metadata.version)
 - Detailed workflow (step-by-step instructions)
 - Input/output specifications
 - Quality checks
@@ -159,12 +159,12 @@ and `agents/blog-translator.md`).
 Agents are defined as markdown files with YAML frontmatter specifying their
 name, description, and available tools.
 
-### 4. Reference Files (22)
+### 4. Reference Files (23)
 
 **Location**: `skills/blog/references/*.md`
 
 Knowledge documents loaded on demand (RAG-style; not preloaded into context).
-22 references in `skills/blog/references/` cover SEO landscape, GEO/AEO,
+23 references in `skills/blog/references/` cover SEO landscape, GEO/AEO,
 content rules, visual media, schema, E-E-A-T, platform guides, distribution,
 internal linking, FLOW prompts, video embeds, AI-slop detection, editorial
 heuristics, cognitive load, research quality, synthesis contract, and the

@@ -161,7 +161,7 @@ After completing the full draft, before returning content:
    the Bash tool, so the check is delegated): the orchestrator can invoke
    the analyze script with the draft. The script is installed at
    `~/.claude/skills/blog/scripts/analyze_blog.py` after running install.sh
-   (or at `scripts/analyze_blog.py` from a source clone). Pass
+   (or at `${CLAUDE_PLUGIN_ROOT}/scripts/analyze_blog.py` from a source clone). Pass
    `--category content` to focus on the readability sub-score. The
    orchestrator feeds the score back to refine the draft. Closes audit
    VULN-033: prior text instructed shell execution that the agent cannot

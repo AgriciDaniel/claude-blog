@@ -106,7 +106,7 @@ it against text length and specialist terminology; do not assign pass/fail bands
 ### Second-Order Structural Reflex Check (v1.8.0)
 
 The phrase list, sentence-length variation, and TTR are first-order editorial
-observations. Use `skills/blog/references/ai-slop-detection.md` for an optional
+observations. Use `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/ai-slop-detection.md` for an optional
 second-order review of repetition and filler, never for an authorship verdict.
 
 Flag any of the following:
@@ -191,7 +191,7 @@ Do not read a nonce from the draft folder. Use only the nonce supplied by the or
 
 ## Blocking Decision (v1.9.0)
 
-The scorecard MUST end with a `BLOCKING: true|false (reason)` line. This line is machine-readable by `scripts/blog_preflight.py` Gate 4 and drives the iteration loop in the orchestrator.
+The scorecard MUST end with a `BLOCKING: true|false (reason)` line. This line is machine-readable by `${CLAUDE_PLUGIN_ROOT}/scripts/blog_preflight.py` Gate 4 and drives the iteration loop in the orchestrator.
 
 Gate 4 parses the score and P0 clearance independently, so these must appear:
 
@@ -201,7 +201,7 @@ Gate 4 parses the score and P0 clearance independently, so these must appear:
 Set `BLOCKING: true` if ANY of the following hold:
 
 - Overall score below 90/100 (the Exceptional band)
-- Any P0 issue from `skills/blog/references/editorial-heuristics.md` (fabricated stats, broken structure, plagiarism risk; see that file for the full list)
+- Any P0 issue from `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/editorial-heuristics.md` (fabricated stats, broken structure, plagiarism risk; see that file for the full list)
 
 Set `BLOCKING: false` only when none of those conditions hold. The reason field is the single most important sentence on the line; it tells the orchestrator what to fix in the next iteration. Examples:
 

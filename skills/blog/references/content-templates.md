@@ -33,7 +33,7 @@ optimization elements get forgotten, and writing takes longer.
 | Reduced revision cycles | Fewer review rounds needed | Structure issues caught at outline stage, not in review |
 
 A well-followed template naturally produces content that scores 75+ on the
-quality scoring checklist (see `skills/blog/references/quality-scoring.md`). Templates
+quality scoring checklist (see `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/quality-scoring.md`). Templates
 do not constrain creativity: they ensure the structural foundations are
 in place so the writer can focus on delivering unique value.
 
@@ -521,20 +521,27 @@ rubric. Final scoring still depends on evidence quality, originality, and execut
 
 ### Modifying an Existing Template
 
-Templates are editable markdown files in the installed skill at
-`~/.claude/skills/blog/templates/` or in this repo at `skills/blog/templates/`.
-Changes take effect immediately: no restart needed.
+The shipped templates live at `${CLAUDE_PLUGIN_ROOT}/skills/blog/templates/`.
+That directory is read-only in Claude Cowork and is replaced on every plugin
+update, so edits made there do not survive. Keep customizations in your own
+project instead:
 
-1. Open the template file you want to modify
-2. Adjust section structure, word count targets, or marker placement
-3. Test by running `/blog write` with a topic that matches the template
+1. Copy the template you want to change into `.claude-blog/templates/` in your
+   working directory.
+2. Adjust section structure, word count targets, or marker placement.
+3. Test by running `/blog write` with a topic that matches the template. A
+   template in `.claude-blog/templates/` takes precedence over the shipped one
+   with the same filename.
+
+Changes take effect immediately: no restart needed.
 
 ### Creating a New Template
 
 1. Copy an existing template as a starting point:
    ```bash
-   cp skills/blog/templates/how-to-guide.md \
-      skills/blog/templates/my-custom-type.md
+   mkdir -p .claude-blog/templates
+   cp "${CLAUDE_PLUGIN_ROOT}/skills/blog/templates/how-to-guide.md" \
+      .claude-blog/templates/my-custom-type.md
    ```
 
 2. Define the section structure for your content type:

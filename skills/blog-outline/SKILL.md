@@ -11,7 +11,7 @@ description: >
   consume. Use when user says "outline", "blog outline", "content outline",
   "structure blog", "plan sections", "article skeleton", "heading structure",
   "SERP analysis", "competitive outline", "plan article".
-user-invokable: true
+user-invocable: true
 argument-hint: "<topic>"
 license: MIT
 ---

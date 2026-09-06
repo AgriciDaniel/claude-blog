@@ -1,7 +1,7 @@
 {
   "name": "claude-blog",
   "description": "AI-powered blog skill suite: 32 skill directories (1 orchestrator + 31 sub-skills) and 5 agents for writing, rewriting, auditing, and optimizing content for Google rankings and AI citations (GEO/AEO). Includes the FLOW framework, semantic topic-cluster planning, multilingual publishing, Google API integration, persona writing, fact-checking, cannibalization detection, CMS taxonomy, NotebookLM research, Gemini TTS narration, image generation, and 5-category quality scoring.",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "author": {
     "name": "AgriciDaniel",
     "url": "https://github.com/AgriciDaniel"
@@ -44,6 +44,25 @@
     "ai-slop-detection",
     "editorial-heuristics",
     "cognitive-load",
-    "brand-context"
-  ]
+    "brand-context",
+    "cowork"
+  ],
+  "displayName": "Claude Blog",
+  "mcpServers": "./mcp-servers.json",
+  "userConfig": {
+    "google_ai_api_key": {
+      "type": "string",
+      "title": "Google AI API key (optional)",
+      "description": "Enables /blog image (Gemini image generation) and /blog audio (Gemini TTS). Leave blank to keep both disabled -- while blank, nothing is downloaded and no MCP server is started. Free key: https://aistudio.google.com/apikey",
+      "sensitive": true,
+      "required": false
+    },
+    "gemini_image_model": {
+      "type": "string",
+      "title": "Gemini image model",
+      "description": "Model used for /blog image. Only takes effect once an API key is set.",
+      "default": "gemini-3.1-flash-image-preview",
+      "required": false
+    }
+  }
 }

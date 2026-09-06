@@ -7,7 +7,7 @@
 #   pwsh -File ./install.ps1
 
 $ErrorActionPreference = "Stop"
-$ClaudeBlogVersion = "2.2.0"
+$ClaudeBlogVersion = "2.3.0"
 
 function Write-Color($Color, $Text) {
     Write-Host $Text -ForegroundColor $Color
@@ -117,98 +117,67 @@ function Main {
         Write-Color Yellow "WARNING: Python $PythonVersion found. The scripts require Python 3.11+."
     }
 
-    # Create directories
-    Write-Color White "Creating directories..."
-    New-Item -ItemType Directory -Force -Path (Join-Path (Join-Path $SkillDir "blog") "references") | Out-Null
-    New-Item -ItemType Directory -Force -Path (Join-Path (Join-Path $SkillDir "blog") "templates") | Out-Null
-    New-Item -ItemType Directory -Force -Path (Join-Path (Join-Path $SkillDir "blog") "scripts") | Out-Null
-    New-Item -ItemType Directory -Force -Path $AgentDir | Out-Null
+    # Install as a plugin directory. Claude auto-discovers any folder holding
+    # .claude-plugin/plugin.json under a skills directory and loads it as a
+    # plugin, which is what makes ${CLAUDE_PLUGIN_ROOT} resolve inside the skill
+    # files. Since v2.3.0 every intra-plugin reference uses that variable, so
+    # this is the only layout that works.
+    $PluginDir = Join-Path $SkillDir "claude-blog"
 
-    # Copy main skill
-    Write-Color White "Installing main skill: blog..."
-    Copy-Item (Join-Path (Join-Path (Join-Path $ScriptDir "skills") "blog") "SKILL.md") (Join-Path (Join-Path $SkillDir "blog") "SKILL.md") -Force
-
-    # Copy references
-    Write-Color White "Installing reference files..."
-    Copy-Tree (Join-Path (Join-Path (Join-Path $ScriptDir "skills") "blog") "references") (Join-Path (Join-Path $SkillDir "blog") "references")
-
-    # Copy templates
-    if (Test-Path (Join-Path (Join-Path (Join-Path $ScriptDir "skills") "blog") "templates")) {
-        Write-Color White "Installing content templates..."
-        Copy-Tree (Join-Path (Join-Path (Join-Path $ScriptDir "skills") "blog") "templates") (Join-Path (Join-Path $SkillDir "blog") "templates")
+    if (Test-Path (Join-Path (Join-Path $SkillDir "blog") "SKILL.md")) {
+        Write-Color Yellow "Found a pre-2.3.0 flat install at $SkillDir\blog\"
+        Write-Color Yellow "  It will shadow this plugin install. Clear it with ./uninstall.ps1,"
+        Write-Color Yellow "  which removes both layouts, then re-run this installer."
+        Write-Color White ""
     }
 
-    # Preserve the repository's data/google-updates.json ledger inside the
-    # standalone blog skill payload.
-    $GoogleLedger = Join-Path (Join-Path $ScriptDir "data") "google-updates.json"
-    if (Test-Path -LiteralPath $GoogleLedger) {
-        Write-Color White "Installing Google update ledger..."
-        $BlogDataDir = Join-Path (Join-Path $SkillDir "blog") "data"
-        New-Item -ItemType Directory -Force -Path $BlogDataDir | Out-Null
-        Copy-Item -LiteralPath $GoogleLedger -Destination (Join-Path $BlogDataDir "google-updates.json") -Force
-    }
+    Write-Color White "Installing plugin to $PluginDir..."
+    if (Test-Path $PluginDir) { Remove-Item -Recurse -Force $PluginDir }
+    New-Item -ItemType Directory -Force -Path $PluginDir | Out-Null
 
-    # Copy sub-skills (auto-discovers all skill directories)
-    Write-Color White "Installing sub-skills..."
-    $SubSkillCount = 0
-    $SkillEntries = @(Get-ChildItem -Directory (Join-Path $ScriptDir "skills"))
-    foreach ($SkillEntry in $SkillEntries) {
-        $skillName = $SkillEntry.Name
-        if ($skillName -eq "blog") { continue }
-        $skillDst = Join-Path $SkillDir $skillName
-        New-Item -ItemType Directory -Force -Path $skillDst | Out-Null
-
-        # Copy SKILL.md
-        $src = Join-Path $SkillEntry.FullName "SKILL.md"
-        if (Test-Path $src) {
-            Copy-Item $src (Join-Path $skillDst "SKILL.md") -Force
-            Write-Color Green "  + $skillName"
-            $SubSkillCount++
-        }
-
-        foreach ($payloadDir in @("references", "scripts", "assets", "templates")) {
-            Copy-Tree (Join-Path $SkillEntry.FullName $payloadDir) (Join-Path $skillDst $payloadDir)
+    # Payload only: everything Claude loads at runtime and nothing else.
+    # brain/ and branding/ are bundled project material no skill reads.
+    foreach ($item in @(".claude-plugin", "mcp-servers.json", "skills", "agents", "scripts", "data", "LICENSE", "NOTICE", "README.md")) {
+        $src = Join-Path $ScriptDir $item
+        if (Test-Path -LiteralPath $src -PathType Container) {
+            Copy-Tree $src (Join-Path $PluginDir $item)
+        } elseif (Test-Path -LiteralPath $src) {
+            Copy-Item -LiteralPath $src -Destination (Join-Path $PluginDir $item) -Force
         }
     }
 
-    # Create personas directory for blog-persona
-    New-Item -ItemType Directory -Force -Path (Join-Path (Join-Path (Join-Path $SkillDir "blog") "references") "personas") | Out-Null
-
-    # Copy agents
-    Write-Color White "Installing agents..."
-    $AgentCount = 0
-    $AgentFiles = @(Get-ChildItem -File (Join-Path (Join-Path $ScriptDir "agents") "*.md"))
-    foreach ($AgentFile in $AgentFiles) {
-        Copy-Item $AgentFile.FullName (Join-Path $AgentDir $AgentFile.Name) -Force
-        Write-Color Green "  + $($AgentFile.BaseName)"
-        $AgentCount++
-    }
-
-    # Copy scripts (v1.8.6: ALL root-level scripts, not just analyze_blog.py).
-    # Closes 7TH-AUDIT-001: the v1.8.0+ helpers (cognitive_load,
-    # discourse_research, load_untrusted_root, lint_prose, sync_flow) were
-    # never shipped, breaking the v1.8.3 code-enforced contract for end users.
-    Write-Color White "Installing scripts..."
-    $ClaudeScriptsDir = Join-Path $env:USERPROFILE ".claude\scripts"
-    if (-not (Test-Path $ClaudeScriptsDir)) {
-        New-Item -ItemType Directory -Force -Path $ClaudeScriptsDir | Out-Null
-    }
-    $RootScriptCount = 0
-    $RootScripts = @(Get-ChildItem -File (Join-Path (Join-Path $ScriptDir "scripts") "*.py"))
+    # Root helper scripts ship inside the plugin. Skills invoke them as
+    # ${CLAUDE_PLUGIN_ROOT}/scripts/*.py, so unlike pre-2.3.0 there is no second
+    # copy under ~/.claude/scripts to keep in sync.
+    $RootScripts = @(Get-ChildItem -File (Join-Path (Join-Path $PluginDir "scripts") "*.py"))
+    $RootScriptCount = $RootScripts.Count
     foreach ($RootScript in $RootScripts) {
-        Copy-Item $RootScript.FullName (Join-Path $ClaudeScriptsDir $RootScript.Name) -Force
-        if ($RootScript.Name -eq "analyze_blog.py") {
-            Copy-Item $RootScript.FullName (Join-Path (Join-Path (Join-Path $SkillDir "blog") "scripts") $RootScript.Name) -Force
-        }
         Write-Color Green "  + scripts/$($RootScript.Name)"
-        $RootScriptCount++
     }
+
+    # The reviewed Google update ledger (data/google-updates.json) ships inside
+    # the plugin and is read at ${CLAUDE_PLUGIN_ROOT}/data/google-updates.json.
+    $LedgerPath = Join-Path (Join-Path $PluginDir "data") "google-updates.json"
+    if (-not (Test-Path -LiteralPath $LedgerPath)) {
+        throw "data/google-updates.json missing from the install."
+    }
+
+    $SkillCount = @(Get-ChildItem -Path (Join-Path $PluginDir "skills") -Filter "SKILL.md" -Recurse).Count
+    $AgentCount = @(Get-ChildItem -Path (Join-Path $PluginDir "agents") -Filter "*.md").Count
+    if ($SkillCount -lt 30) {
+        throw "Installed only $SkillCount skills; the install looks incomplete."
+    }
+
+    # One directory, one manifest line. Uninstall removes the tree.
+    $Manifest = Join-Path (Join-Path $env:USERPROFILE ".claude") "claude-blog-manifest.txt"
+    Set-Content -LiteralPath $Manifest -Value $PluginDir
+
 
     # Install Python dependencies (closes audit VULN-507/804: capture stderr
     # to a logfile instead of swallowing it).
-    Write-Color White "Installing Python dependencies..."
     $reqFile = Join-Path $ScriptDir "requirements.txt"
-    if (Test-Path $reqFile) {
+    if (($env:CLAUDE_BLOG_INSTALL_DEPS -eq "1") -and (Test-Path $reqFile)) {
+        Write-Color White "Installing Python dependencies (CLAUDE_BLOG_INSTALL_DEPS=1)..."
         $pipLog = Join-Path ([System.IO.Path]::GetTempPath()) "claude-blog-pip-$([System.Guid]::NewGuid().ToString('N').Substring(0,8)).log"
         # Resolve python: prefer python3, fall back to python. Avoid the `??`
         # null-coalescing operator (PowerShell 7+ only) so this works on the
@@ -243,9 +212,8 @@ function Main {
 
 "@
 
-    Write-Color White "Installed:"
-    Write-Color Green "  Main skill:   blog/ (orchestrator + $(Count-Files (Join-Path (Join-Path $SkillDir "blog") "references")) references + $(Count-Files (Join-Path (Join-Path $SkillDir "blog") "templates")) templates)"
-    Write-Color Green "  Sub-skills:   $SubSkillCount installed"
+    Write-Color White "Installed at: $PluginDir"
+    Write-Color Green "  Skills:       $SkillCount ($(Count-Files (Join-Path (Join-Path (Join-Path $PluginDir "skills") "blog") "references")) references, $(Count-Files (Join-Path (Join-Path (Join-Path $PluginDir "skills") "blog") "templates")) templates)"
     Write-Color Green "  Agents:       $AgentCount specialists"
     Write-Color Green "  Scripts:      $RootScriptCount root-level + per-skill scripts"
     Write-Color White ""
@@ -257,7 +225,7 @@ function Main {
     Write-Color Cyan  "  /blog audio setup             Configure Gemini TTS audio narration"
     Write-Color White "  Requires: Google AI API key (free at https://aistudio.google.com/apikey)"
     Write-Color White ""
-    Write-Color Yellow "Restart Claude Code to activate the new skill."
+    Write-Color Yellow "Restart Claude Code to activate the plugin."
 }
 
 Main

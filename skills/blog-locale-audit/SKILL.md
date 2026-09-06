@@ -8,13 +8,13 @@ description: >
   Use when user says "locale audit", "blog locale-audit", "check translations",
   "multilingual audit", "translation check", "hreflang check",
   "Uebersetzungen pruefen".
-user-invokable: true
+user-invocable: true
 argument-hint: "<directory>"
 license: MIT
 compatibility: Standalone within claude-blog. Optional richer hreflang validation via claude-seo seo-hreflang.
 metadata:
   author: AgriciDaniel
-  version: "2.2.0"
+  version: "2.3.0"
   category: blog
 ---
 

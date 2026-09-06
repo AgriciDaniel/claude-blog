@@ -2,14 +2,29 @@
 set -euo pipefail
 
 # claude-blog installer
-# Installs the blog skill ecosystem to ~/.claude/skills/ and ~/.claude/agents/
+#
+# Installs claude-blog as a *plugin directory* at ~/.claude/skills/claude-blog/.
+# Claude auto-discovers any folder containing .claude-plugin/plugin.json under a
+# skills directory and loads it as a plugin, which is what makes
+# ${CLAUDE_PLUGIN_ROOT} resolve inside the skill files. Since v2.3.0 every
+# intra-plugin reference uses that variable, so the plugin layout is the only
+# layout that works: the installed tree is byte-identical to the repository and
+# to what Claude Cowork installs.
+#
+# Reviewed install (recommended -- you can read everything before it runs):
+#   git clone https://github.com/AgriciDaniel/claude-blog.git
+#   cd claude-blog && ./install.sh
 #
 # One-command install:
 #   curl -sL https://raw.githubusercontent.com/AgriciDaniel/claude-blog/main/install.sh | bash
+#
+# This script copies files and, only if you opt in with CLAUDE_BLOG_INSTALL_DEPS=1,
+# installs Python packages. It never writes credentials and never edits your shell
+# config. Set CLAUDE_BLOG_REF to a tag or SHA for a pinned install.
 
 # Declared outside main() so the EXIT trap can access it after main() returns
 TEMP_DIR=""
-readonly CLAUDE_BLOG_VERSION="2.2.0"
+readonly CLAUDE_BLOG_VERSION="2.3.0"
 
 copy_tree() {
     local src="$1"
@@ -34,12 +49,6 @@ count_files() {
     find "${path}" -type d -name '__pycache__' -prune -o -type f ! -name '*.pyc' -print | wc -l | tr -d ' '
 }
 
-record_install() {
-    local manifest="$1"
-    local path="$2"
-    printf '%s\n' "${path}" >>"${manifest}"
-}
-
 print_commands() {
     local skill_md="$1"
     if [ ! -f "${skill_md}" ]; then
@@ -59,16 +68,17 @@ print_commands() {
 }
 
 main() {
-    local SKILL_DIR="${HOME}/.claude/skills"
-    local AGENT_DIR="${HOME}/.claude/agents"
     local CLAUDE_DIR="${HOME}/.claude"
+    local SKILL_DIR="${CLAUDE_DIR}/skills"
+    local AGENT_DIR="${CLAUDE_DIR}/agents"
+    local PLUGIN_DIR="${SKILL_DIR}/claude-blog"
     local MANIFEST="${CLAUDE_DIR}/claude-blog-manifest.txt"
     local SCRIPT_DIR
 
     echo ""
     echo "  ╔══════════════════════════════════════╗"
     echo "  ║         claude-blog Installer        ║"
-    echo "  ║  Blog Content Engine for Claude Code ║"
+    echo "  ║   Blog Content Engine for Claude     ║"
     echo "  ╚══════════════════════════════════════╝"
     echo ""
     echo "  Release: ${CLAUDE_BLOG_VERSION}"
@@ -95,151 +105,99 @@ main() {
         fi
     fi
 
-    # Check prerequisites
+    if [ ! -f "${SCRIPT_DIR}/.claude-plugin/plugin.json" ]; then
+        echo "ERROR: ${SCRIPT_DIR} is not a claude-blog checkout (no .claude-plugin/plugin.json)." >&2
+        return 1
+    fi
+
+    # Check prerequisites. The content skills need none of this; only the
+    # script-backed ones (/blog analyze, /blog google, preflight gates) do.
     if ! command -v python3 &>/dev/null; then
-        echo "WARNING: python3 not found. The scripts require Python 3.11+."
-        echo "         Install with: sudo apt install python3"
+        echo "NOTE: python3 not found. Writing, briefs, outlines, schema and"
+        echo "      translation still work. Scoring and Google data need Python 3.11+."
         echo ""
     elif ! python3 -c 'import sys; raise SystemExit(0 if sys.version_info >= (3, 11) else 1)' >/dev/null 2>&1; then
         local python3_version
         python3_version="$(python3 -c 'import sys; print("%d.%d.%d" % sys.version_info[:3])' 2>/dev/null || echo unknown)"
         echo "WARNING: python3 ${python3_version} found. The scripts require Python 3.11+."
-        echo "         Install Python 3.11+ before running scoring, preflight, render, hero, and lint helpers."
         echo ""
     fi
 
-    # Create directories
-    echo "→ Creating directories..."
-    mkdir -p "${CLAUDE_DIR}"
-    mkdir -p "${SKILL_DIR}/blog/references"
-    mkdir -p "${SKILL_DIR}/blog/templates"
-    mkdir -p "${SKILL_DIR}/blog/scripts"
-    mkdir -p "${AGENT_DIR}"
-    : >"${MANIFEST}.tmp"
-
-    # Copy main skill
-    echo "→ Installing main skill: blog..."
-    cp "${SCRIPT_DIR}/skills/blog/SKILL.md" "${SKILL_DIR}/blog/SKILL.md"
-    record_install "${MANIFEST}.tmp" "${SKILL_DIR}/blog"
-
-    # Copy references
-    echo "→ Installing reference files..."
-    copy_tree "${SCRIPT_DIR}/skills/blog/references" "${SKILL_DIR}/blog/references"
-
-    # Copy templates
-    if [ -d "${SCRIPT_DIR}/skills/blog/templates" ]; then
-        echo "→ Installing content templates..."
-        copy_tree "${SCRIPT_DIR}/skills/blog/templates" "${SKILL_DIR}/blog/templates"
+    # A pre-2.3.0 flat install shadows the plugin, and its skill files still use
+    # the old non-portable relative paths.
+    if [ -f "${SKILL_DIR}/blog/SKILL.md" ]; then
+        echo "→ Found a pre-2.3.0 flat install at ${SKILL_DIR}/blog/"
+        echo "  It will shadow this plugin install. Clear it with ./uninstall.sh,"
+        echo "  which removes both layouts, then re-run this installer."
+        echo ""
     fi
 
-    # Ship the reviewed Google update ledger with the main skill. The source
-    # stays at data/google-updates.json in the repository; standalone installs
-    # receive it under the self-contained blog skill directory.
-    if [ -f "${SCRIPT_DIR}/data/google-updates.json" ]; then
-        echo "→ Installing Google update ledger..."
-        mkdir -p "${SKILL_DIR}/blog/data"
-        cp "${SCRIPT_DIR}/data/google-updates.json" "${SKILL_DIR}/blog/data/google-updates.json"
-    fi
+    echo "→ Installing plugin to ${PLUGIN_DIR}..."
+    rm -rf "${PLUGIN_DIR}"
+    mkdir -p "${PLUGIN_DIR}" "${CLAUDE_DIR}"
 
-    # Copy sub-skills (auto-discovers all skill directories)
-    echo "→ Installing sub-skills..."
-    local sub_skill_count=0
-    local expected_sub_skill_count=0
-    for skill_dir in "${SCRIPT_DIR}/skills/"*/; do
-        skill_name="$(basename "${skill_dir}")"
-        [ "$skill_name" = "blog" ] && continue
-        [ -f "${skill_dir}SKILL.md" ] && expected_sub_skill_count=$((expected_sub_skill_count + 1))
-        # VULN-IAC-003 (v1.9.1): defense-in-depth name validation. The
-        # repo is single-owner and a clean clone cannot produce odd names,
-        # but a tampered repo with a symlink like `skills/../../etc` would
-        # hand us '..' here. Refuse anything outside the expected charset
-        # rather than mkdir + cp into the parent. Spell out the accepted
-        # characters instead of using a locale-sensitive regex range.
-        case "$skill_name" in
-            ''|*[!abcdefghijklmnopqrstuvwxyz0123456789-]*)
-                echo "  ! refusing skill with unexpected name: ${skill_name}" >&2
-                continue
-                ;;
-        esac
-        mkdir -p "${SKILL_DIR}/${skill_name}"
-        if [ -f "${skill_dir}SKILL.md" ]; then
-            cp "${skill_dir}SKILL.md" "${SKILL_DIR}/${skill_name}/SKILL.md"
-            echo "  + ${skill_name}"
-            record_install "${MANIFEST}.tmp" "${SKILL_DIR}/${skill_name}"
-            sub_skill_count=$((sub_skill_count + 1))
-        fi
-        for payload_dir in references scripts assets templates; do
-            copy_tree "${skill_dir}${payload_dir}" "${SKILL_DIR}/${skill_name}/${payload_dir}"
-        done
-        if [ -d "${SKILL_DIR}/${skill_name}/scripts" ]; then
-            find "${SKILL_DIR}/${skill_name}/scripts" -type f -name '*.py' -exec chmod +x {} +
-        fi
-    done
-    if [ "${sub_skill_count}" -ne "${expected_sub_skill_count}" ]; then
-        echo "ERROR: installed ${sub_skill_count} of ${expected_sub_skill_count} sub-skills." >&2
-        echo "       Installation is incomplete; review the refusal messages above." >&2
-        return 1
-    fi
-
-    # Create personas directory for blog-persona
-    mkdir -p "${SKILL_DIR}/blog/references/personas"
-
-    # Copy agents
-    echo "→ Installing agents..."
-    local agent_count=0
-    for agent_file in "${SCRIPT_DIR}/agents/"*.md; do
-        if [ -f "${agent_file}" ]; then
-            agent_name="$(basename "${agent_file}")"
-            cp "${agent_file}" "${AGENT_DIR}/${agent_name}"
-            record_install "${MANIFEST}.tmp" "${AGENT_DIR}/${agent_name}"
-            echo "  + ${agent_name%.md}"
-            agent_count=$((agent_count + 1))
+    # Copy the plugin payload: everything Claude loads at runtime and nothing
+    # else. brain/ and branding/ are bundled project material that no skill
+    # reads (brain/ alone is ~5.8 MB); tests/ and .github/ are development only.
+    local item
+    for item in .claude-plugin mcp-servers.json skills agents scripts data LICENSE NOTICE README.md; do
+        if [ -d "${SCRIPT_DIR}/${item}" ]; then
+            copy_tree "${SCRIPT_DIR}/${item}" "${PLUGIN_DIR}/${item}"
+        elif [ -f "${SCRIPT_DIR}/${item}" ]; then
+            cp "${SCRIPT_DIR}/${item}" "${PLUGIN_DIR}/${item}"
         fi
     done
 
-    # Copy scripts (v1.8.6: ALL root-level scripts, not just analyze_blog.py).
-    # Before v1.8.6 the installer only copied analyze_blog.py, leaving the
-    # v1.8.0+ helpers (cognitive_load, discourse_research, load_untrusted_root,
-    # lint_prose, sync_flow) absent on the user's machine. This broke the
-    # v1.8.3 "code-enforced" untrusted-data contract for every marketplace
-    # / curl-pipe install (closes 7TH-AUDIT-001).
-    echo "→ Installing scripts..."
-    mkdir -p "${SKILL_DIR}/blog/scripts"
-    mkdir -p "${HOME}/.claude/scripts"
+    # Root helper scripts ship inside the plugin. Skills invoke them as
+    # "${CLAUDE_PLUGIN_ROOT}"/scripts/*.py, so unlike pre-2.3.0 there is no
+    # second copy under ~/.claude/scripts to keep in sync.
     local script_name
     local root_script_count=0
-    for script_path in "${SCRIPT_DIR}/scripts/"*.py; do
+    for script_path in "${PLUGIN_DIR}/scripts/"*.py; do
         [ -f "${script_path}" ] || continue
         script_name="$(basename "${script_path}")"
-        # Copy to ~/.claude/scripts/ (canonical install location) AND to the
-        # blog-skill scripts dir (legacy callers of analyze_blog.py).
-        cp "${script_path}" "${HOME}/.claude/scripts/${script_name}"
-        chmod +x "${HOME}/.claude/scripts/${script_name}"
-        record_install "${MANIFEST}.tmp" "${HOME}/.claude/scripts/${script_name}"
-        if [ "${script_name}" = "analyze_blog.py" ]; then
-            cp "${script_path}" "${SKILL_DIR}/blog/scripts/${script_name}"
-            chmod +x "${SKILL_DIR}/blog/scripts/${script_name}"
-        fi
+        chmod +x "${script_path}"
         echo "  + scripts/${script_name}"
         root_script_count=$((root_script_count + 1))
     done
-    mv "${MANIFEST}.tmp" "${MANIFEST}"
+    find "${PLUGIN_DIR}/skills" -type f -name '*.py' -exec chmod +x {} + 2>/dev/null || true
 
-    # Install Python dependencies (closes audit VULN-507/804: capture stderr
-    # to a logfile instead of swallowing it. Operator can diagnose failures.)
-    if [ -f "${SCRIPT_DIR}/requirements.txt" ] && command -v pip3 &>/dev/null; then
-        echo "→ Installing Python dependencies..."
-        local pip_log
-        pip_log="$(mktemp -t claude-blog-pip-XXXXXX.log)"
-        if pip3 install --quiet -r "${SCRIPT_DIR}/requirements.txt" 2>"${pip_log}"; then
-            rm -f "${pip_log}"
-        else
-            echo "  WARNING: pip install failed."
-            echo "  See log: ${pip_log}"
-            echo "  First error: $(head -n1 "${pip_log}" 2>/dev/null || echo '(empty)')"
-            echo "  Manual install: pip3 install -r requirements.txt"
+    # The reviewed Google update ledger (data/google-updates.json) ships inside
+    # the plugin and is read at ${CLAUDE_PLUGIN_ROOT}/data/google-updates.json.
+    if [ ! -f "${PLUGIN_DIR}/data/google-updates.json" ]; then
+        echo "ERROR: data/google-updates.json missing from the install." >&2
+        return 1
+    fi
+
+    local skill_count sub_skill_count agent_count
+    skill_count="$(find "${PLUGIN_DIR}/skills" -name SKILL.md | wc -l | tr -d ' ')"
+    sub_skill_count="$(find "${PLUGIN_DIR}/skills" -mindepth 2 -maxdepth 2 -name SKILL.md \
+        ! -path "${PLUGIN_DIR}/skills/blog/SKILL.md" | wc -l | tr -d ' ')"
+    agent_count="$(find "${PLUGIN_DIR}/agents" -name '*.md' | wc -l | tr -d ' ')"
+
+    if [ "${skill_count}" -lt 30 ]; then
+        echo "ERROR: installed only ${skill_count} skills; the install looks incomplete." >&2
+        return 1
+    fi
+
+    # One directory, one manifest line. Uninstall removes the tree.
+    printf '%s\n' "${PLUGIN_DIR}" >"${MANIFEST}"
+
+    # Python dependencies are OPT-IN. An installer that silently installs
+    # packages into a user's environment fails security review, and no content
+    # skill needs them.
+    if [ "${CLAUDE_BLOG_INSTALL_DEPS:-}" = "1" ]; then
+        if [ -f "${SCRIPT_DIR}/requirements.txt" ] && command -v pip3 &>/dev/null; then
+            echo "→ Installing Python dependencies (CLAUDE_BLOG_INSTALL_DEPS=1)..."
+            local pip_log
+            pip_log="$(mktemp -t claude-blog-pip-XXXXXX.log)"
+            if pip3 install --quiet -r "${SCRIPT_DIR}/requirements.txt" 2>"${pip_log}"; then
+                rm -f "${pip_log}"
+            else
+                echo "  WARNING: pip install failed. See log: ${pip_log}"
+                echo "  First error: $(head -n1 "${pip_log}" 2>/dev/null || echo '(empty)')"
+            fi
         fi
-        echo "  Tip: Consider using a virtual environment: python3 -m venv .venv && source .venv/bin/activate"
     fi
 
     echo ""
@@ -247,8 +205,8 @@ main() {
     echo "  ║       Installation Complete!         ║"
     echo "  ╚══════════════════════════════════════╝"
     echo ""
-    echo "  Installed:"
-    echo "    Main skill:   blog/ (orchestrator + $(count_files "${SKILL_DIR}/blog/references") references + $(count_files "${SKILL_DIR}/blog/templates") templates)"
+    echo "  Installed at: ${PLUGIN_DIR}"
+    echo "    Skills:       ${skill_count} ($(count_files "${PLUGIN_DIR}/skills/blog/references") references, $(count_files "${PLUGIN_DIR}/skills/blog/templates") templates)"
     echo "    Sub-skills:   ${sub_skill_count} installed"
     echo "    Agents:       ${agent_count} specialists"
     echo "    Scripts:      ${root_script_count} root-level + per-skill scripts"
@@ -257,12 +215,21 @@ main() {
     echo "  Commands available:"
     print_commands "${SCRIPT_DIR}/skills/blog/SKILL.md"
     echo ""
-    echo "  Optional: AI Features (same API key for both)"
-    echo "    /blog image setup             Configure Gemini image generation"
-    echo "    /blog audio setup             Configure Gemini TTS audio narration"
+    echo "  Optional extras (nothing runs until you configure them):"
+    echo "    Readability grades:  pip3 install -r requirements.txt"
+    echo "                         (or re-run with CLAUDE_BLOG_INSTALL_DEPS=1)"
+    echo "    /blog google setup   PageSpeed, Search Console, GA4"
+    echo "    /blog image setup    Gemini image generation"
+    echo "    /blog audio setup    Gemini TTS narration"
     echo "    Requires: Google AI API key (free at https://aistudio.google.com/apikey)"
     echo ""
-    echo "  Restart Claude Code to activate the new skill."
+    echo "  Restart Claude Code to activate the plugin."
+    echo ""
+    if [ -d "${AGENT_DIR}" ] && ls "${AGENT_DIR}"/blog-*.md &>/dev/null; then
+        echo "  Note: legacy agents remain at ${AGENT_DIR}/blog-*.md."
+        echo "        The plugin ships its own; remove the old copies to avoid duplicates."
+        echo ""
+    fi
 }
 
 main "$@"

@@ -238,7 +238,7 @@ blog-writer, etc.), and instead tries to do everything inline.
    ```bash
    head -20 ~/.claude/skills/blog-write/SKILL.md
    ```
-   Valid skill fields include `name`, `description`, `user-invokable`,
+   Valid skill fields include `name`, `description`, `user-invocable`,
    `argument-hint`, `license`, `compatibility`, `metadata`, and
    `disable-model-invocation`. Agent tools live in
    `~/.claude/agents/blog-*.md`.

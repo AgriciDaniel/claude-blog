@@ -8,7 +8,7 @@ description: >
   minimum post-count thresholds to prevent thin tag archives, and syncs taxonomy
   via authenticated API calls. Use when user says "tags", "categories", "taxonomy",
   "tag suggestions", "sync tags", "WordPress tags", "Shopify tags".
-user-invokable: true
+user-invocable: true
 argument-hint: "[suggest|sync|audit] [file-or-cms]"
 license: MIT
 ---

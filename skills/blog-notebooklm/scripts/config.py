@@ -9,7 +9,15 @@ from urllib.parse import urlparse
 
 # Paths
 SKILL_DIR = Path(__file__).parent.parent
-DATA_DIR = SKILL_DIR / "data"
+
+# Auth state, cookies and the notebook library are user data, not plugin
+# content. Under a plugin install the plugin directory is read-only (Claude
+# Cowork) and is replaced wholesale on every update, which would drop the
+# saved session and force a re-login. CLAUDE_PLUGIN_DATA is Claude's
+# per-plugin directory that survives updates; fall back to the in-skill path
+# so a bare checkout keeps working unchanged.
+_PLUGIN_DATA = os.environ.get("CLAUDE_PLUGIN_DATA", "").strip()
+DATA_DIR = Path(_PLUGIN_DATA) / "notebooklm" if _PLUGIN_DATA else SKILL_DIR / "data"
 BROWSER_STATE_DIR = DATA_DIR / "browser_state"
 BROWSER_PROFILE_DIR = BROWSER_STATE_DIR / "browser_profile"
 STATE_FILE = BROWSER_STATE_DIR / "state.json"

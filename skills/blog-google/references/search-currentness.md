@@ -2,15 +2,14 @@
 
 Verified against Google-owned sources on 2026-08-25. Treat product
 announcements as product context, not evidence of a ranking factor. Use
-`data/google-updates.json` for the machine-readable source ledger.
+`${CLAUDE_PLUGIN_ROOT}/data/google-updates.json` for the machine-readable source ledger.
 
-Resolve the ledger in this order:
+Resolve the ledger at `${CLAUDE_PLUGIN_ROOT}/data/google-updates.json`.
 
-1. In a repository checkout, use the repository-root
-   `data/google-updates.json`.
-2. In a standalone install, use `data/google-updates.json` beside the main
-   blog orchestrator skill, normally
-   `~/.claude/skills/blog/data/google-updates.json`.
+Since v2.3.0 the plugin ships as one self-contained directory, so that single
+path is correct on every surface: repository checkout, standalone install,
+marketplace install, and Claude Cowork. There is no second location to fall
+back to.
 
 Do not substitute a same-named file from the current working directory. If
 neither trusted location exists, report the ledger as unavailable and continue
@@ -26,7 +25,7 @@ The ledger separates four evidence states:
 - `confirmed-with-source-conflict`: current Google-owned pages disagree. Keep
   both citations and verify the capability in the affected account.
 
-Run `python3 scripts/check_google_currentness.py --root . --json` for the
+Run `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/check_google_currentness.py --root . --json` for the
 read-only official-feed and review-age check. A `refresh_required` result means
 the ledger needs human review. The checker never writes summaries or promotes
 events automatically.

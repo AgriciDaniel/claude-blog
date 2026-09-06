@@ -123,7 +123,7 @@ chmod 600 ~/.config/claude-seo/service_account.json ~/.config/claude-seo/oauth_c
 ## Verify Setup
 
 ```bash
-python3 scripts/google_auth.py --check
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-google/scripts/google_auth.py --check
 ```
 
 ## Quick Troubleshooting

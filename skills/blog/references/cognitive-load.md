@@ -2,7 +2,7 @@
 
 A reader has finite working memory. A blog post that introduces too many new concepts, named entities, or numeric claims in too short a span will lose them. Most readability scores (Flesch, Gunning Fog) measure surface-level prose difficulty; this reference adds the dimension they miss: **how much the reader must actively hold to follow a section**.
 
-Run the cognitive-load analyzer (`scripts/cognitive_load.py`) on long-form B2B posts (1,500+ words). It produces a heatmap of sections by load.
+Run the cognitive-load analyzer (`${CLAUDE_PLUGIN_ROOT}/scripts/cognitive_load.py`) on long-form B2B posts (1,500+ words). It produces a heatmap of sections by load.
 
 Adapted from the impeccable plugin's UI cognitive-load reference (Paul Bakaus, Apache 2.0).
 
@@ -69,11 +69,11 @@ A section that triggers two or more "overloaded" rows is a P1 per
 
 ## What the analyzer measures
 
-`scripts/cognitive_load.py` segments the post by H2 and computes per-section:
+`${CLAUDE_PLUGIN_ROOT}/scripts/cognitive_load.py` segments the post by H2 and computes per-section:
 
 1. **new_entity_density**: capitalized phrases not seen in prior sections, normalized per 100 words. High counts signal too many proper nouns introduced at once.
 2. **numeric_claim_density**: count of numbers (percentages, counts, currencies, dates) per 100 words.
-3. **jargon_introduction_count**: words that match a domain-jargon list and have not been defined in or before the section. The default list lives at the top of `scripts/cognitive_load.py` and covers SEO/GEO/web-vitals terms. To extend for a different domain, pass `--jargon <path-to-newline-delimited-file>`; entries augment the defaults rather than replacing them.
+3. **jargon_introduction_count**: words that match a domain-jargon list and have not been defined in or before the section. The default list lives at the top of `${CLAUDE_PLUGIN_ROOT}/scripts/cognitive_load.py` and covers SEO/GEO/web-vitals terms. To extend for a different domain, pass `--jargon <path-to-newline-delimited-file>`; entries augment the defaults rather than replacing them.
 4. **forward_reference_count**: phrases like "as we will see," "discussed below," "later in this post."
 5. **avg_clause_depth**: average count of subordinate-clause markers per sentence (commas, semicolons, "which," "that," parentheticals).
 6. **load_score**: composite 0 to 100 where higher is more loaded.

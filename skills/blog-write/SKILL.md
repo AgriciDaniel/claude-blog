@@ -9,7 +9,7 @@ description: >
   and HTML output.
   Use when user says "write blog", "new blog post", "create article",
   "write about", "draft blog", "generate blog post".
-user-invokable: true
+user-invocable: true
 argument-hint: "<topic>"
 license: MIT
 ---
@@ -22,13 +22,13 @@ follows the 6 pillars of dual optimization (Google rankings + AI citations).
 **Key references** (paths relative to repo root; references live in the
 main `blog` skill's references directory, not in `blog-write/`):
 
-- `skills/blog/references/synthesis-contract.md`: 6 LAWs for synthesis output (v1.8.0; applies whenever the article embeds research-synthesis prose)
-- `skills/blog/references/content-templates.md`: Template selection guide and usage
-- `skills/blog/references/quality-scoring.md`: 5-category scoring (Content 30, SEO 25, E-E-A-T 15, Technical 15, AI Citation 15)
-- `skills/blog/references/eeat-signals.md`: Experience, expertise, authority, trust markers
-- `skills/blog/references/internal-linking.md`: Linking strategy and anchor text rules
-- `skills/blog/references/visual-media.md`: Image sourcing and chart styling
-- `skills/blog-write/references/delivery.md`: delivery contract steps and summary template for this sub-skill
+- `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/synthesis-contract.md`: 6 LAWs for synthesis output (v1.8.0; applies whenever the article embeds research-synthesis prose)
+- `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/content-templates.md`: Template selection guide and usage
+- `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/quality-scoring.md`: 5-category scoring (Content 30, SEO 25, E-E-A-T 15, Technical 15, AI Citation 15)
+- `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/eeat-signals.md`: Experience, expertise, authority, trust markers
+- `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/internal-linking.md`: Linking strategy and anchor text rules
+- `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/visual-media.md`: Image sourcing and chart styling
+- `${CLAUDE_PLUGIN_ROOT}/skills/blog-write/references/delivery.md`: delivery contract steps and summary template for this sub-skill
 
 ## Workflow
 
@@ -50,7 +50,7 @@ thinking: optimize the post for extraction AND plan a community echo (covered
 in `/blog repurpose`).
 
 For a deeper surface-by-surface workflow, see
-`skills/blog/references/flow-alignment.md` and `/blog flow find`.
+`${CLAUDE_PLUGIN_ROOT}/skills/blog/references/flow-alignment.md` and `/blog flow find`.
 
 ### Phase 1: Topic Understanding
 
@@ -64,7 +64,7 @@ For a deeper surface-by-surface workflow, see
 ### Phase 1.5: Template Selection
 
 Select the appropriate content template from the 12 templates in
-`skills/blog/templates/` (the main `blog` skill owns the templates directory).
+`${CLAUDE_PLUGIN_ROOT}/skills/blog/templates/` (the main `blog` skill owns the templates directory).
 
 1. **Auto-detect content type** from the topic and search intent:
    | Signal | Template |
@@ -82,13 +82,13 @@ Select the appropriate content template from the 12 templates in
    | Survey results, experiment, original data | `data-research` |
    | Q&A, knowledge base, "What is X" | `faq-knowledge` |
 
-2. **Load the matching template**: Read from `skills/blog/templates/<type>.md`
+2. **Load the matching template**: Check `.claude-blog/templates/<type>.md` in the working directory first; a file there is the user's own customization and wins. Otherwise read `${CLAUDE_PLUGIN_ROOT}/skills/blog/templates/<type>.md`
 3. **Adapt the outline** - Use the template's section structure, heading patterns,
    and word count guidance to shape Phase 3's outline
 4. **Fallback** - If no template clearly fits, use the generic outline structure
    in Phase 3 below. Inform the user which template was selected (or that none matched).
 
-See `skills/blog/references/content-templates.md` for detailed selection criteria and intent mapping.
+See `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/content-templates.md` for detailed selection criteria and intent mapping.
 
 ### Phase 2: Research
 
@@ -96,7 +96,7 @@ Spawn a `blog-researcher` agent (or do inline research with WebSearch):
 
 1. **Find 8-12 current statistics** (2025-2026 data preferred)
    - Search: `[topic] study 2025 2026 data statistics`
-   - Prioritize tier 1-3 sources (see `skills/blog/references/quality-scoring.md`)
+   - Prioritize tier 1-3 sources (see `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/quality-scoring.md`)
    - Record: statistic, source name, URL, date, methodology
 2. **Find a cover image** (wide, high-quality, topic-relevant):
    - Prefer original screenshots, product visuals, diagrams, or data graphics when available
@@ -106,13 +106,13 @@ Spawn a `blog-researcher` agent (or do inline research with WebSearch):
    - Target dimensions: 1200x630 (OG-compatible) or 1920x1080
    - Or generate a custom SVG cover via `blog-chart` (text-on-gradient with key stat)
    - Or generate a custom AI image via `blog-image`; prefer `gemini-3.1-flash-image`, then `gemini-3.1-flash-lite-image` or `gemini-3-pro-image` when available, and record the model ID
-   - See `skills/blog/references/visual-media.md` for cover image sizing details
+   - See `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/visual-media.md` for cover image sizing details
 3. **Find 3-5 inline images** from open-source platforms:
    - Use official APIs or Openverse search; keep license, creator, source URL, and retrieval date with each asset
    - Download images locally and reference local paths in the draft
    - Validate final URLs with the delivery contract SSRF rules before download
 4. **Plan 2-4 data visualizations** from researched statistics
-   - Select diverse chart types (see `skills/blog/references/visual-media.md`)
+   - Select diverse chart types (see `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/visual-media.md`)
    - Map data points to chart formats
 5. **AI image generation** (optional, if `blog-image` is available):
    - If stock photo results are insufficient (< 3 good matches) or topic is too niche
@@ -125,7 +125,7 @@ Spawn a `blog-researcher` agent (or do inline research with WebSearch):
    - Falls back silently if not configured or not authenticated
 7. **Find relevant YouTube videos** (2-3 per post):
    - Use `blog-google` youtube command or WebSearch `site:youtube.com [topic] [year]`
-   - Apply quality criteria from `skills/blog/references/video-embeds.md` (min score 50/100)
+   - Apply quality criteria from `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/video-embeds.md` (min score 50/100)
    - Select 2-3 best videos. Falls back silently if none found.
 
 ### Phase 3: Outline Generation
@@ -181,7 +181,7 @@ adapt this skeleton to match the template's section structure:
 - Forward-looking analysis
 
 ## [CTA Section or Inline Placement]
-- See `skills/blog/references/cta-placement.md` for placement rules by content type
+- See `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/cta-placement.md` for placement rules by content type
 - Place CTA after value delivery, not at arbitrary positions
 - Single focused CTA per post (266% more conversions)
 - [CTA: contextual call-to-action matching article topic]
@@ -199,8 +199,8 @@ Present the outline to the user for approval before writing.
 
 **Visual element pacing**: Insert `[IMAGE]`, `[CHART]`, `[VIDEO]`, or `[CALLOUT]` markers
 every 300-500 words. Alternate types (no consecutive same-type). See
-`skills/blog/references/content-rules.md` Visual Rhythm section and
-`skills/blog/references/cta-placement.md` for CTA positioning.
+`${CLAUDE_PLUGIN_ROOT}/skills/blog/references/content-rules.md` Visual Rhythm section and
+`${CLAUDE_PLUGIN_ROOT}/skills/blog/references/cta-placement.md` for CTA positioning.
 
 ### Phase 4: Chart Generation (Built-In)
 
@@ -213,7 +213,7 @@ before/after comparisons):
 4. Target 2-4 charts per 2,000-word post
 5. Distribute charts evenly - never cluster them
 
-See `skills/blog/references/visual-media.md` for chart type selection and styling rules.
+See `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/visual-media.md` for chart type selection and styling rules.
 
 ### Phase 5: Content Writing
 
@@ -363,7 +363,7 @@ For a deeper dive into keyword clustering, see our
 ```
 
 Target 5-10 internal link zones per 2,000-word post. Use descriptive anchor text
-(never "click here" or "read more"). See `skills/blog/references/internal-linking.md` for
+(never "click here" or "read more"). See `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/internal-linking.md` for
 anchor text rules and linking strategy.
 
 #### 5g. Paragraph Rules
@@ -413,7 +413,7 @@ MDX format:
 ```
 
 #### 5k. Video Embedding
-Embed YouTube videos using srcdoc lazy-loading pattern from `skills/blog/references/video-embeds.md`.
+Embed YouTube videos using srcdoc lazy-loading pattern from `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/video-embeds.md`.
 Include aria-label, noscript fallback for AI crawlers. Place after relevant H2, 500+ words apart.
 
 #### 5l. Citation Format
@@ -487,11 +487,11 @@ Before delivering, verify:
     presence or absence says nothing about authorship or Google performance.
 18. **Rhetorical questions** - Use them only when they help the reader reason
     through a decision. There is no quota.
-19. **YouTube videos** - 2-3 embeds with lazy loading, aria-labels, and noscript fallback (see `skills/blog/references/video-embeds.md`)
+19. **YouTube videos** - 2-3 embeds with lazy loading, aria-labels, and noscript fallback (see `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/video-embeds.md`)
 
 ### Phase 6.5: Delivery Contract Enforcement (v1.9.0)
-Before Phase 7, run the 5-gate delivery contract (via `python3 scripts/blog_preflight.py` plus a BLOCKING `blog-reviewer` agent) per `skills/blog/references/blog-delivery-contract.md` and the writer-specific checklist in `skills/blog-write/references/delivery.md`. Use `python3` for local scripts. The user is never the first reviewer; the gates are.
+Before Phase 7, run the 5-gate delivery contract (via `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/blog_preflight.py` plus a BLOCKING `blog-reviewer` agent) per `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/blog-delivery-contract.md` and the writer-specific checklist in `${CLAUDE_PLUGIN_ROOT}/skills/blog-write/references/delivery.md`. Use `python3` for local scripts. The user is never the first reviewer; the gates are.
 On any block, capture `<folder>/preflight-report.json`, re-dispatch the blog-writer agent with the diagnostic as input, and re-run the gated steps. Maximum 3 iterations. On the 3rd failure, stop and present the failure diagnostic instead of the draft.
 
 ### Phase 7: Delivery
-Present the completed article only after Phase 6.5 returns all gates passing. Include `<folder>/preview/*.png` screenshots and the compact completion summary described in `skills/blog-write/references/delivery.md`.
+Present the completed article only after Phase 6.5 returns all gates passing. Include `<folder>/preview/*.png` screenshots and the compact completion summary described in `${CLAUDE_PLUGIN_ROOT}/skills/blog-write/references/delivery.md`.

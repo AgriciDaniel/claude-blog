@@ -1,7 +1,7 @@
 # Google Search Landscape 2026
 
 Verified against Google-owned sources on 2026-08-25. The machine-readable
-source of truth is `data/google-updates.json`. This reference contains only
+source of truth is `${CLAUDE_PLUGIN_ROOT}/data/google-updates.json`. This reference contains only
 Google-confirmed events, documented product behavior, and explicit operational
 inferences. It intentionally excludes unsourced market-share, CTR, recovery,
 winner, and penalty claims.
@@ -235,11 +235,11 @@ Sources:
 
 ## Refresh Procedure
 
-1. Run `python3 scripts/check_google_currentness.py --root . --json`.
-2. Review all manual sources in `data/google-updates.json`.
+1. Run `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/check_google_currentness.py --root . --json`.
+2. Review all manual sources in `${CLAUDE_PLUGIN_ROOT}/data/google-updates.json`.
 3. Add only claims directly supported by the cited source.
 4. Keep source conflicts and pending impact explicit.
-5. Run `python3 scripts/sync_google_updates.py --root .`.
+5. Run `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/sync_google_updates.py --root .`.
 6. Run the Google ledger tests and repository release gates.
 
 The automated checker reports new source dates and stale reviews. It never

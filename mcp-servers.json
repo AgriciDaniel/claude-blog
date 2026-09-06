@@ -1,0 +1,26 @@
+{
+  "_comment": [
+    "Optional MCP server for /blog image (Gemini image generation).",
+    "Referenced from .claude-plugin/plugin.json via the `mcpServers` field.",
+    "It is deliberately NOT named .mcp.json: that filename is also read as a",
+    "project-scoped config, so a contributor working in this repo would have",
+    "Claude try to start it with ${CLAUDE_PLUGIN_ROOT} unresolved.",
+    "",
+    "The server is launched through scripts/nanobanana-launcher.mjs, which",
+    "serves an inert MCP session advertising zero tools when no API key is",
+    "configured -- so enabling this plugin downloads and runs nothing until you",
+    "opt in via the plugin's 'Google AI API key' option (see userConfig) or a",
+    "GOOGLE_AI_API_KEY environment variable.",
+    "This file contains no credentials and is safe to commit."
+  ],
+  "mcpServers": {
+    "nanobanana-mcp": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/nanobanana-launcher.mjs"],
+      "env": {
+        "GOOGLE_AI_API_KEY": "${user_config.google_ai_api_key}",
+        "NANOBANANA_MODEL": "${user_config.gemini_image_model}"
+      }
+    }
+  }
+}

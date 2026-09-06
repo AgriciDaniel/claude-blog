@@ -22,6 +22,15 @@ function Main {
         Write-Color Green "  Removed: $blogDir"
     }
 
+    # v2.3.0+ ships as a single plugin directory. Remove it first, then continue
+    # into the legacy cleanup below so an upgrade from a pre-2.3.0 flat install
+    # does not leave shadowing copies behind.
+    $pluginDir = Join-Path $SkillDir "claude-blog"
+    if (Test-Path $pluginDir) {
+        Remove-Item -Recurse -Force $pluginDir
+        Write-Color Green "  Removed: $pluginDir"
+    }
+
     # Remove sub-skills via glob (closes audit VULN-035: prior static array
     # was stale and missed v1.7.0 sub-skills like blog-cluster, blog-flow,
     # blog-multilingual, blog-translate, blog-localize, blog-locale-audit,
@@ -51,7 +60,8 @@ function Main {
                         "load_untrusted_root.py", "lint_prose.py", "sync_flow.py",
                         "ai_citation_score.py", "content_decay.py", "quality_gate.py", "style_learn.py",
                         "check_google_currentness.py", "check_secrets.py", "consistency_check.py", "dependency_smoke.py",
-                        "sync_google_updates.py", "validate_public_release.py")
+                        "sync_google_updates.py", "validate_public_release.py",
+                        "runtime_capabilities.py", "package_plugin.py")
     foreach ($s in $helperScripts) {
         $scriptPath = Join-Path $ClaudeScriptsDir $s
         if (Test-Path $scriptPath) {

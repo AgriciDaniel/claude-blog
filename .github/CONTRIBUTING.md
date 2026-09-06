@@ -33,7 +33,7 @@ claude-blog/
 
 ### Making Changes
 
-- **SKILL.md frontmatter** must include `name` and `description`. Optional valid fields: `user-invokable`, `argument-hint`, `license`, `compatibility`, `metadata`, `disable-model-invocation`. Do NOT add `allowed-tools` (not a valid Claude Code spec field; the `tests/test_security_guardrails.py` test enforces).
+- **SKILL.md frontmatter** must include `name` and `description`. Optional valid fields: `user-invocable`, `argument-hint`, `license`, `compatibility`, `metadata`, `disable-model-invocation`. Do NOT add `allowed-tools` (not a valid Claude Code spec field; the `tests/test_security_guardrails.py` test enforces).
 - **Reference paths** in sub-skills use `references/` (relative to installed location) OR full repo-root paths like `skills/blog/references/X.md` for cross-skill references.
 - **Template paths** in sub-skills use `templates/` (relative to installed location).
 - **Agent frontmatter** must NOT include `Bash` in the `tools` list (blast-radius reduction for prompt-injection surfaces; enforced by tests).

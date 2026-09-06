@@ -9,7 +9,7 @@ description: >
   prioritized fix list with specific recommendations. Use when user says "seo check",
   "check seo", "validate seo", "blog seo", "seo validation", "on-page seo",
   "title tag check", "meta description check", "heading check", "link audit".
-user-invokable: true
+user-invocable: true
 argument-hint: "<file-path>"
 license: MIT
 ---
@@ -121,7 +121,7 @@ title, publication date or study period, methodology and limitations, a stable
 URL, and a retrieval date for changeable or undated material. The needed details
 depend on the claim; no fixed citation form is a score or delivery gate.
 Unverifiable claims must be removed or replaced. See
-`skills/blog/references/flow-alignment.md`. For a one-shot prompt-driven check,
+`${CLAUDE_PLUGIN_ROOT}/skills/blog/references/flow-alignment.md`. For a one-shot prompt-driven check,
 see `/blog flow optimize`.
 
 ### Step 7: Canonical URL
@@ -226,8 +226,8 @@ Status values:
 
 If the post has a published URL and blog-google credentials are available:
 
-1. Check credentials: `python3 skills/blog-google/scripts/run.py google_auth --check --json`
-2. If Tier 0+, run PageSpeed: `python3 skills/blog-google/scripts/run.py pagespeed_check <url> --json`
+1. Check credentials: `python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-google/scripts/run.py google_auth --check --json`
+2. If Tier 0+, run PageSpeed: `python3 ${CLAUDE_PLUGIN_ROOT}/skills/blog-google/scripts/run.py pagespeed_check <url> --json`
 3. Append to report:
    - Lighthouse Performance, Accessibility, Best Practices, SEO scores
    - CWV field data (LCP, INP, CLS) with traffic-light ratings

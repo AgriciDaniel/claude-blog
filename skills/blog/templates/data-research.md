@@ -156,7 +156,7 @@ publication date or study period, methodology and limitations, a stable URL,
 and a retrieval date for changeable or undated material. No fixed citation form
 is required. Drop unverifiable statistics and replace contradicted statistics
 with verified alternatives. Reference:
-`skills/blog/references/flow-alignment.md`.
+`${CLAUDE_PLUGIN_ROOT}/skills/blog/references/flow-alignment.md`.
 
 ---
 

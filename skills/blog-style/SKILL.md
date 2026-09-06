@@ -2,7 +2,7 @@
 name: blog-style
 description: Learn author writing style from 5 to 10 existing blog posts and generate a voice profile for /blog style learn, VOICE.md, blog-persona, and blog-write when users ask to infer tone, analyze author voice, learn style, or build a writing baseline.
 argument-hint: "learn <paths>"
-user-invokable: true
+user-invocable: true
 license: MIT
 ---
 
@@ -28,19 +28,19 @@ containing posts.
 Run the local learner:
 
 ```bash
-python3 scripts/style_learn.py <paths> --format markdown
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/style_learn.py <paths> --format markdown
 ```
 
 For machine-readable output:
 
 ```bash
-python3 scripts/style_learn.py <paths> --format json --output voice-profile.json
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/style_learn.py <paths> --format json --output voice-profile.json
 ```
 
 For a VOICE.md-ready block:
 
 ```bash
-python3 scripts/style_learn.py <paths> --format markdown --output VOICE.md
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/style_learn.py <paths> --format markdown --output VOICE.md
 ```
 
 If fewer than the requested minimum sample count is supplied, warn and continue.

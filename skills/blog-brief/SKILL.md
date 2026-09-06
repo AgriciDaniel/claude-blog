@@ -9,7 +9,7 @@ description: >
   Briefs are optimized for Google rankings and AI citation visibility as part of SEO. Use
   when user says "content brief", "blog brief", "write brief", "SEO brief",
   "article brief", or "content requirements".
-user-invokable: true
+user-invocable: true
 argument-hint: "<topic>"
 license: MIT
 ---
@@ -20,11 +20,11 @@ Generates comprehensive content briefs that guide blog writing for maximum
 impact on both Google rankings and AI citation platforms.
 
 Reference documents:
-- `skills/blog/references/content-templates.md`: template selection criteria
-- `skills/blog/references/distribution-playbook.md`: channel-specific distribution tactics
-- `skills/blog/references/internal-linking.md`: link architecture patterns
-- `skills/blog/references/research-quality.md` - 5-dim quality rubric, pre-flight trap classes, freshness floors (v1.8.0; cross-skill ref lives in the orchestrator's references dir)
-- `skills/blog/references/synthesis-contract.md` - 6 LAWs for synthesis output (v1.8.0)
+- `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/content-templates.md`: template selection criteria
+- `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/distribution-playbook.md`: channel-specific distribution tactics
+- `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/internal-linking.md`: link architecture patterns
+- `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/research-quality.md` - 5-dim quality rubric, pre-flight trap classes, freshness floors (v1.8.0; cross-skill ref lives in the orchestrator's references dir)
+- `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/synthesis-contract.md` - 6 LAWs for synthesis output (v1.8.0)
 
 ## Auto-loaded inputs (v1.8.0)
 
@@ -59,7 +59,7 @@ Using WebSearch:
 ### Step 2.5: Template Recommendation
 
 Analyze the topic, search intent, and competitive landscape to recommend one
-of 12 content templates. Load `skills/blog/references/content-templates.md` for selection
+of 12 content templates. Load `${CLAUDE_PLUGIN_ROOT}/skills/blog/references/content-templates.md` for selection
 criteria.
 
 **Available templates:**
@@ -82,7 +82,7 @@ criteria.
 1. Match search intent to template strength
 2. Check what format top-ranking competitors use
 3. Consider the user's available assets (data, expertise, tools)
-4. Load the matching template file from `skills/blog/templates/[type].md`
+4. Load the matching template file from `${CLAUDE_PLUGIN_ROOT}/skills/blog/templates/[type].md`
 5. Include the template name in the brief output
 
 ### Step 3: Competitive Analysis
@@ -119,7 +119,7 @@ Output format:
 
 ## Template
 **Recommended**: [template-name]: [1-sentence rationale]
-**Template file**: `skills/blog/templates/[type].md`
+**Template file**: `${CLAUDE_PLUGIN_ROOT}/skills/blog/templates/[type].md`
 
 ## Target Keywords
 - **Primary**: [keyword]: [estimated monthly search volume if available]

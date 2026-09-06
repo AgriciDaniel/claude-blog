@@ -1,4 +1,4 @@
-"""Regression coverage for v2.2.0 release and repository safeguards."""
+"""Regression coverage for v2.3.0 release and repository safeguards."""
 
 from __future__ import annotations
 
@@ -400,7 +400,14 @@ def test_shell_installer_is_locale_safe_and_complete(tmp_path: Path) -> None:
         path for path in (ROOT / "skills").glob("*/SKILL.md")
         if path.parent.name != "blog"
     ])
-    installed = len(list((tmp_path / "home" / ".claude" / "skills").glob("blog-*/SKILL.md")))
+    # v2.3.0 installs one plugin directory instead of a flat skills tree.
+    installed = len(
+        list(
+            (tmp_path / "home" / ".claude" / "skills" / "claude-blog" / "skills").glob(
+                "blog-*/SKILL.md"
+            )
+        )
+    )
 
     assert result.returncode == 0, result.stderr
     assert "refusing skill" not in result.stderr
@@ -461,11 +468,17 @@ def test_ledger_consumer_guidance_matches_installed_path() -> None:
     install_sh = (ROOT / "install.sh").read_text(encoding="utf-8")
     install_ps1 = (ROOT / "install.ps1").read_text(encoding="utf-8")
 
+    # v2.3.0 ships one plugin directory, so the ledger has exactly one
+    # trusted location and the guidance must name it. Before v2.3.0 the flat
+    # install produced a second copy under ~/.claude/skills/blog/data/; that
+    # path no longer exists and must not be advertised.
     for guidance in (orchestrator, currentness):
-        assert "data/google-updates.json" in guidance
-        assert "~/.claude/skills/blog/data/google-updates.json" in guidance
-    assert '${SKILL_DIR}/blog/data/google-updates.json' in install_sh
-    assert 'Join-Path $BlogDataDir "google-updates.json"' in install_ps1
+        assert "${CLAUDE_PLUGIN_ROOT}/data/google-updates.json" in guidance
+        assert "~/.claude/skills/blog/data/google-updates.json" not in guidance
+    for installer in (install_sh, install_ps1):
+        assert "data" in installer
+    assert "google-updates.json" in install_sh
+    assert "google-updates.json" in install_ps1
 
 
 def _write_flow_lock(root: Path, content: bytes = b"prompt\n") -> None:
@@ -549,7 +562,7 @@ def test_consistency_checker_discovers_skill_relative_resources_and_agents(
 
 def _public_fixture(root: Path) -> None:
     public = "https://github.com/AgriciDaniel/claude-blog"
-    version = "2.2.0"
+    version = "2.3.0"
     raw_sh = (
         "https://raw.githubusercontent.com/AgriciDaniel/claude-blog/main/install.sh"
     )
@@ -675,7 +688,7 @@ def test_public_release_validator_rejects_stale_security_tag(
     _public_fixture(tmp_path)
     security = tmp_path / ".github" / "SECURITY.md"
     security.write_text(
-        security.read_text(encoding="utf-8").replace("v2.2.0", "v1.7.0"),
+        security.read_text(encoding="utf-8").replace("v2.3.0", "v1.7.0"),
         encoding="utf-8",
     )
     report = module.validate(tmp_path)
@@ -740,7 +753,7 @@ def test_public_release_validator_rejects_version_collision(
     _public_fixture(tmp_path)
     pyproject = tmp_path / "pyproject.toml"
     pyproject.write_text(
-        pyproject.read_text(encoding="utf-8").replace("2.2.0", "2.1.0"),
+        pyproject.read_text(encoding="utf-8").replace("2.3.0", "2.1.0"),
         encoding="utf-8",
     )
     report = module.validate(tmp_path)

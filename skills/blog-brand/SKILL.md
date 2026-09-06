@@ -10,7 +10,7 @@ description: >
   JSON. Use when user says "blog brand", "create brand context", "brand
   voice doc", "BRAND.md", "VOICE.md", "establish editorial brand",
   "brand guidelines for blog".
-user-invokable: true
+user-invocable: true
 argument-hint: "[init|show|update]"
 license: MIT
 ---
