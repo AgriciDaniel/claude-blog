@@ -176,6 +176,39 @@ LANGUAGE_PROFILES: dict[str, dict[str, Any]] = {
         ),
         'readability_model': 'flesch',
     },
+    'id': {
+        # Indonesian. Resolved only when declared via frontmatter lang/language/
+        # inLanguage; Indonesian has no distinctive diacritics, so no marker guessing.
+        'summary_labels': (
+            r'jawaban singkat', r'ringkasan', r'intinya', r'singkatnya', r'TL;?DR',
+        ),
+        'about_patterns': (
+            r'/tentang(?:-kami)?(?:[/?#]|$)', r'\btentang kami\b',
+            r'\bprofil (?:perusahaan|kami)\b',
+        ),
+        'contact_patterns': (
+            r'/kontak(?:[/?#]|$)', r'/hubungi(?:-kami)?(?:[/?#]|$)',
+            r'\bhubungi kami\b', r'\bkontak kami\b',
+        ),
+        'first_person_patterns': (
+            r'\b(?:kami|tim kami)\s+(?:menguji|mengaudit|membedah|mengukur|menemukan|'
+            r'menangani|mencatat|menganalisis|membandingkan|mengelola)\b',
+            r'\b(?:dari|berdasarkan|menurut)\s+pengalaman kami\b',
+            r'\bkasus yang (?:paling )?kami (?:ingat|tangani|temui)\b',
+            r'\bdi akun (?:klien )?yang kami (?:audit|kelola|pegang)\b',
+            r'\bdata internal(?: kami)?\b',
+        ),
+        'methodology_patterns': (
+            r'\b(?:metode|metodologi|sampel|ukuran sampel|data internal|'
+            r'dari \d+ (?:akun|klien|kampanye))\b',
+            r'\b(?:kami|tim kami)\s+(?:menguji|mengukur|menganalisis|mengaudit|'
+            r'membedah|membandingkan)\b[^.\n]{0,180}'
+            r'(?:\d|https?://|\[[^\]]+\]\(https?://)',
+        ),
+        # No validated Indonesian readability formula in this script yet; Flesch is
+        # kept so scores stay comparable with the default profile.
+        'readability_model': 'flesch',
+    },
     'tr': {
         'summary_labels': (r'özet', r'özetle', r'kısaca'),
         'about_patterns': (
@@ -1263,7 +1296,7 @@ def analyze_ai_citation_readiness(content: str, headings_info: dict[str, Any],
             re.IGNORECASE,
         ))
         has_definition = bool(re.search(
-            r'\*\*[^*]+\*\*\s*(?:is|are|refers to|means)',
+            r'\*\*[^*]+\*\*\s*(?:is|are|refers to|means|adalah|merupakan)',
             section,
             re.IGNORECASE,
         ))
@@ -1288,7 +1321,7 @@ def analyze_ai_citation_readiness(content: str, headings_info: dict[str, Any],
                     break
 
     # Entity clarity: detect defined terms (bold terms followed by explanations)
-    entity_definitions = len(re.findall(r'\*\*[^*]+\*\*\s*(?:is|are|refers to|means)', content))
+    entity_definitions = len(re.findall(r'\*\*[^*]+\*\*\s*(?:is|are|refers to|means|adalah|merupakan)', content))
 
     # Extraction-friendly structures
     profile = LANGUAGE_PROFILES.get(language, LANGUAGE_PROFILES['en'])

@@ -396,6 +396,58 @@ Kendi kayıtlarımızdan derlediğimiz 120 sonucu sayım yöntemiyle karşılaş
     assert result["score"]["category_details"]["eeat_signals"]["breakdown"]["trust"] == 3
 
 
+def test_indonesian_profile_detects_summary_trust_and_supported_experience(tmp_path):
+    post = """---
+title: Audit Iklan Google
+description: Cara kami mengaudit akun Google Ads klien.
+author: Tim Oasisme
+lang: id
+---
+# Audit Iklan Google
+
+## Jawaban singkat
+
+**Iklan Google boros** adalah kondisi ketika biaya per klik terus keluar tanpa hasil.
+
+## Metode
+
+Kami mengaudit 40 akun klien sepanjang 2025 dan mencatat 3 pola kebocoran yang sama.
+
+## Kepercayaan
+
+Lihat [tentang kami](/tentang-kami) dan [hubungi kami](/kontak) untuk detail.
+"""
+    path = tmp_path / "indonesian.md"
+    path.write_text(post, encoding="utf-8")
+
+    result = analyze_blog.analyze_file(str(path))
+
+    assert result["language"] == "id"
+    assert result["readability"]["reading_model"] == "flesch"
+    assert result["ai_citation_readiness"]["has_tldr"] is True
+    assert result["ai_citation_readiness"]["entity_definitions"] >= 1
+    assert result["originality"]["first_person_count"] >= 1
+    assert result["originality"]["methodology_count"] >= 1
+    assert result["originality"]["unsupported_experience_claims"] == 0
+    assert result["score"]["category_details"]["eeat_signals"]["breakdown"]["trust"] == 3
+
+
+def test_undeclared_indonesian_text_still_falls_back_to_english(tmp_path):
+    post = """---
+title: Catatan
+---
+# Catatan
+
+Kami mengaudit 40 akun. Lihat [tentang kami](/tentang-kami).
+"""
+    path = tmp_path / "undeclared.md"
+    path.write_text(post, encoding="utf-8")
+
+    result = analyze_blog.analyze_file(str(path))
+
+    assert result["language"] == "en"
+
+
 # ---------------------------------------------------------------------------
 # Sentence analysis
 # ---------------------------------------------------------------------------
