@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Added an Indonesian (`id`) language profile to `scripts/analyze_blog.py`, resolved only
+  when the frontmatter declares `lang`, `language`, or `inLanguage`. The profile supplies
+  Indonesian summary labels, about and contact paths, first-person experience markers,
+  and methodology markers, and the entity-definition check now also accepts the
+  Indonesian copulas `adalah` and `merupakan`. Undeclared text still falls back to `en`.
+  Measured on three live Indonesian posts: +3, +5, and +1 points with identical content.
+
 ## [2.2.0] - 2026-08-26
 
 ### Added
