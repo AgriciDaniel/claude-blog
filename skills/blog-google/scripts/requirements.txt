@@ -24,5 +24,5 @@ google-ads>=31.2.0,<32.0.0
 requests>=2.34.2,<3.0.0
 
 # Report generation (optional - graceful fallback if unavailable)
-matplotlib>=3.8.0,<4.0.0
+matplotlib>=3.11.1,<4.0.0
 weasyprint>=61.0,<70.0
