@@ -637,7 +637,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("--md", required=True, help="Path to markdown source file")
     parser.add_argument("--out-dir", required=True, help="Output directory for .html and .pdf")
-    parser.add_argument("--hero", default="hero.png", help="Hero image filename (relative to out-dir)")
+    parser.add_argument("--hero", default=None, help="Hero image filename (relative to out-dir); defaults to the hero.<ext> present in out-dir")
     parser.add_argument("--pdf-engine", choices=["auto", "playwright", "weasyprint", "none"], default="auto")
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
@@ -656,8 +656,21 @@ def main() -> int:
     out_dir = raw_out_dir.resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
 
+    # Resolve the hero filename from what the ladder actually produced. The
+    # hero ladder can emit hero.jpg / hero.webp (Openverse, stock APIs), so a
+    # hardcoded hero.png default renders a broken <img> and fails Gate 3 with
+    # ERR_FILE_NOT_FOUND on every viewport.
+    hero_filename = args.hero
+    if hero_filename is None:
+        for ext in (".png", ".jpg", ".jpeg", ".webp"):
+            if (out_dir / f"hero{ext}").is_file():
+                hero_filename = f"hero{ext}"
+                break
+        else:
+            hero_filename = "hero.png"
+
     try:
-        html_path = _render_html(md_path, out_dir, args.hero)
+        html_path = _render_html(md_path, out_dir, hero_filename)
     except Exception as e:
         print(f"ERROR: html render failed: {e}", file=sys.stderr)
         return 1
