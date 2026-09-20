@@ -395,7 +395,7 @@ def _try_gemini(topic: str, tags: list[str], out_dir: Path, width: int, height: 
                 input=prompt,
                 response_format={
                     "type": "image",
-                    "mime_type": "image/png",
+                    "mime_type": "image/jpeg",
                     "aspect_ratio": "16:9",
                 },
             )
