@@ -822,3 +822,57 @@ guidance and explain the reader's next decision.
             assert seo["breakdown"]["meta_description"] == base_seo["breakdown"][
                 "meta_description"
             ]
+
+
+class TestProcessBatchRecursion:
+    """_process_batch must recurse into nested layouts and skip vendor/generated
+    directories, matching what blog-audit/SKILL.md documents."""
+
+    _POST = "# Title\n\nA short blog post body with enough words to analyze.\n"
+
+    def _write(self, base: Path, rel: str) -> None:
+        path = base / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(self._POST, encoding="utf-8")
+
+    def test_finds_nested_next_app_router_posts(self, tmp_path):
+        # Next.js App Router: each post at <slug>/page.mdx
+        self._write(tmp_path, "blog/first-post/page.mdx")
+        self._write(tmp_path, "blog/second-post/page.mdx")
+        self._write(tmp_path, "index.md")  # a flat file too
+
+        result = analyze_blog._process_batch(tmp_path)
+
+        found = {Path(r["file"]).relative_to(tmp_path).as_posix()
+                 for r in result["results"]}
+        assert result["count"] == 3
+        assert "blog/first-post/page.mdx" in found
+        assert "blog/second-post/page.mdx" in found
+        assert "index.md" in found
+
+    def test_skips_vendor_and_generated_dirs(self, tmp_path):
+        self._write(tmp_path, "blog/real-post/page.mdx")
+        self._write(tmp_path, "node_modules/pkg/readme.md")
+        self._write(tmp_path, ".next/cache/chunk.mdx")
+        self._write(tmp_path, "dist/bundle.html")
+        self._write(tmp_path, "reports/old-audit.md")
+
+        result = analyze_blog._process_batch(tmp_path)
+
+        found = {Path(r["file"]).relative_to(tmp_path).as_posix()
+                 for r in result["results"]}
+        assert found == {"blog/real-post/page.mdx"}
+
+    def test_deterministic_and_deduplicated(self, tmp_path):
+        self._write(tmp_path, "b/post.md")
+        self._write(tmp_path, "a/post.md")
+
+        first = analyze_blog._process_batch(tmp_path)
+        second = analyze_blog._process_batch(tmp_path)
+
+        files_first = [r["file"] for r in first["results"]]
+        files_second = [r["file"] for r in second["results"]]
+        # same order across runs, and no file counted twice
+        assert files_first == files_second
+        assert len(files_first) == len(set(files_first))
+        assert first["count"] == 2

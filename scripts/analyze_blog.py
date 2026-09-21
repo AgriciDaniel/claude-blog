@@ -2293,10 +2293,29 @@ def _format_category_detail(result: dict[str, Any], category: str) -> str:
 
 
 def _process_batch(directory: Path, sort_key: str = 'score') -> dict[str, Any]:
-    """Analyze all blog files in a directory."""
+    """Analyze all blog files in a directory.
+
+    Recurses into subdirectories so nested layouts are found: Next.js App
+    Router posts at ``<slug>/page.mdx``, Astro content collections,
+    ``_posts/YYYY/`` trees, etc. Vendor/generated directories are skipped and
+    results are de-duplicated and sorted for deterministic output. This matches
+    the recursion the blog-audit skill already documents.
+    """
     results: list[dict[str, Any]] = []
+    seen: set[Path] = set()
+    _SKIP_DIRS = {
+        '.git', 'node_modules', 'vendor', 'dist', 'build', '.next',
+        'coverage', 'reports', '__pycache__',
+    }
     for ext in ['*.md', '*.mdx', '*.html']:
-        for f in directory.glob(ext):
+        for f in sorted(directory.rglob(ext)):
+            if any(part in _SKIP_DIRS or part.startswith('.')
+                   for part in f.relative_to(directory).parts[:-1]):
+                continue
+            resolved = f.resolve()
+            if resolved in seen:
+                continue
+            seen.add(resolved)
             results.append(analyze_file(str(f)))
 
     # Sort
