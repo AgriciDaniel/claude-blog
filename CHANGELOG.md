@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed `analyze_blog.py --batch` (and `/blog audit`) silently returning zero
+  results for nested blog layouts. `_process_batch` now recurses with `rglob`
+  and skips vendor/generated directories (`node_modules`, `dist`, `build`,
+  `.next`, `reports`, and other dot-directories), matching the recursive scan
+  that `blog-audit/SKILL.md` already documents. Discovery now covers Next.js
+  App Router (`<slug>/page.mdx`), Astro content collections, `_posts/YYYY/`,
+  and Hugo page bundles. Output is de-duplicated and sorted for determinism.
+
 ## [2.2.0] - 2026-08-26
 
 ### Added
