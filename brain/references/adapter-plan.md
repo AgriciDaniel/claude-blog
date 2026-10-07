@@ -1,8 +1,10 @@
 # Claude Blog Brain Adapter Plan
 
-Status: scaffolded. Domain code adapters are implemented and CLI-wired, with
-17 adapter regression tests passing on Python 3.11 on 2026-10-07. The Brain is
-not market-ready because 66 source records are stale in the current audit.
+Status: market-ready. Domain code adapters are implemented and CLI-wired. The
+2026-10-07 executable local Brain audit scores 98/100 with no critical failures
+or warnings; a separate adapter regression run passes 23 tests on Python 3.11.
+Source and adapter verification have separate evidence boundaries. Current
+readiness requires the executable audit, not a metadata edit or an old result.
 
 ## Current Adapter Honesty
 

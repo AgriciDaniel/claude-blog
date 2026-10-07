@@ -4,7 +4,7 @@ title: "Claim Source Pairing Pattern"
 domain: "Blog Writing"
 status: evergreen
 created: 2026-07-06
-updated: 2026-07-09
+updated: 2026-10-07
 tags: [writing, six-pillar, evergreen]
 source_urls:
   - "https://developers.google.com/search/docs/fundamentals/creating-helpful-content"
@@ -30,12 +30,12 @@ Do not validate traffic lift, AI citation probability, ranking recovery, or clic
 
 | Source ID | URL | Date basis | Claim coverage | Limitation | Refresh cadence |
 |---|---|---|---|---|---|
-| `g-helpful-content` | https://developers.google.com/search/docs/fundamentals/creating-helpful-content | last updated 2025-12-10, retrieved 2026-07-09 | People-first content checks and E-E-A-T framing | Does not score a page or guarantee performance | Monthly or Search Central change |
-| `g-ai-opt-guide` | https://developers.google.com/search/docs/fundamentals/ai-optimization-guide | last updated 2026-06-15, retrieved 2026-07-08 | AI feature optimization stays on normal Search foundations | Does not promise AI Overview or AI Mode inclusion | Monthly plus changelog watch |
+| `g-helpful-content` | https://developers.google.com/search/docs/fundamentals/creating-helpful-content | last updated 2026-10-05, retrieved 2026-10-07 | People-first content checks and E-E-A-T framing | Does not score a page or guarantee performance | Monthly or Search Central change |
+| `g-ai-opt-guide` | https://developers.google.com/search/docs/fundamentals/ai-optimization-guide | last updated 2026-07-10, retrieved 2026-10-07 | AI feature optimization stays on normal Search foundations | Does not promise AI Overview or AI Mode inclusion | Monthly plus changelog watch |
 | `g-update-2026-06-15-llms-txt-clarified-as-unused-by-google-search` | https://developers.google.com/search/docs/fundamentals/ai-optimization-guide | 2026-06-15 documentation event | Google Search does not use llms.txt for visibility | Does not settle other AI systems | Recheck on [[2026 Google Update Timeline]] update |
-| `g-qrg-full` | https://guidelines.raterhub.com/searchqualityevaluatorguidelines.pdf | published 2025-09-11, retrieved 2026-07-08 | Quality evaluator terminology and trust lens | Not an operational ranking API | Monthly revision watch |
-| `g-ai-features` | https://developers.google.com/search/docs/appearance/ai-features | last updated 2025-12-10, retrieved 2026-07-09 | AI Overviews and AI Mode appearance controls | Does not prove a page will be cited | Monthly Search docs watch |
-| `ziptie-aio-source-selection` | https://ziptie.dev/blog/google-ai-overviews-source-selection/ | published 2026-03-25, retrieved 2026-07-08 | Passage-level practitioner shaping advice | Advisory, not official Google evidence | Replace if stronger primary source appears |
+| `g-qrg-full` | https://guidelines.raterhub.com/searchqualityevaluatorguidelines.pdf | published 2025-09-11, retrieved 2026-10-07 | Quality evaluator terminology and trust lens | Not an operational ranking API | Monthly revision watch |
+| `g-ai-features` | https://developers.google.com/search/docs/appearance/ai-features | last updated 2025-12-10, retrieved 2026-10-07 | AI Overviews and AI Mode appearance controls | Does not prove a page will be cited | Monthly Search docs watch |
+| `ziptie-aio-source-selection` | https://ziptie.dev/blog/google-ai-overviews-source-selection/ | published 2026-03-25, retrieved 2026-10-07 | Passage-level practitioner shaping advice | Advisory, not official Google evidence | Replace if stronger primary source appears |
 
 ## Claim Source Pairing Refresh Procedure
 

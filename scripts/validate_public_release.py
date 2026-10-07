@@ -17,7 +17,8 @@ from pathlib import Path
 
 PUBLIC_REPOSITORY = "https://github.com/AgriciDaniel/claude-blog"
 PUBLIC_VERSION = "2.2.0"
-PUBLIC_SLUG = "claude-blog@agricidaniel-blog"
+PUBLIC_PLUGIN_IDENTIFIER = "blog-engine"
+PUBLIC_SLUG = f"{PUBLIC_PLUGIN_IDENTIFIER}@agricidaniel-blog"
 PUBLIC_OWNER = "AgriciDaniel"
 PUBLIC_OWNER_URL = "https://github.com/AgriciDaniel"
 PUBLIC_MARKETPLACE = "agricidaniel-blog"
@@ -297,6 +298,7 @@ def validate(root: Path) -> dict:
         )
     else:
         expected_plugin = {
+            "name": PUBLIC_PLUGIN_IDENTIFIER,
             "homepage": PUBLIC_REPOSITORY,
             "repository": PUBLIC_REPOSITORY,
         }
@@ -362,7 +364,7 @@ def validate(root: Path) -> dict:
             not isinstance(plugins, list)
             or not any(
                 isinstance(entry, dict)
-                and entry.get("name") == "claude-blog"
+                and entry.get("name") == PUBLIC_PLUGIN_IDENTIFIER
                 and entry.get("source") == "./"
                 for entry in plugins
             )

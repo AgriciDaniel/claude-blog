@@ -252,19 +252,23 @@ The Claude Blog Brain is vendored at `./brain` as a self-contained, evidence-gat
 
 ## Install
 
-Plugin install on Claude Code versions that accept the existing plugin name:
-
-The local review on 2026-10-07 found that Claude Code 2.1.292 rejects third-party
-plugin names beginning with `claude-`, including `claude-blog`. The commands
-below retain the published identity, but do not pass that CLI's validation.
-Use the reviewed manual skill installation while a compatible naming migration
-is evaluated. The CI-pinned CLI is a separate compatibility check and does not
-establish support in the latest CLI.
+The plugin identifier is `blog-engine`, distributed through the existing
+`agricidaniel-blog` marketplace:
 
 ```bash
 /plugin marketplace add AgriciDaniel/claude-blog
-/plugin install claude-blog@agricidaniel-blog
+/plugin install blog-engine@agricidaniel-blog
 ```
+
+Plugin commands use `/blog-engine:blog`, for example
+`/blog-engine:blog write <topic>`. Standalone skill installations retain
+`/blog write <topic>` and every existing command and alias.
+The GitHub repository remains `AgriciDaniel/claude-blog`.
+
+Existing plugin users should follow the
+[identifier migration instructions](docs/INSTALLATION.md#plugin-identifier-migration).
+The published v2.2.0 tag retains its historical plugin identifier; the new
+identifier applies to the updated marketplace when this change is merged.
 
 Recommended clone, verify, then install flow:
 

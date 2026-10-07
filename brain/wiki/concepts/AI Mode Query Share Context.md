@@ -4,7 +4,7 @@ title: "AI Mode Query Share Context"
 domain: "Blog Content Optimization"
 status: evergreen
 created: 2026-07-06
-updated: 2026-07-09
+updated: 2026-10-07
 tags: [dual-optimization, ai-mode, planning]
 confidence: advisory
 related:
@@ -48,7 +48,7 @@ The working verdict is mixed: Google product-reach claims are `CONFIRMED` from `
 | Separate AI Mode from AIO | Citation overlap and target query list | `ahrefs-aio-vs-aimode` | Practitioner benchmark, not a Google rule | SEO lead | Build a different citation check when overlap risk matters |
 | Confirm eligibility basics | Crawlability, snippet controls, indexability | `g-ai-features` | Official Google documentation | Technical reviewer | Route blockers to the technical audit before rewriting |
 | Choose reporting language | First-party data availability and market caveat | `sparktoro-zero-click-2026` | Market context until property data exists | Analyst | Avoid presenting AI Mode exposure as expected traffic |
-| Check available AI reporting | GSC generative AI surface data, if the property has it | `g-genai-reports` | Official reporting boundary, partial availability | Analyst | Replace market weighting with property evidence when possible |
+| Check available AI reporting | Owner-provided GSC generative AI surface data after the worldwide rollout | `g-genai-reports` | Official June announcement plus August 31 worldwide rollout update | Analyst | Replace market weighting with property evidence when possible |
 | Keep product news proportional | I/O product update plus page intent | `blog-io2026`, `sparktoro-zero-click-2026` | Product reach and query-share evidence differ | Strategist | Keep the brief from making AI Mode the default priority |
 
 ## AI Mode Priority Call In A Brief

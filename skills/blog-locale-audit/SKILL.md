@@ -8,7 +8,7 @@ description: >
   Use when user says "locale audit", "blog locale-audit", "check translations",
   "multilingual audit", "translation check", "hreflang check",
   "Uebersetzungen pruefen".
-user-invokable: true
+user-invocable: true
 argument-hint: "<directory>"
 license: MIT
 compatibility: Standalone within claude-blog. Optional richer hreflang validation via claude-seo seo-hreflang.
@@ -19,6 +19,14 @@ metadata:
 ---
 
 # Blog Locale Audit, Multilingual Quality Control
+
+Bundled paths below use host Markdown substitution of `${CLAUDE_SKILL_DIR}`;
+it is not an exported shell variable. Resolve them before execution, quote
+paths, and refuse nonabsolute overrides. Pass `blog_reference_root` resolved
+from `${CLAUDE_SKILL_DIR}/../blog/references`, `blog_template_root` from
+`${CLAUDE_SKILL_DIR}/../blog/templates`, and needed sibling roots to agents.
+Read the main reference `orchestration-details.md` before loading project
+context; pass only its helper-fenced output to downstream agents.
 
 Audits a directory of multilingual blog content to ensure every language
 version is complete, consistent, correctly tagged, and SEO-optimized.

@@ -24,6 +24,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1, SHA-pinned, closes VULN-503
+        with:
+          fetch-depth: 0
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0, SHA-pinned
@@ -39,7 +41,7 @@ jobs:
           pip install -e ".[dev]"
 
       - name: Run tests
-        run: python3 -m pytest tests/ -v
+        run: python3 -m pytest tests/ -v -rs
 
       - name: Run adjudicated secret scan
         run: python3 scripts/check_secrets.py
@@ -77,6 +79,10 @@ jobs:
 
   validate-skills:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        claude-version: ["2.1.218", "2.1.292"]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1, SHA-pinned, closes VULN-503
 
@@ -86,67 +92,13 @@ jobs:
           node-version: "22"
 
       - name: Install Claude Code CLI
-        run: npm install --global --no-audit --no-fund @anthropic-ai/claude-code@2.1.218
+        run: npm install --global --no-audit --no-fund @anthropic-ai/claude-code@${{ matrix.claude-version }}
+
+      - name: Install metadata validator dependency
+        run: python3 -m pip install "PyYAML>=6.0.3,<7.0"
 
       - name: Validate SKILL.md frontmatter
-        run: |
-          python3 - <<'PY'
-          import re
-          import sys
-          from pathlib import Path
-
-          allowed = {
-              "name",
-              "description",
-              "user-invokable",
-              "argument-hint",
-              "compatibility",
-              "license",
-              "metadata",
-              "disable-model-invocation",
-          }
-          errors = []
-          for path in sorted(Path("skills").rglob("SKILL.md")):
-              lines = path.read_text(encoding="utf-8").splitlines()
-              if not lines or lines[0].strip() != "---":
-                  errors.append(f"{path}: missing YAML frontmatter")
-                  continue
-              try:
-                  end = next(i for i, line in enumerate(lines[1:], start=1) if line.strip() == "---")
-              except StopIteration:
-                  errors.append(f"{path}: unterminated YAML frontmatter")
-                  continue
-
-              fields = {}
-              for line in lines[1:end]:
-                  if not line.strip() or line.lstrip().startswith("#") or line.startswith((" ", "\t", "-")):
-                      continue
-                  match = re.match(r"^([A-Za-z][A-Za-z0-9_-]*):\s*(.*)$", line)
-                  if not match:
-                      errors.append(f"{path}: malformed frontmatter line: {line}")
-                      continue
-                  fields[match.group(1)] = match.group(2).strip()
-
-              missing = {"name", "description", "user-invokable"} - set(fields)
-              for field in sorted(missing):
-                  errors.append(f"{path}: missing required field {field}")
-              for field in sorted(set(fields) - allowed):
-                  errors.append(f"{path}: invalid frontmatter field {field}")
-              if "allowed-tools" in fields:
-                  errors.append(f"{path}: allowed-tools is not valid SKILL.md frontmatter")
-              if fields.get("user-invokable", "").lower() == "true" and "argument-hint" not in fields:
-                  errors.append(f"{path}: user-invokable skills must declare argument-hint")
-              if len(lines) > 500:
-                  errors.append(f"{path}: {len(lines)} lines exceeds 500 line cap")
-              token_estimate = sum(len(line.split()) for line in lines)
-              if token_estimate > 5000:
-                  errors.append(f"{path}: {token_estimate} token estimate exceeds 5000 cap")
-
-          if errors:
-              print("\n".join(errors))
-              sys.exit(1)
-          print("All SKILL.md files passed schema and size checks")
-          PY
+        run: python3 scripts/validate_skills.py --root .
 
       - name: Validate plugin.json
         run: |
@@ -175,16 +127,16 @@ jobs:
           echo "Checking for stale blog/ path references..."
           errors=0
           # Check that no SKILL.md or doc references the old bare blog/ path (not skills/blog/)
-          for file in $(find skills docs -name "*.md"); do
-            if grep -Pn '(?<!skills/)blog/references/' "$file" 2>/dev/null; then
+          while IFS= read -r -d '' file; do
+            if grep -Pn '(?<!skills/)(?<!\.\./)blog/references/' "$file" 2>/dev/null; then
               echo "WARNING: $file still references old 'blog/references/' path"
               errors=$((errors + 1))
             fi
-            if grep -Pn '(?<!skills/)blog/templates/' "$file" 2>/dev/null; then
+            if grep -Pn '(?<!skills/)(?<!\.\./)blog/templates/' "$file" 2>/dev/null; then
               echo "WARNING: $file still references old 'blog/templates/' path"
               errors=$((errors + 1))
             fi
-          done
+          done < <(find skills docs -name "*.md" -print0)
           if [ $errors -gt 0 ]; then
             echo "Found $errors stale path references"
             exit 1
@@ -284,11 +236,55 @@ jobs:
       - name: Run brain tests
         run: python3 -m pytest brain/tests/
 
-      - name: Lint brain vault
-        run: python3 brain/scripts/lint_vault.py
+      - name: Lint brain vaults
+        run: |
+          python3 brain/scripts/lint_vault.py --vault brain
+          python3 brain/scripts/lint_vault.py --vault brain/assets/template-brain
+          python3 brain/scripts/lint_vault.py --vault brain/examples/sample-vault
 
       - name: Verify brain source-review records offline
-        run: python3 brain/scripts/verify_source_ledger.py --offline-check --as-of 2026-08-25
+        run: python3 brain/scripts/verify_source_ledger.py --offline-check
 
       - name: Audit brain
         run: python3 brain/scripts/audit_brain.py --json --require market-ready --verify
+
+  unix-installers:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1, SHA-pinned
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0, SHA-pinned
+        with:
+          python-version: "3.11"
+      - name: Install test dependencies
+        run: python3 -m pip install "pytest>=8.0,<10.0"
+      - name: Exercise disposable Unix installer profiles
+        run: >-
+          python3 -m pytest -v -rs
+          tests/test_unix_installer_ownership.py
+          tests/test_legacy_ownership_inventory.py
+          brain/tests/test_installer_ownership.py
+
+  windows-installers:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shell: [powershell, pwsh]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1, SHA-pinned
+        with:
+          fetch-depth: 0
+      - name: Exercise Windows PowerShell 5.1 installer profiles
+        if: matrix.shell == 'powershell'
+        shell: powershell
+        run: ./tests/windows/windows_installer_ownership_smoke.ps1
+      - name: Exercise PowerShell 7 installer profiles
+        if: matrix.shell == 'pwsh'
+        shell: pwsh
+        run: ./tests/windows/windows_installer_ownership_smoke.ps1

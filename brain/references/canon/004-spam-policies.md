@@ -4,17 +4,23 @@
 
 Spam policies for Google web search, Google Search Central.
 URL: https://developers.google.com/search/docs/essentials/spam-policies
-Updated in ledger: 2026-05-15.
+Page updated in source: 2026-08-28.
 Reviewed: 2026-10-07.
 Confidence: EVIDENCE-BASED.
+
+Ledger source: `g-spam-policies`.
 
 ## Core Thesis
 
 Google spam policies define disallowed behavior that can remove or suppress otherwise optimized pages. Blog production must avoid scaled content abuse, site reputation abuse, expired domain abuse, cloaking, link spam, sneaky redirects, and malicious behavior.
 
-Google's August 28, 2026 documentation records an EEA-specific enforcement
-adjustment for site reputation abuse. Preserve that regional scope. The
-underlying policy still applies.
+Google's August 28 announcement (`g-site-reputation-eea-2026-08-28`,
+<https://developers.google.com/search/blog/2026/08/update-site-reputation-policy>)
+says that from August 30, site-reputation manual actions affect results for
+searchers outside the EEA. For searchers inside the EEA, their manual-action
+impact does not apply; affected sections may be separated to rank independently.
+The distinction follows the searcher's location, not the site's headquarters.
+The underlying abuse policy remains.
 
 ## Blog Application
 

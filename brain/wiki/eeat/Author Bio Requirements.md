@@ -3,7 +3,7 @@ type: spoke
 title: "Author Bio Requirements"
 status: evergreen
 created: 2026-07-06
-updated: 2026-07-09
+updated: 2026-10-07
 tags: [eeat, evergreen]
 domain: "Blog Trust"
 confidence: verified
@@ -77,3 +77,5 @@ A payroll-tax article lists a senior content marketer as author. The bio says "w
 ## Article Contract Bio Handoff
 
 [[Blog Write Article Contract]] uses this note when the draft package names an author or reviewer. Inputs supplied are article purpose, claim-permission map, author-topic fit sentence, reviewer scope, and fabrication-risk status. The contract expects a byline note, reviewer note, and blocked advice list, with `g-qrg-full` attached wherever credibility changes the delivery decision.
+
+For Author Bio Requirements, `nng-editorial-heuristics` supplies general interaction-design principles. Applying those principles to this note's editorial checks is a project adaptation, not an experimentally established SEO or AI-citation requirement.

@@ -32,6 +32,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and manifest scopes, with transactional replacement and safe empty-directory
   pruning. Reject Windows reparse-point paths and unknown collisions before
   mutation; native Windows lifecycle verification remains outstanding.
+- Use canonical Claude Code invocation metadata and a shared safe-YAML
+  validator; resolve helpers and references from trusted installed roots when
+  the caller's working directory is unrelated or untrusted.
+- Reject retired, unverified or expired Brain evidence in all three adapters
+  and current wiki advice. Stage failed retrieval attempts separately from
+  reviewed source records and preserve immutable raw snapshots during tests.
+- Improve normal-text link and byline contrast in light and dark rendering.
 
 ### Changed
 
@@ -52,17 +59,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   processing from local artifact storage, and remove unsupported fixed quotas.
 - Expand routing and recovery evaluations, public distribution checks, and
   source-date workflow diagnostics.
+- Rename the Claude plugin identifier to `blog-engine` for current host
+  compatibility, with migration instructions. Keep the repository, marketplace,
+  standalone `/blog` commands, aliases and Python package identity unchanged.
+- Add opt-in persistent runtime directories for audio, Google and NotebookLM,
+  and a persistent FLOW snapshot selector shared by sync and downstream reads.
+  Existing standalone defaults remain available; no installed state is moved.
+- Review all prior Brain sources against content, retain 127 active reviewed
+  records and archive three retired records. The executable local Brain audit
+  passes at 98/100; historical ledger dates and raw snapshots remain intact.
+- Validate native plugin routing, controlled writing and default Chromium
+  rendering using the current host and matching isolated browser runtime.
+- Add explicit Linux/macOS installer and Windows PowerShell 5.1/7 CI jobs,
+  and validate both the prior and current Claude plugin validators.
 
 ### Known verification limits
 
-- Claude Code 2.1.292 rejects the published plugin name. No naming migration,
-  release, installed-profile update or external publication is included.
-- The Brain's overall freshness gate remains blocked by overdue source records
-  and two sources without sufficient reviewable current evidence.
 - The pinned optional image MCP package still exposes retired preview models.
   Use the documented direct API or stock-image route until it supports live IDs.
-- Authenticated APIs, native Claude execution and native Windows installation
-  require separate environment checks. Offline SDK tests do not establish them.
+- Authenticated Google, Gemini and NotebookLM operations remain unverified.
+  Native route selection does not execute all 30 workflows. Single-pass writing
+  samples require factual review and correction before delivery.
+- Native Windows and macOS CI results must be checked on the updated PR.
+  No release, installed-profile migration or merge is included.
 
 ## [2.2.0] - 2026-08-26
 

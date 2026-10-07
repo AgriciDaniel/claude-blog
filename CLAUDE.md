@@ -152,7 +152,7 @@ and `/blog rewrite`; it is not a top-level user command.
 ## Development Rules
 
 - Keep SKILL.md files under 500 lines / 5000 tokens
-- SKILL.md frontmatter: only valid fields (name, description, user-invokable, argument-hint, compatibility, license, metadata, disable-model-invocation). Do NOT use `allowed-tools`; it is not a Claude Code spec field
+- Validate real skill and agent YAML with `python3 scripts/validate_skills.py --root .`. Use canonical `user-invocable`; the host defaults missing values to true, but this project requires an explicit boolean. `allowed-tools` is valid host permission preapproval metadata, not a tool allowlist. This project intentionally ships no skill preapprovals; agent `tools` is the actual allowlist.
 - New reference files should be focused and under 200 lines. Existing comprehensive references (platform-guides, schema-stack, content-templates, distribution-playbook) are exempt from this guideline
 - Scripts must have docstrings, CLI interface, and JSON output
 - Follow kebab-case naming for all skill directories
@@ -161,7 +161,7 @@ and `/blog rewrite`; it is not a top-level user command.
 - Test with `python3 -m pytest tests/` after changes
 - Run `claude plugin validate .` before pushing plugin changes
 - Run `python3 scripts/lint_prose.py` locally to catch forbidden prose chars before CI does (v1.8.4+)
-- Project-root file loading (BRAND.md/VOICE.md/DISCOURSE.md): use `scripts/load_untrusted_root.py` via Bash; never hand-roll a fence (v1.8.3+)
+- Consumer runtime guidance belongs in the owning skills and agents: plugin-root CLAUDE.md is developer context. Resolve bundled resources from host Markdown substitution `${CLAUDE_SKILL_DIR}`, not an assumed shell export or CWD. Preserve absolute CLAUDE_BLOG_* overrides. Project-root context loading uses the resolved installed `load_untrusted_root.py`; never hand-roll a fence.
 - Plugin skills auto-discovered from `skills/` directory (do not list in plugin.json)
 
 ## Distribution
@@ -172,7 +172,7 @@ Submit at: claude.ai/settings/plugins/submit or platform.claude.com/plugins/subm
 ### Self-Hosted Marketplace
 ```
 /plugin marketplace add AgriciDaniel/claude-blog
-/plugin install claude-blog@agricidaniel-blog
+/plugin install blog-engine@agricidaniel-blog
 ```
 
 ### Standalone Install (no marketplace)

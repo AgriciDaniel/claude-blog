@@ -4,7 +4,7 @@ title: "Chart Source Requirements"
 domain: "Blog Media"
 status: active
 created: 2026-07-06
-updated: 2026-07-09
+updated: 2026-10-07
 tags: [media, images, audio, charts, active]
 ---
 
@@ -27,10 +27,10 @@ This note uses `g-helpful-content` for people-first evidence discipline, `nng-ed
 
 | Source ID | URL | Date in ledger | Claim coverage | Limitation | Refresh cadence |
 |---|---|---|---|---|---|
-| `g-helpful-content` | https://developers.google.com/search/docs/fundamentals/creating-helpful-content | last updated 2025-12-10, verified 2026-07-09 | People-first content and self-assessment discipline | Does not validate chart data | Monthly or source change |
+| `g-helpful-content` | https://developers.google.com/search/docs/fundamentals/creating-helpful-content | last updated 2026-10-05, verified 2026-07-09 | People-first content and self-assessment discipline | Does not validate chart data | Monthly or source change |
 | `nng-editorial-heuristics` | https://www.nngroup.com/articles/ten-usability-heuristics/ | last updated 2020, verified 2026-07-06 | Review usability adapted as editorial ergonomics | Heuristic source, not SEO evidence | Quarterly or methodology change |
-| `g-ai-opt-guide` | https://developers.google.com/search/docs/fundamentals/ai-optimization-guide | last updated 2026-06-15, verified 2026-07-08 | Google AI features do not need special AI files or markup | Not chart methodology guidance | Monthly while AI docs move |
-| `schema-full` | https://schema.org/docs/full.html | retrieved 2026-07-09, no page date exposed | Vocabulary route for asset description | Standards vocabulary is not Google eligibility | Monthly ledger check |
+| `g-ai-opt-guide` | https://developers.google.com/search/docs/fundamentals/ai-optimization-guide | last updated 2026-07-10, verified 2026-07-08 | Google AI features do not need special AI files or markup | Not chart methodology guidance | Monthly while AI docs move |
+| `schema-full` | https://schema.org/docs/full.html | retrieved 2026-10-07, no page date exposed | Vocabulary route for asset description | Standards vocabulary is not Google eligibility | Monthly ledger check |
 | `g-google-images` | https://developers.google.com/search/docs/appearance/google-images | last updated 2026-03-02, verified 2026-07-09 | Image context for chart files, alt text, and sitemaps | Does not prove the underlying values | Monthly or image-doc change |
 | `g-intro-sd` | https://developers.google.com/search/docs/appearance/structured-data/intro-structured-data | last updated 2025-12-10, verified 2026-07-09 | Visible-content guardrail for structured data | Does not create chart eligibility | Monthly ledger check |
 
@@ -75,3 +75,5 @@ Pass the chart to design only when the table above is complete for the actual da
 It needs source ID, retrieval date, owner, filters, caveat, and claim verdict.
 It returns chart type, accessibility approach, placement, and pass-revise-block status.
 `nng-editorial-heuristics` supports review ergonomics, not SEO proof.
+
+For Chart Source Requirements, `nng-editorial-heuristics` supplies general interaction-design principles. Applying those principles to this note's editorial checks is a project adaptation, not an experimentally established SEO or AI-citation requirement.

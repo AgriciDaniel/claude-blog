@@ -4,7 +4,7 @@ title: "Google Algorithm Update Ledger"
 domain: "Google Update Monitoring"
 status: active
 created: 2026-07-06
-updated: 2026-08-25
+updated: 2026-10-07
 tags: [monitoring, google-updates, active]
 source_urls:
   - "https://status.search.google.com/products/rGHU1u87FJnkP6W2GwMi/history"
@@ -36,14 +36,16 @@ The hub must not absorb client-specific analytics, broad market CTR benchmarks, 
 
 | Ledger item | Source ID | Owner | Confidence | Status | Next review date | Rollback trigger |
 |---|---|---|---|---|---|---|
-| Confirmed timeline memory | `g-ranking-history`, `ranking-august-2026-spam` | Monitoring owner | high | active | 2026-09-01 | Dashboard adds, removes, or edits an event. |
-| 2026 core and spam sequence | `ranking-august-2026-spam` | SEO lead | high | pending observation | 2026-08-28 | A complete post-update week or official correction becomes available. |
-| Search Console anomalies | `gsc-reporting-anomalies-2026-08-13` | Data owner | high | active | 2026-09-01 | Google edits the anomaly record. |
-| Platform property availability | `search-console-platform-properties-2026-07-29` | Data owner | contested | account check required | 2026-09-01 | Google resolves its conflicting availability wording. |
-| Review snippet integrity | `review-snippet-integrity-2026-07-24` | Schema reviewer | high | active | 2026-09-24 | Google changes review guidance. |
-| Spam policy interpretation | `g-spam-policies` | Spam reviewer | high | active | 2026-09-24 | Google changes spam-policy wording or enforcement guidance. |
-| AI-search guidance | `g-ai-opt-guide`, `g-ai-features` | AI search owner | high | active | 2026-09-24 | Google changes AI feature or special-file guidance. |
-| Google Ads API currentness | `google-ads-api-v25-1-2026-08-19` | Integration owner | high | dependency work pending | 2026-09-19 | Google releases a newer API or changes supported clients. |
+| Confirmed timeline memory | `g-ranking-history`, `g-status-dashboard` | Monitoring owner | high | active | 2026-11-07 | Dashboard adds, removes, or edits an event. |
+| 2026 core and spam sequence | `g-ranking-history`, `ranking-august-2026-spam` | SEO lead | high | September 24 start listed; site impact unproven | 2026-11-07 | Official incident completion or a supported property comparison becomes available. |
+| Search Console anomalies | `gsc-reporting-anomalies-2026-08-13` | Data owner | high | active | 2026-11-07 | Google edits the anomaly record. |
+| Platform property availability | `search-console-platform-properties-2026-07-29` | Data owner | contested | account check required | 2026-11-07 | Google resolves its conflicting availability wording. |
+| Review snippet integrity | `review-snippet-integrity-2026-07-24` | Schema reviewer | high | active | 2026-11-07 | Google changes review guidance. |
+| Spam policy interpretation | `g-spam-policies` | Spam reviewer | high | active | 2026-11-07 | Google changes spam-policy wording or enforcement guidance. |
+| AI-search guidance | `g-ai-opt-guide`, `g-ai-features` | AI search owner | high | active | 2026-11-07 | Google changes AI feature or special-file guidance. |
+| Google Ads API release sequence | `google-ads-api-v25-1-2026-08-19` | Integration owner | high | v25.2 released September 23; check client compatibility separately | 2026-11-07 | Google releases a newer API or changes supported clients. |
+
+Current official review (2026-10-07) finds the September spam update starting September 24. The August Search Console logging record says missing generative-AI impression data was restored on August 21. The June reporting announcement was updated August 31 to worldwide rollout; platform-property eligibility remains a separate official-document conflict. Current site-reputation advice also needs the August 30 EEA enforcement boundary from `g-site-reputation-eea-2026-08-28`.
 
 ## Spoke Jobs And Deliverable Boundaries
 

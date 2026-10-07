@@ -4,7 +4,7 @@ title: "Distribution Voice Adaptation"
 domain: "Blog Voice"
 status: active
 created: 2026-07-06
-updated: 2026-07-09
+updated: 2026-10-07
 tags: [personas, voice-style, active]
 ---
 
@@ -16,7 +16,7 @@ Distribution Voice Adaptation converts a finished blog claim into email, social,
 
 ### Channel-Specific Voice Boundaries
 
-Use `g-helpful-content` to preserve reader value, `g-qrg-full` to keep trust-sensitive caveats visible, `g-update-2025-01-23-qrg-update-jan-2025` for scaled or low-value content warnings, and `g-update-2025-09-11-qrg-update-sept-2025` when AI Overview examples or expanded YMYL scope affect review. `g-ai-opt-guide` applies when a channel draft implies special Google AI setup.
+Use `g-helpful-content` to preserve reader value, `g-qrg-full` to keep trust-sensitive caveats visible, `g-update-2025-01-23-qrg-update-jan-2025` for scaled or low-value content warnings, and `g-update-2025-09-11-qrg-update-sept-2025` when updated YMYL definitions or illustrative examples affect review. `g-ai-opt-guide` applies when a channel draft implies special Google AI setup.
 
 ### Human Review For Derived Assets
 
@@ -74,3 +74,5 @@ Audio consumer: [[Audio Narration Production Checklist]] receives podcast prompt
 ## Distribution Voice Adaptation Drift Controls
 
 Sample assets after each campaign. If the same channel repeatedly drops source context, rework the channel template before creating more variants.
+
+For Distribution Voice Adaptation, `nng-editorial-heuristics` supplies general interaction-design principles. Applying those principles to this note's editorial checks is a project adaptation, not an experimentally established SEO or AI-citation requirement.

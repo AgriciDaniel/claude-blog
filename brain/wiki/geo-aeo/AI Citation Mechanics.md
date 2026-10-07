@@ -4,7 +4,7 @@ title: "AI Citation Mechanics"
 domain: "GEO and AEO"
 status: active
 created: 2026-07-06
-updated: 2026-07-10
+updated: 2026-10-07
 tags: [geo-aeo, ai-citation, active]
 ---
 
@@ -46,7 +46,7 @@ Use [[Passage Citability Checklist]] before a draft is scored, [[AI Overview Cit
 
 A SaaS post owner asks for "AI citation optimization" after seeing an AI Overview screenshot and one ChatGPT answer. The first split is surface, not wording: the AI Overview row uses Google Search feature context from `g-ai-features`, while the ChatGPT observation stays non-Google and can only cite `seoclarity-chatgpt`.
 
-The page has one clear answer paragraph, but the source is four paragraphs below the claim. The hub sends the passage to [[Source Proximity Pattern]] because `ziptie-aio-source-selection` supports visible attribution as practitioner guidance, not because Google publishes a passage-distance rule.
+The page has one clear answer paragraph, but the source is four paragraphs below the claim. The hub sends the passage to [[Source Proximity Pattern]] as a local evidence-traceability decision. `ziptie-aio-source-selection` supports only the attributed answer-first and self-contained-section heuristic; neither source proximity nor a passage-distance rule is validated as a Google ranking factor.
 
 The same owner asks whether to add `llms.txt`. The decision row above sends that request to [[llms.txt Caveat Note]] because `g-ai-opt-guide` and `g-update-2026-06-15-llms-txt-clarified-as-unused-by-google-search` say the file is not a Google Search visibility lever.
 

@@ -11,18 +11,53 @@ ecosystem for blog content creation, optimization, and management.
 | Python | 3.11+ | Quality scoring + 5-gate delivery contract runners (analyze_blog, blog_preflight, blog_render, generate_hero, lint_prose, ...) |
 | pip | Latest | Python dependency management |
 
-Claude Code must be installed and configured before installing `claude-blog`.
-Claude Code 2.1.292 rejected the current `claude-blog` plugin name during the
-2026-10-07 local review because `claude-` is reserved for third-party plugin
-names. A naming migration remains unresolved. The manual skill-copy installer
-is a separate route; the repository's older CI-pinned plugin validator does
-not prove that the latest CLI accepts the plugin identity.
+Claude Code must be installed and configured before installing the skills.
+The current plugin identifier is `blog-engine` in marketplace
+`agricidaniel-blog`; the repository, Python metadata package, standalone
+installer receipts and environment variable names retain `claude-blog`.
+
 Python 3.11+ is required for quality scoring and helper workflows including
 `analyze_blog.py`, `blog_preflight.py`, `blog_render.py`, `generate_hero.py`,
 `lint_prose.py`, and related script checks. Commands that do not invoke those
 helpers may still run without Python, but production installs should include it.
 
 ---
+
+## Plugin Identifier Migration
+
+Current manifests use `blog-engine` because Claude Code 2.1.292 reserves
+third-party plugin names beginning with `claude-`. Both the plugin manifest
+and marketplace entry use the same identifier. The marketplace name remains
+`agricidaniel-blog`.
+
+After this change reaches the marketplace branch, install with:
+
+```text
+/plugin marketplace add AgriciDaniel/claude-blog
+/plugin install blog-engine@agricidaniel-blog
+```
+
+Use `/blog-engine:blog write <topic>` for the plugin's orchestrator, and
+`/blog-engine:blog-analyze <file>` for a directly invoked sub-skill.
+The standalone skill-copy installation keeps `/blog write <topic>` and
+existing direct skill names. The historical v2.2.0 tag keeps its original
+manifest; installing that tag does not provide the renamed plugin.
+
+An existing plugin installation is not renamed automatically. First record
+its install scope and any locally configured plugin state. Install the new
+identifier at the same intended scope, confirm its commands load, then
+explicitly uninstall the old `claude-blog@agricidaniel-blog` entry. Claude Code
+may continue loading the old identifier even when strict validation rejects
+it. Keep it only until the replacement is verified, since loading both can
+expose duplicate skills. No migration command is run by the standalone
+installer, and this repository change does not edit existing user profiles.
+
+For a local candidate check without registering a plugin in a profile:
+
+```bash
+claude plugin validate .
+claude --plugin-dir .
+```
 
 ## Quick Install (One Command)
 

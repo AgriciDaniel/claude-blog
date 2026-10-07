@@ -9,7 +9,7 @@ description: >
   Use when user says "blog audio", "narrate blog", "audio version",
   "text to speech", "tts", "podcast mode", "read aloud", "audio narration",
   "voice", "narration", "generate audio".
-user-invokable: true
+user-invocable: true
 argument-hint: "[generate|voices|setup] [file-or-text] [--mode summary|full|dialogue] [--voice name]"
 license: MIT
 metadata:
@@ -18,6 +18,14 @@ metadata:
 ---
 
 # Blog Audio: Gemini TTS Narration for Blog Posts
+
+Bundled paths below use host Markdown substitution of `${CLAUDE_SKILL_DIR}`;
+it is not an exported shell variable. Resolve them before execution, quote
+paths, and refuse nonabsolute overrides. Pass `blog_reference_root` resolved
+from `${CLAUDE_SKILL_DIR}/../blog/references`, `blog_template_root` from
+`${CLAUDE_SKILL_DIR}/../blog/templates`, and needed sibling roots to agents.
+Read the main reference `orchestration-details.md` before loading project
+context; pass only its helper-fenced output to downstream agents.
 
 Generate professional audio narration of blog content using Google's Gemini TTS.
 Three modes: summary (200-300 word spoken overview), full article read-aloud,
@@ -37,10 +45,38 @@ or two-speaker podcast dialogue. 30 voices, 80+ languages, HTML5 embed output.
 - `GOOGLE_AI_API_KEY` environment variable (same key used by blog-image)
 - FFmpeg (for WAV-to-MP3 conversion; falls back to WAV if missing)
 
+## Persistent runtime directory
+
+`CLAUDE_BLOG_RUNTIME_DIR` optionally selects one trusted absolute persistent
+root. This integration uses `<root>/blog-audio/.venv`; NotebookLM also
+uses `<root>/blog-notebooklm/data` for its library, authentication and browser
+state. Without this override, the existing skill-local defaults stay in use.
+Google's shared credential config/token paths stay unchanged. No state is
+copied or migrated automatically, and ordinary runs never perform setup.
+
+Preserve an existing validated operator override. For a plugin without one,
+explicitly pass the host-substituted `${CLAUDE_PLUGIN_DATA}/claude-blog-runtime`
+path on both setup and every later runner call. This is Markdown substitution,
+not an exported shell variable. Execute only once it is an absolute resolved
+path. Single quotes keep an unresolved placeholder literal so validation
+rejects it instead of expanding it to a different shell path:
+
+```bash
+CLAUDE_BLOG_RUNTIME_DIR='${CLAUDE_PLUGIN_DATA}/claude-blog-runtime' python3 "${CLAUDE_SKILL_DIR}/scripts/setup_environment.py" --check --json
+CLAUDE_BLOG_RUNTIME_DIR='${CLAUDE_PLUGIN_DATA}/claude-blog-runtime' python3 "${CLAUDE_SKILL_DIR}/scripts/run.py" generate_audio.py --help
+```
+
+Only explicit setup without `--check` installs dependencies. Standalone users
+keep the default unless they explicitly choose an absolute runtime root.
+Relative, unresolved, or linked managed subdirectories fail closed. Changing
+the root selects separate state; it never authorizes a migration or cleanup of
+the old root. Plugin persistent data follows the host's uninstall retention
+rules; preserve it explicitly when uninstalling if it is still needed.
+
 ## Use the Installed run.py Wrapper
 
 ```bash
-BLOG_SKILLS_DIR="${CLAUDE_BLOG_SKILLS_DIR:-$HOME/.claude/skills}"
+BLOG_SKILLS_DIR="${CLAUDE_BLOG_SKILLS_DIR:-${CLAUDE_SKILL_DIR}/..}"
 case "$BLOG_SKILLS_DIR" in /*) ;; *) echo "ERROR: skills dir must be absolute" >&2; exit 1 ;; esac
 AUDIO_RUN="$BLOG_SKILLS_DIR/blog-audio/scripts/run.py"
 python3 "$AUDIO_RUN" generate_audio.py --text "..." --voice Charon --json
@@ -81,7 +117,7 @@ For `/blog audio setup`:
 
 For `/blog audio voices`:
 
-Load `references/voices.md` and present the voice catalog to the user.
+Load `${CLAUDE_SKILL_DIR}/references/voices.md` and present the voice catalog to the user.
 
 Ask the user which voice they prefer, or recommend based on content type:
 - **Article narration**: Charon (Informative) or Sadaltager (Knowledgeable)
@@ -263,4 +299,4 @@ blog-write because audio generation is unavailable.
 ## Reference Documentation
 
 Load on-demand: do NOT load all at startup:
-- `references/voices.md`: Full 30-voice catalog, recommendations by content type, dialogue pairings
+- `${CLAUDE_SKILL_DIR}/references/voices.md`: Full 30-voice catalog, recommendations by content type, dialogue pairings

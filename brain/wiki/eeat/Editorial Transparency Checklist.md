@@ -3,7 +3,7 @@ type: spoke
 title: "Editorial Transparency Checklist"
 status: evergreen
 created: 2026-07-06
-updated: 2026-07-09
+updated: 2026-10-07
 tags: [eeat, evergreen]
 domain: "Blog Trust"
 confidence: verified
@@ -73,3 +73,5 @@ An affiliate software review says "updated July 2026" and lists a reviewer, but 
 ## Analyzer Transparency Handoff
 
 [[Blog Analyzer Score Report]] consumes this checklist for trust-transparency findings. Inputs are byline fields, update context, disclosure locations, correction path, reviewer scope, and AI-use summary. The report expects each failed row to become a severity-labeled trust finding with owner, page element, source ID, and required visible fix.
+
+For Editorial Transparency Checklist, `nng-editorial-heuristics` supplies general interaction-design principles. Applying those principles to this note's editorial checks is a project adaptation, not an experimentally established SEO or AI-citation requirement.

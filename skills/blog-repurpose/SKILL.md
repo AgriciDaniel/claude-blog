@@ -8,18 +8,26 @@ description: >
   platform.
   Use when user says "repurpose", "blog repurpose", "share blog", "social media",
   "twitter thread", "linkedin post", "youtube script", "reddit post".
-user-invokable: true
+user-invocable: true
 argument-hint: "<file-path>"
 license: MIT
 ---
 
 # Blog Repurpose: Cross-Platform Content Adaptation
 
+Bundled paths below use host Markdown substitution of `${CLAUDE_SKILL_DIR}`;
+it is not an exported shell variable. Resolve them before execution, quote
+paths, and refuse nonabsolute overrides. Pass `blog_reference_root` resolved
+from `${CLAUDE_SKILL_DIR}/../blog/references`, `blog_template_root` from
+`${CLAUDE_SKILL_DIR}/../blog/templates`, and needed sibling roots to agents.
+Read the main reference `orchestration-details.md` before loading project
+context; pass only its helper-fenced output to downstream agents.
+
 Transforms blog posts into platform-optimized content for social media, email,
 video, and community channels. Each output adapts tone, format, and length to
 match platform conventions and audience expectations.
 
-**FLOW dual-surface thinking (when applicable).** When the original blog post targets a query that also surfaces in a community (Reddit thread, YouTube comment, LinkedIn discussion), repurpose for the community in a way that reinforces the blog only when platform rules allow it. Community linking is optional, disclosed, and rule-dependent. See `skills/blog/references/flow-alignment.md` and `/blog flow win` for the dual-surface scorecard.
+**FLOW dual-surface thinking (when applicable).** When the original blog post targets a query that also surfaces in a community (Reddit thread, YouTube comment, LinkedIn discussion), repurpose for the community in a way that reinforces the blog only when platform rules allow it. Community linking is optional, disclosed, and rule-dependent. See `${CLAUDE_SKILL_DIR}/../blog/references/flow-alignment.md` and `/blog flow win` for the dual-surface scorecard.
 
 ## Workflow
 

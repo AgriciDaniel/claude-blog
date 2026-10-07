@@ -9,12 +9,20 @@ description: >
   Flags uncited claims as UNVERIFIED. Use when user says "fact check",
   "verify statistics", "check sources", "validate claims", "factcheck",
   "source verification".
-user-invokable: true
+user-invocable: true
 argument-hint: "[file]"
 license: MIT
 ---
 
 # Blog Fact-Check
+
+Bundled paths below use host Markdown substitution of `${CLAUDE_SKILL_DIR}`;
+it is not an exported shell variable. Resolve them before execution, quote
+paths, and refuse nonabsolute overrides. Pass `blog_reference_root` resolved
+from `${CLAUDE_SKILL_DIR}/../blog/references`, `blog_template_root` from
+`${CLAUDE_SKILL_DIR}/../blog/templates`, and needed sibling roots to agents.
+Read the main reference `orchestration-details.md` before loading project
+context; pass only its helper-fenced output to downstream agents.
 
 Verify statistics, claims, and source attributions in blog posts. Pure Claude
 pipeline with no external NLP dependencies.
@@ -174,8 +182,8 @@ claude-blog applies FLOW's evidence discipline through claim-appropriate
 provenance. Include the source details, relevant date or study period,
 methodology, limitations, and stable URL when they are needed to identify,
 verify, or interpret a claim. No fixed citation form is required. See
-`skills/blog-flow/references/flow-framework.md` and `/blog flow` for the full
-framework.
+`/blog flow` for the full framework, using its trusted reference selector so
+an explicitly configured persistent snapshot applies to this reader too.
 
 ## Limitations
 

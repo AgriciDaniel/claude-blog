@@ -5,8 +5,10 @@
 FAQ rich result deprecation, Google Search Central documentation updates.
 URL: https://developers.google.com/search/updates#deprecating-the-faq-rich-result-feature
 Effective date in ledger: 2026-05-07.
-Retrieved: 2026-07-09.
+Retrieved and reviewed: 2026-10-07.
 Confidence: high. Evidence tier: EVIDENCE-BASED.
+
+Ledger source: `g-faqpage-sd`.
 
 ## Core Thesis
 
@@ -17,7 +19,8 @@ FAQ rich results are retired for all sites as of 2026-05-07. FAQPage markup is n
 - Do not promise FAQ rich results.
 - Keep visible Q and A content only when it helps readers.
 - Prioritize BlogPosting or Article, Person, Organization, and BreadcrumbList as the baseline blog schema set.
-- Use QAPage only for genuine single-question pages.
+- Check any alternative schema type against its current feature documentation;
+  FAQ retirement alone does not establish QAPage eligibility.
 
 ## Quote Handling
 

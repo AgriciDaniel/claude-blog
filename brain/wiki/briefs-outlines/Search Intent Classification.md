@@ -4,7 +4,7 @@ title: "Search Intent Classification"
 domain: "Blog Briefs"
 status: active
 created: 2026-07-06
-updated: 2026-07-09
+updated: 2026-10-07
 tags: [briefs-outlines, serp-briefs, active]
 ---
 
@@ -75,3 +75,5 @@ Rejected path: a broad "CRM content strategy guide" would mix learn and implemen
 ## Handoff
 
 The approved classification goes to [[SERP Brief Input Contract]] and [[Heading Hierarchy Rules]]. The handoff must include the primary intent, secondary intent if present, rejected intents, and the reason the chosen article type is the right container.
+
+For Search Intent Classification, `nng-editorial-heuristics` supplies general interaction-design principles. Applying those principles to this note's editorial checks is a project adaptation, not an experimentally established SEO or AI-citation requirement.

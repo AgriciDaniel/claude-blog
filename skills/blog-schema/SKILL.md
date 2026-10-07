@@ -6,12 +6,20 @@ description: >
   against Google requirements and warns about deprecated types. Use when user
   says "schema", "blog schema", "json-ld", "structured data", "schema markup",
   "generate schema".
-user-invokable: true
+user-invocable: true
 argument-hint: "<file-path>"
 license: MIT
 ---
 
 # Blog Schema: JSON-LD Structured Data Generation
+
+Bundled paths below use host Markdown substitution of `${CLAUDE_SKILL_DIR}`;
+it is not an exported shell variable. Resolve them before execution, quote
+paths, and refuse nonabsolute overrides. Pass `blog_reference_root` resolved
+from `${CLAUDE_SKILL_DIR}/../blog/references`, `blog_template_root` from
+`${CLAUDE_SKILL_DIR}/../blog/templates`, and needed sibling roots to agents.
+Read the main reference `orchestration-details.md` before loading project
+context; pass only its helper-fenced output to downstream agents.
 
 Generates complete, validated JSON-LD schema markup for blog posts using the
 @graph pattern. Combines multiple schema types into a single script tag with

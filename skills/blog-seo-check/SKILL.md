@@ -9,12 +9,20 @@ description: >
   prioritized fix list with specific recommendations. Use when user says "seo check",
   "check seo", "validate seo", "blog seo", "seo validation", "on-page seo",
   "title tag check", "meta description check", "heading check", "link audit".
-user-invokable: true
+user-invocable: true
 argument-hint: "<file-path>"
 license: MIT
 ---
 
 # Blog SEO Check: Post-Writing Validation
+
+Bundled paths below use host Markdown substitution of `${CLAUDE_SKILL_DIR}`;
+it is not an exported shell variable. Resolve them before execution, quote
+paths, and refuse nonabsolute overrides. Pass `blog_reference_root` resolved
+from `${CLAUDE_SKILL_DIR}/../blog/references`, `blog_template_root` from
+`${CLAUDE_SKILL_DIR}/../blog/templates`, and needed sibling roots to agents.
+Read the main reference `orchestration-details.md` before loading project
+context; pass only its helper-fenced output to downstream agents.
 
 Runs a comprehensive on-page SEO validation against a completed blog post and
 generates a pass/fail checklist with specific fixes for each failure. Designed
@@ -121,7 +129,7 @@ title, publication date or study period, methodology and limitations, a stable
 URL, and a retrieval date for changeable or undated material. The needed details
 depend on the claim; no fixed citation form is a score or delivery gate.
 Unverifiable claims must be removed or replaced. See
-`skills/blog/references/flow-alignment.md`. For a one-shot prompt-driven check,
+`${CLAUDE_SKILL_DIR}/../blog/references/flow-alignment.md`. For a one-shot prompt-driven check,
 see `/blog flow optimize`.
 
 ### Step 7: Canonical URL
@@ -229,9 +237,16 @@ Status values:
 
 ### Optional: Live Performance Check (blog-google)
 
+Before these Google calls, load `${CLAUDE_SKILL_DIR}/../blog-google/SKILL.md`
+for runtime guidance. Propagate the same absolute `CLAUDE_BLOG_RUNTIME_DIR`
+used by Google setup. For plugin use without an operator override, pass the
+resolved `${CLAUDE_PLUGIN_DATA}/claude-blog-runtime` path explicitly. For
+standalone use with no override, omit the variable and keep its existing
+default; never execute an unresolved placeholder or derive a root from CWD.
+
 If the post has a published URL and blog-google credentials are available:
 
-Resolve `BLOG_SKILLS_DIR="${CLAUDE_BLOG_SKILLS_DIR:-$HOME/.claude/skills}"`
+Resolve `BLOG_SKILLS_DIR="${CLAUDE_BLOG_SKILLS_DIR:-${CLAUDE_SKILL_DIR}/..}"`
 and reject it unless it is absolute.
 
 1. Check credentials: `python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" google_auth --check --json`

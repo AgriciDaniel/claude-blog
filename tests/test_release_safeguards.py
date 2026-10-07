@@ -333,7 +333,7 @@ def test_rendering_guidance_accepts_valid_google_rendered_dom() -> None:
 
 def test_public_marketplace_slug_is_current() -> None:
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
-    assert "claude-blog@agricidaniel-blog" in readme
+    assert "blog-engine@agricidaniel-blog" in readme
     assert "claude-blog@agricidaniel-claude-blog" not in readme
 
 
@@ -483,9 +483,15 @@ def test_ledger_consumer_guidance_matches_installed_path() -> None:
     unix_inventory = (ROOT / "scripts/installer_ownership.py").read_text(encoding="utf-8")
     windows_inventory = (ROOT / "scripts/windows_installer_ownership.ps1").read_text(encoding="utf-8")
 
+    # The skill is host-rendered in both distribution layouts. A reference
+    # receives the caller's trusted root instead of assuming substitution.
+    assert '${CLAUDE_SKILL_DIR}/../../data/google-updates.json' in orchestrator
+    assert '${CLAUDE_SKILL_DIR}/data/google-updates.json' in orchestrator
     for guidance in (orchestrator, currentness):
-        assert "data/google-updates.json" in guidance
-        assert "~/.claude/skills/blog/data/google-updates.json" in guidance
+        assert '.claude-plugin/plugin.json' in guidance
+        assert 'never from CWD' in guidance or 'current working directory' in guidance
+    assert 'supplied by the caller' in currentness
+    assert '~/.claude/skills/blog/data/google-updates.json' in currentness
     assert '"skills/blog/data/google-updates.json"' in unix_inventory
     assert "'skills/blog/data/google-updates.json'" in windows_inventory
 
@@ -582,7 +588,7 @@ def _public_fixture(root: Path) -> None:
     (root / ".github" / "ISSUE_TEMPLATE").mkdir(parents=True)
     (root / "skills" / "blog").mkdir(parents=True)
     (root / "README.md").write_text(
-        f"{public}\nclaude-blog@agricidaniel-blog\n{raw_sh}\n{raw_ps1}\n"
+        f"{public}\nblog-engine@agricidaniel-blog\n{raw_sh}\n{raw_ps1}\n"
         f"git checkout v{version}\nCLAUDE_BLOG_REF=v{version}\n",
         encoding="utf-8",
     )
@@ -614,7 +620,7 @@ def _public_fixture(root: Path) -> None:
     (root / ".claude-plugin" / "plugin.json").write_text(
         json.dumps(
             {
-                "name": "claude-blog",
+                "name": "blog-engine",
                 "version": version,
                 "homepage": public,
                 "repository": public,
@@ -631,7 +637,7 @@ def _public_fixture(root: Path) -> None:
             {
                 "name": "agricidaniel-blog",
                 "owner": {"name": "AgriciDaniel"},
-                "plugins": [{"name": "claude-blog", "source": "./"}],
+                "plugins": [{"name": "blog-engine", "source": "./"}],
             }
         ),
         encoding="utf-8",
@@ -676,6 +682,26 @@ def test_public_release_validator_passes_normalized_fixture(tmp_path: Path) -> N
     )
     _public_fixture(tmp_path)
     assert module.validate(tmp_path)["status"] == "pass"
+
+
+@pytest.mark.parametrize("surface", ["plugin.json", "marketplace.json"])
+def test_public_release_validator_rejects_desynchronized_plugin_identity(
+    tmp_path: Path, surface: str,
+) -> None:
+    module = _load_module("release_identity_validator", ROOT / "scripts/validate_public_release.py")
+    _public_fixture(tmp_path)
+    path = tmp_path / ".claude-plugin" / surface
+    data = json.loads(path.read_text(encoding="utf-8"))
+    if surface == "plugin.json":
+        data["name"] = "claude-blog"
+        expected_kind = "invalid_public_plugin_ownership"
+    else:
+        data["plugins"][0]["name"] = "claude-blog"
+        expected_kind = "invalid_public_marketplace_plugin"
+    path.write_text(json.dumps(data), encoding="utf-8")
+    result = module.validate(tmp_path)
+    assert result["status"] == "fail"
+    assert any(error["kind"] == expected_kind for error in result["errors"])
 
 
 @pytest.mark.parametrize("relative", ["skills/blog-write/SKILL.md", "scripts/unlisted.py", "scripts/unlisted.ps1", "data/unlisted.json"])

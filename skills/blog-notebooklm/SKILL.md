@@ -9,7 +9,7 @@ description: >
   Use when user says "notebooklm", "notebook", "query notebook",
   "ask notebook", "notebook research", "source grounded research",
   "document query", "notebook library".
-user-invokable: true
+user-invocable: true
 argument-hint: "[ask|discover|library|setup|status|cleanup] [question-or-url]"
 license: MIT
 metadata:
@@ -19,6 +19,14 @@ metadata:
 ---
 
 # Blog NotebookLM: Source-Grounded Research from Your Documents
+
+Bundled paths below use host Markdown substitution of `${CLAUDE_SKILL_DIR}`;
+it is not an exported shell variable. Resolve them before execution, quote
+paths, and refuse nonabsolute overrides. Pass `blog_reference_root` resolved
+from `${CLAUDE_SKILL_DIR}/../blog/references`, `blog_template_root` from
+`${CLAUDE_SKILL_DIR}/../blog/templates`, and needed sibling roots to agents.
+Read the main reference `orchestration-details.md` before loading project
+context; pass only its helper-fenced output to downstream agents.
 
 Query Google NotebookLM notebooks directly from Claude Code for citation-backed
 answers from Gemini. Each question opens a headless browser session, retrieves
@@ -46,6 +54,34 @@ cite the private NotebookLM URL as the bibliography entry for public content.
 | `/blog notebooklm status` | Check authentication status |
 | `/blog notebooklm cleanup` | Clean browser state (preserves library) |
 
+## Persistent runtime directory
+
+`CLAUDE_BLOG_RUNTIME_DIR` optionally selects one trusted absolute persistent
+root. This integration uses `<root>/blog-notebooklm/.venv`; NotebookLM also
+uses `<root>/blog-notebooklm/data` for its library, authentication and browser
+state. Without this override, the existing skill-local defaults stay in use.
+Google's shared credential config/token paths stay unchanged. No state is
+copied or migrated automatically, and ordinary runs never perform setup.
+
+Preserve an existing validated operator override. For a plugin without one,
+explicitly pass the host-substituted `${CLAUDE_PLUGIN_DATA}/claude-blog-runtime`
+path on both setup and every later runner call. This is Markdown substitution,
+not an exported shell variable. Execute only once it is an absolute resolved
+path. Single quotes keep an unresolved placeholder literal so validation
+rejects it instead of expanding it to a different shell path:
+
+```bash
+CLAUDE_BLOG_RUNTIME_DIR='${CLAUDE_PLUGIN_DATA}/claude-blog-runtime' python3 "${CLAUDE_SKILL_DIR}/scripts/setup_environment.py" --check --json
+CLAUDE_BLOG_RUNTIME_DIR='${CLAUDE_PLUGIN_DATA}/claude-blog-runtime' python3 "${CLAUDE_SKILL_DIR}/scripts/run.py" notebook_manager.py list --json
+```
+
+Only explicit setup without `--check` installs dependencies. Standalone users
+keep the default unless they explicitly choose an absolute runtime root.
+Relative, unresolved, or linked managed subdirectories fail closed. Changing
+the root selects separate state; it never authorizes a migration or cleanup of
+the old root. Plugin persistent data follows the host's uninstall retention
+rules; preserve it explicitly when uninstalling if it is still needed.
+
 ## Prerequisites
 
 - Google account with NotebookLM access
@@ -59,7 +95,7 @@ Resolve the installed owning skill directory, then call scripts only through its
 `run.py` wrapper:
 
 ```bash
-BLOG_SKILLS_DIR="${CLAUDE_BLOG_SKILLS_DIR:-$HOME/.claude/skills}"
+BLOG_SKILLS_DIR="${CLAUDE_BLOG_SKILLS_DIR:-${CLAUDE_SKILL_DIR}/..}"
 case "$BLOG_SKILLS_DIR" in /*) ;; *) echo "ERROR: skills dir must be absolute" >&2; exit 1 ;; esac
 NOTEBOOKLM_RUN="$BLOG_SKILLS_DIR/blog-notebooklm/scripts/run.py"
 python3 "$NOTEBOOKLM_RUN" auth_manager.py status
@@ -268,5 +304,5 @@ opening an additional persistent profile or copying cookies into another file.
 ## Reference Documentation
 
 Load on-demand: do NOT load all at startup:
-- `references/commands.md`: Full CLI commands, parameters, and workflow patterns
-- `references/troubleshooting.md`: Error solutions, recovery procedures, debugging
+- `${CLAUDE_SKILL_DIR}/references/commands.md`: Full CLI commands, parameters, and workflow patterns
+- `${CLAUDE_SKILL_DIR}/references/troubleshooting.md`: Error solutions, recovery procedures, debugging

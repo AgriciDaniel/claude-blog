@@ -4,7 +4,7 @@ title: "Content Quality Subscore"
 domain: "Blog Quality"
 status: active
 created: 2026-07-06
-updated: 2026-07-09
+updated: 2026-10-07
 tags: [quality, scorecard, active]
 confidence: advisory
 related:
@@ -84,3 +84,5 @@ Expected output: answer-first intro and claim-backed body.
 The contract should block unsupported current claims.
 [[Blog Analyzer Score Report]] consumes the 30 point result.
 It expects blocker, major, minor, or pass wording.
+
+For Content Quality Subscore, `nng-editorial-heuristics` supplies general interaction-design principles. Applying those principles to this note's editorial checks is a project adaptation, not an experimentally established SEO or AI-citation requirement.

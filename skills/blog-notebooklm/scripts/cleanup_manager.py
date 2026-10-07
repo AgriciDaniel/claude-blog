@@ -7,8 +7,13 @@ Manages cleanup of skill data and browser state
 import shutil
 import argparse
 import json
+import sys
 from pathlib import Path
 from typing import Dict, List, Any
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from config import DATA_DIR
+from runtime_paths import confined_directory
 
 
 class CleanupManager:
@@ -25,8 +30,8 @@ class CleanupManager:
     def __init__(self):
         """Initialize the cleanup manager"""
         # Skill directory paths
-        self.skill_dir = Path(__file__).parent.parent
-        self.data_dir = self.skill_dir / "data"
+        self.skill_dir = Path(__file__).resolve().parent.parent
+        self.data_dir = DATA_DIR
 
     def get_cleanup_paths(self, preserve_library: bool = False) -> Dict[str, Any]:
         """
@@ -50,9 +55,12 @@ class CleanupManager:
 
         total_size = 0
 
+        if self.data_dir.resolve() != self.data_dir:
+            raise ValueError("cleanup data root changed or contains a symlink")
+
         if self.data_dir.exists():
             # Browser state
-            browser_state_dir = self.data_dir / "browser_state"
+            browser_state_dir = confined_directory(self.data_dir, "browser_state")
             if browser_state_dir.exists():
                 for item in browser_state_dir.iterdir():
                     size = self._get_size(item)
@@ -66,7 +74,7 @@ class CleanupManager:
             # Sessions
             sessions_file = self.data_dir / "sessions.json"
             if sessions_file.exists():
-                size = sessions_file.stat().st_size
+                size = self._get_size(sessions_file)
                 paths['sessions'].append({
                     'path': str(sessions_file),
                     'size': size,
@@ -78,7 +86,7 @@ class CleanupManager:
             if not preserve_library:
                 library_file = self.data_dir / "library.json"
                 if library_file.exists():
-                    size = library_file.stat().st_size
+                    size = self._get_size(library_file)
                     paths['library'].append({
                         'path': str(library_file),
                         'size': size,
@@ -89,7 +97,7 @@ class CleanupManager:
             # Auth info
             auth_info = self.data_dir / "auth_info.json"
             if auth_info.exists():
-                size = auth_info.stat().st_size
+                size = self._get_size(auth_info)
                 paths['auth'].append({
                     'path': str(auth_info),
                     'size': size,
@@ -116,13 +124,17 @@ class CleanupManager:
 
     def _get_size(self, path: Path) -> int:
         """Get size of file or directory in bytes"""
+        if path.is_symlink():
+            return path.lstat().st_size
         if path.is_file():
             return path.stat().st_size
         elif path.is_dir():
             total = 0
             try:
                 for item in path.rglob('*'):
-                    if item.is_file():
+                    if item.is_symlink():
+                        total += item.lstat().st_size
+                    elif item.is_file():
                         total += item.stat().st_size
             except Exception:
                 pass
@@ -169,6 +181,15 @@ class CleanupManager:
             for item_info in items:
                 path = Path(item_info['path'])
                 try:
+                    path.relative_to(self.data_dir)
+                    if self.data_dir.resolve() != self.data_dir:
+                        raise ValueError("cleanup data root changed or contains a symlink")
+                    path.parent.resolve().relative_to(self.data_dir)
+                    if path.is_symlink():
+                        path.unlink()
+                        deleted_items.append(str(path))
+                        deleted_size += item_info['size']
+                        continue
                     if path.exists():
                         if path.is_dir():
                             shutil.rmtree(path)
@@ -186,7 +207,7 @@ class CleanupManager:
 
         # Recreate browser_state dir if everything was deleted
         if not preserve_library and not failed_items:
-            browser_state_dir = self.data_dir / "browser_state"
+            browser_state_dir = confined_directory(self.data_dir, "browser_state")
             browser_state_dir.mkdir(parents=True, exist_ok=True)
 
         return {

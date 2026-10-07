@@ -8,7 +8,7 @@ description: >
   blog-write and blog-rewrite; falls back gracefully when MCP is unavailable.
   Use when user says "blog image", "generate hero image", "blog illustration",
   "edit blog image", "OG image".
-user-invokable: true
+user-invocable: true
 argument-hint: "[generate|edit|setup] [description-or-path]"
 license: MIT
 metadata:
@@ -18,6 +18,14 @@ metadata:
 ---
 
 # Blog Image - AI Image Generation for Blog Content
+
+Bundled paths below use host Markdown substitution of `${CLAUDE_SKILL_DIR}`;
+it is not an exported shell variable. Resolve them before execution, quote
+paths, and refuse nonabsolute overrides. Pass `blog_reference_root` resolved
+from `${CLAUDE_SKILL_DIR}/../blog/references`, `blog_template_root` from
+`${CLAUDE_SKILL_DIR}/../blog/templates`, and needed sibling roots to agents.
+Read the main reference `orchestration-details.md` before loading project
+context; pass only its helper-fenced output to downstream agents.
 
 You are a **Creative Director** that orchestrates Gemini's image generation
 specifically for blog content. Never pass raw user text directly to the API.
@@ -87,7 +95,7 @@ Choose the expertise lens for the image:
 | **Infographic** | Data-driven posts, processes, comparisons | Layout structure, hierarchy, accessible colors |
 | **Abstract** | Pattern backgrounds, section dividers, decorative | Color theory, mathematical forms, textures |
 
-Load `references/prompt-engineering-blog.md` for domain mode modifier libraries.
+Load `${CLAUDE_SKILL_DIR}/references/prompt-engineering-blog.md` for domain mode modifier libraries.
 
 ### Step 3: Construct the 6-Component Reasoning Brief
 
@@ -143,8 +151,8 @@ Call `set_aspect_ratio` BEFORE generating. Use `conversation_id: "default"`.
 - Pinned `@ycse/nanobanana-mcp@1.1.1`: `set_model` accepts `flash` and `pro`, but maps them to preview IDs that shut down on 2026-06-25
 - Use direct API or a newer MCP package that explicitly supports stable image IDs before promising working MCP image generation
 
-Load `references/mcp-tools.md` for parameter details.
-Load `references/gemini-models.md` for model specs, pricing, and rate limits.
+Load `${CLAUDE_SKILL_DIR}/references/mcp-tools.md` for parameter details.
+Load `${CLAUDE_SKILL_DIR}/references/gemini-models.md` for model specs, pricing, and rate limits.
 
 ### Step 6: Post-Processing (when needed)
 
@@ -241,7 +249,7 @@ Bad: `SEO AI marketing blog optimization image`
 
 For `/blog image setup`:
 
-Resolve `BLOG_SKILLS_DIR="${CLAUDE_BLOG_SKILLS_DIR:-$HOME/.claude/skills}"`
+Resolve `BLOG_SKILLS_DIR="${CLAUDE_BLOG_SKILLS_DIR:-${CLAUDE_SKILL_DIR}/..}"`
 and reject it unless it is absolute. Setup is the only action allowed to change
 image capability configuration.
 
@@ -305,6 +313,6 @@ preserve what works while fixing what doesn't.
 ## Reference Documentation
 
 Load on-demand - do NOT load all at startup:
-- `references/prompt-engineering-blog.md` - Domain modes, 6-component system, blog templates
-- `references/gemini-models.md` - Model specs, rate limits, aspect ratios, pricing
-- `references/mcp-tools.md` - MCP tool parameters and response formats
+- `${CLAUDE_SKILL_DIR}/references/prompt-engineering-blog.md` - Domain modes, 6-component system, blog templates
+- `${CLAUDE_SKILL_DIR}/references/gemini-models.md` - Model specs, rate limits, aspect ratios, pricing
+- `${CLAUDE_SKILL_DIR}/references/mcp-tools.md` - MCP tool parameters and response formats

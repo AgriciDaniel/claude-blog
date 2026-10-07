@@ -8,12 +8,20 @@ description: >
   evidence changes, and sustainable publishing capacity.
   Use when user says "editorial calendar", "content calendar", "blog calendar",
   "publishing schedule", "blog plan", "content plan", "what should I write".
-user-invokable: true
+user-invocable: true
 argument-hint: "[<niche>]"
 license: MIT
 ---
 
 # Blog Calendar: Editorial Planning
+
+Bundled paths below use host Markdown substitution of `${CLAUDE_SKILL_DIR}`;
+it is not an exported shell variable. Resolve them before execution, quote
+paths, and refuse nonabsolute overrides. Pass `blog_reference_root` resolved
+from `${CLAUDE_SKILL_DIR}/../blog/references`, `blog_template_root` from
+`${CLAUDE_SKILL_DIR}/../blog/templates`, and needed sibling roots to agents.
+Read the main reference `orchestration-details.md` before loading project
+context; pass only its helper-fenced output to downstream agents.
 
 Generates editorial calendars with topic clusters, publishing cadence,
 material-change reviews, content-decay investigation, template recommendations,
@@ -149,7 +157,7 @@ For each new post entry, recommend a content template from these 12 available:
 `product-review`, `thought-leadership`, `roundup`, `tutorial`,
 `news-analysis`, `data-research`, `faq-knowledge`
 
-Reference: `skills/blog/references/content-templates.md` for full template details.
+Reference: `${CLAUDE_SKILL_DIR}/../blog/references/content-templates.md` for full template details.
 
 #### Monthly Calendar Format
 
@@ -268,7 +276,7 @@ Channel timing rules:
 - **YouTube**: Plan companion video for pillar posts only (resource-intensive)
 - **Twitter/X**: Same day as publish (thread key takeaways)
 
-Reference: `skills/blog/references/distribution-playbook.md` for detailed channel tactics.
+Reference: `${CLAUDE_SKILL_DIR}/../blog/references/distribution-playbook.md` for detailed channel tactics.
 
 ### Step 5.7: Freshness Automation
 

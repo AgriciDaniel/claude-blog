@@ -4,7 +4,7 @@ title: "QRG Revision Watch"
 domain: "Google Update Monitoring"
 status: active
 created: 2026-07-06
-updated: 2026-07-09
+updated: 2026-10-07
 tags: [monitoring, google-updates, active]
 source_urls:
   - "https://guidelines.raterhub.com/searchqualityevaluatorguidelines.pdf"
@@ -26,19 +26,21 @@ This spoke watches Search Quality Rater Guideline revisions and maps them to blo
 
 ## Decisions QRG Revision Watch Must Record
 
-The watch decides whether a QRG revision changes internal review questions. `g-update-2025-01-23-qrg-update-jan-2025` affects how the brain reviews generated, copied, and filler main content. `g-update-2025-09-11-qrg-update-sept-2025` affects AI Overview examples and YMYL-adjacent framing. `g-qrg-full` owns the full guideline source. `g-qrg` is only the overview deck and should never carry detailed section claims by itself.
+The watch decides whether a QRG revision changes internal review questions. The revision log behind `g-update-2025-01-23-qrg-update-jan-2025` confirms January 2025 alignment of Lowest and Low sections with spam policies and added examples, without establishing a January 23 date. `g-update-2025-09-11-qrg-update-sept-2025` confirms updated YMYL definitions, examples for clarity, and minor changes. Detailed AI-related interpretations require the relevant full-PDF section. `g-qrg-full` owns the full guideline source. `g-qrg` is only the overview deck and should never carry detailed section claims by itself.
 
 ## QRG Revision Watch Update Entry Table
 
 | Revision decision | Required input | Source IDs | Evidence state | Owner | Next action |
 |---|---|---|---|---|---|
 | Use full PDF for detailed claims | Verify the full guideline source, not only the overview deck | `g-qrg-full`, `g-qrg` | CONFIRMED source hierarchy | Quality reviewer | Route full-section claims to the full PDF. |
-| January 2025 AI and spam examples | Record changed quality questions for generated or copied content | `g-update-2025-01-23-qrg-update-jan-2025` | CONFIRMED | Editorial lead | Refresh checks for copied, paraphrased, or low-value generated main content. |
-| September 2025 AI Overview examples | Map examples to answer quality and YMYL sensitivity | `g-update-2025-09-11-qrg-update-sept-2025` | CONFIRMED | Quality reviewer | Update AI-answer review prompts without promising ranking effect. |
+| January 2025 spam-policy alignment | Read Lowest and Low sections and the added examples before adapting review questions | `g-update-2025-01-23-qrg-update-jan-2025` | CONFIRMED | Editorial lead | Use the revision log for the change summary and full-PDF sections for specific main-content claims. |
+| September 2025 YMYL revision | Map updated definitions and illustrative examples to sensitivity review | `g-update-2025-09-11-qrg-update-sept-2025` | CONFIRMED | Quality reviewer | Update AI-answer review prompts without promising ranking effect. |
 | Non-QRG event boundary | Dashboard core or spam updates appear with no QRG file change | `g-ranking-history`, `g-status-dashboard`, `g-update-2026-05-21-may-2026-core-update`, `g-update-2026-06-24-june-2026-spam-update` | CONFIRMED different lane | Monitoring owner | Leave QRG checks unchanged and route event work elsewhere. |
-| No newer QRG as of this check | Confirm source-ledger status on 2026-07-09 | `g-qrg-full` | CONFIRMED current local state | Monitoring owner | Recheck next month and before release packaging. |
+| No newer QRG as of this check | Confirm source-ledger status on 2026-10-07 | `g-qrg-full` | CONFIRMED current local state | Monitoring owner | Recheck next month and before release packaging. |
 | YMYL-adjacent brief flag | Check whether the topic needs heightened trust review | `g-qrg-full`, `g-update-2025-09-11-qrg-update-sept-2025` | CONFIRMED for guideline text | E-E-A-T reviewer | Route sensitive topics to trust scoring. |
 | Generated-content guard | Page uses AI, paraphrasing, or copied main content patterns | `g-update-2025-01-23-qrg-update-jan-2025` | CONFIRMED quality context | Reviewer | Require originality and source evidence before pass. |
+
+The revision-log source confirms change summaries. It does not independently establish AI Overview examples or detailed generative-AI rules. Those claims need a cited full-PDF section before use.
 
 ## QRG Quality Mapping
 

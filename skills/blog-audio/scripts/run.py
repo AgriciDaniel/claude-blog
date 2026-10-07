@@ -12,11 +12,15 @@ import sys
 import argparse
 from pathlib import Path
 
+# Load only the helper shipped beside this installed script, never from CWD.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from runtime_paths import resolve_runtime_paths
+
 
 def get_venv_python():
     """Get the virtual environment Python executable"""
-    skill_dir = Path(__file__).parent.parent
-    venv_dir = skill_dir / ".venv"
+    skill_dir = Path(__file__).resolve().parent.parent
+    venv_dir = resolve_runtime_paths(skill_dir, "blog-audio").venv
 
     if os.name == 'nt':  # Windows
         venv_python = venv_dir / "Scripts" / "python.exe"
@@ -76,7 +80,7 @@ def main():
         script_name += '.py'
 
     # Get script path
-    skill_dir = Path(__file__).parent.parent
+    skill_dir = Path(__file__).resolve().parent.parent
     scripts_dir = (skill_dir / "scripts").resolve()
     script_path = (scripts_dir / script_name).resolve()
 
@@ -88,7 +92,10 @@ def main():
 
     # Ordinary runs are read-only with respect to the managed environment.
     # Installation is reserved for the explicit setup_environment.py command.
-    venv_python = ensure_venv()
+    try:
+        venv_python = ensure_venv()
+    except ValueError as exc:
+        emit_error(str(exc), 1, as_json)
     if venv_python is None:
         emit_error(
             "Blog Audio setup required. Run: python3 skills/blog-audio/scripts/setup_environment.py",

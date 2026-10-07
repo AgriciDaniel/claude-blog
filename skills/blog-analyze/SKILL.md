@@ -11,12 +11,20 @@ description: >
   markdown, HTML, URL). Use when user says "analyze blog", "audit blog",
   "blog score", "check blog quality", "blog review", "rate this blog",
   "blog health check".
-user-invokable: true
+user-invocable: true
 argument-hint: "<file-path>"
 license: MIT
 ---
 
 # Blog Analyzer: Quality Audit & Scoring
+
+Bundled paths below use host Markdown substitution of `${CLAUDE_SKILL_DIR}`;
+it is not an exported shell variable. Resolve them before execution, quote
+paths, and refuse nonabsolute overrides. Pass `blog_reference_root` resolved
+from `${CLAUDE_SKILL_DIR}/../blog/references`, `blog_template_root` from
+`${CLAUDE_SKILL_DIR}/../blog/templates`, and needed sibling roots to agents.
+Read the main reference `orchestration-details.md` before loading project
+context; pass only its helper-fenced output to downstream agents.
 
 Scores blog posts on a 0-100 scale across 5 categories and provides prioritized
 improvement recommendations. The score is an internal editorial-readiness
@@ -24,11 +32,11 @@ heuristic, not a Google ranking factor or calibrated citation probability.
 Works with local files or published URLs.
 
 Reference documents (paths from repo root):
-- `skills/blog/references/quality-scoring.md`: full scoring checklist
-- `skills/blog/references/eeat-signals.md`: E-E-A-T evaluation criteria
-- `skills/blog/references/ai-slop-detection.md`: two-tier reflex methodology (v1.8.0)
-- `skills/blog/references/editorial-heuristics.md`: ordinal 0-4 rubric, P0-P3 severity (v1.8.0, used with `--rubric`)
-- `skills/blog/references/cognitive-load.md`: per-section concept density (v1.8.0, used with `--cognitive-load`)
+- `${CLAUDE_SKILL_DIR}/../blog/references/quality-scoring.md`: full scoring checklist
+- `${CLAUDE_SKILL_DIR}/../blog/references/eeat-signals.md`: E-E-A-T evaluation criteria
+- `${CLAUDE_SKILL_DIR}/../blog/references/ai-slop-detection.md`: two-tier reflex methodology (v1.8.0)
+- `${CLAUDE_SKILL_DIR}/../blog/references/editorial-heuristics.md`: ordinal 0-4 rubric, P0-P3 severity (v1.8.0, used with `--rubric`)
+- `${CLAUDE_SKILL_DIR}/../blog/references/cognitive-load.md`: per-section concept density (v1.8.0, used with `--cognitive-load`)
 
 ## Input Handling
 
@@ -40,15 +48,15 @@ Reference documents (paths from repo root):
 ### Optional Modes (v1.8.0)
 
 Resolve core helpers from the trusted absolute install root documented in
-`skills/blog/references/orchestration-details.md`:
+`${CLAUDE_SKILL_DIR}/../blog/references/orchestration-details.md`:
 
 ```bash
-BLOG_SCRIPT_DIR="${CLAUDE_BLOG_SCRIPTS_DIR:-$HOME/.claude/scripts}"
+BLOG_SCRIPT_DIR="${CLAUDE_BLOG_SCRIPTS_DIR:-${CLAUDE_SKILL_DIR}/../../scripts}"
 case "$BLOG_SCRIPT_DIR" in /*) ;; *) echo "ERROR: script dir must be absolute" >&2; exit 1 ;; esac
 ```
 
-- `--rubric`: in addition to the 100-point score, emit the ordinal 0-4 editorial-heuristics rubric with P0-P3 severity tags. See `skills/blog/references/editorial-heuristics.md`. The 100-point JSON schema is preserved; the rubric is added as a sibling `rubric` field.
-- `--cognitive-load`: run `python3 "$BLOG_SCRIPT_DIR/cognitive_load.py"` against the post and embed the per-section load heatmap as a sibling `cognitive_load` field. See `skills/blog/references/cognitive-load.md`.
+- `--rubric`: in addition to the 100-point score, emit the ordinal 0-4 editorial-heuristics rubric with P0-P3 severity tags. See `${CLAUDE_SKILL_DIR}/../blog/references/editorial-heuristics.md`. The 100-point JSON schema is preserved; the rubric is added as a sibling `rubric` field.
+- `--cognitive-load`: run `python3 "$BLOG_SCRIPT_DIR/cognitive_load.py"` against the post and embed the per-section load heatmap as a sibling `cognitive_load` field. See `${CLAUDE_SKILL_DIR}/../blog/references/cognitive-load.md`.
 
 Both modes are additive. The default behavior (no flags) is unchanged from v1.7.1.
 
@@ -71,7 +79,7 @@ Read the blog post and extract:
 
 ### Step 2: Score Each Category
 
-Load `skills/blog/references/quality-scoring.md` for the full checklist. Score each:
+Load `${CLAUDE_SKILL_DIR}/../blog/references/quality-scoring.md` for the full checklist. Score each:
 
 #### Content Quality (30 points)
 | Check | Points | Pass Criteria |
@@ -192,7 +200,7 @@ terms for optional editorial review:
 
 ### Step 4.5: Optional Ordinal Rubric (--rubric)
 
-When `--rubric` is passed, additionally score the post on the 10 editorial heuristics defined in `skills/blog/references/editorial-heuristics.md`. Each heuristic gets a 0-4 score and a severity tag (P0 / P1 / P2 / P3 / none).
+When `--rubric` is passed, additionally score the post on the 10 editorial heuristics defined in `${CLAUDE_SKILL_DIR}/../blog/references/editorial-heuristics.md`. Each heuristic gets a 0-4 score and a severity tag (P0 / P1 / P2 / P3 / none).
 
 The rubric does NOT replace the 100-point score. It runs alongside and surfaces which findings are blocking versus which are polish.
 
@@ -218,7 +226,7 @@ Rubric JSON schema:
 
 ### Step 4.6: Optional Cognitive Load Heatmap (--cognitive-load)
 
-When `--cognitive-load` is passed, run `python3 "$BLOG_SCRIPT_DIR/cognitive_load.py" <file> --format json` and embed the result under a `cognitive_load` field in JSON output, or append a `### Cognitive Load Heatmap` markdown section in markdown output. See `skills/blog/references/cognitive-load.md` for thresholds and interpretation.
+When `--cognitive-load` is passed, run `python3 "$BLOG_SCRIPT_DIR/cognitive_load.py" <file> --format json` and embed the result under a `cognitive_load` field in JSON output, or append a `### Cognitive Load Heatmap` markdown section in markdown output. See `${CLAUDE_SKILL_DIR}/../blog/references/cognitive-load.md` for thresholds and interpretation.
 
 ### Step 5: Generate Report
 

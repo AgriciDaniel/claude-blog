@@ -27,6 +27,20 @@
 - Record path, hash, retrieval date, owner, and source type.
 - Use `sha256` only and keep all raw paths vault-relative.
 - Record external research sources in `references/source-ledger.json`.
+- Give each record an explicit lifecycle: `active`, `retired` or `unverified`.
+  Only active, reviewed, unexpired evidence can support current recommendations.
+  Retired records retain their historical dates and name active replacement IDs
+  and a retirement reason; do not fetch or refresh them as current evidence.
+- For active records, review the claim scope against content, record the actual
+  retrieval and review dates separately from publication/update dates, and keep
+  limitations visible. Record the excerpt, rationale, normalized SHA-256 and
+  safe repository-relative evidence path in `verification`. Availability and
+  token overlap are diagnostics, not claim verification.
+- `verify_source_ledger.py --offline-check` validates these recorded reviews;
+  it does not verify that captured external artifacts are present. Preserve
+  the source-review evidence pack and independently check captured hashes and
+  excerpts before making a content-verification claim. A new retrieval attempt
+  must not overwrite a successful review until its claims are reviewed.
 - When a ledger entry relies on a captured raw file, record
   `raw_snapshot_path` and `raw_snapshot_sha256`.
 - Record implemented schemas and adapters in `references/adapter-manifest.json`.

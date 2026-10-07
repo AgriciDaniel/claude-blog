@@ -466,6 +466,7 @@ dev = [
     { name = "markdown" },
     { name = "pillow" },
     { name = "pytest" },
+    { name = "pyyaml" },
     { name = "requests" },
     { name = "textstat" },
 ]
@@ -509,6 +510,7 @@ requires-dist = [
     { name = "pillow", marker = "extra == 'dev'", specifier = ">=12.3.0,<13.0.0" },
     { name = "pillow", marker = "extra == 'presentation'", specifier = ">=12.3.0,<13.0.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0,<10.0" },
+    { name = "pyyaml", marker = "extra == 'dev'", specifier = ">=6.0.3,<7.0" },
     { name = "requests", marker = "extra == 'dev'", specifier = ">=2.34.2,<3.0.0" },
     { name = "requests", marker = "extra == 'google'", specifier = ">=2.34.2,<3.0.0" },
     { name = "requests", marker = "extra == 'presentation'", specifier = ">=2.34.2,<3.0.0" },

@@ -4,7 +4,7 @@ title: "AI Search Update Watch"
 domain: "Google Update Monitoring"
 status: active
 created: 2026-07-06
-updated: 2026-07-09
+updated: 2026-10-07
 tags: [monitoring, google-updates, active]
 source_urls:
   - "https://developers.google.com/search/docs/appearance/ai-features"
@@ -37,7 +37,7 @@ AI guidance can update briefs, measurement plans, and passage-citation reviews. 
 | AI features eligibility | Check whether normal crawling and preview controls are still the documented path | `g-ai-features` | CONFIRMED | AI search owner | Keep AI-feature advice aligned with standard Google Search access rules. |
 | Special-file claims | Verify claims about llms.txt, special AI schema, Markdown conversion, or chunking files | `g-ai-opt-guide`, `g-update-2026-06-15-llms-txt-clarified-as-unused-by-google-search` | CONFIRMED | Brief reviewer | Reject Google-visibility claims that contradict the AI optimization guide. |
 | Product-surface expansion | Distinguish AI Mode reach from query-share or traffic impact | `g-update-2026-05-19-google-i-o-2026-gemini-3-5-flash-powers-ai-mode` | AS-REPORTED by Google | Strategy owner | Route market-size interpretation to [[AI Citation Mechanics]]. |
-| Reporting availability | Record whether Search Console generative-AI reports are available for a property | `g-update-2026-06-03-search-console-search-generative-ai-performance-reports`, `g-genai-reports` | CONFIRMED with rollout caveat | Data owner | Add a read-only report availability check in [[Google Data Integrations]]. |
+| Reporting availability | Record whether Search Console generative-AI reports are available for a property | `g-update-2026-06-03-search-console-search-generative-ai-performance-reports`, `g-genai-reports` | CONFIRMED June announcement and August 31 worldwide rollout update | Data owner | Add a read-only report availability check in [[Google Data Integrations]]. |
 | Spam intersection | Watch for AI-scaled content language in spam policy updates | `g-update-2026-05-15-spam-policies-update-gen-ai-scaled-content`, `g-spam-policies` | CONFIRMED | Spam reviewer | Route low-value scaled pages to [[Spam Update Response Playbook]]. |
 | Ranking-event boundary | A core or spam update is being mistaken for an AI-search change | `g-ranking-history`, `g-status-dashboard`, `g-update-2026-05-21-may-2026-core-update`, `g-update-2026-06-24-june-2026-spam-update` | CONFIRMED non-AI route | Monitoring owner | Send the item to the timeline or playbook instead. |
 | AI Mode launch history | Use launch sources for surface chronology only | `blog-aimode`, `g-update-2025-03-05-ai-mode-experimental-launch` | CONFIRMED product chronology | AI search owner | Keep launch dates out of update-impact causation. |
@@ -59,7 +59,7 @@ Do not use this note to repeat zero-click or AI Mode share numbers. If a brief n
 A brief requests `/llms.txt`, Markdown chunk files, and FAQPage markup for Google AI visibility.
 The watch cites `g-ai-opt-guide` and blocks the Google-visibility claim.
 If preview controls affect snippets, it cites `g-ai-features` instead.
-If the property has Search Generative AI reporting, cite `g-genai-reports` with availability caveat.
+When using the owner-provided Search Generative AI export, cite `g-genai-reports` including its August 31 worldwide-rollout update; do not confuse platform-property availability conflicts with that report rollout.
 The consumer is [[GEO Citation Readiness Register]].
 Inputs passed are surface, source ID, blocked claim, approved caveat, and passage owner.
 The register should output passage status, confidence, next review date, and rollback trigger.

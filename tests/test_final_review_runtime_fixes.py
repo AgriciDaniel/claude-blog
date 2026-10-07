@@ -157,6 +157,7 @@ def make_google_wrapper_fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
     scripts = skill / "scripts"
     scripts.mkdir(parents=True)
     shutil.copy2(ROOT / "skills/blog-google/scripts/run.py", scripts / "run.py")
+    shutil.copy2(ROOT / "skills/blog-google/scripts/runtime_paths.py", scripts / "runtime_paths.py")
     command = scripts / "pagespeed_check.py"
     command.write_text("print('configured-ok')\n", encoding="utf-8")
     lock = scripts / "requirements.lock"

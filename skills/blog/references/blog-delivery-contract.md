@@ -6,7 +6,7 @@ Resolve every executable core helper through the trusted absolute installed
 scripts root described in `orchestration-details.md`:
 
 ```bash
-BLOG_SCRIPT_DIR="${CLAUDE_BLOG_SCRIPTS_DIR:-$HOME/.claude/scripts}"
+: "${BLOG_SCRIPT_DIR:?owning skill must supply its resolved trusted scripts root}"
 case "$BLOG_SCRIPT_DIR" in /*) ;; *) echo "ERROR: script dir must be absolute" >&2; exit 1 ;; esac
 ```
 
@@ -187,10 +187,10 @@ https://github.com/AgriciDaniel/claude-blog/issues.
 
 ## References
 
-- `skills/blog/references/quality-scoring.md`: the 100-point numeric scoring rubric used by Gate 4
-- `skills/blog/references/editorial-heuristics.md`: the P0-P3 ordinal scoring used for the P0 filter in Gate 4
-- `skills/blog/references/visual-media.md`: image and asset standards consumed by Gate 5
-- `skills/blog/references/schema-stack.md`: JSON-LD structure validated by Gate 3 step 5
+- `<blog_reference_root>/quality-scoring.md`: the 100-point numeric scoring rubric used by Gate 4
+- `<blog_reference_root>/editorial-heuristics.md`: the P0-P3 ordinal scoring used for the P0 filter in Gate 4
+- `<blog_reference_root>/visual-media.md`: image and asset standards consumed by Gate 5
+- `<blog_reference_root>/schema-stack.md`: JSON-LD structure validated by Gate 3 step 5
 - `agents/blog-reviewer.md`: the reviewer agent that produces the Gate 4 scorecard
 - `scripts/load_untrusted_root.py`: the v1.8.3 helper used for project-root file loading in Gate 1
 - `scripts/lint_prose.py`: the v1.8.4 prose linter run as part of Gate 4's editorial-heuristics scoring

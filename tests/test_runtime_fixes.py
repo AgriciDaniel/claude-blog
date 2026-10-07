@@ -520,6 +520,7 @@ def test_fresh_wrapper_command_never_creates_environment(
     scripts = skill / "scripts"
     scripts.mkdir(parents=True)
     shutil.copy2(ROOT / source, scripts / "run.py")
+    shutil.copy2((ROOT / source).with_name("runtime_paths.py"), scripts / "runtime_paths.py")
     (scripts / script_name).write_text("print('should not run')\n", encoding="utf-8")
     (scripts / "requirements.lock").write_text("fixture\n", encoding="utf-8")
 
@@ -549,6 +550,7 @@ def test_configured_wrapper_still_runs_existing_environment(
     scripts = skill / "scripts"
     scripts.mkdir(parents=True)
     shutil.copy2(ROOT / source, scripts / "run.py")
+    shutil.copy2((ROOT / source).with_name("runtime_paths.py"), scripts / "runtime_paths.py")
     (scripts / script_name).write_text("print('configured-ok')\n", encoding="utf-8")
     lock = scripts / "requirements.lock"
     lock.write_text("fixture\n", encoding="utf-8")

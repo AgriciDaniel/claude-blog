@@ -11,12 +11,20 @@ description: >
   0-100 AI Citation Readiness score. Use when user says "geo", "ai
   citation", "ai optimization", "citation audit", "aeo", "perplexity
   optimization", "chatgpt citation".
-user-invokable: true
+user-invocable: true
 argument-hint: "<file-path>"
 license: MIT
 ---
 
 # Blog GEO: AI Citation Optimization Audit
+
+Bundled paths below use host Markdown substitution of `${CLAUDE_SKILL_DIR}`;
+it is not an exported shell variable. Resolve them before execution, quote
+paths, and refuse nonabsolute overrides. Pass `blog_reference_root` resolved
+from `${CLAUDE_SKILL_DIR}/../blog/references`, `blog_template_root` from
+`${CLAUDE_SKILL_DIR}/../blog/templates`, and needed sibling roots to agents.
+Read the main reference `orchestration-details.md` before loading project
+context; pass only its helper-fenced output to downstream agents.
 
 Scores blog posts for AI citation readiness across ChatGPT, Perplexity, Claude,
 Gemini, Copilot, You.com, Google AI Overviews, and Google AI Mode as one SEO
@@ -30,7 +38,7 @@ for Google visibility. Use GEO/AEO as shorthand labels only.
 
 ## Cross-reference
 
-This skill covers FLOW surface 3 (AI assistant citations: ChatGPT, Perplexity, Claude, Gemini, Copilot, You.com) and contributes to surface 2 (SERP plus AI Overviews). Surface mapping: `skills/blog/references/flow-alignment.md`.
+This skill covers FLOW surface 3 (AI assistant citations: ChatGPT, Perplexity, Claude, Gemini, Copilot, You.com) and contributes to surface 2 (SERP plus AI Overviews). Surface mapping: `${CLAUDE_SKILL_DIR}/../blog/references/flow-alignment.md`.
 
 For directly relevant AI-citation prompts (AI-supporting-pages rewrite,
 evidence-based quality follow-up, ChatGPT discovery, visibility prompts), see
@@ -284,9 +292,16 @@ Run `/blog analyze <file>` for full content quality scoring.
 
 ### Optional: Search Performance Context (blog-google)
 
+Before these Google calls, load `${CLAUDE_SKILL_DIR}/../blog-google/SKILL.md`
+for runtime guidance. Propagate the same absolute `CLAUDE_BLOG_RUNTIME_DIR`
+used by Google setup. For plugin use without an operator override, pass the
+resolved `${CLAUDE_PLUGIN_DATA}/claude-blog-runtime` path explicitly. For
+standalone use with no override, omit the variable and keep its existing
+default; never execute an unresolved placeholder or derive a root from CWD.
+
 If blog-google credentials include Tier 1 (GSC) and the post has a published URL:
 
-Resolve `BLOG_SKILLS_DIR="${CLAUDE_BLOG_SKILLS_DIR:-$HOME/.claude/skills}"`
+Resolve `BLOG_SKILLS_DIR="${CLAUDE_BLOG_SKILLS_DIR:-${CLAUDE_SKILL_DIR}/..}"`
 and reject it unless it is absolute.
 
 1. Query GSC by page and query dimensions, then filter rows to the URL:
@@ -305,7 +320,7 @@ For a per-engine readiness view (distinct
 from the 15-point AI Citation Readiness category scored by `/blog analyze`), run:
 
 ```bash
-BLOG_SCRIPT_DIR="${CLAUDE_BLOG_SCRIPTS_DIR:-$HOME/.claude/scripts}"
+BLOG_SCRIPT_DIR="${CLAUDE_BLOG_SCRIPTS_DIR:-${CLAUDE_SKILL_DIR}/../../scripts}"
 case "$BLOG_SCRIPT_DIR" in /*) ;; *) echo "ERROR: script dir must be absolute" >&2; exit 1 ;; esac
 python3 "$BLOG_SCRIPT_DIR/ai_citation_score.py" <file> --format markdown
 ```

@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import concurrent.futures
+import copy
 import hashlib
 import ipaddress
 import json
@@ -16,6 +17,8 @@ from datetime import date, timedelta
 from pathlib import Path
 from typing import Any
 from urllib.parse import urljoin, urlparse
+
+from source_evidence import can_support, ledger_errors, ledger_index, lifecycle, source_errors
 
 REPO = Path(__file__).resolve().parent.parent
 LEDGER_PATH = REPO / "references" / "source-ledger.json"
@@ -34,6 +37,8 @@ DECISION_GROUPS = {
     "confirmed_by_manual_review",
     "corrected",
     "retired",
+    "qualified",
+    "unverified",
 }
 MAX_BYTES = 20 * 1024 * 1024
 MIN_CONTENT_COVERAGE = 0.60
@@ -209,10 +214,10 @@ def review_decisions(review: dict[str, Any]) -> tuple[dict[str, str], dict[str, 
     decisions: dict[str, str] = {}
     corrections: dict[str, dict[str, Any]] = {}
     for group in DECISION_GROUPS:
-        value = review.get(group, [] if group != "corrected" else {})
-        if group == "corrected":
+        value = review.get(group, [] if group not in {"corrected", "qualified"} else {})
+        if group in {"corrected", "qualified"}:
             if not isinstance(value, dict):
-                raise SystemExit("ERROR: corrected review decisions must be an object")
+                raise SystemExit("ERROR: corrected/qualified review decisions must be an object")
             for source_id, correction in value.items():
                 if not isinstance(correction, dict):
                     raise SystemExit(f"ERROR: corrected decision for {source_id} must be an object")
@@ -257,27 +262,24 @@ def apply_correction(source: dict[str, Any], correction: dict[str, Any]) -> None
 
 
 def offline_check(ledger: dict[str, Any], as_of: date) -> dict[str, Any]:
-    failures: list[str] = []
-    verified = 0
-    for source in ledger.get("sources", []):
-        if not isinstance(source, dict):
-            failures.append("non-object source entry")
-            continue
-        verification = source.get("verification")
-        if not isinstance(verification, dict):
-            failures.append(f"{source.get('id', '<missing>')} missing verification record")
-            continue
-        reviewed_on = verification.get("reviewed_on")
-        try:
-            reviewed_day = date.fromisoformat(str(reviewed_on))
-        except ValueError:
-            failures.append(f"{source.get('id', '<missing>')} has invalid verification date")
-            continue
-        if reviewed_day > as_of:
-            failures.append(f"{source.get('id', '<missing>')} has future verification date")
-            continue
-        verified += 1
-    return {"status": "pass" if not failures else "fail", "verified": verified, "failures": failures}
+    failures = ledger_errors(ledger, as_of=as_of)
+    try:
+        index = ledger_index(ledger)
+    except ValueError:
+        index = {}
+    verified = sum(can_support(source, as_of=as_of) for source in index.values())
+    states = {state: sum(lifecycle(source) == state for source in index.values()) for state in ("active", "retired", "unverified")}
+    # Explicit quarantine is truthful history, but not successful verification.
+    failures.extend(f"{source_id}: unverified evidence requires review" for source_id, source in index.items() if lifecycle(source) == "unverified")
+    return {
+        "status": "pass" if not failures else "fail", "verified": verified,
+        "failures": failures, "lifecycle_counts": states,
+        "evidence_validation": {
+            "mode": "review_record",
+            "captured_artifacts_checked": False,
+            "scope": "Inline reviewed claims, excerpt, rationale, hash format, artifact reference, lifecycle, chronology and freshness. Captured-file content and source entailment require the separate source review.",
+        },
+    }
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -297,48 +299,26 @@ def main(argv: list[str] | None = None) -> int:
         raise SystemExit("ERROR: review-file date does not match --as-of")
     decisions, corrections = review_decisions(review)
 
-    sources = ledger.get("sources")
-    if not isinstance(sources, list):
-        raise SystemExit("ERROR: source-ledger sources must be a list")
-    review_candidates = [
-        source
-        for source in sources
-        if isinstance(source, dict)
-        and (
-            str(source.get("refresh_due", "")) < as_of.isoformat()
-            or not isinstance(source.get("verification"), dict)
-        )
-    ]
-    candidate_ids = {str(source.get("id", "")) for source in review_candidates}
-    source_by_id = {
-        str(source.get("id", "")): source
-        for source in sources
-        if isinstance(source, dict)
-    }
-    permitted_prior = {
-        source_id
-        for source_id, source in source_by_id.items()
-        if isinstance(source.get("verification"), dict)
-        and source["verification"].get("reviewed_on") == as_of.isoformat()
-    }
-    missing = sorted(candidate_ids - set(decisions))
-    extra = sorted(set(decisions) - candidate_ids - permitted_prior)
-    if missing or extra:
-        raise SystemExit(
-            f"ERROR: review coverage mismatch; missing={missing[:8]} extra={extra[:8]}"
-        )
-
-    # Apply reviewed metadata corrections before fetching. This makes a corrected
-    # canonical URL the actual source that is retrieved and hashed, rather than
-    # recording evidence from the superseded URL.
-    for source in review_candidates:
-        source_id = str(source["id"])
-        if decisions[source_id] == "corrected":
-            apply_correction(source, corrections[source_id])
-
-    urls = sorted({str(source["url"]) for source in review_candidates})
+    try:
+        source_by_id = ledger_index(ledger)
+    except ValueError as exc:
+        raise SystemExit(f"ERROR: {exc}") from exc
+    extra = sorted(set(decisions) - set(source_by_id))
+    if extra:
+        raise SystemExit(f"ERROR: review decisions reference unknown IDs: {extra}")
+    # An explicit subset can be reviewed. Unreviewed or failed records retain
+    # their old evidence and remain visible to the final semantic check.
+    review_evidence = review.get("evidence", {})
+    dispositions = review.get("dispositions", {})
+    if not isinstance(review_evidence, dict) or not isinstance(dispositions, dict):
+        raise SystemExit("ERROR: evidence and dispositions must be objects keyed by source ID")
+    staged = {source_id: copy.deepcopy(source) for source_id, source in source_by_id.items() if source_id in decisions}
+    for source_id, source in staged.items():
+        if decisions[source_id] in {"corrected", "qualified"}:
+            apply_correction(source, corrections.get(source_id, {}))
+    urls = sorted({str(source["url"]) for source_id, source in staged.items() if decisions[source_id] not in {"retired", "unverified"}})
     fetched: dict[str, dict[str, Any]] = {}
-    failures: list[dict[str, str]] = []
+    network_failures: list[dict[str, str]] = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=max(1, args.workers)) as executor:
         future_map = {executor.submit(fetch_source, url): url for url in urls}
         for future in concurrent.futures.as_completed(future_map):
@@ -346,85 +326,80 @@ def main(argv: list[str] | None = None) -> int:
             try:
                 fetched[url] = future.result()
             except Exception as exc:
-                failures.append({"url": url, "error": f"{type(exc).__name__}: {exc}"})
-    if failures:
-        print(json.dumps({"status": "fail", "network_failures": failures}, indent=2))
-        return 1
+                network_failures.append({"url": url, "error": f"{type(exc).__name__}: {exc}"})
 
     results: list[dict[str, Any]] = []
-    for source in review_candidates:
-        source_id = str(source["id"])
+    review_failures: list[dict[str, str]] = []
+    for source_id, source in staged.items():
         decision = decisions[source_id]
-        correction = corrections.get(source_id, {})
-        evidence = fetched[str(source["url"])]
-        claim_check = claim_evidence(source, evidence["text"])
-        if decision == "confirmed_by_content" and (
-            claim_check["claim_token_coverage"] < MIN_CONTENT_COVERAGE
-            or claim_check["missing_numeric_literals"]
-        ):
-            failures.append(
-                {
-                    "url": str(source["url"]),
-                    "error": f"{source_id} no longer meets content-confirmation thresholds",
-                }
-            )
+        disposition = dispositions.get(source_id, {})
+        if not isinstance(disposition, dict):
+            review_failures.append({"id": source_id, "error": "disposition must be an object"})
             continue
         if decision == "retired":
-            source["status"] = "retired"
-        source["retrieved"] = as_of.isoformat()
-        source["last_verified"] = as_of.isoformat()
-        source["refresh_due"] = next_refresh(source, as_of).isoformat()
-        source["verification"] = {
-            "reviewed_on": as_of.isoformat(),
-            "decision": decision,
-            "method": "public-source content check plus explicit claim review",
-            "http_status": evidence["http_status"],
-            "final_url": evidence["final_url"],
-            "content_type": evidence["content_type"],
-            "reviewable_text_bytes": evidence["reviewable_text_bytes"],
-            "normalized_content_sha256": evidence["normalized_content_sha256"],
-            **claim_check,
-            "review_note": correction.get(
-                "review_note",
-                "Claim retained after source-content review.",
-            ),
-        }
-        results.append(
-            {
-                "id": source_id,
-                "decision": decision,
+            source.update(status="retired", retired_on=as_of.isoformat(), retirement_reason=disposition.get("retirement_reason", ""), replacement_source_ids=disposition.get("replacement_source_ids", []))
+            # Keep prior retrieval and verification exactly as history. Retirement
+            # neither needs a successful fetch nor invents a new retrieval date.
+        elif decision == "unverified":
+            source.update(status="unverified", unverified_reason=disposition.get("unverified_reason", ""))
+        else:
+            evidence = fetched.get(str(source["url"]))
+            if evidence is None:
+                original = source_by_id[source_id]
+                original.setdefault("retrieval_attempts", []).append({"attempted_on": as_of.isoformat(), "url": source["url"], "status": "failed"})
+                continue
+            claim_check = claim_evidence(source, evidence["text"])
+            if decision == "confirmed_by_content" and (claim_check["claim_token_coverage"] < MIN_CONTENT_COVERAGE or claim_check["missing_numeric_literals"]):
+                review_failures.append({"id": source_id, "error": "content-confirmation thresholds not met"})
+                continue
+            reviewed = review_evidence.get(source_id, {})
+            if not isinstance(reviewed, dict):
+                reviewed = {}
+            # Evidence must be explicitly bound by the reviewer to the fetched
+            # content. A review file authored against an older page fails closed.
+            if reviewed.get("normalized_content_sha256") != evidence["normalized_content_sha256"]:
+                review_failures.append({"id": source_id, "error": "review evidence hash does not match retrieved content"})
+                continue
+            excerpt = reviewed.get("evidence_excerpt", "")
+            if not isinstance(excerpt, str) or normalize_text(excerpt) not in evidence["text"] or not excerpt.strip():
+                review_failures.append({"id": source_id, "error": "review excerpt absent from retrieved content"})
+                continue
+            source.update(status="active", retrieved=as_of.isoformat(), last_verified=as_of.isoformat(), refresh_due=next_refresh(source, as_of).isoformat())
+            source["verification"] = {
+                "reviewed_on": as_of.isoformat(), "decision": decision,
+                "method": "public-source content check plus explicit claim review",
+                **{key: evidence[key] for key in ("http_status", "final_url", "content_type", "reviewable_text_bytes", "normalized_content_sha256")},
                 **claim_check,
+                "review_note": reviewed.get("review_note", ""),
+                "evidence_excerpt": excerpt,
+                "evidence_path": reviewed.get("evidence_path", ""),
             }
-        )
+        errors = source_errors(source, as_of=as_of)
+        if errors:
+            review_failures.append({"id": source_id, "error": "; ".join(errors)})
+            continue
+        source_by_id[source_id].clear()
+        source_by_id[source_id].update(source)
+        results.append({"id": source_id, "decision": decision})
 
-    if failures:
-        print(json.dumps({"status": "fail", "review_failures": failures}, indent=2))
-        return 1
-    ledger["last_verified"] = as_of.isoformat()
-    ledger["status"] = "market-ready-research" if len(results) == len(review_candidates) else ledger.get("status")
+    semantic = offline_check(ledger, as_of)
+    complete = not network_failures and not review_failures and semantic["status"] == "pass"
+    # The aggregate date advances only when every active source was actually
+    # reviewed on this day, never merely because stale candidates were fetched.
+    all_reviewed_today = all(source.get("verification", {}).get("reviewed_on") == as_of.isoformat() for source in source_by_id.values() if lifecycle(source) == "active")
+    if complete and all_reviewed_today:
+        ledger["last_verified"] = as_of.isoformat()
+    ledger["status"] = "reviewed-research" if complete else "partial-review"
     if args.apply:
-        LEDGER_PATH.write_text(
-            json.dumps(ledger, indent=2, ensure_ascii=False) + "\n",
-            encoding="utf-8",
-        )
-    print(
-        json.dumps(
-            {
-                "status": "pass",
-                "applied": args.apply,
-                "reviewed": len(results),
-                "unique_urls": len(urls),
-                "decisions": {
-                    group: sum(item["decision"] == group for item in results)
-                    for group in sorted(DECISION_GROUPS)
-                },
-                "results": results,
-            },
-            indent=2,
-            sort_keys=True,
-        )
-    )
-    return 0
+        LEDGER_PATH.write_text(json.dumps(ledger, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    print(json.dumps({
+        "status": "pass" if complete else "fail", "applied": args.apply,
+        "reviewed": len(results), "unique_urls": len(urls),
+        "decisions": {group: sum(item["decision"] == group for item in results) for group in sorted(DECISION_GROUPS)},
+        "results": results, "network_failures": network_failures,
+        "review_failures": review_failures, "failures": semantic["failures"],
+    }, indent=2, sort_keys=True))
+    return 0 if complete else 1
 
 
 if __name__ == "__main__":

@@ -6,12 +6,20 @@ description: >
   Runs canonical batch analysis before site-wide checks. Produces per-post scores
   and a prioritized action queue. Use when user says "audit blog", "blog audit",
   "site audit", "blog health", "audit all posts", "check all blogs".
-user-invokable: true
+user-invocable: true
 argument-hint: "[directory]"
 license: MIT
 ---
 
 # Blog Audit: Full-Site Health Assessment
+
+Bundled paths below use host Markdown substitution of `${CLAUDE_SKILL_DIR}`;
+it is not an exported shell variable. Resolve them before execution, quote
+paths, and refuse nonabsolute overrides. Pass `blog_reference_root` resolved
+from `${CLAUDE_SKILL_DIR}/../blog/references`, `blog_template_root` from
+`${CLAUDE_SKILL_DIR}/../blog/templates`, and needed sibling roots to agents.
+Read the main reference `orchestration-details.md` before loading project
+context; pass only its helper-fenced output to downstream agents.
 
 Performs a comprehensive blog health assessment across all posts in the project.
 Scans for quality scores, orphan pages, topic cannibalization, stale content,
@@ -52,7 +60,7 @@ root by default.
 Run canonical analyzer output first and use it as the source of per-post scores:
 
 ```bash
-BLOG_SCRIPT_DIR="${CLAUDE_BLOG_SCRIPTS_DIR:-$HOME/.claude/scripts}"
+BLOG_SCRIPT_DIR="${CLAUDE_BLOG_SCRIPTS_DIR:-${CLAUDE_SKILL_DIR}/../../scripts}"
 case "$BLOG_SCRIPT_DIR" in /*) ;; *) echo "ERROR: script dir must be absolute" >&2; exit 1 ;; esac
 python3 "$BLOG_SCRIPT_DIR/analyze_blog.py" <blog-root> --batch --format json
 ```

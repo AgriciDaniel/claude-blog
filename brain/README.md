@@ -6,13 +6,15 @@
 
 Claude Blog Brain is an evidence-gated Obsidian brain for blog content creation, optimization, and management dual-optimized for Google rankings (E-E-A-T, the 2026 core updates) and AI citations (GEO/AEO), spanning writing, rewriting and freshness, SERP-informed briefs and outlines, editorial calendars and strategy, semantic topic clusters, schema and internal linking, multilingual publishing, the FLOW framework, factchecking, personas, distribution, and the blog delivery contract, grounded in the claude-blog skill.
 
-**Current maturity: scaffolded.** The 2026-10-07 audit reports 66 stale source
-records, so the Brain is not market-ready. Domain adapters remain implemented;
-their 17 regression tests pass on Python 3.11. The market-ready verification
-recorded on 2026-08-25 is historical evidence. The current source review retains
-two unverified sources and does not advance the ledger-wide verification date.
-Recheck each source and its material claims before advancing its review date,
-then rerun the executable maturity gate.
+**Current maturity: market-ready.** The executable local audit on 2026-10-07
+scores 98/100 with no critical failures or warnings after source review,
+adapter tests, vault lint, pipeline checks and disposable packaging checks.
+This is the Brain's internal readiness gate, not a ranking, API-operation or
+publication guarantee. The ledger contains 127 active reviewed records and
+three retired records excluded from current advice. Its historical global
+verification date remains unchanged; per-source review dates govern freshness.
+The separate adapter regression run passes 23 tests on Python 3.11. Rerun the
+executable gate when sources expire or maintained files change.
 
 It ships two artifacts:
 

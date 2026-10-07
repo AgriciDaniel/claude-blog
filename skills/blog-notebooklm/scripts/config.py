@@ -4,14 +4,19 @@ Centralizes constants, selectors, and paths
 """
 
 import os
+import sys
 from pathlib import Path
 from urllib.parse import urlparse
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from runtime_paths import confined_directory, resolve_runtime_paths
+
 # Paths
-SKILL_DIR = Path(__file__).parent.parent
-DATA_DIR = SKILL_DIR / "data"
-BROWSER_STATE_DIR = DATA_DIR / "browser_state"
-BROWSER_PROFILE_DIR = BROWSER_STATE_DIR / "browser_profile"
+SKILL_DIR = Path(__file__).resolve().parent.parent
+RUNTIME_PATHS = resolve_runtime_paths(SKILL_DIR, "blog-notebooklm")
+DATA_DIR = RUNTIME_PATHS.data
+BROWSER_STATE_DIR = confined_directory(DATA_DIR, "browser_state")
+BROWSER_PROFILE_DIR = confined_directory(DATA_DIR, "browser_state", "browser_profile")
 STATE_FILE = BROWSER_STATE_DIR / "state.json"
 AUTH_INFO_FILE = DATA_DIR / "auth_info.json"
 LIBRARY_FILE = DATA_DIR / "library.json"

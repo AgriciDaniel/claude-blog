@@ -9,7 +9,7 @@ description: >
   Use when user says "multilingual blog", "blog multilingual", "write in
   multiple languages", "international blog", "mehrsprachiger Blog", "blog
   multilingue", "blog multilingue", "create blog in German and French".
-user-invokable: true
+user-invocable: true
 argument-hint: "<topic> --languages <comma-separated-codes>"
 license: MIT
 compatibility: Requires claude-blog (blog-write). Optional integration with claude-seo (seo-hreflang) for richer hreflang validation.
@@ -20,6 +20,14 @@ metadata:
 ---
 
 # Blog Multilingual, One-Command International Publishing
+
+Bundled paths below use host Markdown substitution of `${CLAUDE_SKILL_DIR}`;
+it is not an exported shell variable. Resolve them before execution, quote
+paths, and refuse nonabsolute overrides. Pass `blog_reference_root` resolved
+from `${CLAUDE_SKILL_DIR}/../blog/references`, `blog_template_root` from
+`${CLAUDE_SKILL_DIR}/../blog/templates`, and needed sibling roots to agents.
+Read the main reference `orchestration-details.md` before loading project
+context; pass only its helper-fenced output to downstream agents.
 
 The flagship multilingual orchestrator. Combines blog writing, translation,
 cultural adaptation, and full international SEO into a single command.
@@ -134,7 +142,7 @@ Apply the localized output only after resolving the generated path inside
 `multilingual/`, rejecting symlinks, and creating a backup when overwriting.
 The localizer swaps brand examples, adapts CTAs, substitutes legal
 references, and adjusts formality. See
-`../blog-localize/SKILL.md` for the full adaptation pass.
+`${CLAUDE_SKILL_DIR}/../blog-localize/SKILL.md` for the full adaptation pass.
 
 Progress: `Phase 4: Cultural adaptation complete for [N] languages`.
 
@@ -283,7 +291,7 @@ After the last translation or localization change, review every final locale
 artifact set independently. The source locale keeps the successful `/blog
 write` review. Each target locale receives its own fresh external review nonce:
 
-1. Resolve `BLOG_SCRIPT_DIR="${CLAUDE_BLOG_SCRIPTS_DIR:-$HOME/.claude/scripts}"`
+1. Resolve `BLOG_SCRIPT_DIR="${CLAUDE_BLOG_SCRIPTS_DIR:-${CLAUDE_SKILL_DIR}/../../scripts}"`
    and reject it unless absolute. Never resolve helpers from the current
    project's `scripts/` directory.
 2. Create `multilingual/{lang}/delivery/{localized-slug}/` as the isolated

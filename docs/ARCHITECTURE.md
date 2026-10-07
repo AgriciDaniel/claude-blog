@@ -99,7 +99,7 @@ name, description, trigger phrases, and allowed tools.
 
 Each sub-skill is a standalone Claude Code skill with its own:
 
-- YAML frontmatter (name, description, user-invokable, argument-hint, metadata.version)
+- YAML frontmatter validated by `scripts/validate_skills.py` using real YAML with duplicate-key rejection. Native `user-invocable` defaults to true; explicit booleans, name/directory agreement and size caps are project policy. `allowed-tools` is valid host permission preapproval metadata, but this bundle deliberately ships no preapprovals. Agent `tools` is the allowlist.
 - Detailed workflow (step-by-step instructions)
 - Input/output specifications
 - Quality checks
@@ -531,3 +531,16 @@ v1.9.0 adds the 5-gate Blog Delivery Contract (see
 `skills/blog/references/blog-delivery-contract.md`) and a 250+ test pytest
 suite including mutation-test-verified XSS, symlink, and frontmatter
 regression coverage.
+
+## Installed resource paths
+
+Consumer skills resolve bundled resources from host Markdown substitution
+`${CLAUDE_SKILL_DIR}`, which is not an ordinary exported shell variable.
+Shared helpers live at `../../scripts`, siblings at `..`, main references at
+`../blog/references`, and own helpers at `scripts` beneath that anchor. These
+relationships hold in repository/plugin and standalone layouts. Explicit
+absolute `CLAUDE_BLOG_*` overrides take precedence; relative overrides fail.
+No executable helper or reviewed reference falls back to the consumer CWD or
+a default global profile. The orchestrator passes resolved absolute roots and
+fenced context into agents; root CLAUDE.md is developer-only plugin context.
+Writable optional integration state remains a separate migration concern.

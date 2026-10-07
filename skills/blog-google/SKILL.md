@@ -10,7 +10,7 @@ description: >
   says "google data", "page speed", "core web vitals", "search console",
   "indexation", "GA4", "keyword research", "nlp entities", "blog performance",
   "youtube search", "google api setup".
-user-invokable: true
+user-invocable: true
 argument-hint: "[setup|pagespeed|crux|crux-history|gsc|inspect|index|ga4|nlp|youtube|keywords|report|quotas] [url|property|query]"
 license: MIT
 metadata:
@@ -21,6 +21,14 @@ metadata:
 
 # Blog Google: Google API Data for Blog Performance
 
+Bundled paths below use host Markdown substitution of `${CLAUDE_SKILL_DIR}`;
+it is not an exported shell variable. Resolve them before execution, quote
+paths, and refuse nonabsolute overrides. Pass `blog_reference_root` resolved
+from `${CLAUDE_SKILL_DIR}/../blog/references`, `blog_template_root` from
+`${CLAUDE_SKILL_DIR}/../blog/templates`, and needed sibling roots to agents.
+Read the main reference `orchestration-details.md` before loading project
+context; pass only its helper-fenced output to downstream agents.
+
 Direct access to Google's SEO APIs for blog performance analysis. Provides real
 Chrome user metrics, indexation status, search performance, entity analysis, YouTube
 video discovery, keyword volumes, and PDF/HTML performance reports.
@@ -30,11 +38,39 @@ Natural Language requires billing and can incur charges after its free monthly
 tier. Google Ads requires an eligible account and developer token. Never enable
 billing or make a paid request without explicit user approval.
 
+## Persistent runtime directory
+
+`CLAUDE_BLOG_RUNTIME_DIR` optionally selects one trusted absolute persistent
+root. This integration uses `<root>/blog-google/.venv`; NotebookLM also
+uses `<root>/blog-notebooklm/data` for its library, authentication and browser
+state. Without this override, the existing skill-local defaults stay in use.
+Google's shared credential config/token paths stay unchanged. No state is
+copied or migrated automatically, and ordinary runs never perform setup.
+
+Preserve an existing validated operator override. For a plugin without one,
+explicitly pass the host-substituted `${CLAUDE_PLUGIN_DATA}/claude-blog-runtime`
+path on both setup and every later runner call. This is Markdown substitution,
+not an exported shell variable. Execute only once it is an absolute resolved
+path. Single quotes keep an unresolved placeholder literal so validation
+rejects it instead of expanding it to a different shell path:
+
+```bash
+CLAUDE_BLOG_RUNTIME_DIR='${CLAUDE_PLUGIN_DATA}/claude-blog-runtime' python3 "${CLAUDE_SKILL_DIR}/scripts/setup_environment.py" --check --json
+CLAUDE_BLOG_RUNTIME_DIR='${CLAUDE_PLUGIN_DATA}/claude-blog-runtime' python3 "${CLAUDE_SKILL_DIR}/scripts/run.py" google_auth --check --json
+```
+
+Only explicit setup without `--check` installs dependencies. Standalone users
+keep the default unless they explicitly choose an absolute runtime root.
+Relative, unresolved, or linked managed subdirectories fail closed. Changing
+the root selects separate state; it never authorizes a migration or cleanup of
+the old root. Plugin persistent data follows the host's uninstall retention
+rules; preserve it explicitly when uninstalling if it is still needed.
+
 ## Prerequisites
 
 **Always check credentials before running any command:**
 ```bash
-BLOG_SKILLS_DIR="${CLAUDE_BLOG_SKILLS_DIR:-$HOME/.claude/skills}"
+BLOG_SKILLS_DIR="${CLAUDE_BLOG_SKILLS_DIR:-${CLAUDE_SKILL_DIR}/..}"
 case "$BLOG_SKILLS_DIR" in /*) ;; *) echo "ERROR: skills dir must be absolute" >&2; exit 1 ;; esac
 python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" google_auth --check --json
 ```
@@ -52,7 +88,7 @@ python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" google_auth --check --json
 }
 ```
 
-If missing, read `references/auth-setup.md` and walk the user through setup.
+If missing, read `${CLAUDE_SKILL_DIR}/references/auth-setup.md` and walk the user through setup.
 
 ### Credential Tiers
 
@@ -101,7 +137,7 @@ a separately reviewed compatibility change.
 Combined Lighthouse lab data + CrUX field data for a published blog post.
 
 **Script:** `python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" pagespeed_check <url> --json`
-**Reference:** `references/api-reference.md`
+**Reference:** `${CLAUDE_SKILL_DIR}/references/api-reference.md`
 
 Output merges lab scores (point-in-time Lighthouse) with field data (28-day
 Chrome user metrics). CrUX tries URL-level first, falls back to origin-level.
@@ -170,7 +206,7 @@ For batch inspection: `python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" gsc
 Notify Google of a URL update through the Indexing API.
 
 **Script:** `python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" indexing_notify <url> --json`
-**Reference:** `references/api-reference.md`
+**Reference:** `${CLAUDE_SKILL_DIR}/references/api-reference.md`
 
 The Indexing API is officially for JobPosting and BroadcastEvent/VideoObject pages.
 Always inform the user of this restriction. Daily quota: 200 publish requests.
@@ -278,7 +314,7 @@ Falls back to HTML if WeasyPrint is unavailable or PDF rendering fails.
 | YouTube Data |: | 10,000 units/day | API Key |
 | NLP API |: | 5,000 units/month | API Key (billing) |
 
-Read `references/rate-limits-quotas.md` for detailed quota management.
+Read `${CLAUDE_SKILL_DIR}/references/rate-limits-quotas.md` for detailed quota management.
 
 ## Blog Workflow Integration
 
@@ -313,7 +349,7 @@ section with estimated metrics.
 - Most integrations have no usage fee within quota. Cloud Natural Language
   requires billing and can incur charges; Google Ads requires account and
   developer-token access.
-- Read `references/search-currentness.md` before diagnosing a named update,
+- Read `${CLAUDE_SKILL_DIR}/references/search-currentness.md` before diagnosing a named update,
   canonical change, Discover visibility, Google generative-AI reporting,
   platform properties, Preferred Sources, AMP, or crawler byte-limit issue.
 - A named update's dates do not prove what caused an individual site's change.

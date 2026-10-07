@@ -8,24 +8,32 @@ description: >
   adds images, generates SVG charts, and updates freshness signals. Works
   with any blog format (MDX, markdown, HTML). Use when user says "rewrite
   blog", "optimize blog", "update blog", "improve blog", "fix blog".
-user-invokable: true
+user-invocable: true
 argument-hint: "<file-path>"
 license: MIT
 ---
 
 # Blog Rewriter: Optimize Existing Posts
 
+Bundled paths below use host Markdown substitution of `${CLAUDE_SKILL_DIR}`;
+it is not an exported shell variable. Resolve them before execution, quote
+paths, and refuse nonabsolute overrides. Pass `blog_reference_root` resolved
+from `${CLAUDE_SKILL_DIR}/../blog/references`, `blog_template_root` from
+`${CLAUDE_SKILL_DIR}/../blog/templates`, and needed sibling roots to agents.
+Read the main reference `orchestration-details.md` before loading project
+context; pass only its helper-fenced output to downstream agents.
+
 Rewrites and optimizes existing blog posts for dual ranking: Google search
 and AI citation platforms. Preserves the author's voice while applying the
 6 pillars of optimization.
 
 **Key references:**
-- `skills/blog/references/quality-scoring.md` - 5-category scoring (Content 30, SEO 25, E-E-A-T 15, Technical 15, AI Citation 15)
-- `skills/blog/references/eeat-signals.md` - Experience, expertise, authority, trust markers
-- `skills/blog/references/internal-linking.md` - Linking strategy and anchor text rules
-- `skills/blog/references/visual-media.md` - Image sourcing and chart styling
-- `skills/blog/references/synthesis-contract.md` - 6 LAWs for re-citation hygiene during rewrite (v1.8.0; cross-skill ref lives in the orchestrator's references dir)
-- `skills/blog/references/research-quality.md` - cross-source clustering for replacement-statistic research (v1.8.0)
+- `${CLAUDE_SKILL_DIR}/../blog/references/quality-scoring.md` - 5-category scoring (Content 30, SEO 25, E-E-A-T 15, Technical 15, AI Citation 15)
+- `${CLAUDE_SKILL_DIR}/../blog/references/eeat-signals.md` - Experience, expertise, authority, trust markers
+- `${CLAUDE_SKILL_DIR}/../blog/references/internal-linking.md` - Linking strategy and anchor text rules
+- `${CLAUDE_SKILL_DIR}/../blog/references/visual-media.md` - Image sourcing and chart styling
+- `${CLAUDE_SKILL_DIR}/../blog/references/synthesis-contract.md` - 6 LAWs for re-citation hygiene during rewrite (v1.8.0; cross-skill ref lives in the orchestrator's references dir)
+- `${CLAUDE_SKILL_DIR}/../blog/references/research-quality.md` - cross-source clustering for replacement-statistic research (v1.8.0)
 
 ## Cross-reference
 
@@ -38,7 +46,7 @@ rewrite work, see `/blog flow optimize`.
 ### Phase 1: Audit (Read-Only)
 
 1. **Read the blog post** - Detect format (MDX, markdown, HTML)
-2. **Run the quality checklist** against `skills/blog/references/quality-scoring.md`:
+2. **Run the quality checklist** against `${CLAUDE_SKILL_DIR}/../blog/references/quality-scoring.md`:
    - Count fabricated vs sourced statistics
    - Check whether important sections state their point and support it where needed
    - Check whether each image or chart materially helps the subject
@@ -61,7 +69,7 @@ rewrite work, see `/blog flow optimize`.
    - Never estimate AI authorship from TTR, sentence-length variation, punctuation,
      or phrase density. These are advisory project-style observations only.
    - **Structural repetition scan** - Use
-     `skills/blog/references/ai-slop-detection.md` as an advisory diagnostic.
+     `${CLAUDE_SKILL_DIR}/../blog/references/ai-slop-detection.md` as an advisory diagnostic.
      Flag repeated patterns only when they make this subject harder to follow or
      conflict with the publication voice. No count or density threshold changes
      the score or blocks delivery by itself.
@@ -110,7 +118,7 @@ When the post needs more visual elements, invoke the `blog-chart` sub-skill:
 3. Embed the returned SVG directly within a `<figure>` wrapper
 4. Use as many charts as the evidence requires, including none
 
-See `skills/blog/references/visual-media.md` for chart type selection and styling rules.
+See `${CLAUDE_SKILL_DIR}/../blog/references/visual-media.md` for chart type selection and styling rules.
 
 ### Phase 4: Content Rewrite
 
@@ -161,7 +169,7 @@ context each claim needs. Do not force statistics or word bands.
 
 #### 4h. Add Video Embeds
 If a demonstration or expert source would materially improve the post:
-- Search for relevant videos using quality criteria from `skills/blog/references/video-embeds.md`
+- Search for relevant videos using quality criteria from `${CLAUDE_SKILL_DIR}/../blog/references/video-embeds.md`
 - Embed using platform-appropriate format (srcdoc lazy loading)
 - Place each selected video beside the section it supports
 - Include noscript fallback for AI crawlers
@@ -323,11 +331,11 @@ After rewriting, verify all quality gates pass:
 
 ## Phase 5.5: Delivery Contract Enforcement (v1.9.0)
 
-Before presenting the rewritten draft, run the 5-gate delivery contract per `skills/blog/references/blog-delivery-contract.md`. The contract applies to rewrites the same way it applies to new posts: the user is never the first reviewer.
+Before presenting the rewritten draft, run the 5-gate delivery contract per `${CLAUDE_SKILL_DIR}/../blog/references/blog-delivery-contract.md`. The contract applies to rewrites the same way it applies to new posts: the user is never the first reviewer.
 
 Steps:
 
-Resolve `BLOG_SCRIPT_DIR="${CLAUDE_BLOG_SCRIPTS_DIR:-$HOME/.claude/scripts}"`
+Resolve `BLOG_SCRIPT_DIR="${CLAUDE_BLOG_SCRIPTS_DIR:-${CLAUDE_SKILL_DIR}/../../scripts}"`
 and reject it unless it is absolute. Never use the current project's `scripts/`
 directory for these helpers.
 

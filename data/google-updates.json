@@ -105,7 +105,7 @@
       "id": "site-reputation-eea-adjustment-2026-08-28",
       "event_date": "2026-08-28",
       "title": "Site reputation abuse enforcement adjusted in the EEA",
-      "source_url": "https://developers.google.com/search/docs/essentials/spam-policies",
+      "source_url": "https://developers.google.com/search/blog/2026/08/update-site-reputation-policy",
       "category": "spam-policy",
       "applicability": "sites-serving-users-in-the-eea",
       "affected_components": [
@@ -113,7 +113,7 @@
         "blog-strategy"
       ],
       "evidence_status": "confirmed",
-      "summary": "Google documented an EEA-specific enforcement adjustment for site reputation abuse. The underlying spam policy still applies, and guidance must preserve the regional scope rather than generalize the adjustment globally."
+      "summary": "Google announced that from August 30, site-reputation manual actions affect results for searchers outside the EEA. Inside the EEA their manual-action impact does not apply, though affected sections may be separated to rank independently. Scope follows the searcher region, not the site headquarters."
     },
     {
       "id": "google-ads-api-v25-2-2026-09-23",
@@ -173,7 +173,7 @@
         "blog-google"
       ],
       "evidence_status": "confirmed",
-      "summary": "Google released Ads API v25.1 on August 19. Google lists Python client 31.2.0 as the minimum for v25; version and dependency changes still require offline compatibility tests before adoption."
+      "summary": "Google released Ads API v25.1 on August 19. Check client-library compatibility documentation separately for language-client minimum versions; dependency changes require offline compatibility tests before adoption."
     },
     {
       "id": "gsc-reporting-anomalies-2026-08-13",
@@ -188,7 +188,7 @@
         "blog-geo"
       ],
       "evidence_status": "confirmed-data-anomaly",
-      "summary": "Google reports reduced Discover clicks and impressions for August 13 and reduced generative-AI Search impressions for August 13 through August 17 because of logging errors. These are reporting defects, not ranking events."
+      "summary": "Google records August 13 Discover logging loss and August 13 through August 17 generative-AI Search impression logging loss because of logging errors. Its August 21 update says the missing generative-AI data was restored. These were reporting defects, not ranking events or evidence of real traffic loss."
     },
     {
       "id": "search-console-platform-properties-2026-07-29",
@@ -269,13 +269,13 @@
       "title": "Search Console generative AI reports",
       "source_url": "https://developers.google.com/search/blog/2026/06/gen-ai-performance-reports",
       "category": "search-console",
-      "applicability": "subset-rollout",
+      "applicability": "worldwide-ui-reports",
       "affected_components": [
         "blog-google",
         "blog-geo",
         "blog-strategy"
       ],
-      "summary": "Separate Search and Discover views show generative-AI impressions plus page, country, device where applicable, and date dimensions. The rollout is limited and no dedicated API is documented."
+      "summary": "Google announced separate Search and Discover generative-AI impressions reports on June 3, initially for a subset. Its August 31 update says the insights rolled out to all websites worldwide. The views show page, country, device where applicable, and date dimensions; no dedicated API is documented."
     },
     {
       "id": "preferred-sources-ai-search-2026-05-27",

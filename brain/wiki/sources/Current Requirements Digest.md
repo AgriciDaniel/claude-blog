@@ -3,7 +3,7 @@ type: spoke
 title: "Current Requirements Digest"
 status: active
 created: 2026-07-06
-updated: 2026-07-09
+updated: 2026-10-07
 tags: [sources, research-pack, active]
 domain: "Source Evidence"
 confidence: verified
@@ -45,12 +45,12 @@ Use this note as a quick routing surface. It does not replace `references/source
 
 | Requirement route | Source ID | URL | Date in ledger | Claim coverage | Limitation | Refresh cadence |
 |---|---|---|---:|---|---|---|
-| Blog quality and E-E-A-T review | `g-helpful-content` | https://developers.google.com/search/docs/fundamentals/creating-helpful-content | last updated 2025-12-10, retrieved 2026-07-09 | Content should be useful, reliable, people-first, and reviewed for E-E-A-T context. | Not a deterministic ranking checklist. | Monthly and before release. |
-| Google AI Search guidance | `g-ai-opt-guide` | https://developers.google.com/search/docs/fundamentals/ai-optimization-guide | last updated 2026-06-15, retrieved 2026-07-08 | Google Search AI features use standard Search foundations rather than special AI-only requirements. | Does not cover non-Google assistants. | On guide update. |
-| Schema support review | `g-search-gallery` | https://developers.google.com/search/docs/appearance/structured-data/search-gallery | last updated 2026-07-01, retrieved 2026-07-08 | Current Google rich-result support should be checked before recommending a visual result tactic. | Does not replace feature-specific docs. | Before schema release. |
-| Update memory | `g-ranking-history` | https://status.search.google.com/products/rGHU1u87FJnkP6W2GwMi/history | last updated 2026-06-24, retrieved 2026-07-09 | Confirmed Google ranking update history and rollout state. | Does not prove site-level impact. | Weekly during rollout, monthly otherwise. |
-| FAQ rich-result posture | `g-faqpage-sd` | https://developers.google.com/search/updates#deprecating-the-faq-rich-result-feature | retrieved 2026-07-09 | FAQ rich results are retired in Google Search. | Does not ban useful visible Q and A content. | Before schema deliverables. |
-| llms.txt posture | `g-update-2026-06-15-llms-txt-clarified-as-unused-by-google-search` | https://developers.google.com/search/docs/fundamentals/ai-optimization-guide | retrieved 2026-07-06 | Google Search does not use llms.txt for visibility. | Does not cover other consumers. | On AI guide update. |
+| Blog quality and E-E-A-T review | `g-helpful-content` | https://developers.google.com/search/docs/fundamentals/creating-helpful-content | last updated 2026-10-05, retrieved 2026-10-07 | Content should be useful, reliable, people-first, and reviewed for E-E-A-T context. | Not a deterministic ranking checklist. | Monthly and before release. |
+| Google AI Search guidance | `g-ai-opt-guide` | https://developers.google.com/search/docs/fundamentals/ai-optimization-guide | last updated 2026-07-10, retrieved 2026-10-07 | Google Search AI features use standard Search foundations rather than special AI-only requirements. | Does not cover non-Google assistants. | On guide update. |
+| Schema support review | `g-search-gallery` | https://developers.google.com/search/docs/appearance/structured-data/search-gallery | last updated 2026-06-15, retrieved 2026-10-07 | Current Google rich-result support should be checked before recommending a visual result tactic. | Does not replace feature-specific docs. | Before schema release. |
+| Update memory | `g-ranking-history` | https://status.search.google.com/products/rGHU1u87FJnkP6W2GwMi/history | source date not exposed; reviewed 2026-10-07, retrieved 2026-10-07 | Confirmed Google ranking update history and rollout state. | Does not prove site-level impact. | Weekly during rollout, monthly otherwise. |
+| FAQ rich-result posture | `g-faqpage-sd` | https://developers.google.com/search/updates#deprecating-the-faq-rich-result-feature | retrieved 2026-10-07 | FAQ rich results are retired in Google Search. | Does not ban useful visible Q and A content. | Before schema deliverables. |
+| llms.txt posture | `g-update-2026-06-15-llms-txt-clarified-as-unused-by-google-search` | https://developers.google.com/search/docs/fundamentals/ai-optimization-guide | retrieved 2026-10-07 | Google Search does not use llms.txt for visibility. | Does not cover other consumers. | On AI guide update. |
 
 ## Source ID, URL, Date, Claim Coverage, And Limitation
 

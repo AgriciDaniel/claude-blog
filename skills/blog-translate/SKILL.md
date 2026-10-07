@@ -12,7 +12,7 @@ description: >
   Use when user says "translate blog", "blog translate", "uebersetzen",
   "traduire", "traducir", "translate post", "blog auf Deutsch", "blog en
   espanol".
-user-invokable: true
+user-invocable: true
 argument-hint: "<file> --to <comma-separated-codes>"
 license: MIT
 compatibility: Standalone within claude-blog. Invoked by blog-multilingual.
@@ -23,6 +23,14 @@ metadata:
 ---
 
 # Blog Translate, SEO-Optimized Blog Translation
+
+Bundled paths below use host Markdown substitution of `${CLAUDE_SKILL_DIR}`;
+it is not an exported shell variable. Resolve them before execution, quote
+paths, and refuse nonabsolute overrides. Pass `blog_reference_root` resolved
+from `${CLAUDE_SKILL_DIR}/../blog/references`, `blog_template_root` from
+`${CLAUDE_SKILL_DIR}/../blog/templates`, and needed sibling roots to agents.
+Read the main reference `orchestration-details.md` before loading project
+context; pass only its helper-fenced output to downstream agents.
 
 Translates an existing blog post into one or more target languages. Unlike
 generic translation, this skill produces SEO-optimized, publication-ready
@@ -36,9 +44,9 @@ formatting.
 
 Load on demand:
 
-- `references/translation-rules.md`, format preservation, number/date/currency
+- `${CLAUDE_SKILL_DIR}/references/translation-rules.md`, format preservation, number/date/currency
   formats per locale, quote handling, quality criteria.
-- `references/cultural-adaptation.md`, cultural profiles per locale (DACH,
+- `${CLAUDE_SKILL_DIR}/references/cultural-adaptation.md`, cultural profiles per locale (DACH,
   Francophone, Hispanic, Japanese, custom). This file is shared with
   `blog-localize` (do not duplicate).
 
@@ -117,7 +125,7 @@ Spawn the `blog-translator` agent (via Task) for each target language with:
 - The source content.
 - The keyword localization map from Phase 3.
 - The target language code.
-- Pointer to `references/translation-rules.md`.
+- Pointer to `${CLAUDE_SKILL_DIR}/references/translation-rules.md`.
 - Instruction to limit this phase to language, register, natural topical
   coverage, and formatting. Reserve brand, legal, statistic, and cultural
   substitutions for `blog-localize`.
@@ -141,7 +149,7 @@ For each translated version:
    - Same number of H2 and H3 sections as the original.
    - All images present with translated alt text.
    - All SVG charts present with translated text labels (length-adjusted:
-     DE +30%, FR +15%, JA -20%, others see `references/translation-rules.md`).
+     DE +30%, FR +15%, JA -20%, others see `${CLAUDE_SKILL_DIR}/references/translation-rules.md`).
    - FAQ count matches.
    - Evidence-backed explanations from the source remain intact where present.
 3. Save translated files:
@@ -177,7 +185,7 @@ Translation can change claims, links, metadata, schema, and rendered layout.
 Before calling any translated file complete or publication-ready, run the same
 five-gate contract as `/blog write` against each final locale independently:
 
-1. Resolve `BLOG_SCRIPT_DIR="${CLAUDE_BLOG_SCRIPTS_DIR:-$HOME/.claude/scripts}"`
+1. Resolve `BLOG_SCRIPT_DIR="${CLAUDE_BLOG_SCRIPTS_DIR:-${CLAUDE_SKILL_DIR}/../../scripts}"`
    and reject it unless absolute. Never resolve a helper from the current
    project's `scripts/` directory.
 2. Create a per-locale delivery staging directory under the intended language

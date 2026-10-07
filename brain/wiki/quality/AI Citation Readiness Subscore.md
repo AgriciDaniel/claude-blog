@@ -20,8 +20,7 @@ related:
 
 This spoke applies an internal AI citation readiness heuristic to whether a blog
 draft has passages that a reviewer can extract, verify, and safely reuse in
-AI-adjacent answer contexts. It is a 15 point editorial subscore inside [[Blog
-Quality Score]], not a calibrated probability or prediction engine for AI
+AI-adjacent answer contexts. It is a 15 point editorial subscore inside [[Blog Quality Score]], not a calibrated probability or prediction engine for AI
 Overview, AI Mode, or chatbot inclusion. Cite `g-ai-features` for Google AI
 feature surface boundaries, `g-ai-opt-guide` for the no-special-file rule,
 `ziptie-aio-source-selection` for practitioner passage-shape heuristics, and

@@ -257,6 +257,18 @@ optimize toward a universal duration; the appropriate depth depends on intent.
 
 ## Citation Statistics Rules (AI Search SEO)
 
+### Preserve what the evidence says
+
+Carry the source's actor, conditions, time window, population and certainty into
+the article. Do not turn "can" into "will", an announcement into observed
+behavior, or a capability into a general policy approval. An inference needs
+its premises and a clear label; a missing product behavior stays unknown.
+
+Validate worked examples against every supplied rule and the complete input.
+A local check cannot establish a global property such as uniqueness. Compare
+the final recommendations and conclusions with the evidence again, especially
+when shortening a technical explanation or interpreting a policy update.
+
 | Parameter | Target | AI Search SEO Optimized | Source |
 |-----------|--------|--------------|--------|
 | Statistic use | As evidence needs warrant | No density quota | Reader and source fidelity |

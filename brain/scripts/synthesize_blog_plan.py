@@ -17,7 +17,10 @@ from typing import Any
 from ingest_blog_input import ValidationError, clean_structure, count_words
 
 
+from source_evidence import can_support, citation_errors, ledger_index
+
 REPO = Path(__file__).resolve().parents[1]
+
 DEFAULT_LEDGER = REPO / "references" / "source-ledger.json"
 CATEGORY_ORDER = ("content", "seo", "eeat", "technical", "ai_citation")
 CATEGORY_LABELS = {
@@ -311,10 +314,10 @@ def dedupe_errors(errors: list[str]) -> list[str]:
 
 def load_source_index(path: str | Path = DEFAULT_LEDGER) -> dict[str, dict[str, Any]]:
     data = json.loads(Path(path).read_text(encoding="utf-8"))
-    sources = data.get("sources", [])
-    if not isinstance(sources, list):
-        raise SourceError("source ledger sources must be a list")
-    return {source["id"]: source for source in sources if isinstance(source, dict) and "id" in source}
+    try:
+        return ledger_index(data)
+    except ValueError as exc:
+        raise SourceError(str(exc)) from exc
 
 
 def synthesize(record: dict[str, Any], *, ledger_path: str | Path = DEFAULT_LEDGER) -> dict[str, Any]:
@@ -356,6 +359,10 @@ def synthesize(record: dict[str, Any], *, ledger_path: str | Path = DEFAULT_LEDG
         "prioritized_recommendations": prioritized,
         "delivery_contract": delivery,
         "source_citations": citations,
+        "evidence_notes": [
+            "Scores and numeric passage or entity thresholds are local editorial heuristics, not validated Google ranking or AI citation factors.",
+            "Qualified sources support only the narrowed claims listed with their citations; preserve their limitations when applying advice.",
+        ],
     }
     return clean_structure(plan)
 
@@ -583,7 +590,7 @@ def apply_ai_citation_checks(record: dict[str, Any], builder: CategoryBuilder) -
         builder.add(
             finding=f"Entity coverage is {readiness['entity_coverage']:.2f} across target and secondary terms.",
             recommendation="Clarify named entities, product nouns, and topic variants in headings and first paragraphs.",
-            source_ids=["ziptie-aio-source-selection"],
+            source_ids=["g-helpful-content"],
             penalty=14,
             priority="medium",
             rec_id="ai-entity-coverage",
@@ -592,7 +599,7 @@ def apply_ai_citation_checks(record: dict[str, Any], builder: CategoryBuilder) -
         builder.add(
             finding=f"The post has {source_count} evidence sources for extractable claims.",
             recommendation="Attach visible citations to claims that AI systems may extract.",
-            source_ids=["ziptie-aio-source-selection", "g-ai-features"],
+            source_ids=["g-helpful-content"],
             penalty=18,
             priority="high",
             rec_id="ai-visible-citations",
@@ -618,8 +625,9 @@ def apply_audit_findings(
         severity = finding.get("severity", "low")
         source_ids = audit_source_ids(finding, source_index)
         recommendation = finding.get("recommendation") or "Resolve the supplied audit finding before publication."
-        if not source_ids:
-            recommendation = mark_operator_supplied(recommendation)
+        # A reviewed policy source can contextualize a supplied finding, but
+        # cannot independently verify the operator's observation about a page.
+        recommendation = mark_operator_supplied(recommendation)
         builders[category].add(
             finding=f"Input audit finding {finding.get('id')}: {finding.get('summary')}",
             recommendation=recommendation,
@@ -635,7 +643,7 @@ def audit_source_ids(
     source_index: dict[str, dict[str, Any]],
 ) -> list[str]:
     source = finding.get("source", "")
-    if isinstance(source, str) and source in source_index:
+    if isinstance(source, str) and source in source_index and can_support(source_index[source]):
         return [source]
     return []
 
@@ -745,7 +753,7 @@ def build_geo_readiness(record: dict[str, Any]) -> dict[str, Any]:
             "status": entity_status,
             "evidence": f"{metrics['entity_mentions_per_1000_words']} tracked entity mentions per 1000 words.",
             "recommendation": "Use target entities naturally in headings, openings, examples, and source-backed explanations.",
-            "source_ids": ["ziptie-aio-source-selection"],
+            "source_ids": ["g-helpful-content"],
         },
         {
             "name": "Article schema check",
@@ -947,9 +955,9 @@ def collect_source_ids(*sections: Any) -> list[str]:
 
 
 def source_citations(source_ids: list[str], source_index: dict[str, dict[str, Any]]) -> list[dict[str, Any]]:
-    missing = [source_id for source_id in source_ids if source_id not in source_index]
-    if missing:
-        raise SourceError("unknown source IDs: " + ", ".join(missing))
+    failures = citation_errors(source_ids, source_index)
+    if failures:
+        raise SourceError("source evidence unavailable: " + "; ".join(failures))
     citations: list[dict[str, Any]] = []
     for source_id in source_ids:
         source = source_index[source_id]
@@ -961,6 +969,10 @@ def source_citations(source_ids: list[str], source_index: dict[str, dict[str, An
                 "retrieved": source.get("retrieved", ""),
                 "published": source.get("published", source.get("date", "")),
                 "confidence": source.get("confidence", ""),
+                "review_decision": source["verification"]["decision"],
+                "reviewed_on": source["verification"]["reviewed_on"],
+                "supported_claims": source["supports_claims"],
+                "limitations": source.get("limitations", ""),
             }
         )
     return citations

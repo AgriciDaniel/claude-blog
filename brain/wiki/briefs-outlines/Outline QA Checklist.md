@@ -4,7 +4,7 @@ title: "Outline QA Checklist"
 domain: "Blog Briefs"
 status: active
 created: 2026-07-06
-updated: 2026-07-09
+updated: 2026-10-07
 tags: [briefs-outlines, serp-briefs, active]
 ---
 
@@ -80,3 +80,5 @@ The QA result must be one of three states: ready for draft, revise before draft,
 [[SERP Outline Output Contract]] consumes the QA state. Inputs provided: pass-fail row, severity, owner, fix route, and remaining advisory notes. Expected output: a ready outline only when blockers are closed and section jobs are stable.
 
 [[Blog Write Article Contract]] consumes the ready result through [[Brief To Draft Handoff]]. Expected output: the draft request inherits caveats, evidence slots, and internal-link reasons without hidden reviewer warnings.
+
+For Outline QA Checklist, `nng-editorial-heuristics` supplies general interaction-design principles. Applying those principles to this note's editorial checks is a project adaptation, not an experimentally established SEO or AI-citation requirement.

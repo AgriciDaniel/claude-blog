@@ -12,14 +12,18 @@ import hashlib
 import json
 from pathlib import Path
 
+# Load only the helper shipped beside this installed script, never from CWD.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from runtime_paths import resolve_runtime_paths
+
 
 class SkillEnvironment:
     """Manages skill-specific virtual environment"""
 
     def __init__(self):
         # Skill directory paths
-        self.skill_dir = Path(__file__).parent.parent
-        self.venv_dir = self.skill_dir / ".venv"
+        self.skill_dir = Path(__file__).resolve().parent.parent
+        self.venv_dir = resolve_runtime_paths(self.skill_dir, "blog-notebooklm").venv
         # Bug fix: requirements.txt actually lives in scripts/, not the skill
         # root. Prior path looked at skill_dir/requirements.txt which never
         # existed. Now also prefer the lock file when present (closes audit
@@ -238,7 +242,14 @@ def main():
 
     args = parser.parse_args()
 
-    env = SkillEnvironment()
+    try:
+        env = SkillEnvironment()
+    except ValueError as exc:
+        if args.json:
+            print(json.dumps({"status": "error", "error": str(exc)}))
+        else:
+            print(f"ERROR: {exc}")
+        return 1
 
     if args.check:
         status = {

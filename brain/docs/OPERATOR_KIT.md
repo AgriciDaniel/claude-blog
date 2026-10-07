@@ -27,14 +27,19 @@ claude-blog-brain report --vault ~/claude-blog-brain-vaults/acme --html-only
 
 ## Research Rule
 
-Refresh current official or primary sources before turning this scaffold into a
-domain-specific release. If the sources are not refreshed, keep the product in
-generic scaffold status.
+Refresh official or primary sources when their review windows expire or a
+material claim changes. The local 2026-10-07 readiness audit passes at 98/100;
+that result does not survive source expiry or later changes automatically.
 
 Research evidence must be written into `references/source-ledger.json` with
 source URL, source type, published or last-updated date, retrieved date, date
 precision, refresh due date, confidence, evidence tier, limitations, and claim
 coverage. Markdown research notes alone do not satisfy market-ready release.
+Active records require a dated claim review, excerpt, rationale and normalized
+content hash. Retired and unverified records cannot support current advice.
+The offline ledger check validates review records, not the availability of
+external captured files; retain and hash-check the separate source evidence
+pack. See `references/source-map.md` for lifecycle and capture conventions.
 
 ## Adapter Rule
 

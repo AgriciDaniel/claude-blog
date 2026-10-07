@@ -177,7 +177,7 @@ def test_router_preserves_canonical_and_alias_mappings() -> None:
 
 def test_blog_chart_remains_internal_only() -> None:
     chart = (ROOT / "skills" / "blog-chart" / "SKILL.md").read_text(encoding="utf-8")
-    assert re.search(r"^user-invokable:\s*false\s*$", chart, re.MULTILINE)
+    assert re.search(r"^user-invocable:\s*false\s*$", chart, re.MULTILINE)
     assert "chart" not in _extract_skill_commands()
 
 

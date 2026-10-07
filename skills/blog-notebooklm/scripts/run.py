@@ -10,11 +10,15 @@ import subprocess
 import hashlib
 from pathlib import Path
 
+# Load only the helper shipped beside this installed script, never from CWD.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from runtime_paths import resolve_runtime_paths
+
 
 def get_venv_python():
     """Get the virtual environment Python executable"""
-    skill_dir = Path(__file__).parent.parent
-    venv_dir = skill_dir / ".venv"
+    skill_dir = Path(__file__).resolve().parent.parent
+    venv_dir = resolve_runtime_paths(skill_dir, "blog-notebooklm").venv
 
     if os.name == 'nt':  # Windows
         venv_python = venv_dir / "Scripts" / "python.exe"
@@ -26,8 +30,8 @@ def get_venv_python():
 
 def ensure_venv():
     """Return a ready interpreter without installing or updating anything."""
-    skill_dir = Path(__file__).parent.parent
-    venv_dir = skill_dir / ".venv"
+    skill_dir = Path(__file__).resolve().parent.parent
+    venv_dir = resolve_runtime_paths(skill_dir, "blog-notebooklm").venv
     lock_file = skill_dir / "scripts" / "requirements.lock"
     requirements_file = skill_dir / "scripts" / "requirements.txt"
     stamp_file = venv_dir / ".requirements.stamp"
@@ -76,7 +80,7 @@ def main():
         script_name += '.py'
 
     # Get script path
-    skill_dir = Path(__file__).parent.parent
+    skill_dir = Path(__file__).resolve().parent.parent
     scripts_dir = (skill_dir / "scripts").resolve()
     script_path = (scripts_dir / script_name).resolve()
 
@@ -94,7 +98,11 @@ def main():
         sys.exit(1)
 
     # Ensure venv exists and get Python executable
-    venv_python = ensure_venv()
+    try:
+        venv_python = ensure_venv()
+    except ValueError as exc:
+        print(f"ERROR: {exc}")
+        sys.exit(1)
 
     # Build command
     cmd = [str(venv_python), str(script_path)] + script_args

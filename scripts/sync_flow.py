@@ -20,6 +20,7 @@ import hashlib
 import json
 import os
 import pathlib
+from pathlib import Path
 import shutil
 import subprocess
 import sys
@@ -81,6 +82,43 @@ def script_root():
     return pathlib.Path(script_dir).parent
 
 
+def resolve_references_dir(references_dir=None, *, require_existing=False):
+    """Select a trusted absolute reference root without consulting the CWD.
+
+    Explicit roots must be outside the package. Reference contents remain
+    untrusted data and cannot authorize execution, credentials or publication.
+    """
+    bundled = script_root() / "skills" / "blog-flow" / "references"
+    selected = references_dir if references_dir is not None else os.environ.get("CLAUDE_BLOG_FLOW_REFERENCES_DIR")
+    package = script_root().resolve()
+    if selected is None:
+        refs = bundled.resolve()
+        if refs != bundled.parent.resolve() / bundled.name:
+            raise ValueError("Bundled FLOW references must not traverse a symlink")
+    else:
+        raw = os.fspath(selected)
+        refs = Path(raw)
+        if not refs.is_absolute() or ".." in refs.parts or any(token in raw for token in ("$", "{", "}", "%")):
+            raise ValueError("FLOW references override must be a caller-resolved absolute path")
+        for component in (refs, *refs.parents):
+            if component.is_symlink():
+                raise ValueError("FLOW references override must not traverse a symlink")
+            if component.exists() and not component.is_dir():
+                raise ValueError("FLOW references override must name a directory")
+        refs = refs.resolve()
+        if refs == package or package in refs.parents or refs in package.parents:
+            raise ValueError("Persistent FLOW references must be outside the installed package")
+    if refs.exists() and not refs.is_dir():
+        raise ValueError("FLOW reference root must be a directory")
+    if require_existing and not refs.is_dir():
+        raise ValueError("Selected FLOW references are missing; sync the configured persistent root first")
+    if refs.exists():
+        for entry in refs.rglob("*"):
+            if entry.is_symlink() and not entry.resolve().is_relative_to(refs):
+                raise ValueError("FLOW reference symlink escapes the selected root")
+    return refs
+
+
 def parse_args():
     epilog = (
         "Modes: no flags syncs all blog-applicable files to disk; --dry-run "
@@ -108,6 +146,8 @@ def parse_args():
         "content hashes do not match flow-prompts.lock). Required when bumping "
         "the FLOW reference; review the diff carefully before passing this flag.",
     )
+    parser.add_argument("--references-dir", help="Caller-resolved absolute persistent reference root outside the package")
+    parser.add_argument("--resolve-references", action="store_true", help="Print the selected existing reference root without network access or writes")
     return parser.parse_args()
 
 
@@ -320,11 +360,16 @@ def _assert_inside_references(refs_root, candidate):
         )
 
 
+def reference_key(refs_root, path):
+    # Keep reviewed lock keys stable across physical roots and package versions.
+    return (LOCK_REL.parent / path.relative_to(refs_root)).as_posix()
+
+
 def record_write(root, refs_root, path, content, dry_run, changes):
     # Path-traversal guard. Must run before any filesystem mutation.
     _assert_inside_references(refs_root, path)
 
-    rel = path.relative_to(root).as_posix()
+    rel = reference_key(refs_root, path)
     changes.setdefault("hashes", {})[rel] = _sha256(content)
     if path.exists():
         current = path.read_text(encoding="utf-8")
@@ -340,7 +385,7 @@ def record_write(root, refs_root, path, content, dry_run, changes):
 
 def sync(args):
     root = script_root()
-    refs = root / "skills" / "blog-flow" / "references"
+    refs = resolve_references_dir(getattr(args, "references_dir", None))
     today = datetime.date.today().isoformat()
     headers = _base_headers()
     changes = {"added": [], "updated": [], "unchanged": [], "hashes": {}}
@@ -357,7 +402,7 @@ def sync(args):
         content = inject_license_header(raw, today)
         target_path = refs / target
         pending.append((target_path, content))
-        rel = target_path.relative_to(root).as_posix()
+        rel = reference_key(refs, target_path)
         changes["hashes"][rel] = _sha256(content)
 
     for stage in PROMPT_STAGES:
@@ -370,20 +415,26 @@ def sync(args):
             target_path = refs / "prompts" / stage / filename
             content = inject_license_header(raw, today)
             pending.append((target_path, content))
-            rel = target_path.relative_to(root).as_posix()
+            rel = reference_key(refs, target_path)
             changes["hashes"][rel] = _sha256(content)
 
     readme_path = refs / "prompts" / "README.md"
     readme_content = inject_license_header(prompt_readme(prompt_rows), today)
     pending.append((readme_path, readme_content))
-    readme_rel = readme_path.relative_to(root).as_posix()
+    readme_rel = reference_key(refs, readme_path)
     changes["hashes"][readme_rel] = _sha256(readme_content)
 
     # Phase 2: compute lockfile drift against the staged hashes (pre-write).
-    lock_path = root / LOCK_REL
+    lock_path = refs / "flow-prompts.lock"
+    # A new persistent root inherits the packaged reviewed baseline. It does
+    # not bypass review merely because no private lock exists yet.
+    baseline_lock = lock_path if lock_path.exists() else root / LOCK_REL
+    _assert_inside_references(refs, lock_path)
+    for target, _content in pending:
+        _assert_inside_references(refs, target)
     drift_lines = []
-    if lock_path.exists():
-        old_lock = lock_path.read_text(encoding="utf-8")
+    if baseline_lock.exists():
+        old_lock = baseline_lock.read_text(encoding="utf-8")
         old_hashes = {}
         for line in old_lock.splitlines():
             if line and not line.startswith("#"):
@@ -434,7 +485,7 @@ def sync(args):
         )
         for line in drift_lines:
             print(f"  {line}", file=sys.stderr)
-    elif lock_path.exists():
+    elif baseline_lock.exists():
         print(
             "Lockfile: no drift (all hashes match baseline)",
             file=sys.stderr,
@@ -472,4 +523,8 @@ def sync(args):
 
 
 if __name__ == "__main__":
-    print(json.dumps(sync(parse_args()), sort_keys=True))
+    args = parse_args()
+    if args.resolve_references:
+        print(resolve_references_dir(args.references_dir, require_existing=True))
+    else:
+        print(json.dumps(sync(args), sort_keys=True))

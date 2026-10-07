@@ -4,7 +4,7 @@ title: "Brief Source Pack"
 domain: "Blog Briefs"
 status: active
 created: 2026-07-06
-updated: 2026-07-09
+updated: 2026-10-07
 tags: [briefs-outlines, serp-briefs, active]
 ---
 
@@ -28,14 +28,14 @@ The source pack cannot by itself approve legal, medical, financial, or reputatio
 
 | Source ID | URL | Date basis | Claim coverage | Limitation | Refresh cadence |
 | --- | --- | --- | --- | --- | --- |
-| `g-helpful-content` | Google Search Central helpful content page | last updated 2025-12-10, retrieved 2026-07-09 | People-first content checks, E-E-A-T framing, self-assessment prompts | Does not supply a content template or ranking guarantee | Monthly or when Search Central changes |
-| `g-ai-opt-guide` | Google AI features optimization guide | last updated 2026-06-15, retrieved 2026-07-08 | Google AI feature foundations, crawlability, preview controls, no AI-only shortcut requirement | Does not guarantee AI Overview or AI Mode inclusion | Monthly while AI docs move quickly |
-| `g-genai-reports` | Search Console generative AI performance reports | published 2026-06-03, retrieved 2026-07-08 | AI Overviews and AI Mode reporting in Search Console | Not a visibility guarantee or complete rollout promise | Monthly while reporting changes |
-| `sparktoro-zero-click-2026` | SparkToro zero-click study | published 2026-06-08, retrieved 2026-07-08 | Market context for low-click planning and AI Mode query-share caveats | Third-party panel, not first-party site analytics | Recheck before quarterly planning |
-| `g-qrg-full` | Search Quality Rater General Guidelines PDF | dated 2025-09-11, retrieved 2026-07-09 | Trust, reputation, and YMYL sensitivity checks | Rater guidance is not a direct ranking checklist | Recheck when QRG changes |
-| `g-gsc-api` | Search Console Search Analytics API | living API documentation, retrieved 2026-07-06 | First-party query, page, click, impression, CTR, and position fields | Requires property access and cannot explain all visibility changes | Recheck before data integration work |
-| `dfs-api` | DataForSEO API documentation | living vendor documentation, retrieved 2026-07-06 | External SERP capture and keyword evidence when first-party data is unavailable | Vendor data is not Google's internal ranking system | Recheck before provider-backed exports |
-| `g-update-2026-06-05-guidance-on-third-party-seo-tools-services-and-advice` | Google guidance on SEO tools and advice | published 2026-06-05, retrieved 2026-07-09 | Boundaries for third-party ranking, AEO, and GEO claims | Does not audit a specific vendor's private method | Monthly while advice pages change |
+| `g-helpful-content` | Google Search Central helpful content page | last updated 2026-10-05, retrieved 2026-10-07 | People-first content checks, E-E-A-T framing, self-assessment prompts | Does not supply a content template or ranking guarantee | Monthly or when Search Central changes |
+| `g-ai-opt-guide` | Google AI features optimization guide | last updated 2026-07-10, retrieved 2026-10-07 | Google AI feature foundations, crawlability, preview controls, no AI-only shortcut requirement | Does not guarantee AI Overview or AI Mode inclusion | Monthly while AI docs move quickly |
+| `g-genai-reports` | Search Console generative AI performance reports | published 2026-06-03, retrieved 2026-10-07 | AI Overviews and AI Mode reporting in Search Console | Not a visibility guarantee or complete rollout promise | Monthly while reporting changes |
+| `sparktoro-zero-click-2026` | SparkToro zero-click study | published 2026-06-08, retrieved 2026-10-07 | Market context for low-click planning and AI Mode query-share caveats | Third-party panel, not first-party site analytics | Recheck before quarterly planning |
+| `g-qrg-full` | Search Quality Rater General Guidelines PDF | dated 2025-09-11, retrieved 2026-10-07 | Trust, reputation, and YMYL sensitivity checks | Rater guidance is not a direct ranking checklist | Recheck when QRG changes |
+| `g-gsc-api` | Search Console Search Analytics API | living API documentation, retrieved 2026-10-07 | First-party query, page, click, impression, CTR, and position fields | Requires property access and cannot explain all visibility changes | Recheck before data integration work |
+| `dfs-api` | DataForSEO API documentation | living vendor documentation, retrieved 2026-10-07 | External SERP capture and keyword evidence when first-party data is unavailable | Vendor data is not Google's internal ranking system | Recheck before provider-backed exports |
+| `g-update-2026-06-05-guidance-on-third-party-seo-tools-services-and-advice` | Google guidance on SEO tools and advice | last updated 2026-06-05, retrieved 2026-10-07 | Boundaries for third-party ranking, AEO, and GEO claims | Does not audit a specific vendor's private method | Monthly while advice pages change |
 
 ## Brief Source Pack Refresh Procedure
 

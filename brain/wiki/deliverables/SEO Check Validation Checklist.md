@@ -42,3 +42,7 @@ The reviewer needs final copy, target URL, target canonical, source pack, image 
 ## Source IDs Used
 
 SEO validation uses `g-helpful-content`, `g-canonical`, `g-intro-sd`, and `g-google-images`.
+
+## Source Review
+
+Use [[Source Ledger Reading Guide]] and [[Claim To Source Mapping]] to verify the source IDs above before accepting this checklist.

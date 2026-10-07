@@ -12,13 +12,17 @@ import sys
 import venv
 from pathlib import Path
 
+# Load only the helper shipped beside this installed script, never from CWD.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from runtime_paths import resolve_runtime_paths
+
 
 class SkillEnvironment:
     """Manages skill-specific virtual environment"""
 
     def __init__(self, quiet: bool = False):
-        self.skill_dir = Path(__file__).parent.parent
-        self.venv_dir = self.skill_dir / ".venv"
+        self.skill_dir = Path(__file__).resolve().parent.parent
+        self.venv_dir = resolve_runtime_paths(self.skill_dir, "blog-audio").venv
         self.quiet = quiet
         # Prefer the lock file (hash-verified). Fall back to loose
         # requirements.txt if no lock present (closes audit VULN-006).
@@ -97,7 +101,14 @@ def main():
     parser.add_argument('--json', action='store_true', help='Output structured JSON')
     args = parser.parse_args()
 
-    env = SkillEnvironment(quiet=args.json)
+    try:
+        env = SkillEnvironment(quiet=args.json)
+    except ValueError as exc:
+        if args.json:
+            print(json.dumps({"status": "error", "error": str(exc)}))
+        else:
+            print(f"ERROR: {exc}")
+        return 1
 
     if args.check:
         data = {

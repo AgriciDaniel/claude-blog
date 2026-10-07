@@ -3,7 +3,7 @@ type: spoke
 title: "First Party Versus Market Data"
 status: active
 created: 2026-07-06
-updated: 2026-07-09
+updated: 2026-10-07
 tags: [data-integrations, gsc, ga4, read-only, active]
 domain: "Blog Data"
 confidence: verified
@@ -19,7 +19,7 @@ related:
   - "[[GA4 Blog Engagement Metrics]]"
 source_urls:
   - "https://developers.google.com/webmaster-tools/v1/searchanalytics/query"
-  - "https://developers.google.com/webmaster-tools/v1/urlInspection.index/inspect"
+  - "https://developers.google.com/webmaster-tools/v1/urlInspection.index/UrlInspectionResult"
   - "https://developers.google.com/analytics/devguides/reporting/data/v1"
   - "https://developers.google.com/search/blog/2026/06/gen-ai-performance-reports"
 ---

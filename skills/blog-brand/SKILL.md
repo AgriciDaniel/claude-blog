@@ -10,12 +10,20 @@ description: >
   JSON. Use when user says "blog brand", "create brand context", "brand
   voice doc", "BRAND.md", "VOICE.md", "establish editorial brand",
   "brand guidelines for blog".
-user-invokable: true
+user-invocable: true
 argument-hint: "[init|show|update]"
 license: MIT
 ---
 
 # Blog Brand: Durable Editorial Context
+
+Bundled paths below use host Markdown substitution of `${CLAUDE_SKILL_DIR}`;
+it is not an exported shell variable. Resolve them before execution, quote
+paths, and refuse nonabsolute overrides. Pass `blog_reference_root` resolved
+from `${CLAUDE_SKILL_DIR}/../blog/references`, `blog_template_root` from
+`${CLAUDE_SKILL_DIR}/../blog/templates`, and needed sibling roots to agents.
+Read the main reference `orchestration-details.md` before loading project
+context; pass only its helper-fenced output to downstream agents.
 
 Generates two project-root files that the blog orchestrator auto-loads for supported writing and planning commands when present:
 
@@ -212,7 +220,7 @@ Same as Init, but pre-fills every answer with the current value. The user can pr
 
 ## Integration with the blog orchestrator
 
-When `/blog write`, `/blog rewrite`, `/blog brief`, `/blog outline`, `/blog calendar`, or `/blog strategy` runs, the orchestrator (`skills/blog/SKILL.md`) checks for `BRAND.md` and `VOICE.md` at the project root. If present, the contents are injected into the system prompt for downstream agents (`blog-researcher`, `blog-writer`, `blog-seo`, `blog-reviewer`).
+When `/blog write`, `/blog rewrite`, `/blog brief`, `/blog outline`, `/blog calendar`, or `/blog strategy` runs, the orchestrator (`${CLAUDE_SKILL_DIR}/../blog/SKILL.md`) checks for `BRAND.md` and `VOICE.md` at the project root. If present, the contents are injected into the system prompt for downstream agents (`blog-researcher`, `blog-writer`, `blog-seo`, `blog-reviewer`).
 
 If absent, behavior is unchanged. The orchestrator does not prompt the user to create them; they are opt-in context.
 

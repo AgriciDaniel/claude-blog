@@ -4,7 +4,7 @@ title: "Brand Voice Inventory"
 domain: "Blog Voice"
 status: active
 created: 2026-07-06
-updated: 2026-07-09
+updated: 2026-10-07
 tags: [personas, voice-style, active]
 ---
 
@@ -76,3 +76,5 @@ Style consumer: [[Style Learning Voice Profile]] converts approved samples into 
 ## Brand Voice Inventory Refresh Test
 
 Rebaseline after a positioning change, new legal review, product rename, or repeated drift in [[Voice Drift Audit]]. Retire traits that cannot be shown in a real draft.
+
+For Brand Voice Inventory, `nng-editorial-heuristics` supplies general interaction-design principles. Applying those principles to this note's editorial checks is a project adaptation, not an experimentally established SEO or AI-citation requirement.

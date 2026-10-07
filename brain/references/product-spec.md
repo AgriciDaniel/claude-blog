@@ -1,9 +1,12 @@
 # Claude Blog Brain Product Spec
 
-Status: scaffolded. The 2026-10-07 audit reports 66 stale source records and
-does not pass the market-ready gate. Domain adapters remain implemented and
-their 17 regression tests pass on Python 3.11. The 2026-08-25 release
-verification is historical evidence; current source review is incomplete.
+Status: market-ready. The executable local audit on 2026-10-07 scores 98/100
+with no critical failures or warnings after source review, adapter and pipeline
+tests, vault lint and disposable packaging checks. The source ledger has 127
+active reviewed records and three retired records. This internal readiness
+result does not establish authenticated API behavior or content performance.
+Source-review completion alone does not establish readiness; rerun the audit
+after maintained changes or source expiry.
 
 ## Buyer
 
