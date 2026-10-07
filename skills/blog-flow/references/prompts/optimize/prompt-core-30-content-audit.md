@@ -13,52 +13,40 @@ tags:
 
 ## Use This When
 
-Use this prompt when you need a structured optimize deliverable and want the model to separate observations, assumptions, recommended actions, and claims that need verification.
+Audit up to 30 pages as a portfolio and choose page-level actions.
 
-## AI Compatibility
+## Task Inputs
 
-Works with long-context reasoning models. For smaller models, provide narrower inputs and ask for one output section at a time.
+- up to 30 pages with purpose.
+- comparable performance.
+- query map and priorities.
+- capacity constraints.
 
-## Inputs
+## Decisions
 
-- Blog, publication, product, or website name.
-- Target article, hub page, query set, or campaign.
-- Audience and geography where relevant.
-- Existing evidence: analytics, search results, reader research, source notes, sales objections, or content inventory.
-- Constraints, exclusions, and required sources.
+- Keep, refresh, consolidate, redirect, retire, or investigate each page.
+- Protect distinct roles.
 
 ## Prompt
 
 ```text
-Act as a senior SEO strategist using the FLOW model.
+Act as a senior blog strategist using the FLOW model.
 
-Task: create an Optimize-stage blog deliverable for: [ARTICLE, HUB, OR SITE].
+Use only supplied evidence. Label assumptions and unverified claims. Complete these checks:
+1. Assess intent, evidence, freshness, overlap, links, and conversion.
+2. Compare cohorts.
+3. Identify patterns.
+4. Sequence work.
 
-Use only the supplied inputs and clearly label any assumption. Do not invent statistics. Do not reuse private examples. Build the answer around:
-1. Searcher or buyer intent.
-2. Evidence available now.
-3. Gaps that block trust, extraction, or conversion.
-4. Recommended changes in priority order.
-5. Measurement events and review cadence.
-6. Claims that require source verification before publication.
-
-Return a concise working document the team can execute.
+Return only the required output. Do not invent statistics, support, or private examples.
 ```
 
-## Output
+## Required Output
 
-- Executive summary.
-- Priority table.
-- Recommended copy, structure, or audit findings.
-- Evidence needed.
-- Measurement plan.
-- Verification checklist.
-
-## Example
-
-Input: a blog post or hub page with weak proof, thin source support, and an unclear conversion path.
-
-Expected output: a prioritized content brief, claims to verify, internal links to add, and the conversion event to measure.
+- Page scorecard.
+- Disposition for every page.
+- Portfolio blockers.
+- Prioritized roadmap.
 
 ## See Also
 

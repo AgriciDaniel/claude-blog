@@ -1,87 +1,88 @@
-"""Installer-sync regression test.
+"""Ensure the shared installer inventories ship and remove every root helper.
 
-Asserts that every root-level script in `scripts/*.py` is referenced
-in `install.sh` AND `install.ps1`, so adding a new helper to the repo
-without wiring it through the installer is caught at PR time.
-
-Added v1.8.6 (7TH-AUDIT-001): the v1.8.0..v1.8.3 helpers (cognitive_load,
-discourse_research, load_untrusted_root, lint_prose, sync_flow) were
-never copied by install.sh / install.ps1, so the "code-enforced" v1.8.3
-security narrative was non-functional for any marketplace/curl-pipe
-install. This test prevents the same regression class.
-
-Stdlib + pytest only.
+Unix coverage executes the real inventory and a disposable profile lifecycle.
+Windows coverage checks source contracts; its native smoke remains a separate
+gate when PowerShell is unavailable. Neither platform maintains a second
+filename list as its authority for deletion.
 """
-
 from __future__ import annotations
 
+import importlib.util
+import json
+import os
+import subprocess
+import sys
 from pathlib import Path
 
-import pytest
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS_DIR = ROOT / "scripts"
-INSTALL_SH = ROOT / "install.sh"
-INSTALL_PS1 = ROOT / "install.ps1"
 
 
 def _list_root_scripts() -> list[str]:
-    """Return the basenames of all root-level Python scripts to ship."""
     return sorted(p.name for p in SCRIPTS_DIR.glob("*.py"))
 
 
-def test_install_sh_covers_all_root_scripts() -> None:
-    """install.sh must reference every scripts/*.py file by basename OR
-    use a glob like `scripts/*.py` that picks them all up."""
-    sh = INSTALL_SH.read_text(encoding="utf-8")
-    # Accept either a glob covering all scripts, or each by name.
-    if 'scripts/"*.py' in sh or 'scripts/*.py' in sh or '"$SCRIPT_DIR/scripts/"*.py' in sh:
-        # Glob form covers all scripts implicitly.
-        return
-    missing = [name for name in _list_root_scripts() if name not in sh]
-    assert not missing, (
-        f"install.sh does not reference these root scripts (will not be "
-        f"shipped to end users): {missing}.\n"
-        f"Either name each script in install.sh or use a glob like "
-        f"`for f in scripts/*.py; do ... done`."
+def _unix_inventory():
+    spec = importlib.util.spec_from_file_location(
+        "installer_sync_ownership", SCRIPTS_DIR / "installer_ownership.py"
     )
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module.build_inventory(ROOT)[0]
+
+
+def test_install_sh_covers_all_root_scripts() -> None:
+    wrapper = (ROOT / "install.sh").read_text(encoding="utf-8")
+    assert 'scripts/installer_ownership.py" install' in wrapper
+    destinations = {str(relative) for relative in _unix_inventory()}
+    assert {f"scripts/{name}" for name in _list_root_scripts()} <= destinations
+    assert "skills/blog/scripts/analyze_blog.py" in destinations
 
 
 def test_install_ps1_covers_all_root_scripts() -> None:
-    """install.ps1 (Windows installer) must mirror install.sh coverage."""
-    ps1 = INSTALL_PS1.read_text(encoding="utf-8")
-    # Accept Get-ChildItem glob OR per-name reference.
-    if "*.py" in ps1 and "scripts" in ps1:
-        # Glob form. Verify it's actually reading from scripts/.
-        return
-    missing = [name for name in _list_root_scripts() if name not in ps1]
-    assert not missing, (
-        f"install.ps1 does not reference these root scripts: {missing}.\n"
-        f"Use Get-ChildItem with a *.py glob or name each script explicitly."
-    )
+    """Static Windows discovery contract, not native installation proof."""
+    wrapper = (ROOT / "install.ps1").read_text(encoding="utf-8")
+    helper = (SCRIPTS_DIR / "windows_installer_ownership.ps1").read_text(encoding="utf-8")
+    assert "Invoke-ClaudeBlogInstall" in wrapper
+    assert "scripts/windows_installer_ownership.ps1" in wrapper
+    assert "Get-ChildItem -LiteralPath (Join-Path $root 'scripts') -File -Filter '*.py'" in helper
+    assert 'Add-CBPlanFile $plan $scriptFile.FullName "scripts/$($scriptFile.Name)"' in helper
+    assert "skills/blog/scripts/analyze_blog.py" in helper
+    assert "Add-CBPlanFile $plan $windowsHelper 'scripts/windows_installer_ownership.ps1'" in helper
 
 
-def test_uninstall_sh_removes_all_root_scripts() -> None:
-    """uninstall.sh must remove every script install.sh copied. The
-    helper-scripts array in uninstall.sh must list every scripts/*.py."""
-    sh = (ROOT / "uninstall.sh").read_text(encoding="utf-8")
-    missing = [name for name in _list_root_scripts() if name not in sh]
-    assert not missing, (
-        f"uninstall.sh does not remove these root scripts (will leak after "
-        f"uninstall): {missing}.\n"
-        f"Add them to the helper_scripts array in uninstall.sh."
-    )
+def test_uninstall_sh_removes_all_root_scripts(tmp_path: Path) -> None:
+    """Run the real lifecycle with dependency installation stubbed."""
+    fake_bin = tmp_path / "bin"
+    fake_bin.mkdir()
+    fake_pip = fake_bin / "pip3"
+    fake_pip.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    fake_pip.chmod(0o755)
+    home = tmp_path / "home"
+    home.mkdir()
+    env = dict(os.environ, HOME=str(home))
+    env["PATH"] = os.pathsep.join((str(fake_bin), str(Path(sys.executable).parent), env.get("PATH", "")))
+    for script in ("install.sh", "uninstall.sh"):
+        process = subprocess.run(["bash", str(ROOT / script)], cwd=ROOT, env=env, capture_output=True, text=True)
+        assert process.returncode == 0, process.stderr or process.stdout
+        if script == "install.sh":
+            manifest = json.loads((home / ".claude/claude-blog-manifest.txt").read_text())
+            assert all(str(home / ".claude/scripts" / name) in manifest["files"] for name in _list_root_scripts())
+    assert all(not (home / ".claude/scripts" / name).exists() for name in _list_root_scripts())
+    assert not (home / ".claude/claude-blog-manifest.txt").exists()
 
 
 def test_uninstall_ps1_removes_all_root_scripts() -> None:
-    """uninstall.ps1 mirrors uninstall.sh."""
-    ps1 = (ROOT / "uninstall.ps1").read_text(encoding="utf-8")
-    missing = [name for name in _list_root_scripts() if name not in ps1]
-    assert not missing, (
-        f"uninstall.ps1 does not remove these root scripts: {missing}.\n"
-        f"Add them to the $helperScripts array in uninstall.ps1."
-    )
-
-
-if __name__ == "__main__":
-    pytest.main([__file__, "-v"])
+    """Static Windows receipt contract, not native removal proof."""
+    wrapper = (ROOT / "uninstall.ps1").read_text(encoding="utf-8")
+    helper = (SCRIPTS_DIR / "windows_installer_ownership.ps1").read_text(encoding="utf-8")
+    assert "Invoke-ClaudeBlogUninstall" in wrapper
+    assert "scripts/windows_installer_ownership.ps1" in wrapper
+    uninstall = helper[helper.index("function Invoke-ClaudeBlogUninstall"):]
+    assert "Read-CBReceipt $manifest $profile" in uninstall
+    assert "$owned = $receipt.Files" in uninstall
+    assert "Assert-CBOwnedFilesCurrent $profile $owned" in uninstall
+    assert "foreach ($relative in @($owned.Keys | Sort-Object))" in uninstall
+    assert "Remove-Item -LiteralPath $target" in uninstall

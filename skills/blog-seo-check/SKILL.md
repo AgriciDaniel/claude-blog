@@ -165,7 +165,12 @@ see `/blog flow optimize`.
 | Date consistency | dateModified aligns with normalized `lastUpdated`, `updated`, `lastmod`, or the visible updated date |
 | FAQPage optional | If present, valid as entity markup only. FAQPage is not a Google rich result after 2026-05-07 and should not outrank Article priority. |
 
-Prioritize Article/BlogPosting + Person + Organization + BreadcrumbList. Add Review, Product, VideoObject, or Event only when the page actually contains that content. Do not recommend HowTo as a rich-result tactic.
+For the internal 4-point heuristic, Article or BlogPosting earns 2 points,
+Person earns 1, and either Organization or BreadcrumbList earns 1. This is an
+internal completeness heuristic, not a Google requirement. Include both
+Organization and BreadcrumbList when the visible site data supports them. Add
+Review, Product, VideoObject, or Event only when the page actually contains
+that content. Do not recommend HowTo as a rich-result tactic.
 
 ### Step 10: URL Structure
 
@@ -226,8 +231,11 @@ Status values:
 
 If the post has a published URL and blog-google credentials are available:
 
-1. Check credentials: `python3 skills/blog-google/scripts/run.py google_auth --check --json`
-2. If Tier 0+, run PageSpeed: `python3 skills/blog-google/scripts/run.py pagespeed_check <url> --json`
+Resolve `BLOG_SKILLS_DIR="${CLAUDE_BLOG_SKILLS_DIR:-$HOME/.claude/skills}"`
+and reject it unless it is absolute.
+
+1. Check credentials: `python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" google_auth --check --json`
+2. If Tier 0+, run PageSpeed: `python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" pagespeed_check <url> --json`
 3. Append to report:
    - Lighthouse Performance, Accessibility, Best Practices, SEO scores
    - CWV field data (LCP, INP, CLS) with traffic-light ratings

@@ -1,6 +1,6 @@
 # Google Search Currentness Playbook
 
-Verified against Google-owned sources on 2026-08-25. Treat product
+Verified against Google-owned sources on 2026-10-07. Treat product
 announcements as product context, not evidence of a ranking factor. Use
 `data/google-updates.json` for the machine-readable source ledger.
 
@@ -33,10 +33,11 @@ events automatically.
 
 ## Core and Spam Update Analysis
 
-The latest confirmed ranking event is the August 2026 spam update. Google says
-it ran from August 18 through August 21, applied globally, and covered all
-languages. Google did not publish a target profile. The earliest complete
-one-week post-update comparison is August 28. Until then, record impact as
+The latest confirmed ranking event is the September 2026 spam update. Google
+says it began on September 24, applies globally and to all languages, and may
+take up to two weeks to complete. Google did not publish a target profile.
+Wait for Google to mark the rollout complete and then collect one full
+post-rollout week before comparison. Until then, record impact as
 `PENDING_OBSERVATION`.
 
 1. Confirm the named update's start and end on the Search Status Dashboard.
@@ -145,11 +146,13 @@ report the review as unverified and do not generate a review or rating.
 
 ## Google Ads API Currentness
 
-Google Ads API v25.1 was released on 2026-08-19. Google's support table lists
-Python client 31.2.0 as the minimum for API v25. Dependency updates require an
-offline compatibility test for the Keyword Plan services and requests before a
-live, credentialed call. Never use a developer token, enable billing, or run a
-live Ads request merely to prove package compatibility.
+Google Ads API v25.2 was released on 2026-09-23. Check Google's release notes
+and support table together before changing a versioned path or client library.
+The repository's existing Python client constraint may lag the current client
+release. Dependency updates require an offline compatibility test for Keyword
+Plan services and requests before a live, credentialed call. Never use a
+developer token, enable billing, or run a live Ads request merely to prove
+package compatibility.
 
 ## Crawl and Interaction Checks
 
@@ -186,6 +189,11 @@ clear page identity, and useful media.
 ## Primary Sources
 
 - https://developers.google.com/search/updates
+- https://developers.google.com/search/updates/search_docs_updates.rss
+- https://status.search.google.com/incidents.json
+- https://developers.google.com/search/docs/fundamentals/using-gen-ai-content
+- https://developers.google.com/search/docs/appearance/structured-data/video
+- https://developers.google.com/search/docs/appearance/regional-search-experiences
 - https://status.search.google.com/incidents/LEubPCm2octf2uMqCFKE
 - https://status.search.google.com/products/rGHU1u87FJnkP6W2GwMi/history
 - https://support.google.com/webmasters/answer/6211453?hl=en

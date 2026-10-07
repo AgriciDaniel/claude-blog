@@ -26,7 +26,7 @@ Real Chrome user experience data from the Chrome UX Report.
 | Best Practices | {bp_score}/100 |
 | SEO | {seo_score}/100 |
 
-## CrUX History Trends (25-week)
+## CrUX History Trends (25 weeks by default, up to 40 requested)
 
 | Metric | Direction | Change | Earliest → Latest |
 |--------|-----------|--------|-------------------|

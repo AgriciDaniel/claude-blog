@@ -25,10 +25,9 @@ def get_venv_python():
 
 
 def ensure_venv():
-    """Ensure virtual environment exists"""
+    """Return a ready interpreter without installing or updating anything."""
     skill_dir = Path(__file__).parent.parent
     venv_dir = skill_dir / ".venv"
-    setup_script = skill_dir / "scripts" / "setup_environment.py"
     lock_file = skill_dir / "scripts" / "requirements.lock"
     requirements_file = skill_dir / "scripts" / "requirements.txt"
     stamp_file = venv_dir / ".requirements.stamp"
@@ -37,20 +36,20 @@ def ensure_venv():
     expected_stamp = hashlib.sha256(source.read_bytes()).hexdigest() if source.exists() else None
     current_stamp = stamp_file.read_text().strip() if stamp_file.exists() else None
 
-    # Check if venv exists
-    if not venv_dir.exists() or (expected_stamp and current_stamp != expected_stamp):
-        print("🔧 First-time setup: Creating virtual environment...")
-        print("   This may take a minute...")
-
-        # Run setup with system Python
-        result = subprocess.run([sys.executable, str(setup_script)])
-        if result.returncode != 0:
-            print("❌ Failed to set up environment")
-            sys.exit(1)
-
-        print("✅ Environment ready!")
-
-    return get_venv_python()
+    venv_python = get_venv_python()
+    if not venv_python.is_file():
+        print(
+            "❌ NotebookLM setup required. Run: "
+            "python3 skills/blog-notebooklm/scripts/setup_environment.py"
+        )
+        sys.exit(1)
+    if expected_stamp and current_stamp != expected_stamp:
+        print(
+            "❌ NotebookLM dependencies are missing or stale. Run: "
+            "python3 skills/blog-notebooklm/scripts/setup_environment.py"
+        )
+        sys.exit(1)
+    return venv_python
 
 
 def main():

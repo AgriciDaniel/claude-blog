@@ -53,7 +53,7 @@ The Claude Blog Brain is vendored at `./brain` as a self-contained, evidence-gat
        |          |
        v          v
 +------------------+  +------------------------+
-|  5 Subagents     |  |  17 root-level Scripts  |
+|  5 Subagents     |  |  21 root-level Scripts  |
 |  agents/*.md     |  |  scripts/*.py          |
 |                  |  |                        |
 |  blog-researcher |  |  analyze_blog          |
@@ -189,12 +189,13 @@ Structural templates for different content types. Each template defines
 section structure, word count targets, and format-specific guidance.
 See [TEMPLATES.md](TEMPLATES.md) for the full reference.
 
-### 6. Root-Level Python Scripts (14)
+### 6. Root-Level Python Scripts (21)
 
 **Location**: `scripts/*.py`
 
-Standalone CLIs that the orchestrator calls via Bash. Each has argparse,
-docstring, JSON output, and stdlib-only or narrowly-pinned dependencies.
+Twenty existing helpers support the orchestrator. The shared ownership engine
+also serves the Unix installers. Interfaces and output formats are documented
+by each helper; dependencies are stdlib-only or narrowly pinned.
 
 | Script | Purpose | Introduced |
 |---|---|---|
@@ -212,6 +213,7 @@ docstring, JSON output, and stdlib-only or narrowly-pinned dependencies.
 | `quality_gate.py` | Pre-commit gate: block posts scoring < 70 | v1.10.0 |
 | `style_learn.py` | Author voice-profile learner from sample posts | v1.10.0 |
 | `sync_flow.py` | Pulls FLOW reference prompts from upstream; sandboxed; stdlib-only | v1.7.0 |
+| `installer_ownership.py` | Shared Unix legacy/v2 ownership verification, migration and rollback | Unreleased |
 
 ---
 
@@ -231,14 +233,14 @@ docstring, JSON output, and stdlib-only or narrowly-pinned dependencies.
       |
       +-- Spawns: blog-researcher agent
       |   |
-      |   +-- WebSearch: finds 8-12 statistics
-      |   +-- WebSearch: finds 3-5 Pixabay/Unsplash images
+      |   +-- WebSearch: finds evidence for material claims
+      |   +-- WebSearch: finds useful licensed visual evidence
       |   +-- WebFetch: verifies sources and URLs
       |   +-- Returns: structured research data
       |
       +-- Presents outline for user approval
       |
-      +-- Invokes: blog-chart (2-4 charts, built-in)
+      +-- Invokes: blog-chart when a chart explains the data
       |
       +-- Spawns: blog-writer agent
       |   |
@@ -247,7 +249,7 @@ docstring, JSON output, and stdlib-only or narrowly-pinned dependencies.
       |   |   - Sourced statistics
       |   |   - Image embeds
       |   |   - Chart embeds
-      |   |   - FAQ section
+      |   |   - Q&A only when it answers reader questions
       |   +-- Returns: complete article
       |
       +-- Quality verification (5 categories, 100 points)
@@ -263,7 +265,7 @@ docstring, JSON output, and stdlib-only or narrowly-pinned dependencies.
       +-- Writes file to user's project
       |
       v
-  Delivery summary (8 artifacts: md, html, pdf, hero, 4 viewport screenshots, review.md, preflight-report.json)
+  Delivery summary: md, html, pdf, hero, 4 screenshots, review.md, preflight-report.json
 ```
 
 ### Analyze Flow
@@ -337,13 +339,16 @@ AI Citation (15 pts)      ###############---------------
 
 | Score | Rating | Action |
 |-------|--------|--------|
-| 90-100 | Exceptional | Publish as-is (v1.9.0 contract delivers GREEN) |
+| 90-100 | Exceptional | Eligible for delivery review; all gates must still pass |
 | 80-89 | Strong | Minor tweaks; orchestrator iterates if Gate 4 wants 90+ |
 | 70-79 | Acceptable | Notable gaps; iterate |
 | 60-69 | Below Standard | Significant improvements required |
 | < 60 | Rewrite | Full rewrite recommended |
 
-The Blog Delivery Contract uses the configured quality threshold of 70.
+The standalone quality gate uses a configurable default threshold of 70.
+Delivery separately requires reviewer score >=90, explicit zero uncleared P0
+issues, a matching nonce, a valid final nonblocking decision, and all five
+preflight gates. An analyzer score alone cannot authorize delivery.
 Advisory style and length observations do not block delivery or infer
 authorship. Integrity and safety failures remain blocking.
 
@@ -358,8 +363,8 @@ These are non-negotiable. Content violating any of these must not be published:
 | Heading hierarchy | Never skip levels (H1 > H2 > H3) |
 | Source tier | Tier 1-3 only |
 | Image alt text | Required on all images |
-| Self-promotion | Max 1 brand mention |
-| Chart diversity | No duplicate chart types per post |
+| Self-promotion | Keep mentions useful to the reader and disclose commercial context |
+| Chart selection | Use the clearest chart for the evidence, without a fixed quota |
 
 ---
 
@@ -505,16 +510,18 @@ After installation, `claude-blog` occupies this structure inside `~/.claude/`:
     └── blog-translator.md              # v1.7.0
 ```
 
-**Component counts (v2.2.0)**: 32 skill directories (1 orchestrator + 31
+**Component counts (including Unreleased changes)**: 32 skill directories (1 orchestrator + 31
 sub-skills); 30 user-facing commands, 5 agents (blog-researcher, blog-writer, blog-seo, blog-reviewer,
 blog-translator), 22 references in `skills/blog/references/` (plus per-sub-skill
 references and 30 synced FLOW prompts under `skills/blog-flow/references/`),
-12 content templates, 17 root-level scripts (`scripts/analyze_blog.py`,
+12 content templates, 21 root-level scripts (`scripts/analyze_blog.py`,
 `ai_citation_score.py`, `blog_hygiene.py`, `blog_preflight.py`,
 `blog_render.py`, `cognitive_load.py`, `content_decay.py`,
 `discourse_research.py`, `generate_hero.py`, `load_untrusted_root.py`,
 `lint_prose.py`, `quality_gate.py`, `style_learn.py`, `sync_flow.py`,
-`consistency_check.py`, `dependency_smoke.py`, `validate_public_release.py`) plus per-sub-skill scripts under
+`consistency_check.py`, `dependency_smoke.py`, `validate_public_release.py`,
+`check_secrets.py`, `check_google_currentness.py`, `sync_google_updates.py`,
+`installer_ownership.py`) plus per-sub-skill scripts under
 `blog-google/`, `blog-notebooklm/`, `blog-audio/`, `blog-image/`.
 v1.8.0+ adds three project-root context files (BRAND.md / VOICE.md /
 DISCOURSE.md, auto-loaded via `scripts/load_untrusted_root.py` with

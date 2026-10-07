@@ -1,8 +1,9 @@
 # Claude Blog Brain Product Spec
 
-Status: market-ready. Implemented adapters, deterministic demo verification,
-source review, public-projection safety, and executable release verification
-pass as of 2026-08-25.
+Status: scaffolded. The 2026-10-07 audit reports 66 stale source records and
+does not pass the market-ready gate. Domain adapters remain implemented and
+their 17 regression tests pass on Python 3.11. The 2026-08-25 release
+verification is historical evidence; current source review is incomplete.
 
 ## Buyer
 
@@ -14,7 +15,7 @@ Claude Blog Brain serves blog content creation, optimization, and management. It
 
 ## Skill Surface
 
-The brain is grounded in the claude-blog v1.11.0 skill. The served user-facing workflows include `/blog write`, `/blog rewrite`, `/blog analyze`, `/blog brief`, `/blog outline`, `/blog calendar`, `/blog strategy`, `/blog seo-check`, `/blog schema`, `/blog repurpose`, `/blog geo`, `/blog image`, `/blog audit`, `/blog cannibalization`, `/blog factcheck`, `/blog persona`, `/blog brand`, `/blog discourse`, `/blog taxonomy`, `/blog notebooklm`, `/blog audio`, `/blog google`, `/blog update`, `/blog cluster`, `/blog multilingual`, `/blog translate`, `/blog localize`, `/blog locale-audit`, `/blog flow`, `/blog style`, and `/blog decay`. `blog-chart` remains internal-only.
+The brain is grounded in the maintained claude-blog v2.2.0 skill. The served user-facing workflows include `/blog write`, `/blog rewrite`, `/blog analyze`, `/blog brief`, `/blog outline`, `/blog calendar`, `/blog strategy`, `/blog seo-check`, `/blog schema`, `/blog repurpose`, `/blog geo`, `/blog image`, `/blog audit`, `/blog cannibalization`, `/blog factcheck`, `/blog persona`, `/blog brand`, `/blog discourse`, `/blog taxonomy`, `/blog notebooklm`, `/blog audio`, `/blog google`, `/blog update`, `/blog cluster`, `/blog multilingual`, `/blog translate`, `/blog localize`, `/blog locale-audit`, `/blog flow`, `/blog style`, and `/blog decay`. `blog-chart` remains internal-only.
 
 ## Core Workflows
 

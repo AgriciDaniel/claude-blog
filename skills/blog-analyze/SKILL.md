@@ -39,8 +39,16 @@ Reference documents (paths from repo root):
 
 ### Optional Modes (v1.8.0)
 
+Resolve core helpers from the trusted absolute install root documented in
+`skills/blog/references/orchestration-details.md`:
+
+```bash
+BLOG_SCRIPT_DIR="${CLAUDE_BLOG_SCRIPTS_DIR:-$HOME/.claude/scripts}"
+case "$BLOG_SCRIPT_DIR" in /*) ;; *) echo "ERROR: script dir must be absolute" >&2; exit 1 ;; esac
+```
+
 - `--rubric`: in addition to the 100-point score, emit the ordinal 0-4 editorial-heuristics rubric with P0-P3 severity tags. See `skills/blog/references/editorial-heuristics.md`. The 100-point JSON schema is preserved; the rubric is added as a sibling `rubric` field.
-- `--cognitive-load`: run `python3 scripts/cognitive_load.py` against the post and embed the per-section load heatmap as a sibling `cognitive_load` field. See `skills/blog/references/cognitive-load.md`.
+- `--cognitive-load`: run `python3 "$BLOG_SCRIPT_DIR/cognitive_load.py"` against the post and embed the per-section load heatmap as a sibling `cognitive_load` field. See `skills/blog/references/cognitive-load.md`.
 
 Both modes are additive. The default behavior (no flags) is unchanged from v1.7.1.
 
@@ -115,7 +123,7 @@ citation form or lower a score solely because a retrieval date is absent.
 #### Technical Elements (15 points)
 | Check | Points | Pass Criteria |
 |-------|--------|---------------|
-| Schema markup validity | 4 | Article/BlogPosting + Person + Organization + BreadcrumbList priority; FAQPage optional entity markup only |
+| Schema markup validity | 4 | Internal heuristic: Article or BlogPosting + Person + either Organization or BreadcrumbList; FAQPage optional entity markup only |
 | Image optimization | 3 | AVIF/WebP, descriptive alt text, lazy except LCP |
 | Structured data elements | 2 | Tables, lists, comparison blocks |
 | Page speed signals | 2 | LCP < 2.5s, no render-blocking JS |
@@ -210,7 +218,7 @@ Rubric JSON schema:
 
 ### Step 4.6: Optional Cognitive Load Heatmap (--cognitive-load)
 
-When `--cognitive-load` is passed, run `python3 scripts/cognitive_load.py <file> --format json` and embed the result under a `cognitive_load` field in JSON output, or append a `### Cognitive Load Heatmap` markdown section in markdown output. See `skills/blog/references/cognitive-load.md` for thresholds and interpretation.
+When `--cognitive-load` is passed, run `python3 "$BLOG_SCRIPT_DIR/cognitive_load.py" <file> --format json` and embed the result under a `cognitive_load` field in JSON output, or append a `### Cognitive Load Heatmap` markdown section in markdown output. See `skills/blog/references/cognitive-load.md` for thresholds and interpretation.
 
 ### Step 5: Generate Report
 

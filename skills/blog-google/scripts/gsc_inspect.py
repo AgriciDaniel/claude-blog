@@ -31,11 +31,11 @@ except ImportError:
     sys.exit(1)
 
 try:
-    from google_auth import get_oauth_credentials, load_config, execute_with_retries
+    from google_auth import describe_google_api_error, get_oauth_credentials, load_config, execute_with_retries
 except ImportError:
     import os
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-    from google_auth import get_oauth_credentials, load_config, execute_with_retries
+    from google_auth import describe_google_api_error, get_oauth_credentials, load_config, execute_with_retries
 
 GSC_SCOPES = ["https://www.googleapis.com/auth/webmasters.readonly"]
 
@@ -248,9 +248,8 @@ def inspect_url(
     except Exception as e:
         error_str = str(e)
         if "403" in error_str:
-            result["error"] = (
-                f"Permission denied. Add the service account as an Owner "
-                f"in GSC property '{site_url}'."
+            result["error"] = describe_google_api_error(
+                e, 'URL Inspection', "Check the service account's URL Inspection access in Google Search Console for this property."
             )
         elif "429" in error_str:
             result["error"] = (

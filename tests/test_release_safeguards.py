@@ -338,39 +338,58 @@ def test_public_marketplace_slug_is_current() -> None:
 
 
 def test_dependency_requirements_and_locks_are_coherent() -> None:
-    audio_req = (
-        ROOT / "skills" / "blog-audio" / "scripts" / "requirements.txt"
-    ).read_text(encoding="utf-8")
-    audio_lock = (
-        ROOT / "skills" / "blog-audio" / "scripts" / "requirements.lock"
-    ).read_text(encoding="utf-8")
-    notebook_req = (
-        ROOT / "skills" / "blog-notebooklm" / "scripts" / "requirements.txt"
-    ).read_text(encoding="utf-8")
-    notebook_lock = (
-        ROOT / "skills" / "blog-notebooklm" / "scripts" / "requirements.lock"
-    ).read_text(encoding="utf-8")
-    google_req = (
-        ROOT / "skills" / "blog-google" / "scripts" / "requirements.txt"
-    ).read_text(encoding="utf-8")
-    google_lock = (
-        ROOT / "skills" / "blog-google" / "scripts" / "requirements.lock"
-    ).read_text(encoding="utf-8")
-    pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
-    uv_lock = (ROOT / "uv.lock").read_text(encoding="utf-8")
+    import tomllib
+    from packaging.requirements import Requirement
+    from packaging.utils import canonicalize_name
 
-    assert "google-genai>=2.14.0,<3.0.0" in audio_req
-    assert "google-genai==2.14.0" in audio_lock
-    assert '"google-genai>=2.14.0,<3.0.0"' in pyproject
-    assert "patchright==1.61.2" in notebook_req
-    assert "patchright==1.61.2" in notebook_lock
-    assert '"patchright==1.61.2"' in pyproject
-    assert 'name = "google-genai"\nversion = "2.14.0"' in uv_lock
-    assert 'name = "patchright"\nversion = "1.61.2"' in uv_lock
-    assert "google-ads>=31.2.0,<32.0.0" in google_req
-    assert "google-ads==31.4.0" in google_lock
-    assert '"google-ads>=31.2.0,<32.0.0"' in pyproject
-    assert 'name = "google-ads"\nversion = "31.4.0"' in uv_lock
+    project = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    uv_lock = tomllib.loads((ROOT / "uv.lock").read_text(encoding="utf-8"))
+    groups = project["project"]["optional-dependencies"]
+    extras = {
+        canonicalize_name(Requirement(raw).name): Requirement(raw)
+        for group in groups.values() for raw in group
+    }
+    locked_uv = {
+        (canonicalize_name(package["name"]), package["version"])
+        for package in uv_lock["package"]
+    }
+    requirement_paths = [ROOT / "requirements.txt"] + [
+        ROOT / "skills" / skill / "scripts" / "requirements.txt"
+        for skill in ("blog-audio", "blog-google", "blog-notebooklm")
+    ]
+    shared_pins = {"google-genai", "patchright", "google-ads"}
+    for path in requirement_paths:
+        declarations = [
+            Requirement(line.split("#", 1)[0].strip())
+            for line in path.read_text(encoding="utf-8").splitlines()
+            if line.split("#", 1)[0].strip()
+        ]
+        lock = path.with_suffix(".lock").read_text(encoding="utf-8")
+        pins = {
+            canonicalize_name(name): version
+            for name, version in re.findall(r"^([A-Za-z0-9_.-]+)==([^ \\]+)", lock, re.MULTILINE)
+        }
+        for requirement in declarations:
+            name = canonicalize_name(requirement.name)
+            assert name in pins, f"{path}: {name} is missing from the hash lock"
+            version = pins[name]
+            assert requirement.specifier.contains(version), f"{path}: {name}=={version} violates {requirement}"
+            if name in extras:
+                assert extras[name].specifier.contains(version), f"pyproject extra rejects {name}=={version}"
+            if name in shared_pins:
+                assert (name, version) in locked_uv, f"uv.lock disagrees on {name}=={version}"
+            block = re.search(
+                rf"^{re.escape(requirement.name)}=={re.escape(version)}(?P<body>.*?)(?=^[A-Za-z0-9_.-]+==|\Z)",
+                lock, re.MULTILINE | re.DOTALL | re.IGNORECASE,
+            )
+            assert block and "--hash=sha256:" in block.group("body"), f"{path}: {name} has no hash"
+    audio = {canonicalize_name(Requirement(raw).name): Requirement(raw) for raw in groups["presentation"]}
+    assert str(audio["google-genai"].specifier) == str(next(
+        req.specifier for req in [Requirement(line) for line in
+            (ROOT / "skills/blog-audio/scripts/requirements.txt").read_text().splitlines()
+            if line and not line.startswith("#")]
+        if canonicalize_name(req.name) == "google-genai"
+    ))
 
 
 def test_shell_installer_is_locale_safe_and_complete(tmp_path: Path) -> None:
@@ -410,10 +429,13 @@ def test_shell_installer_is_locale_safe_and_complete(tmp_path: Path) -> None:
 
 def test_standalone_installers_ship_google_update_ledger() -> None:
     assert (ROOT / "data" / "google-updates.json").is_file()
-    for name in ("install.sh", "install.ps1"):
-        text = (ROOT / name).read_text(encoding="utf-8")
-        assert "data" in text
-        assert "google-updates.json" in text
+    ownership = _load_module("release_installer_ownership", ROOT / "scripts/installer_ownership.py")
+    inventory = ownership.build_inventory(ROOT)[0]
+    ledger = next(item for relative, item in inventory.items() if str(relative) == "skills/blog/data/google-updates.json")
+    assert ledger.source == ROOT / "data/google-updates.json"
+    windows = (ROOT / "scripts/windows_installer_ownership.ps1").read_text(encoding="utf-8")
+    assert "Add-CBPlanFile $plan $ledger 'skills/blog/data/google-updates.json'" in windows
+    assert "Invoke-ClaudeBlogInstall" in (ROOT / "install.ps1").read_text(encoding="utf-8")
     assert "blog" in (ROOT / "uninstall.sh").read_text(encoding="utf-8")
     assert "blog" in (ROOT / "uninstall.ps1").read_text(encoding="utf-8")
 
@@ -458,14 +480,14 @@ def test_ledger_consumer_guidance_matches_installed_path() -> None:
         / "references"
         / "search-currentness.md"
     ).read_text(encoding="utf-8")
-    install_sh = (ROOT / "install.sh").read_text(encoding="utf-8")
-    install_ps1 = (ROOT / "install.ps1").read_text(encoding="utf-8")
+    unix_inventory = (ROOT / "scripts/installer_ownership.py").read_text(encoding="utf-8")
+    windows_inventory = (ROOT / "scripts/windows_installer_ownership.ps1").read_text(encoding="utf-8")
 
     for guidance in (orchestrator, currentness):
         assert "data/google-updates.json" in guidance
         assert "~/.claude/skills/blog/data/google-updates.json" in guidance
-    assert '${SKILL_DIR}/blog/data/google-updates.json' in install_sh
-    assert 'Join-Path $BlogDataDir "google-updates.json"' in install_ps1
+    assert '"skills/blog/data/google-updates.json"' in unix_inventory
+    assert "'skills/blog/data/google-updates.json'" in windows_inventory
 
 
 def _write_flow_lock(root: Path, content: bytes = b"prompt\n") -> None:
@@ -639,6 +661,8 @@ def _public_fixture(root: Path) -> None:
         '$Repo = "AgriciDaniel/claude-blog"\n',
         encoding="utf-8",
     )
+    for uninstaller in ("uninstall.sh", "uninstall.ps1"):
+        (root / uninstaller).write_text("# public ownership-aware uninstaller\n", encoding="utf-8")
     (root / "skills" / "blog" / "SKILL.md").write_text(
         f'  version: "{version}"\n',
         encoding="utf-8",
@@ -652,6 +676,17 @@ def test_public_release_validator_passes_normalized_fixture(tmp_path: Path) -> N
     )
     _public_fixture(tmp_path)
     assert module.validate(tmp_path)["status"] == "pass"
+
+
+@pytest.mark.parametrize("relative", ["skills/blog-write/SKILL.md", "scripts/unlisted.py", "scripts/unlisted.ps1", "data/unlisted.json"])
+def test_public_release_validator_checks_unlisted_runtime_surfaces(tmp_path: Path, relative: str) -> None:
+    module = _load_module("release_unlisted_validator", ROOT / "scripts/validate_public_release.py")
+    _public_fixture(tmp_path)
+    path = tmp_path / relative
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("claude-blog@ai-marketing-hub-claude-blog\n", encoding="utf-8")
+    result = module.validate(tmp_path)
+    assert any(error["kind"] == "private_marketplace_slug" and error["file"] == relative for error in result["errors"])
 
 
 def test_current_public_release_surfaces_pass_validator() -> None:

@@ -5,12 +5,16 @@
 Spam policies for Google web search, Google Search Central.
 URL: https://developers.google.com/search/docs/essentials/spam-policies
 Updated in ledger: 2026-05-15.
-Retrieved: 2026-07-09.
+Reviewed: 2026-10-07.
 Confidence: EVIDENCE-BASED.
 
 ## Core Thesis
 
 Google spam policies define disallowed behavior that can remove or suppress otherwise optimized pages. Blog production must avoid scaled content abuse, site reputation abuse, expired domain abuse, cloaking, link spam, sneaky redirects, and malicious behavior.
+
+Google's August 28, 2026 documentation records an EEA-specific enforcement
+adjustment for site reputation abuse. Preserve that regional scope. The
+underlying policy still applies.
 
 ## Blog Application
 

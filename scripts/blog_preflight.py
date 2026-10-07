@@ -35,6 +35,7 @@ import shutil
 import socket
 import sys
 import tempfile
+import urllib.error
 import urllib.parse
 import urllib.request
 from html.parser import HTMLParser
@@ -64,8 +65,7 @@ VIEWPORTS = [
 CONTRACT_VERSION = _project_version()
 HEAD_TIMEOUT = 10
 USER_AGENT = f"claude-blog/{CONTRACT_VERSION} preflight (+https://github.com/AgriciDaniel/claude-blog)"
-URL_ALLOWLIST = ("example.com", "example.org")
-URL_ALLOWLIST_FILE = "preflight-allowlist.json"
+EXTERNAL_LINKS_ALLOWED_FILE = "external-links.allowed"
 ALLOWED_HTTP_SCHEMES = frozenset({"http", "https"})
 GOOGLEBOT_HTML_BYTE_LIMIT = 2 * 1024 * 1024
 INLINE_BLOAT_WARNING_BYTES = 256 * 1024
@@ -375,30 +375,46 @@ def _safe_local_path(root: Path, ref: str) -> tuple[Path | None, str | None]:
     return resolved, None
 
 
-def _load_unreachable_allowlist(draft_dir: Path) -> set[str]:
-    """Load exact host allowlist for links that should not be probed."""
-    hosts = set(URL_ALLOWLIST)
-    cfg_path = draft_dir / URL_ALLOWLIST_FILE
-    if not cfg_path.is_file() or cfg_path.is_symlink():
-        return hosts
+def _normalize_external_url(url: str) -> str:
+    """Normalize an external URL for exact exception matching."""
+    parsed = urllib.parse.urlsplit(url.strip())
+    return urllib.parse.urlunsplit(
+        (parsed.scheme.lower(), parsed.netloc.lower(), parsed.path or "/", parsed.query, "")
+    )
+
+
+def _load_external_link_exceptions(draft_dir: Path) -> tuple[set[str], list[str]]:
+    """Load exact URLs allowed to return 403/405 from a project config.
+
+    ``external-links.allowed`` is line-oriented. Blank lines and lines that
+    start with ``#`` are ignored. Entries are exact http(s) URLs, with URL
+    fragments ignored for matching. The file never bypasses URL/DNS safety or
+    redirect validation; it only permits a 403/405 status after those checks.
+    """
+    config_path = draft_dir / EXTERNAL_LINKS_ALLOWED_FILE
+    if not config_path.exists():
+        return set(), []
+    if config_path.is_symlink():
+        return set(), [f"{EXTERNAL_LINKS_ALLOWED_FILE} must not be a symlink"]
     try:
-        data = json.loads(_read_text_no_follow(cfg_path))
-    except (OSError, ValueError, json.JSONDecodeError):
-        return hosts
-    raw_hosts = data.get("unreachable_hosts") or data.get("hosts") or []
-    if isinstance(raw_hosts, list):
-        for host in raw_hosts:
-            parsed = urllib.parse.urlparse(str(host))
-            name = (parsed.hostname or str(host)).strip().lower().rstrip(".")
-            if re.fullmatch(r"[a-z0-9.-]+", name):
-                hosts.add(name)
-    return hosts
+        raw = _read_text_no_follow(config_path)
+    except (OSError, ValueError) as exc:
+        return set(), [f"{EXTERNAL_LINKS_ALLOWED_FILE} unreadable: {exc}"]
 
-
-def _is_allowed_unreachable(url: str, allowed_hosts: set[str]) -> bool:
-    parsed = urllib.parse.urlparse(url)
-    host = (parsed.hostname or "").lower().rstrip(".")
-    return host in allowed_hosts
+    allowed: set[str] = set()
+    violations: list[str] = []
+    for line_number, raw_line in enumerate(raw.splitlines(), start=1):
+        entry = raw_line.strip()
+        if not entry or entry.startswith("#"):
+            continue
+        ok, reason = _well_formed_http_url(entry)
+        if not ok:
+            violations.append(
+                f"{EXTERNAL_LINKS_ALLOWED_FILE} line {line_number} invalid: {reason}"
+            )
+            continue
+        allowed.add(_normalize_external_url(entry))
+    return allowed, violations
 
 
 def _resolve_public_http_url(url: str) -> tuple[bool, str | None, str | None, int | None, list[Any]]:
@@ -537,7 +553,7 @@ def gate_1_capability_discovery(draft_dir: Path, live_tools: list[str] | None = 
     if not image_gen_available:
         violations.append("no image-gen path available: no live Banana MCP, API key, stock key, or Openverse fallback")
     if not py_deps["patchright"] and not py_deps["playwright"]:
-        warnings.append("neither patchright nor playwright installed; Gate 3 will warn-and-pass")
+        warnings.append("neither patchright nor playwright installed; strict Gate 3 will block delivery")
     if not py_deps["weasyprint"] and not py_deps["patchright"] and not py_deps["playwright"]:
         warnings.append("no PDF backend installed (patchright/playwright/weasyprint); PDF generation will fail")
 
@@ -593,8 +609,11 @@ def gate_3_visual_verification(draft_dir: Path, slug: str | None = None) -> dict
             pass
     if sync_playwright is None:
         return _gate_result(
-            3, "Visual Verification", True, [],
-            ["neither patchright nor playwright installed; skipping visual checks. Run pip install -e .[presentation] to enable."],
+            3, "Visual Verification", False,
+            [
+                "neither patchright nor playwright is installed; visual verification "
+                "is required. Run the documented environment setup before delivery"
+            ],
         )
 
     _stem, selected, artifact_violations = _select_artifact_stem(draft_dir, slug)
@@ -929,18 +948,53 @@ class _PreflightNoRedirectHandler(urllib.request.HTTPRedirectHandler):
 _PREFLIGHT_NO_REDIRECT_OPENER = urllib.request.build_opener(_PreflightNoRedirectHandler())
 
 
-def _http_head(url: str) -> int:
-    """HEAD request with SSRF guards and no redirect following."""
+def _http_request_status(
+    url: str,
+    *,
+    method: str,
+    headers: dict[str, str] | None = None,
+) -> tuple[int, str | None]:
+    """Return one HTTP status and Location without following redirects."""
     ok, _reason, host, port, infos = _resolve_public_http_url(url)
     if not ok or host is None or port is None:
-        return 0
+        return 0, None
+    request_headers = {"User-Agent": USER_AGENT, **(headers or {})}
+    req = urllib.request.Request(url, method=method, headers=request_headers)
     try:
-        req = urllib.request.Request(url, method="HEAD", headers={"User-Agent": USER_AGENT})
         with _PinnedDNS(host, port, infos):
             with _PREFLIGHT_NO_REDIRECT_OPENER.open(req, timeout=HEAD_TIMEOUT) as resp:
-                return resp.status
+                if method == "GET":
+                    resp.read(1)
+                response_headers = getattr(resp, "headers", {})
+                return int(getattr(resp, "status", 200)), response_headers.get("Location")
+    except urllib.error.HTTPError as exc:
+        return int(exc.code), exc.headers.get("Location") if exc.headers else None
     except Exception:
-        return 0
+        return 0, None
+
+
+def _http_head(url: str) -> int:
+    """Probe a URL with HEAD, then a bounded GET when HEAD is blocked.
+
+    Redirects are never followed. A 3xx is returned only when its Location
+    resolves to another public http(s) URL. This keeps redirect and DNS safety
+    checks in force while allowing valid redirect responses under Gate 5.
+    """
+    status, location = _http_request_status(url, method="HEAD")
+    if status in {403, 405}:
+        status, location = _http_request_status(
+            url,
+            method="GET",
+            headers={"Range": "bytes=0-0"},
+        )
+    if 300 <= status < 400:
+        if not location:
+            return 0
+        redirect_url = urllib.parse.urljoin(url, location)
+        safe, _reason = _safe_http_url(redirect_url)
+        if not safe:
+            return 0
+    return status
 
 
 def _jsonld_nodes(value: Any) -> list[dict[str, Any]]:
@@ -1112,7 +1166,7 @@ def gate_5_asset_link_integrity(
     slug: str | None = None,
     rendered_schema_validation: dict[str, Any] | None = None,
 ) -> dict:
-    """Verify all <img> resolve, all <a> return 200, schema validates,
+    """Verify image resolution, safe external-link responses and schema,
     word count within +/-5%."""
     _stem, selected, artifact_violations = _select_artifact_stem(draft_dir, slug)
     htmls = selected["html"]
@@ -1134,7 +1188,8 @@ def gate_5_asset_link_integrity(
 
     violations = []
     warnings = []
-    allowed_hosts = _load_unreachable_allowlist(draft_dir)
+    allowed_status_urls, exception_config_violations = _load_external_link_exceptions(draft_dir)
+    violations.extend(exception_config_violations)
     byte_check = _googlebot_html_prefix_check(raw_bytes)
     violations.extend(byte_check["violations"])
     warnings.extend(byte_check["warnings"])
@@ -1151,10 +1206,9 @@ def gate_5_asset_link_integrity(
             if not ok:
                 violations.append(f"img src refused by URL safety policy: {src} ({reason})")
                 continue
-            if _is_allowed_unreachable(src, allowed_hosts):
-                continue
-            if _http_head(src) != 200:
-                violations.append(f"img src returned non-200: {src}")
+            status = _http_head(src)
+            if not 200 <= status < 400:
+                violations.append(f"img src returned {status}: {src}")
         else:
             local, local_error = _safe_local_path(draft_dir, src)
             if local_error:
@@ -1191,11 +1245,17 @@ def gate_5_asset_link_integrity(
             if not ok:
                 violations.append(f"link refused by URL safety policy: {href} ({reason})")
                 continue
-            if _is_allowed_unreachable(href, allowed_hosts):
-                continue
             status = _http_head(href)
-            if status != 200:
-                violations.append(f"link returned {status}: {href}")
+            if 200 <= status < 400:
+                continue
+            normalized_href = _normalize_external_url(href)
+            if status in {403, 405} and normalized_href in allowed_status_urls:
+                warnings.append(
+                    f"link returned documented {status} and is allowed by "
+                    f"{EXTERNAL_LINKS_ALLOWED_FILE}: {href}"
+                )
+                continue
+            violations.append(f"link returned {status}: {href}")
             continue
         if "://" in href or href.startswith(("javascript:", "data:", "vbscript:")):
             violations.append(
@@ -1312,7 +1372,11 @@ def gate_4_content_review(draft_dir: Path) -> dict:
     expected_nonce, nonce_error = _read_expected_review_nonce(draft_dir)
     if nonce_error or expected_nonce is None:
         return _gate_result(4, "Content Review", False, [nonce_error or "review verifier state missing"])
-    nonce_match = NONCE_PATTERN.search(text)
+    nonce_matches = list(NONCE_PATTERN.finditer(text))
+    nonce_fields = re.findall(r"^\s*Nonce:", text, re.MULTILINE | re.IGNORECASE)
+    if len(nonce_fields) > 1:
+        return _gate_result(4, "Content Review", False, ["review.md contains duplicate or conflicting Nonce fields"])
+    nonce_match = nonce_matches[0] if len(nonce_matches) == 1 else None
     if not nonce_match:
         return _gate_result(
             4, "Content Review", False,
@@ -1346,8 +1410,13 @@ def gate_4_content_review(draft_dir: Path) -> dict:
             ["review.md contains conflicting BLOCKING decisions"],
         )
 
+    decision_fields = [line for line in non_empty if re.match(r"^BLOCKING:", line, re.IGNORECASE)]
+    if len(decision_fields) != 1:
+        return _gate_result(4, "Content Review", False, ["review.md must contain exactly one final BLOCKING decision"])
     blocking = final_match.group(1).lower() == "true"
     reason = (final_match.group(2) or "").strip()
+    if not reason:
+        return _gate_result(4, "Content Review", False, ["review.md final BLOCKING decision requires a non-empty reason"])
     if blocking:
         return _gate_result(
             4, "Content Review", False,
@@ -1355,7 +1424,11 @@ def gate_4_content_review(draft_dir: Path) -> dict:
             blocking=True, reason=reason,
         )
     metric_violations: list[str] = []
-    score_match = re.search(r"Overall Score:\s*(\d{1,3})\s*/\s*100", text, re.IGNORECASE)
+    score_matches = list(re.finditer(r"Overall Score:\s*(\d{1,3})\s*/\s*100", text, re.IGNORECASE))
+    score_fields = re.findall(r"Overall Score:", text, re.IGNORECASE)
+    score_match = score_matches[0] if len(score_matches) == 1 and len(score_fields) == 1 else None
+    if len(score_fields) > 1:
+        metric_violations.append("review.md contains duplicate or conflicting Overall Score fields")
     if not score_match:
         metric_violations.append("review.md missing machine-readable Overall Score: N/100")
         score = None
@@ -1366,8 +1439,33 @@ def gate_4_content_review(draft_dir: Path) -> dict:
         elif score < 90:
             metric_violations.append(f"review overall score {score}/100 is below 90")
 
-    if re.search(r"\bP0\b", text, re.IGNORECASE) and not re.search(r"\b(no|zero)\s+P0\b", text, re.IGNORECASE):
-        metric_violations.append("review mentions P0 without a no/zero P0 clearance")
+    # Accept the existing no/zero P0 forms only as affirmative fields or
+    # complete decision clauses. Substring matching would accept negation
+    # such as "There are not zero P0 issues" or "zero P0 issues except ...".
+    clearance_field = re.compile(
+        r"(?:[-*]\s+)?(?:no|zero)\s+P0(?:\s+issues?)?"
+        r"(?:\s+(?:found|remain|remaining|outstanding))?[.!]?",
+        re.IGNORECASE,
+    )
+    affirmative_lines = {line for line in non_empty if clearance_field.fullmatch(line)}
+    decision_clauses = [clause.strip() for clause in re.split(r"[;,]", reason)]
+    affirmative_clauses = [clause for clause in decision_clauses if clearance_field.fullmatch(clause)]
+    if not affirmative_lines and not affirmative_clauses:
+        metric_violations.append("review missing an explicit affirmative no/zero P0 clearance")
+    else:
+        for line in non_empty:
+            if line in affirmative_lines:
+                continue
+            if line == non_empty[-1]:
+                remainder = reason
+                for clause in affirmative_clauses:
+                    remainder = remainder.replace(clause, "", 1)
+            else:
+                remainder = line
+            if re.search(r"\bP0\b", remainder, re.IGNORECASE):
+                if not re.match(r"^(?:[-*]\s*)?(?:resolved|cleared|fixed)\s+P0\s*:", line, re.IGNORECASE):
+                    metric_violations.append("review mentions P0 without a no/zero P0 clearance for that finding")
+                    break
 
     if metric_violations:
         return _gate_result(4, "Content Review", False, metric_violations, blocking=False, reason=reason, score=score)

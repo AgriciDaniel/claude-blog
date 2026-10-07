@@ -271,25 +271,47 @@ Attach or update Article/BlogPosting JSON-LD on every language version with
 ```
 
 Use the existing `/blog schema` sub-skill for richer schema on each version.
-Keep Article/BlogPosting, Person, Organization, and BreadcrumbList as the
-priority stack. FAQPage is optional and only for visible FAQ content as an
-entity and AI-citation signal, not a Google rich result target.
+For the internal schema heuristic, Article or BlogPosting earns 2 points,
+Person earns 1, and either Organization or BreadcrumbList earns 1. This is not
+a Google requirement. Include both Organization and BreadcrumbList when the
+visible site data supports them. FAQPage is optional and only for visible FAQ
+content as an entity signal, not a Google rich result target.
 
-### Phase 6: Delivery Summary
+### Phase 6: Final Locale Delivery Contracts
+
+After the last translation or localization change, review every final locale
+artifact set independently. The source locale keeps the successful `/blog
+write` review. Each target locale receives its own fresh external review nonce:
+
+1. Resolve `BLOG_SCRIPT_DIR="${CLAUDE_BLOG_SCRIPTS_DIR:-$HOME/.claude/scripts}"`
+   and reject it unless absolute. Never resolve helpers from the current
+   project's `scripts/` directory.
+2. Create `multilingual/{lang}/delivery/{localized-slug}/` as the isolated
+   artifact directory, copy the final locale source into it, and generate or
+   reuse a locale-appropriate hero.
+3. Render with `python3 "$BLOG_SCRIPT_DIR/blog_render.py" --md <locale-file> --out-dir <locale-delivery-dir>`.
+4. Initialize the nonce with `python3 "$BLOG_SCRIPT_DIR/blog_preflight.py" --draft <locale-delivery-dir> --init-review-nonce`; pass only its printed value to a fresh `blog-reviewer` invocation against the rendered locale HTML.
+5. Run `python3 "$BLOG_SCRIPT_DIR/blog_preflight.py" --draft <locale-delivery-dir> --strict --slug <localized-slug>`.
+6. Mark the locale passed only at 90+/100, zero P0, matching nonce, final
+   `BLOCKING: false`, and all other gates. A failed locale remains
+   `draft-blocked`; keep successful locales and report the failed locale's
+   diagnostic without calling the whole set complete.
+
+### Phase 7: Delivery Summary
 
 ```
-## Multilingual blog complete: [Title]
+## Multilingual blog [complete / partially blocked]: [Title]
 
 ### Original
 - Language: [source]
 - File: multilingual/{source}/{slug}.{ext}
 
 ### Translations
-| Language | File | Localized | Keywords adapted |
-|----------|------|-----------|------------------|
-| de | multilingual/de/{slug}.md | yes | [N] |
-| fr | multilingual/fr/{slug}.md | yes | [N] |
-| es | multilingual/es/{slug}.md | yes | [N] |
+| Language | File | Localized | Keywords adapted | Delivery review |
+|----------|------|-----------|------------------|-----------------|
+| de | multilingual/de/{slug}.md | yes | [N] | passed / draft-blocked |
+| fr | multilingual/fr/{slug}.md | yes | [N] | passed / draft-blocked |
+| es | multilingual/es/{slug}.md | yes | [N] | passed / draft-blocked |
 
 ### International SEO assets
 - multilingual/hreflang-tags.html
@@ -300,6 +322,7 @@ entity and AI-citation signal, not a Google rich result target.
 ### Total
 - [N] posts in [N] languages
 - [N] SEO assets generated
+- [N] locale artifact sets passed 90+, zero P0, and nonce verification
 
 ### Next steps
 - Replace `{source-url}`, `{lang-1-url}`, `{lang-2-url}`, and

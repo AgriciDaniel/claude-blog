@@ -28,6 +28,7 @@ import os
 import re
 import stat
 import sys
+import tempfile
 import urllib.parse
 import urllib.request
 from datetime import datetime, timezone
@@ -467,6 +468,64 @@ def _read_md_safely(path: Path) -> str:
     return data.decode("utf-8")
 
 
+def _lexical_absolute(path: Path) -> Path:
+    """Return an absolute path without resolving symlinks."""
+    return Path(os.path.abspath(os.fspath(path)))
+
+
+def _reject_symlink_components(path: Path) -> None:
+    """Reject symlinks in every existing component of a lexical path."""
+    absolute = _lexical_absolute(path)
+    current = Path(absolute.anchor)
+    for part in absolute.parts[1:]:
+        current /= part
+        try:
+            mode = os.lstat(current).st_mode
+        except FileNotFoundError:
+            continue
+        if stat.S_ISLNK(mode):
+            raise ValueError(f"refusing symlink path component: {current}")
+
+
+def _validate_output_destination(path: Path, root: Path) -> Path:
+    """Validate an unresolved output leaf under an unresolved output root."""
+    root = _lexical_absolute(root)
+    destination = _lexical_absolute(path)
+    _reject_symlink_components(root)
+    if destination.parent != root:
+        raise ValueError(f"output path escapes output directory: {destination}")
+    try:
+        mode = os.lstat(destination).st_mode
+    except FileNotFoundError:
+        return destination
+    if stat.S_ISLNK(mode):
+        raise ValueError(f"refusing to overwrite symlink: {destination}")
+    if not stat.S_ISREG(mode):
+        raise ValueError(f"refusing non-regular output path: {destination}")
+    return destination
+
+
+def _atomic_write_text(path: Path, content: str, root: Path) -> Path:
+    """Write a regular output atomically without following the final leaf."""
+    destination = _validate_output_destination(path, root)
+    fd, temp_name = tempfile.mkstemp(
+        prefix=f".{destination.name}.", suffix=".tmp", dir=destination.parent
+    )
+    temp_path = Path(temp_name)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as handle:
+            handle.write(content)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temp_path, destination)
+        return destination
+    finally:
+        try:
+            temp_path.unlink()
+        except FileNotFoundError:
+            pass
+
+
 def _validate_frontmatter(fm: dict, body: str) -> None:
     """Reject empty body or missing required frontmatter keys. The renderer
     must not silently produce a content-less HTML shell with a title taken
@@ -564,16 +623,12 @@ def _render_html(md_path: Path, out_dir: Path, hero_filename: str) -> Path:
     )
 
     slug = _slugify(str(fm.get("slug") or title))
-    out_root = out_dir.resolve()
-    out_html = (out_root / f"{slug}.html").resolve(strict=False)
-    out_html.relative_to(out_root)
-    if out_html.exists() and out_html.is_symlink():
-        raise ValueError(f"refusing to overwrite symlink: {out_html}")
-    out_html.write_text(rendered, encoding="utf-8")
-    return out_html
+    out_root = _lexical_absolute(out_dir)
+    out_html = out_root / f"{slug}.html"
+    return _atomic_write_text(out_html, rendered, out_root)
 
 
-def _render_pdf(html_path: Path, out_pdf: Path, engine: str) -> bool:
+def _render_pdf_to_path(html_path: Path, out_pdf: Path, engine: str) -> bool:
     """Render html_path to out_pdf via the chosen engine. Returns True on
     success, False on failure (no exception raised; caller decides)."""
     asset_root = html_path.parent.resolve()
@@ -621,11 +676,27 @@ def _render_pdf(html_path: Path, out_pdf: Path, engine: str) -> bool:
                     return False
     if engine in ("auto", "weasyprint"):
         try:
-            from weasyprint import HTML, default_url_fetcher  # type: ignore
-            def fetcher(url: str, *args, **kwargs):
-                if not _local_asset_allowed(url):
-                    raise ValueError(f"blocked external PDF asset: {url}")
-                return default_url_fetcher(url, *args, **kwargs)
+            from weasyprint import HTML  # type: ignore
+            try:
+                from weasyprint.urls import URLFetcher  # type: ignore
+            except ImportError:
+                # Compatibility for pre-70 installations. The declared and
+                # tested dependency uses the public URLFetcher class in 70.
+                from weasyprint import default_url_fetcher  # type: ignore
+                def fetcher(url: str, *args, **kwargs):
+                    if not _local_asset_allowed(url):
+                        raise ValueError(f"blocked external PDF asset: {url}")
+                    return default_url_fetcher(url, *args, **kwargs)
+            else:
+                class LocalAssetFetcher(URLFetcher):
+                    def fetch(self, url: str, headers=None):
+                        if not _local_asset_allowed(url):
+                            raise ValueError(f"blocked external PDF asset: {url}")
+                        return super().fetch(url, headers)
+                fetcher = LocalAssetFetcher(
+                    allowed_protocols=("file",), allow_redirects=False,
+                    fail_on_errors=True,
+                )
             HTML(filename=str(html_path), url_fetcher=fetcher).write_pdf(str(out_pdf))
             return True
         except Exception as e:
@@ -633,11 +704,47 @@ def _render_pdf(html_path: Path, out_pdf: Path, engine: str) -> bool:
     return False
 
 
+def _render_pdf(html_path: Path, out_pdf: Path, engine: str) -> bool:
+    """Render to an exclusive temporary file, then atomically promote it."""
+    try:
+        destination = _validate_output_destination(out_pdf, html_path.parent)
+    except ValueError as exc:
+        print(f"[render] refusing PDF output: {exc}", file=sys.stderr)
+        return False
+
+    fd, temp_name = tempfile.mkstemp(
+        prefix=f".{destination.name}.", suffix=".tmp", dir=destination.parent
+    )
+    os.close(fd)
+    temp_path = Path(temp_name)
+    try:
+        if not _render_pdf_to_path(html_path, temp_path, engine):
+            return False
+        mode = os.lstat(temp_path).st_mode
+        if not stat.S_ISREG(mode) or temp_path.stat().st_size == 0:
+            print("[render] PDF renderer did not produce a regular non-empty file", file=sys.stderr)
+            return False
+        os.replace(temp_path, destination)
+        return True
+    except Exception as exc:
+        print(f"[render] PDF promotion failed: {exc}", file=sys.stderr)
+        return False
+    finally:
+        try:
+            temp_path.unlink()
+        except FileNotFoundError:
+            pass
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("--md", required=True, help="Path to markdown source file")
     parser.add_argument("--out-dir", required=True, help="Output directory for .html and .pdf")
-    parser.add_argument("--hero", default="hero.png", help="Hero image filename (relative to out-dir)")
+    parser.add_argument(
+        "--hero",
+        default=None,
+        help="Hero image filename (relative to out-dir); defaults to a supported hero.<ext> in out-dir",
+    )
     parser.add_argument("--pdf-engine", choices=["auto", "playwright", "weasyprint", "none"], default="auto")
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
@@ -649,15 +756,28 @@ def main() -> int:
     if not md_path.is_file() and not md_path.is_symlink():
         print(f"ERROR: {md_path} not a file", file=sys.stderr)
         return 1
-    raw_out_dir = Path(args.out_dir)
-    if raw_out_dir.exists() and raw_out_dir.is_symlink():
-        print(f"ERROR: refusing symlink output directory: {raw_out_dir}", file=sys.stderr)
+    raw_out_dir = _lexical_absolute(Path(args.out_dir))
+    try:
+        _reject_symlink_components(raw_out_dir)
+        raw_out_dir.mkdir(parents=True, exist_ok=True)
+        _reject_symlink_components(raw_out_dir)
+    except (OSError, ValueError) as exc:
+        print(f"ERROR: refusing output directory: {exc}", file=sys.stderr)
         return 1
-    out_dir = raw_out_dir.resolve()
-    out_dir.mkdir(parents=True, exist_ok=True)
+    out_dir = raw_out_dir
+
+    hero_filename = args.hero
+    if hero_filename is None:
+        for extension in (".png", ".jpg", ".jpeg", ".webp"):
+            candidate = out_dir / f"hero{extension}"
+            if candidate.is_file() and not candidate.is_symlink():
+                hero_filename = candidate.name
+                break
+        else:
+            hero_filename = "hero.png"
 
     try:
-        html_path = _render_html(md_path, out_dir, args.hero)
+        html_path = _render_html(md_path, out_dir, hero_filename)
     except Exception as e:
         print(f"ERROR: html render failed: {e}", file=sys.stderr)
         return 1

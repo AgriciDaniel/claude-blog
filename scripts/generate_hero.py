@@ -53,7 +53,7 @@ OUTPUT_FILE_PREFIX = "hero"
 DEFAULT_WIDTH = 1200
 DEFAULT_HEIGHT = 630
 DEFAULT_GEMINI_MODEL = os.environ.get("NANOBANANA_MODEL") or "gemini-3.1-flash-image"
-OPENVERSE_API = "https://api.openverse.engineering/v1/images/"
+OPENVERSE_API = "https://api.openverse.org/v1/images/"
 UNSPLASH_API = "https://api.unsplash.com/search/photos"
 PEXELS_API = "https://api.pexels.com/v1/search"
 PIXABAY_API = "https://pixabay.com/api/"
@@ -395,7 +395,7 @@ def _try_gemini(topic: str, tags: list[str], out_dir: Path, width: int, height: 
                 input=prompt,
                 response_format={
                     "type": "image",
-                    "mime_type": "image/png",
+                    "mime_type": "image/jpeg",
                     "aspect_ratio": "16:9",
                 },
             )
@@ -417,7 +417,7 @@ def _try_gemini(topic: str, tags: list[str], out_dir: Path, width: int, height: 
     except RuntimeError as e:
         print(f"[image] {e}", file=sys.stderr)
         return None
-    hero_path = out_dir / f"{OUTPUT_FILE_PREFIX}.png"
+    hero_path = out_dir / f"{OUTPUT_FILE_PREFIX}{_image_ext(img_bytes)}"
     _atomic_write_bytes(hero_path, img_bytes)
     _atomic_write_text(
         out_dir / "hero-credit.txt",
@@ -536,13 +536,34 @@ def _try_premium_stock(topic: str, tags: list[str], out_dir: Path, width: int, h
 
 
 def _try_openverse(topic: str, tags: list[str], out_dir: Path, width: int, height: int) -> Optional[dict]:
-    """Ladder step 4: public API, no key required, CC-licensed."""
-    query = " ".join([topic] + tags[:3] + ["editorial illustration"])
-    params = urllib.parse.urlencode({
-        "q": query, "aspect_ratio": "wide", "license": "cc0,by,by-sa",
-        "size": "large", "page_size": 10,
-    })
-    data = _http_get_json(f"{OPENVERSE_API}?{params}")
+    """Ladder step 4: public API, no key required, CC-licensed.
+
+    Openverse search terms are restrictive when combined, so try a bounded
+    sequence from specific to broad rather than making one overlong query.
+    """
+    queries: list[str] = []
+    for candidate in (
+        " ".join([topic] + tags[:3]),
+        " ".join(tags[:3]) if tags else "",
+        " ".join(topic.split()[:3]),
+        tags[0] if tags else "",
+    ):
+        query = candidate.strip()
+        if query and query not in queries:
+            queries.append(query)
+
+    data = None
+    for query in queries:
+        params = urllib.parse.urlencode({
+            "q": query, "aspect_ratio": "wide", "license": "cc0,by,by-sa",
+            "size": "large", "page_size": 10,
+        })
+        candidate_data = _http_get_json(f"{OPENVERSE_API}?{params}")
+        if candidate_data and candidate_data.get("results"):
+            data = candidate_data
+            break
+        print(f"[openverse] no results for {query!r}", file=sys.stderr)
+
     if not data or not data.get("results"):
         print("[openverse] no results", file=sys.stderr)
         return None

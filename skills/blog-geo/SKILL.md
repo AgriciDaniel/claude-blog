@@ -286,12 +286,15 @@ Run `/blog analyze <file>` for full content quality scoring.
 
 If blog-google credentials include Tier 1 (GSC) and the post has a published URL:
 
+Resolve `BLOG_SKILLS_DIR="${CLAUDE_BLOG_SKILLS_DIR:-$HOME/.claude/skills}"`
+and reject it unless it is absolute.
+
 1. Query GSC by page and query dimensions, then filter rows to the URL:
-   `python3 skills/blog-google/scripts/run.py gsc_query --property <property> --dimensions query,page --json`
+   `python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" gsc_query --property <property> --dimensions query,page --json`
 2. Add to platform-specific analysis:
    - Current impressions, clicks, CTR, average position
    - Search queries driving traffic to this URL
-3. Check indexation: `python3 skills/blog-google/scripts/run.py gsc_inspect <url> --json`
+3. Check indexation: `python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" gsc_inspect <url> --json`
 4. Report indexation status, canonical selection, mobile usability.
 5. If skipped, report `SKIPPED: credentials unavailable` or
    `SKIPPED: unpublished URL`.
@@ -302,7 +305,9 @@ For a per-engine readiness view (distinct
 from the 15-point AI Citation Readiness category scored by `/blog analyze`), run:
 
 ```bash
-python3 scripts/ai_citation_score.py <file> --format markdown
+BLOG_SCRIPT_DIR="${CLAUDE_BLOG_SCRIPTS_DIR:-$HOME/.claude/scripts}"
+case "$BLOG_SCRIPT_DIR" in /*) ;; *) echo "ERROR: script dir must be absolute" >&2; exit 1 ;; esac
+python3 "$BLOG_SCRIPT_DIR/ai_citation_score.py" <file> --format markdown
 ```
 
 It returns a non-calibrated 0-100 overall heuristic plus per-engine subscores

@@ -28,4 +28,5 @@ jobs:
           --json
 
       - name: Check generated ledger projections
+        if: ${{ !cancelled() }}
         run: python3 scripts/sync_google_updates.py --root . --check

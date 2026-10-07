@@ -175,7 +175,21 @@ substitution tables. Common examples:
    show a diff summary. Resolve every output path inside the project root and
    reject traversal, symlinked paths, or writes outside that root.
 
-2. Present the summary:
+2. Before reporting complete, run the final artifact through the public delivery
+   contract. Resolve
+   `BLOG_SCRIPT_DIR="${CLAUDE_BLOG_SCRIPTS_DIR:-$HOME/.claude/scripts}"`, reject
+   it unless absolute, and never use the current project's `scripts/`
+   directory. Create a per-locale delivery staging directory beneath the output
+   root, then:
+   - Generate or reuse a locale-appropriate hero.
+   - Run `python3 "$BLOG_SCRIPT_DIR/blog_render.py" --md <localized-file> --out-dir <locale-delivery-dir>`.
+   - Run `python3 "$BLOG_SCRIPT_DIR/blog_preflight.py" --draft <locale-delivery-dir> --init-review-nonce` and pass the printed nonce to a fresh `blog-reviewer` invocation against the rendered locale HTML.
+   - Run `python3 "$BLOG_SCRIPT_DIR/blog_preflight.py" --draft <locale-delivery-dir> --strict --slug <localized-slug>`.
+   - Require 90+/100, zero P0, matching nonce, final `BLOCKING: false`, and all
+     other gates. On failure, retain the file as `draft-blocked` and report the
+     diagnostic instead of calling localization complete.
+
+3. Present the summary only after the locale passes:
 
    ```
    ## Localization complete: [Title]
@@ -200,6 +214,12 @@ substitution tables. Common examples:
 
    ### Remaining recommendations
    - [Optional adaptations not applied]
+
+   ### Delivery contract
+   - Score: [N]/100
+   - P0: zero
+   - Nonce: verified
+   - Preflight: [report path]
    ```
 
 ## Error Handling

@@ -225,7 +225,7 @@ Set quality standards that all blog content must meet:
 | AI citation readiness | Evidence-backed claims + purpose fit + entity clarity | `/blog analyze` |
 | Visual support | Charts and images where they add information gain | Asset count and editorial review |
 | Internal links | Useful paths within the cluster | Link audit |
-| Schema markup | Article/BlogPosting + Person + Organization + BreadcrumbList | Structured data test |
+| Schema markup | Internal heuristic: Article or BlogPosting + Person + either Organization or BreadcrumbList; not a Google requirement | Structured data test |
 | Completeness | Intent-dependent depth without padding | Editorial review |
 ```
 

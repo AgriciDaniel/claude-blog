@@ -25,7 +25,7 @@ claude-blog/
 │   ├── blog-rewrite/
 │   └── ...                  # 31 sub-skill dirs: 30 user-facing + 1 internal
 ├── agents/                  # 5 specialized agents
-├── scripts/                 # 14 root-level Python helper scripts
+├── scripts/                 # 20 root-level Python helper scripts
 ├── tests/                   # pytest test suite (security guardrails + script tests)
 ├── docs/                    # Documentation (installation, commands, architecture, templates, troubleshooting, MCP)
 └── .github/workflows/       # CI pipeline
@@ -51,7 +51,7 @@ claude-blog/
 - Tests live in `tests/test_<module>.py` mirroring the script name; follow the `test_cognitive_load.py` and `test_discourse_research.py` patterns (subprocess invocation; happy / empty / contract tests).
 
 **Prose (SKILL.md, references/, docs/, CHANGELOG.md, CONTRIBUTORS.md):**
-- **No em dashes or en dashes** (U+2014, U+2013, or ASCII ` -- `). Use periods, commas, semicolons, colons, or parentheses. Em dashes are the strongest AI-content tell and the project deliberately avoids them. Exception: pedagogical use inside backticks (e.g. when documenting the character itself).
+- **No em dashes or en dashes** (U+2014, U+2013, or ASCII ` -- `). Use periods, commas, semicolons, colons, or parentheses. This is a project style convention, not evidence of authorship. Exception: pedagogical use inside backticks (e.g. when documenting the character itself).
 - Inline citations as `[name](url)` markdown links (LAW 5 of `skills/blog/references/synthesis-contract.md`).
 - No invented titles for sources (LAW 2).
 - No trailing "Sources" block when sources are already cited inline (LAW 1).

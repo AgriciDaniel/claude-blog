@@ -176,6 +176,39 @@ LANGUAGE_PROFILES: dict[str, dict[str, Any]] = {
         ),
         'readability_model': 'flesch',
     },
+    'id': {
+        # Indonesian is selected only when declared in frontmatter because it
+        # has no distinctive markers reliable enough for automatic detection.
+        'summary_labels': (
+            r'jawaban singkat', r'ringkasan', r'intinya', r'singkatnya', r'TL;?DR',
+        ),
+        'about_patterns': (
+            r'/tentang(?:-kami)?(?:[/?#]|$)', r'\btentang kami\b',
+            r'\bprofil (?:perusahaan|kami)\b',
+        ),
+        'contact_patterns': (
+            r'/kontak(?:[/?#]|$)', r'/hubungi(?:-kami)?(?:[/?#]|$)',
+            r'\bhubungi kami\b', r'\bkontak kami\b',
+        ),
+        'first_person_patterns': (
+            r'\b(?:kami|tim kami)\s+(?:menguji|mengaudit|membedah|mengukur|menemukan|'
+            r'menangani|mencatat|menganalisis|membandingkan|mengelola)\b',
+            r'\b(?:dari|berdasarkan|menurut)\s+pengalaman kami\b',
+            r'\bkasus yang (?:paling )?kami (?:ingat|tangani|temui)\b',
+            r'\bdi akun (?:klien )?yang kami (?:audit|kelola|pegang)\b',
+            r'\bdata internal(?: kami)?\b',
+        ),
+        'methodology_patterns': (
+            r'\b(?:metode|metodologi|sampel|ukuran sampel|data internal|'
+            r'dari \d+ (?:akun|klien|kampanye))\b',
+            r'\b(?:kami|tim kami)\s+(?:menguji|mengukur|menganalisis|mengaudit|'
+            r'membedah|membandingkan)\b[^.\n]{0,180}'
+            r'(?:\d|https?://|\[[^\]]+\]\(https?://)',
+        ),
+        # Keep the existing fallback until a validated Indonesian readability
+        # formula is available in this analyzer.
+        'readability_model': 'flesch',
+    },
     'tr': {
         'summary_labels': (r'özet', r'özetle', r'kısaca'),
         'about_patterns': (
@@ -1263,7 +1296,7 @@ def analyze_ai_citation_readiness(content: str, headings_info: dict[str, Any],
             re.IGNORECASE,
         ))
         has_definition = bool(re.search(
-            r'\*\*[^*]+\*\*\s*(?:is|are|refers to|means)',
+            r'\*\*[^*]+\*\*\s*(?:is|are|refers to|means|adalah|merupakan)',
             section,
             re.IGNORECASE,
         ))
@@ -1288,7 +1321,10 @@ def analyze_ai_citation_readiness(content: str, headings_info: dict[str, Any],
                     break
 
     # Entity clarity: detect defined terms (bold terms followed by explanations)
-    entity_definitions = len(re.findall(r'\*\*[^*]+\*\*\s*(?:is|are|refers to|means)', content))
+    entity_definitions = len(re.findall(
+        r'\*\*[^*]+\*\*\s*(?:is|are|refers to|means|adalah|merupakan)',
+        content,
+    ))
 
     # Extraction-friendly structures
     profile = LANGUAGE_PROFILES.get(language, LANGUAGE_PROFILES['en'])
@@ -2293,19 +2329,50 @@ def _format_category_detail(result: dict[str, Any], category: str) -> str:
 
 
 def _process_batch(directory: Path, sort_key: str = 'score') -> dict[str, Any]:
-    """Analyze all blog files in a directory."""
+    """Recursively analyze blog files while excluding generated trees."""
     results: list[dict[str, Any]] = []
-    for ext in ['*.md', '*.mdx', '*.html']:
-        for f in directory.glob(ext):
-            results.append(analyze_file(str(f)))
+    root = directory.resolve()
+    skip_directories = {
+        '.git', '.next', '.astro', '.cache', '__pycache__',
+        'node_modules', 'vendor', 'dist', 'build', 'coverage', 'reports',
+        'artifacts', 'outputs',
+    }
+    candidates: list[Path] = []
+    for current_root, dirnames, filenames in os.walk(root, followlinks=False):
+        dirnames[:] = sorted(
+            name for name in dirnames
+            if name not in skip_directories
+            and not name.startswith('.')
+            and not (Path(current_root) / name).is_symlink()
+        )
+        for filename in sorted(filenames):
+            if Path(filename).suffix.lower() not in {'.md', '.mdx', '.html'}:
+                continue
+            path = Path(current_root) / filename
+            if path.is_symlink() or not path.is_file():
+                continue
+            try:
+                path.resolve().relative_to(root)
+            except ValueError:
+                continue
+            candidates.append(path)
+
+    for path in candidates:
+        results.append(analyze_file(str(path)))
 
     # Sort
     if sort_key == 'score':
-        results.sort(key=lambda r: r.get('score', {}).get('total', 0), reverse=True)
+        results.sort(key=lambda r: (
+            -r.get('score', {}).get('total', 0),
+            r.get('file', ''),
+        ))
     elif sort_key == 'name':
         results.sort(key=lambda r: r.get('file', ''))
     elif sort_key == 'words':
-        results.sort(key=lambda r: r.get('paragraphs', {}).get('total_word_count', 0), reverse=True)
+        results.sort(key=lambda r: (
+            -r.get('paragraphs', {}).get('total_word_count', 0),
+            r.get('file', ''),
+        ))
 
     return {'batch': True, 'count': len(results), 'results': results}
 

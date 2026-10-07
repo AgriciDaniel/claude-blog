@@ -2,9 +2,8 @@
 # Required so `pip install -e ".[dev]"` works in CI. Without this, setuptools
 # falls back to legacy and refuses with "Multiple top-level packages discovered
 # in a flat-layout" because the repo root has assets/, skills/, agents/, etc.
-# VULN-411 (v1.9.1): setuptools>=70.0.0 closes CVE-2024-6345 (RCE in
-# package_index, fixed in 70.0.0).
-requires = ["setuptools>=70.0.0", "wheel"]
+# The reviewed build floor also covers GHSA-h35f-9h28-mq5c, fixed in 83.0.0.
+requires = ["setuptools>=83.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
@@ -50,20 +49,20 @@ advanced = [
     "language-tool-python>=2.7.1,<4.0.0",
 ]
 google = [
-    "requests>=2.32.4,<3.0.0",
+    "requests>=2.34.2,<3.0.0",
     "google-api-python-client>=2.100.0,<3.0.0",
-    "google-auth>=2.20.0,<3.0.0",
+    "google-auth>=2.60.0,<3.0.0",
     "google-auth-oauthlib>=1.3.1,<2.0.0",
     "google-auth-httplib2>=0.2.0,<1.0.0",
-    "google-analytics-data>=0.18.0,<1.0.0",
+    "google-analytics-data>=0.23.3,<1.0.0",
 ]
 ads = [
     # Optional: enables skills/blog-google/scripts/keyword_planner.py.
     # Closes audit VULN-404 phantom-import (was previously imported with no
-    # manifest declaration). Google Ads API v25 requires Python client 31.2.0
-    # or newer; keep this major-bounded so the declared integration and the
+    # manifest declaration). The reviewed Google Ads API v25.2 integration
+    # uses Python client 33.x; keep this major-bounded so the integration and the
     # installed client cannot silently drift apart.
-    "google-ads>=31.2.0,<32.0.0",
+    "google-ads>=33.0.0,<34.0.0",
 ]
 presentation = [
     # v1.9.0 Blog Delivery Contract: enables scripts/blog_preflight.py
@@ -74,12 +73,12 @@ presentation = [
     # attacker-influenceable HTML to PDF; pin to a known-good window.
     # Patchright is exact-pinned because it controls an authenticated browser
     # and must match the separately hash-locked NotebookLM runtime.
-    "patchright==1.61.2",
-    "weasyprint>=60.2,<65",
-    "google-genai>=2.14.0,<3.0.0",
-    "requests>=2.32.4,<3.0.0",
+    "patchright==1.63.0",
+    "weasyprint>=70.0,<71.0",
+    "google-genai>=2.28.0,<3.0.0",
+    "requests>=2.34.2,<3.0.0",
     "markdown>=3.5,<4.0",
-    "Pillow>=11.3.0,<13.0.0",
+    "Pillow>=12.3.0,<13.0.0",
 ]
 dev = [
     "detect-secrets>=1.5.0,<2.0.0",
@@ -87,10 +86,11 @@ dev = [
     "textstat>=0.7.3,<1.0.0",
     "beautifulsoup4>=4.12.0,<5.0.0",
     # Tests exercise optional Google, rendering, and image paths directly.
-    "requests>=2.32.4,<3.0.0",
+    "requests>=2.34.2,<3.0.0",
     "google-api-python-client>=2.100.0,<3.0.0",
     "markdown>=3.5,<4.0",
-    "Pillow>=11.3.0,<13.0.0",
+    "google-analytics-data>=0.23.3,<1.0.0",
+    "Pillow>=12.3.0,<13.0.0",
 ]
 
 [tool.pytest.ini_options]

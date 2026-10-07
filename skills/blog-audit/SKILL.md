@@ -52,7 +52,9 @@ root by default.
 Run canonical analyzer output first and use it as the source of per-post scores:
 
 ```bash
-python3 scripts/analyze_blog.py <blog-root> --batch --format json
+BLOG_SCRIPT_DIR="${CLAUDE_BLOG_SCRIPTS_DIR:-$HOME/.claude/scripts}"
+case "$BLOG_SCRIPT_DIR" in /*) ;; *) echo "ERROR: script dir must be absolute" >&2; exit 1 ;; esac
+python3 "$BLOG_SCRIPT_DIR/analyze_blog.py" <blog-root> --batch --format json
 ```
 
 Process files in chunks, cap parallel follow-up work to a small fixed number,

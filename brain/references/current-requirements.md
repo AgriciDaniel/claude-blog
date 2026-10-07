@@ -1,8 +1,9 @@
 # Current Requirements
 
 Status: researched. Evidence is captured in `references/source-ledger.json`.
-Last verified: 2026-07-10.
-Refresh due: 2026-08-09.
+Last verified: 2026-10-07 for the currentness items below. Other retained
+claims keep their source-ledger verification dates.
+Refresh due: 2026-11-07 for living Google documentation.
 
 ## Source Standard
 
@@ -113,14 +114,17 @@ Confidence: high. Evidence tier: EVIDENCE-BASED.
 Operational rule: do not recommend `llms.txt` as a Google visibility tactic. It
 can exist for other LLM consumers only with that caveat.
 
-Current Google update memory is refreshed through 2026-07-09.
-Source: Google Search Central documentation updates and
-`references/source-ledger.json`, last verified 2026-07-09.
-Claim: the verified requirements now include the 2026-07-07 Product
-structured-data documentation updates. No Google-owned ranking, spam, QRG, or AI
-search update was added in this remediation pass after the 2026-06-24 June spam
-update entry.
+Current Google update memory is refreshed through 2026-10-07.
+Sources: Google Search documentation updates RSS, Search Status incident feed,
+and `data/google-updates.json`, reviewed 2026-10-07.
+Claim: the latest confirmed ranking event is the September 2026 spam update,
+which began September 24 and applies globally and to all languages. The
+October 1 generative AI content guidance reinforces review for accuracy,
+quality, relevance, and added user value. September documentation also added
+regional Search experience guidance and VideoObject creator and interaction
+properties.
 Confidence: high for official documentation updates. Evidence tier:
 EVIDENCE-BASED.
-Operational rule: keep third-party July 2026 volatility reports quarantined
-until a Google-owned source confirms a ranking or spam update.
+Operational rule: event timing never proves site impact. Keep product and
+documentation changes separate from ranking factors, preserve regional scope,
+and verify structured data against the current Google property tables.

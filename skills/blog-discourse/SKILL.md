@@ -126,7 +126,9 @@ Invoke `scripts/discourse_research.py` to:
 Run:
 
 ```bash
-python3 scripts/discourse_research.py \
+BLOG_SCRIPT_DIR="${CLAUDE_BLOG_SCRIPTS_DIR:-$HOME/.claude/scripts}"
+case "$BLOG_SCRIPT_DIR" in /*) ;; *) echo "ERROR: script dir must be absolute" >&2; exit 1 ;; esac
+python3 "$BLOG_SCRIPT_DIR/discourse_research.py" \
   --input "$RESULTS_JSON" \
   --topic "<original topic>" \
   --days 30 \

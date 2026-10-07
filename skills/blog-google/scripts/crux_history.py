@@ -2,8 +2,9 @@
 """
 CrUX History API for Core Web Vitals trends over time.
 
-Fetches up to 25 weekly data points from the Chrome UX Report History API
-and identifies improving, stable, or degrading trends per metric.
+Fetches 25 weekly data points by default, or up to 40 when requested, from the
+Chrome UX Report History API and identifies improving, stable, or degrading
+trends per metric.
 
 Usage:
     python crux_history.py https://example.com

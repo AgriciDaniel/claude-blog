@@ -4,8 +4,15 @@ Complete CLI documentation for all NotebookLM skill scripts.
 
 ## run.py: Universal Script Runner
 
-Always use `run.py` to execute any script. It handles venv creation,
-dependency installation, Chrome setup, and proper execution.
+Use the trusted installed `run.py` to execute scripts. Ordinary commands
+check the existing environment and return setup-required diagnostics when
+dependencies are missing. Run explicit setup only when installation is
+authorized; the wrapper does not install environments or browsers implicitly.
+
+Some legacy management commands can emit error JSON with process exit 0.
+Callers must parse `status`, `valid`, and error fields as well as the exit
+status. For authentication validation, require `status: success` and
+`valid: true`; an error envelope is a failed operation.
 
 ```bash
 python3 scripts/run.py <script_name>.py [arguments]

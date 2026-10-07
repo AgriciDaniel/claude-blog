@@ -7,6 +7,63 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Reject reviewer scorecards with missing, negated or contradictory P0
+  clearance, duplicate scores/nonces/decisions, or missing decision reasons.
+- Enforce the required browser check in strict delivery mode, and preserve
+  blocked diagnostics when preview mode explicitly bypasses delivery.
+- Validate external-link redirects and bounded HEAD-to-GET recovery, with
+  exact documented 403/405 exceptions that retain network safety checks.
+- Use canonical Openverse search, honor generated image MIME types, discover
+  PNG, JPEG and WebP heroes, and support WeasyPrint 70's guarded URL fetcher.
+- Reject symlinked rendering destinations and promote HTML and PDF outputs
+  through exclusive temporary files.
+- Analyze nested static-site content deterministically without following
+  symlinks into unrelated directories; support declared Indonesian content.
+- Diagnose disabled Google APIs, key restrictions, billing and quota errors
+  before offering permission advice.
+- Stop ordinary Google, audio and NotebookLM commands from installing
+  environments or browsers implicitly. Verify file ownership before Unix,
+  Windows and Brain installation changes, preserving user additions and
+  refusing modified managed files and parent-traversal manifest paths before
+  deletion.
+- Reconcile exact known public legacy installations using reviewed file hashes
+  and manifest scopes, with transactional replacement and safe empty-directory
+  pruning. Reject Windows reparse-point paths and unknown collisions before
+  mutation; native Windows lifecycle verification remains outstanding.
+
+### Changed
+
+- Resolve skill helpers from trusted installed paths, focus article prose on
+  the subject, and select evidence and media according to the reader's task.
+- Require separate delivery review for every locale and reconcile the P0
+  delivery gate with the unchanged 70-point configurable quality gate.
+- Differentiate 25 duplicated FLOW task prompts while preserving their names,
+  stage routing, attribution and reviewed upstream synchronization boundary.
+- Refresh Google guidance and its Brain projection from reviewed official
+  October sources, and qualify current Gemini and NotebookLM interfaces.
+- Refresh bounded dependencies and hash locks for Python 3.11 compatibility.
+  Retain the reported, unpatched NLTK model-artifact advisory as an explicit
+  limitation; no advisory-free claim is made.
+- Add optional Gemini 3.8 TTS aliases with Interactions schema and WAV checks,
+  retaining every legacy alias and the existing default model.
+- Correct active Brain readiness and version claims, distinguish model-provider
+  processing from local artifact storage, and remove unsupported fixed quotas.
+- Expand routing and recovery evaluations, public distribution checks, and
+  source-date workflow diagnostics.
+
+### Known verification limits
+
+- Claude Code 2.1.292 rejects the published plugin name. No naming migration,
+  release, installed-profile update or external publication is included.
+- The Brain's overall freshness gate remains blocked by overdue source records
+  and two sources without sufficient reviewable current evidence.
+- The pinned optional image MCP package still exposes retired preview models.
+  Use the documented direct API or stock-image route until it supports live IDs.
+- Authenticated APIs, native Claude execution and native Windows installation
+  require separate environment checks. Offline SDK tests do not establish them.
+
 ## [2.2.0] - 2026-08-26
 
 ### Added

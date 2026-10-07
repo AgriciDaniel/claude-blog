@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "last_verified": "2026-08-25",
+  "last_verified": "2026-10-07",
   "policy": "Only Google-supported facts in verified[] may inform guidance. Event timing never proves site impact. Product announcements never become ranking factors. Source conflicts remain explicit. Unverified entries are research leads and must never change scoring, gates, or recommendations.",
   "source_watch": [
     {
@@ -41,6 +41,96 @@
     }
   ],
   "verified": [
+    {
+      "id": "search-docs-gen-ai-guidance-2026-10-01",
+      "event_date": "2026-10-01",
+      "title": "Generative AI content guidance updated",
+      "source_url": "https://developers.google.com/search/docs/fundamentals/using-gen-ai-content",
+      "category": "content-guidance",
+      "applicability": "all-sites-using-generative-ai",
+      "affected_components": [
+        "blog",
+        "blog-factcheck",
+        "blog-geo",
+        "blog-write",
+        "blog-rewrite"
+      ],
+      "evidence_status": "confirmed",
+      "summary": "Google updated its guidance for site owners using generative AI. Automation can help with research and structure, but generating many pages without added user value may violate the scaled content abuse policy. Review output for accuracy, quality, and relevance, and give readers useful context about how content was created when that context is reasonably expected."
+    },
+    {
+      "id": "ranking-september-2026-spam",
+      "event_date": "2026-09-24",
+      "title": "September 2026 spam update",
+      "source_url": "https://status.search.google.com/incidents.json",
+      "category": "ranking-update",
+      "applicability": "all-sites",
+      "affected_components": [
+        "blog-audit",
+        "blog-google"
+      ],
+      "evidence_status": "confirmed-event-pending-impact",
+      "summary": "Google began a global, all-language spam update on September 24 and said rollout could take up to two weeks. The event does not identify targets or establish site-level impact. Wait for completion and one full post-rollout week before comparison."
+    },
+    {
+      "id": "videoobject-creator-interactions-2026-09-24",
+      "event_date": "2026-09-24",
+      "title": "VideoObject creator and interaction types documented",
+      "source_url": "https://developers.google.com/search/docs/appearance/structured-data/video",
+      "category": "structured-data",
+      "applicability": "pages-with-videoobject-markup",
+      "affected_components": [
+        "blog-schema",
+        "blog-repurpose"
+      ],
+      "evidence_status": "confirmed",
+      "summary": "Google documented VideoObject creator support and clarified supported interactionStatistic interaction types. Markup still has to match visible video content and Google's current property requirements."
+    },
+    {
+      "id": "regional-search-experiences-2026-09-08",
+      "event_date": "2026-09-08",
+      "title": "Regional Search experiences documented",
+      "source_url": "https://developers.google.com/search/docs/appearance/regional-search-experiences",
+      "category": "international-search",
+      "applicability": "sites-targeting-regions-with-distinct-search-experiences",
+      "affected_components": [
+        "blog-multilingual",
+        "blog-localize",
+        "blog-locale-audit"
+      ],
+      "evidence_status": "confirmed",
+      "summary": "Google documented that Search experiences and feature availability can differ by region. International recommendations must be checked against the target market instead of assuming one global presentation."
+    },
+    {
+      "id": "site-reputation-eea-adjustment-2026-08-28",
+      "event_date": "2026-08-28",
+      "title": "Site reputation abuse enforcement adjusted in the EEA",
+      "source_url": "https://developers.google.com/search/docs/essentials/spam-policies",
+      "category": "spam-policy",
+      "applicability": "sites-serving-users-in-the-eea",
+      "affected_components": [
+        "blog-audit",
+        "blog-strategy"
+      ],
+      "evidence_status": "confirmed",
+      "summary": "Google documented an EEA-specific enforcement adjustment for site reputation abuse. The underlying spam policy still applies, and guidance must preserve the regional scope rather than generalize the adjustment globally."
+    },
+    {
+      "id": "google-ads-api-v25-2-2026-09-23",
+      "event_date": "2026-09-23",
+      "title": "Google Ads API v25.2",
+      "source_url": "https://developers.google.com/google-ads/api/docs/release-notes",
+      "additional_source_urls": [
+        "https://developers.google.com/google-ads/api/docs/sunset-dates"
+      ],
+      "category": "api-currentness",
+      "applicability": "google-ads-keyword-planner-users",
+      "affected_components": [
+        "blog-google"
+      ],
+      "evidence_status": "confirmed",
+      "summary": "Google released Ads API v25.2 on September 23. Client-library and versioned-path changes still require offline compatibility tests before any credentialed request."
+    },
     {
       "id": "ranking-august-2026-spam",
       "event_date": "2026-08-18",

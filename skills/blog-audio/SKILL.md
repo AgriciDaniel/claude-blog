@@ -33,19 +33,23 @@ or two-speaker podcast dialogue. 30 voices, 80+ languages, HTML5 embed output.
 
 ## Prerequisites
 
-- Python 3.11+ (venv managed automatically by `run.py`)
+- Python 3.11+; the explicit setup action owns the managed venv
 - `GOOGLE_AI_API_KEY` environment variable (same key used by blog-image)
 - FFmpeg (for WAV-to-MP3 conversion; falls back to WAV if missing)
 
-## Always Use run.py Wrapper
+## Use the Installed run.py Wrapper
 
 ```bash
-# CORRECT:
-python3 scripts/run.py generate_audio.py --text "..." --voice Charon --json
-
-# WRONG:
-python3 scripts/generate_audio.py --text "..."  # Fails without venv
+BLOG_SKILLS_DIR="${CLAUDE_BLOG_SKILLS_DIR:-$HOME/.claude/skills}"
+case "$BLOG_SKILLS_DIR" in /*) ;; *) echo "ERROR: skills dir must be absolute" >&2; exit 1 ;; esac
+AUDIO_RUN="$BLOG_SKILLS_DIR/blog-audio/scripts/run.py"
+python3 "$AUDIO_RUN" generate_audio.py --text "..." --voice Charon --json
 ```
+
+Ordinary generate and voices commands perform a nonmutating capability check.
+If the managed environment is absent, return a setup-required result. Only
+`/blog audio setup` may create `.venv` or install dependencies. Never resolve
+the wrapper from the current project's `scripts/` directory.
 
 ## API Key Check (Gate Pattern)
 
@@ -70,7 +74,8 @@ For `/blog audio setup`:
 1. Check if `GOOGLE_AI_API_KEY` is set in environment
 2. If blog-image uses project `.mcp.json`, confirm the referenced env var is exported
 3. If not, guide user to https://aistudio.google.com/apikey
-4. Verify with a dry run: `python3 scripts/run.py generate_audio.py --text "Test" --dry-run --json`
+4. Create or refresh the managed environment, then verify with a dry run:
+   `python3 "$AUDIO_RUN" generate_audio.py --text "Test" --dry-run --json`
 
 ## Voice Selection
 
@@ -151,7 +156,7 @@ Write the prepared text to a file under the working directory, then call:
 
 ```bash
 # Single voice (summary or full mode)
-python3 scripts/run.py generate_audio.py \
+python3 "$AUDIO_RUN" generate_audio.py \
   --text-file blog_audio_prepared.txt \
   --voice Charon \
   --model flash \
@@ -159,7 +164,7 @@ python3 scripts/run.py generate_audio.py \
   --json
 
 # Two voices (dialogue mode)
-python3 scripts/run.py generate_audio.py \
+python3 "$AUDIO_RUN" generate_audio.py \
   --text-file blog_audio_dialogue.txt \
   --voice Puck \
   --voice2 Kore \
@@ -171,8 +176,18 @@ python3 scripts/run.py generate_audio.py \
 **Model selection:**
 - `flash` (default): maps to `gemini-3.1-flash-tts-preview`, good for summaries and standard narration.
 - `flash31`: explicit alias for `gemini-3.1-flash-tts-preview`.
+- `flash38`: `gemini-3.8-flash-tts`, through the Interactions API.
+- `flash-lite38`: `gemini-3.8-flash-lite-tts`, through the Interactions API.
 - `legacy-flash25`: retained only for older compatibility.
 - `pro` or `legacy-pro25`: maps to `gemini-2.5-pro-preview-tts`, use only when needed.
+
+The existing `flash` default remains on 3.1 for compatibility. The 3.8 aliases
+have offline SDK schema and WAV parsing checks; authenticated availability and
+voice quality still require provider testing. For 3.8, pass a verbatim transcript,
+not embedded narration directions. Dialogue must use explicit `Speaker1:` and
+`Speaker2:` lines; the helper does not infer speakers. Cost estimates use the
+reviewed 2026 promotional rates through December 31 and the published 2027 rates
+from January 1. They remain estimates, not a billing quote.
 
 ### Step 6: Deliver
 
@@ -217,7 +232,7 @@ When invoked internally from blog-write:
 - `text`: Prepared text (already cleaned by Claude)
 - `voice`: Voice name (default: Charon)
 - `voice2`: Second voice for dialogue (optional)
-- `model`: flash or pro
+- `model`: `flash`, `flash31`, `pro`, a retained `legacy-*` alias, `flash38`, or `flash-lite38`
 - `output_path`: Where to save the file
 
 **Output:**

@@ -27,25 +27,9 @@ def get_venv_python():
 
 
 def ensure_venv():
-    """Ensure virtual environment exists"""
-    skill_dir = Path(__file__).parent.parent
-    venv_dir = skill_dir / ".venv"
-    setup_script = skill_dir / "scripts" / "setup_environment.py"
-
-    # Check if venv exists
-    if not venv_dir.exists():
-        print("First-time setup: Creating virtual environment...")
-        print("   This may take a minute...")
-
-        # Run setup with system Python
-        result = subprocess.run([sys.executable, str(setup_script)])
-        if result.returncode != 0:
-            print("Failed to set up environment")
-            sys.exit(1)
-
-        print("Environment ready!")
-
-    return get_venv_python()
+    """Return the configured interpreter without mutating the environment."""
+    venv_python = get_venv_python()
+    return venv_python if venv_python.is_file() else None
 
 
 def wants_json(args):
@@ -102,8 +86,15 @@ def main():
     if not script_path.exists():
         emit_error(f"Script not found: {script_name}", 1, as_json)
 
-    # Ensure venv exists and get Python executable
+    # Ordinary runs are read-only with respect to the managed environment.
+    # Installation is reserved for the explicit setup_environment.py command.
     venv_python = ensure_venv()
+    if venv_python is None:
+        emit_error(
+            "Blog Audio setup required. Run: python3 skills/blog-audio/scripts/setup_environment.py",
+            1,
+            as_json,
+        )
 
     # Build command
     cmd = [str(venv_python), str(script_path)] + script_args

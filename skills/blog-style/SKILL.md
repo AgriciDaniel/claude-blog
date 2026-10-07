@@ -28,19 +28,21 @@ containing posts.
 Run the local learner:
 
 ```bash
-python3 scripts/style_learn.py <paths> --format markdown
+BLOG_SCRIPT_DIR="${CLAUDE_BLOG_SCRIPTS_DIR:-$HOME/.claude/scripts}"
+case "$BLOG_SCRIPT_DIR" in /*) ;; *) echo "ERROR: script dir must be absolute" >&2; exit 1 ;; esac
+python3 "$BLOG_SCRIPT_DIR/style_learn.py" <paths> --format markdown
 ```
 
 For machine-readable output:
 
 ```bash
-python3 scripts/style_learn.py <paths> --format json --output voice-profile.json
+python3 "$BLOG_SCRIPT_DIR/style_learn.py" <paths> --format json --output voice-profile.json
 ```
 
 For a VOICE.md-ready block:
 
 ```bash
-python3 scripts/style_learn.py <paths> --format markdown --output VOICE.md
+python3 "$BLOG_SCRIPT_DIR/style_learn.py" <paths> --format markdown --output VOICE.md
 ```
 
 If fewer than the requested minimum sample count is supplied, warn and continue.

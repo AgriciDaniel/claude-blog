@@ -36,11 +36,11 @@ except ImportError:
     sys.exit(1)
 
 try:
-    from google_auth import get_oauth_credentials
+    from google_auth import describe_google_api_error, get_oauth_credentials
 except ImportError:
     import os
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-    from google_auth import get_oauth_credentials
+    from google_auth import describe_google_api_error, get_oauth_credentials
 
 INDEXING_SCOPES = ["https://www.googleapis.com/auth/indexing"]
 DAILY_QUOTA = 200
@@ -182,10 +182,8 @@ def notify_url(
     except Exception as e:
         error_str = str(e)
         if "403" in error_str:
-            result["error"] = (
-                "Permission denied. The service account must be added as an "
-                "Owner in Google Search Console for this domain. "
-                "Also ensure the Indexing API is enabled in your GCP project."
+            result["error"] = describe_google_api_error(
+                e, 'Indexing', "Check the service account's Owner access in Google Search Console for this domain."
             )
         elif "429" in error_str:
             result["error"] = (

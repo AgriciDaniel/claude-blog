@@ -146,7 +146,10 @@ Each row: `keys[]`, `clicks`, `impressions`, `ctr`, `position`.
 
 ---
 
-## GA4 Data API v1beta
+## Google Analytics Data API v1
+
+This integration uses the `google.analytics.data_v1beta` Python client
+namespace and its beta endpoint. The product documentation is Data API v1.
 
 **Base URL:** `https://analyticsdata.googleapis.com/v1beta`
 
@@ -214,9 +217,10 @@ Gold-standard source for keyword search volume. Methods: **GenerateKeywordIdeas*
 from seeds), **GenerateKeywordHistoricalMetrics** (volume for specific keywords), and
 **GenerateKeywordForecastMetrics** (future projections). Returns volume, competition, CPC bids.
 
-**Current API version guidance:** Google Ads API release notes list v25.1 dated
-2026-08-19. Google's support table lists Python client 31.2.0 as the minimum for
-API v25. Check both official pages before changing a client or versioned path:
+**Current API version guidance:** Google Ads API release notes list v25.2 dated
+2026-09-23. Check the release notes and support table together before changing
+a client or versioned path. The repository's existing client constraint may
+lag the current Python package, so validate Keyword Plan compatibility offline:
 https://developers.google.com/google-ads/api/docs/release-notes
 https://developers.google.com/google-ads/api/docs/sunset-dates
 

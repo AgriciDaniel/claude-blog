@@ -23,7 +23,9 @@ identified. Not a standalone user-facing command.
 For supported chart types, prefer the deterministic CLI:
 
 ```bash
-python3 skills/blog-chart/scripts/generate_chart_svg.py --input chart.json --output chart.html --json
+BLOG_SKILLS_DIR="${CLAUDE_BLOG_SKILLS_DIR:-$HOME/.claude/skills}"
+case "$BLOG_SKILLS_DIR" in /*) ;; *) echo "ERROR: skills dir must be absolute" >&2; exit 1 ;; esac
+python3 "$BLOG_SKILLS_DIR/blog-chart/scripts/generate_chart_svg.py" --input chart.json --output chart.html --json
 ```
 
 ## Input Format

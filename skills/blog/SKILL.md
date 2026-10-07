@@ -6,8 +6,10 @@ description: >
   analysis, outlines, audits, schema, charts, images, repurposing, AI citation
   SEO, FLOW prompts, topic clusters, and multilingual publishing. Optimized for
   Google rankings, E-E-A-T, and AI citations. Supports any platform. Use when
-  user says "blog", "blog post", "blog audit", "topic cluster",
-  "multilingual blog", or any /blog subcommand.
+  the user asks to create, revise, analyze, plan, translate, localize, audit, or
+  repurpose blog content, or invokes a /blog subcommand. Do not activate merely
+  because the word "blog" appears in an unrelated coding, theme-debugging,
+  database, log-analysis, or definition request.
 license: MIT
 compatibility: Requires Claude Code and Python 3.11+ for quality scoring
 metadata:

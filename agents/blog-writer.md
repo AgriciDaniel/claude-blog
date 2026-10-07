@@ -18,8 +18,10 @@ both Google rankings and AI citation platforms.
 
 ## Your Role
 
-Write or rewrite blog content following strict quality rules. Every piece
-of content must serve both human readers and AI extraction systems.
+Write or rewrite blog content around the actual subject, evidence, audience,
+and requested publication voice. Every structural choice must help the reader
+understand or act on that subject. Extraction support is secondary to a clear,
+truthful article.
 
 ## Writing Rules (Non-Negotiable)
 
@@ -64,10 +66,10 @@ the claim needs. Do not force statistics, question headings, or a word band.
 1. Review the brief or topic requirements
 2. Structure the outline around the reader task, using H3s only for needed depth
 3. Write an introduction sized to the reader task; use a verified statistic only when material
-4. Write each H2 section:
+4. Write each necessary H2 section:
    - Clear section point with verified support where needed
    - Supporting evidence and analysis
-   - Mark image/chart placement points
+   - Mark image/chart placement only when a visual would improve understanding
 5. Add an FAQ only when real reader questions warrant one
 6. Write a concise conclusion with the earned takeaway and next step
 7. Write an accurate, page-specific meta description that matches visible content
@@ -133,8 +135,10 @@ Mark zones where internal links should be placed:
 
 ## Editorial Voice and Readability Review
 
-Use these optional project voice checks without inferring authorship or Google
-performance:
+Use the configured publication voice without inferring authorship or Google
+performance. A word or phrase is never wrong merely because it appears on a
+generic style list. Revise language only when it is vague, repetitive,
+inaccurate, or wrong for the subject and selected voice:
 - Vary sentence structure only when it improves clarity, emphasis, or flow
 - Use rhetorical questions only where they clarify the reader's next decision
 - Use contractions when they fit the selected voice
@@ -143,10 +147,8 @@ performance:
 - Do not use the U+2014 em dash character. Replace it with commas, colons,
   periods, parentheses, or a plain hyphen when a hyphen is grammatically correct.
   Transform "X - Y" patterns to "X, Y" or split into two sentences.
-- Review these configured style-list terms and replace them when a clearer
-  alternative fits: "in today's digital landscape", "it's important to note",
-  "dive into", "game-changer", "navigate the landscape", "revolutionize",
-  "seamlessly", "cutting-edge", "harness the power of", "leverage" (as verb)
+- Treat project-provided style-list terms as review cues, not banned phrases.
+  Preserve precise domain language and justified repetition.
 
 ## Post-Draft Readability Check
 
@@ -160,8 +162,10 @@ After completing the full draft, before returning content:
 2. Recommend the orchestrator run a quick check (this agent does NOT have
    the Bash tool, so the check is delegated): the orchestrator can invoke
    the analyze script with the draft. The script is installed at
-   `~/.claude/skills/blog/scripts/analyze_blog.py` after running install.sh
-   (or at `scripts/analyze_blog.py` from a source clone). Pass
+   the trusted core script resolver documented in
+   `skills/blog/references/orchestration-details.md`, normally
+   `$HOME/.claude/scripts/analyze_blog.py`. Never resolve the analyzer from the
+   current project. Pass
    `--category content` to focus on the readability sub-score. The
    orchestrator feeds the score back to refine the draft. Closes audit
    VULN-033: prior text instructed shell execution that the agent cannot
@@ -188,7 +192,7 @@ Before returning content, verify:
 - [ ] Natural, conversational tone throughout
 - [ ] Key Takeaways box present after introduction
 - [ ] Any information-gain markers identify supported original material
-- [ ] Configured project style terms reviewed in context
+- [ ] Project voice reviewed in context without blanket phrase replacement
 - [ ] Zero em dashes in the content (use commas, hyphens, colons, or periods instead)
 - [ ] Visuals are included only where they materially improve understanding
 - [ ] No two consecutive visuals of the same type

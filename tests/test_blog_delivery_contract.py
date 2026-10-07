@@ -18,6 +18,7 @@ Stdlib + pytest only.
 from __future__ import annotations
 
 import json
+import importlib.util
 import re
 import subprocess
 import sys
@@ -175,13 +176,24 @@ def test_pyproject_declares_presentation_group() -> None:
 
 
 def test_installers_ship_all_new_scripts() -> None:
-    """The 3 new v1.9.0 scripts must be uninstall-aware (install.sh uses a
-    glob, but uninstall.sh enumerates explicitly)."""
-    uninstall_sh = (ROOT / "uninstall.sh").read_text(encoding="utf-8")
-    uninstall_ps1 = (ROOT / "uninstall.ps1").read_text(encoding="utf-8")
+    """Delivery helpers belong to the shared install and receipt inventory.
+
+    Unix inventory is executed here. Windows checks are source-only and its
+    disposable native smoke remains a separate environment gate.
+    """
+    spec = importlib.util.spec_from_file_location("delivery_installer_ownership", ROOT / "scripts/installer_ownership.py")
+    ownership = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = ownership
+    spec.loader.exec_module(ownership)
+    destinations = {str(relative) for relative in ownership.build_inventory(ROOT)[0]}
     for script in ("blog_preflight.py", "blog_render.py", "generate_hero.py"):
-        assert script in uninstall_sh, f"uninstall.sh missing {script}"
-        assert script in uninstall_ps1, f"uninstall.ps1 missing {script}"
+        assert f"scripts/{script}" in destinations, f"installer inventory missing {script}"
+    assert 'scripts/installer_ownership.py"' in (ROOT / "uninstall.sh").read_text(encoding="utf-8")
+    windows = (ROOT / "scripts/windows_installer_ownership.ps1").read_text(encoding="utf-8")
+    assert "-Filter '*.py'" in windows
+    assert 'Add-CBPlanFile $plan $scriptFile.FullName "scripts/$($scriptFile.Name)"' in windows
+    assert "Read-CBReceipt $manifest $profile" in windows
+    assert "Invoke-ClaudeBlogUninstall" in (ROOT / "uninstall.ps1").read_text(encoding="utf-8")
 
 
 # ---------------------------------------------------------------------------

@@ -171,7 +171,26 @@ Scan the output for machine-translation artifacts before reporting done:
 Flag every issue inline (file path, line number, fix suggestion). The
 translator agent should re-pass any flagged passage before delivery.
 
-### Phase 7: Delivery
+### Phase 7: Final Artifact Delivery Contract
+
+Translation can change claims, links, metadata, schema, and rendered layout.
+Before calling any translated file complete or publication-ready, run the same
+five-gate contract as `/blog write` against each final locale independently:
+
+1. Resolve `BLOG_SCRIPT_DIR="${CLAUDE_BLOG_SCRIPTS_DIR:-$HOME/.claude/scripts}"`
+   and reject it unless absolute. Never resolve a helper from the current
+   project's `scripts/` directory.
+2. Create a per-locale delivery staging directory under the intended language
+   output, copy the final locale file there under its localized slug, and
+   generate or reuse a locale-appropriate hero.
+3. Run `python3 "$BLOG_SCRIPT_DIR/blog_render.py" --md <locale-file> --out-dir <locale-delivery-dir>`.
+4. Run `python3 "$BLOG_SCRIPT_DIR/blog_preflight.py" --draft <locale-delivery-dir> --init-review-nonce`, then pass only the printed nonce to a fresh `blog-reviewer` invocation against the rendered locale HTML.
+5. Run `python3 "$BLOG_SCRIPT_DIR/blog_preflight.py" --draft <locale-delivery-dir> --strict --slug <localized-slug>`.
+6. Require 90+/100, zero P0, the matching nonce, final `BLOCKING: false`, and
+   all other gates. A failed locale remains `draft-blocked`; report its
+   diagnostic and do not describe it as complete.
+
+### Phase 8: Delivery
 
 ```
 ## Translation complete: [Original title]
@@ -183,8 +202,8 @@ translator agent should re-pass any flagged passage before delivery.
 ### Translations
 | Language | File | Keywords adapted | Status |
 |----------|------|------------------|--------|
-| de | translations/de/{slug}.md | [N] | ok |
-| fr | translations/fr/{slug}.md | [N] | ok |
+| de | translations/de/{slug}.md | [N] | passed / draft-blocked |
+| fr | translations/fr/{slug}.md | [N] | passed / draft-blocked |
 
 ### Quality checks
 - Structural integrity: pass / fail per language
@@ -192,6 +211,7 @@ translator agent should re-pass any flagged passage before delivery.
 - Numbers, dates, currencies formatted per locale: pass / fail
 - Keywords localized: [N] keywords adapted
 - Machine-translation artifacts flagged: [N] (see notes above)
+- Delivery contract: score, P0 status, nonce verification, and preflight report per locale
 
 ### Next steps
 - Run `/blog localize <file> --locale <code>` for cultural deep-adaptation.

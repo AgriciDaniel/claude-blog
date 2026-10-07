@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "status": "market-ready",
+  "status": "scaffolded",
   "domain": "blog content creation, optimization, and management dual-optimized for Google rankings (E-E-A-T, the 2026 core updates) and AI citations (GEO/AEO), spanning writing, rewriting and freshness, SERP-informed briefs and outlines, editorial calendars and strategy, semantic topic clusters, schema and internal linking, multilingual publishing, the FLOW framework, factchecking, personas, distribution, and the blog delivery contract, grounded in the claude-blog skill",
   "generic_only": false,
-  "last_verified": "2026-08-25",
-  "release_note": "Blog post, topic cluster, and GEO citation audit JSON adapter paths are implemented, CLI-wired, and covered by subprocess tests. Market-ready verification passed after all 118 due source-ledger entries received explicit content, manual, or corrected review decisions on 2026-08-25.",
+  "last_verified": "2026-10-07",
+  "release_note": "Blog post, topic cluster, and GEO citation audit JSON adapter paths are implemented, CLI-wired, and covered by subprocess tests. The 2026-08-25 market-ready result is historical evidence. On 2026-10-07, adapter regressions pass but 66 source records remain stale; this metadata does not advance source-ledger review dates.",
   "raw_input_types": [
     "blog-post input JSON using schemas/blog-post-input.schema.json",
     "Markdown body supplied through blog-post input JSON",
@@ -237,5 +237,6 @@
       "status": "implemented",
       "planned": false
     }
-  ]
+  ],
+  "verification_scope": "Adapter regression checks only: Python 3.11, 17 tests passed. Overall research freshness and market readiness remain blocked."
 }

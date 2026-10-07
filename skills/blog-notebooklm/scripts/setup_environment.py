@@ -144,6 +144,10 @@ class SkillEnvironment:
         if stamp:
             self.stamp_file.write_text(stamp)
 
+    def runtime_ready(self) -> bool:
+        """Return whether scripts can run without changing the environment."""
+        return self.venv_python.is_file() and self.dependencies_current()
+
     def resolve_script_path(self, script_name: str) -> Path:
         """Resolve a script path and require it to stay in scripts/."""
         if script_name.startswith("scripts/") or script_name.startswith("scripts\\"):
@@ -168,9 +172,13 @@ class SkillEnvironment:
             print(f"❌ Script not found: {script_path}")
             return 1
 
-        # Ensure venv is set up
-        if not self.ensure_venv():
-            print("❌ Failed to set up environment")
+        # --run must not install packages or browsers as a side effect. The
+        # default setup command is the explicit mutating entry point.
+        if not self.runtime_ready():
+            print(
+                "❌ NotebookLM setup required. Run setup_environment.py "
+                "without --run before running a script"
+            )
             return 1
 
         # Build command

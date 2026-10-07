@@ -9,12 +9,17 @@ Adapted from Nielsen's 10 Usability Heuristics via the impeccable plugin (Paul B
 | Score | Meaning | Severity tag | When to assign |
 |---|---|---|---|
 | 0 | Absent or actively wrong | P0 (blocking) | Fabricated stat, broken structure, plagiarism risk |
-| 1 | Major gaps; most checks fail | P1 (ship-blocker) | Missing source on load-bearing claim, major reader-task failure |
+| 1 | Major gaps; most checks fail | P1 (urgent remediation) | Important but nonblocking weakness after every ship-blocking defect has been classified P0 |
 | 2 | Mixed; important checks fail | P2 (publish then iterate) | Weak heading, missing schema, suboptimal opener |
 | 3 | Good; minor gaps | P3 (nice to have) | Cosmetic, marginal SEO, stylistic preference |
 | 4 | Genuinely excellent (rare) | (none) | "Would cite in a meta-review of best-practice blog craft" |
 
-A 0 or 1 on any heuristic generates at least one P0 or P1. Most strong production posts land 2 to 3 across the board.
+A 0 or 1 on any heuristic generates at least one P0 or P1. P0 is the only
+absolute severity blocker: fabricated evidence, an unsupported load-bearing
+claim, plagiarism risk, broken primary structure, or another defect that makes
+publication unsafe or materially misleading is P0. P1 is urgent remediation
+that does not independently block a draft already at 90 or above with zero P0.
+Most strong production posts land 2 to 3 across the board.
 
 ## Nielsen mapping
 

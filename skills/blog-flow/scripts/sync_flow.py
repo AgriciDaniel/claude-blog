@@ -196,7 +196,7 @@ def _load_lock() -> dict[str, str]:
     return entries
 
 
-def sync(ref: str, dry_run: bool = False) -> dict[str, Any]:
+def sync(ref: str, dry_run: bool = False, allow_drift: bool = False) -> dict[str, Any]:
     token = _github_token()
     summary: dict[str, Any] = {
         "status": "success",
@@ -209,8 +209,10 @@ def sync(ref: str, dry_run: bool = False) -> dict[str, Any]:
         "lock_drift": [],
         "errors": [],
     }
+    lock_exists = LOCK_FILE.exists()
     lock = _load_lock()
     new_lock: dict[str, str] = {}
+    pending: list[tuple[Path, bytes]] = []
 
     for path in SYNC_PATHS:
         try:
@@ -220,9 +222,6 @@ def sync(ref: str, dry_run: bool = False) -> dict[str, Any]:
             target = _target_for(path)
             digest = hashlib.sha256(content).hexdigest()
             new_lock[lock_rel] = digest
-            old_digest = lock.get(lock_rel)
-            if old_digest and old_digest != digest:
-                summary["lock_drift"].append(rel)
             if target.exists() and target.read_bytes() == content:
                 summary["unchanged"].append(rel)
                 continue
@@ -230,8 +229,7 @@ def sync(ref: str, dry_run: bool = False) -> dict[str, Any]:
                 summary["updated"].append(rel)
             else:
                 summary["added"].append(rel)
-            if not dry_run:
-                _atomic_write(target, content)
+            pending.append((target, content))
         except urllib.error.HTTPError as exc:
             if exc.code == 403 and not token:
                 token = _github_token()
@@ -247,12 +245,10 @@ def sync(ref: str, dry_run: bool = False) -> dict[str, Any]:
                         summary["unchanged"].append(rel)
                     elif target.exists():
                         summary["updated"].append(rel)
-                        if not dry_run:
-                            _atomic_write(target, content)
+                        pending.append((target, content))
                     else:
                         summary["added"].append(rel)
-                        if not dry_run:
-                            _atomic_write(target, content)
+                        pending.append((target, content))
                     continue
                 except Exception as retry_exc:
                     summary["errors"].append({"path": path, "error": str(retry_exc)})
@@ -261,9 +257,27 @@ def sync(ref: str, dry_run: bool = False) -> dict[str, Any]:
         except Exception as exc:
             summary["errors"].append({"path": path, "error": str(exc)})
 
+    if lock_exists:
+        for lock_rel, digest in sorted(new_lock.items()):
+            if lock.get(lock_rel) != digest:
+                summary["lock_drift"].append(lock_rel.removeprefix(f"{LOCK_PREFIX}/"))
+        for lock_rel in sorted(set(lock) - set(new_lock)):
+            summary["lock_drift"].append(lock_rel.removeprefix(f"{LOCK_PREFIX}/"))
+
     if summary["errors"]:
         summary["status"] = "error"
+    elif summary["lock_drift"] and not dry_run and not allow_drift:
+        summary["status"] = "error"
+        summary["errors"].append({
+            "path": str(LOCK_FILE),
+            "error": (
+                "Lockfile drift detected; reviewed references were not changed. "
+                "Review the upstream diff, then rerun with --allow-drift to accept it."
+            ),
+        })
     elif not dry_run:
+        for target, content in pending:
+            _atomic_write(target, content)
         lines = [f"{digest}  {rel}\n" for rel, digest in sorted(new_lock.items())]
         _atomic_write(LOCK_FILE, "".join(lines).encode("utf-8"))
 
@@ -274,12 +288,17 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Sync blog-applicable FLOW prompt files")
     parser.add_argument("--dry-run", action="store_true", help="Report planned changes without writing")
     parser.add_argument("--ref", default="main", help="Branch, tag, or commit SHA to fetch")
+    parser.add_argument(
+        "--allow-drift",
+        action="store_true",
+        help="Accept reviewed upstream changes and update flow-prompts.lock",
+    )
     return parser.parse_args()
 
 
 def main() -> int:
     args = parse_args()
-    result = sync(args.ref, dry_run=args.dry_run)
+    result = sync(args.ref, dry_run=args.dry_run, allow_drift=args.allow_drift)
     print(json.dumps(result, indent=2))
     return 0 if result["status"] == "success" else 1
 

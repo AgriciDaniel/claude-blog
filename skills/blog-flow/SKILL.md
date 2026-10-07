@@ -96,7 +96,9 @@ blog workflows route off-site work elsewhere.
    `claude-seo` (`/seo flow local`) if they need them.
 
 ### On `/blog flow sync`
-1. Run: `python3 scripts/sync_flow.py`.
+1. Resolve the trusted core scripts root:
+   `BLOG_SCRIPT_DIR="${CLAUDE_BLOG_SCRIPTS_DIR:-$HOME/.claude/scripts}"`, reject
+   it unless absolute, then run `python3 "$BLOG_SCRIPT_DIR/sync_flow.py"`.
 2. Display the JSON summary (files added, updated, unchanged).
 3. Show the attribution notice after the sync completes.
 
@@ -140,18 +142,18 @@ If `references/` is missing, instruct the user to run `/blog flow sync` first.
 
 ## Sync Script
 
-`scripts/sync_flow.py` pulls prompt files from github.com/AgriciDaniel/flow and
+The trusted installed `sync_flow.py` pulls prompt files from github.com/AgriciDaniel/flow and
 writes them under `skills/blog-flow/references/`. Stdlib only, HTTPS only,
 host-allowlisted to `api.github.com`, 5 MB response cap, atomic writes,
 path-traversal guarded.
 
 Modes:
 
-- `python3 scripts/sync_flow.py`. Sync the latest version of every blog-relevant
+- `python3 "$BLOG_SCRIPT_DIR/sync_flow.py"`. Sync the latest version of every blog-relevant
   stage to disk and refresh the lockfile.
-- `python3 scripts/sync_flow.py --dry-run`. Report planned changes without
+- `python3 "$BLOG_SCRIPT_DIR/sync_flow.py" --dry-run`. Report planned changes without
   writing.
-- `python3 scripts/sync_flow.py --ref <sha>`. Pin fetches to a specific FLOW
+- `python3 "$BLOG_SCRIPT_DIR/sync_flow.py" --ref <sha>`. Pin fetches to a specific FLOW
   commit SHA for reproducible installs.
 
 The lockfile lives at

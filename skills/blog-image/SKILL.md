@@ -241,14 +241,19 @@ Bad: `SEO AI marketing blog optimization image`
 
 For `/blog image setup`:
 
-1. Run `python3 skills/blog-image/scripts/setup_image_mcp.py` (interactive)
-   - Prefer: `GOOGLE_AI_API_KEY=... python3 skills/blog-image/scripts/setup_image_mcp.py`
-   - Or: `python3 skills/blog-image/scripts/setup_image_mcp.py --key-file /path/to/key.txt`
+Resolve `BLOG_SKILLS_DIR="${CLAUDE_BLOG_SKILLS_DIR:-$HOME/.claude/skills}"`
+and reject it unless it is absolute. Setup is the only action allowed to change
+image capability configuration.
+
+1. Run `python3 "$BLOG_SKILLS_DIR/blog-image/scripts/setup_image_mcp.py"` (interactive)
+   - Prefer exporting `GOOGLE_AI_API_KEY` before invoking the setup script so a
+     literal key does not enter shell history
+   - Or: `python3 "$BLOG_SKILLS_DIR/blog-image/scripts/setup_image_mcp.py" --key-file /path/to/key.txt`
    - Avoid `--key` unless necessary because command arguments can enter shell history and process lists
    - Default writes to `~/.claude/settings.json` (user-private, mode 0600)
    - `--project` flag opts into project `.mcp.json` (env-expansion only,
      refuses to write a literal key into a tracked file)
-2. Verify: `python3 skills/blog-image/scripts/validate_image_setup.py`
+2. Verify: `python3 "$BLOG_SKILLS_DIR/blog-image/scripts/validate_image_setup.py"`
 3. Requires:
    - Node.js 18+ (npx)
    - Google AI API key, free to create at https://aistudio.google.com/apikey

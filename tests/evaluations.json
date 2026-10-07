@@ -67,5 +67,275 @@
       "Generates editorial calendar",
       "Includes content mix recommendations"
     ]
+  },
+  {
+    "name": "brief-command-route",
+    "skills": ["blog"],
+    "query": "/blog brief passwordless authentication",
+    "expected_behavior": ["Routes to blog-brief sub-skill"]
+  },
+  {
+    "name": "outline-command-route",
+    "skills": ["blog"],
+    "query": "/blog outline migrating from REST to GraphQL",
+    "expected_behavior": ["Routes to blog-outline sub-skill"]
+  },
+  {
+    "name": "seo-check-command-route",
+    "skills": ["blog"],
+    "query": "/blog seo-check ./posts/example.md",
+    "expected_behavior": ["Routes to blog-seo-check sub-skill"]
+  },
+  {
+    "name": "schema-command-route",
+    "skills": ["blog"],
+    "query": "/blog schema ./posts/example.md",
+    "expected_behavior": ["Routes to blog-schema sub-skill"]
+  },
+  {
+    "name": "repurpose-command-route",
+    "skills": ["blog"],
+    "query": "/blog repurpose ./posts/example.md",
+    "expected_behavior": ["Routes to blog-repurpose sub-skill"]
+  },
+  {
+    "name": "geo-command-route",
+    "skills": ["blog"],
+    "query": "/blog geo ./posts/example.md",
+    "expected_behavior": ["Routes to blog-geo sub-skill"]
+  },
+  {
+    "name": "audit-command-route",
+    "skills": ["blog"],
+    "query": "/blog audit ./posts",
+    "expected_behavior": ["Routes to blog-audit sub-skill"]
+  },
+  {
+    "name": "image-command-route",
+    "skills": ["blog"],
+    "query": "/blog image",
+    "expected_behavior": ["Routes to blog-image and asks which image action is needed without configuring or generating"]
+  },
+  {
+    "name": "cannibalization-command-route",
+    "skills": ["blog"],
+    "query": "/blog cannibalization ./posts",
+    "expected_behavior": ["Routes to blog-cannibalization sub-skill"]
+  },
+  {
+    "name": "factcheck-command-route",
+    "skills": ["blog"],
+    "query": "/blog factcheck ./posts/example.md",
+    "expected_behavior": ["Routes to blog-factcheck sub-skill"]
+  },
+  {
+    "name": "persona-command-route",
+    "skills": ["blog"],
+    "query": "/blog persona list",
+    "expected_behavior": ["Routes to blog-persona list mode"]
+  },
+  {
+    "name": "taxonomy-command-route",
+    "skills": ["blog"],
+    "query": "/blog taxonomy audit",
+    "expected_behavior": ["Routes to blog-taxonomy audit mode"]
+  },
+  {
+    "name": "notebooklm-command-route",
+    "skills": ["blog"],
+    "query": "/blog notebooklm status",
+    "expected_behavior": ["Routes to blog-notebooklm status mode and performs only a nonmutating capability check"]
+  },
+  {
+    "name": "audio-command-route",
+    "skills": ["blog"],
+    "query": "/blog audio voices",
+    "expected_behavior": ["Routes to blog-audio voices mode without installing dependencies"]
+  },
+  {
+    "name": "google-command-route",
+    "skills": ["blog"],
+    "query": "/blog google",
+    "expected_behavior": ["Routes to blog-google and shows its command menu without calling an API"]
+  },
+  {
+    "name": "cluster-command-route",
+    "skills": ["blog"],
+    "query": "/blog cluster plan zero trust architecture",
+    "expected_behavior": ["Routes to blog-cluster plan mode"]
+  },
+  {
+    "name": "multilingual-command-route",
+    "skills": ["blog"],
+    "query": "/blog multilingual observability --languages de,fr",
+    "expected_behavior": ["Routes to blog-multilingual and preserves both locale targets"]
+  },
+  {
+    "name": "translate-command-route",
+    "skills": ["blog"],
+    "query": "/blog translate ./posts/example.md --to de",
+    "expected_behavior": ["Routes to blog-translate and requires final-locale delivery review"]
+  },
+  {
+    "name": "localize-command-route",
+    "skills": ["blog"],
+    "query": "/blog localize ./translations/de/example.md --locale de-DE",
+    "expected_behavior": ["Routes to blog-localize and requires final-locale delivery review"]
+  },
+  {
+    "name": "locale-audit-command-route",
+    "skills": ["blog"],
+    "query": "/blog locale-audit ./translations",
+    "expected_behavior": ["Routes to blog-locale-audit sub-skill"]
+  },
+  {
+    "name": "flow-command-route",
+    "skills": ["blog"],
+    "query": "/blog flow prompts",
+    "expected_behavior": ["Routes to blog-flow prompts index without syncing"]
+  },
+  {
+    "name": "brand-command-route",
+    "skills": ["blog"],
+    "query": "/blog brand show",
+    "expected_behavior": ["Routes to blog-brand show mode"]
+  },
+  {
+    "name": "discourse-command-route",
+    "skills": ["blog"],
+    "query": "/blog discourse passwordless adoption",
+    "expected_behavior": ["Routes to blog-discourse sub-skill"]
+  },
+  {
+    "name": "style-command-route",
+    "skills": ["blog"],
+    "query": "/blog style learn ./posts",
+    "expected_behavior": ["Routes to blog-style learn mode"]
+  },
+  {
+    "name": "decay-command-route",
+    "skills": ["blog"],
+    "query": "/blog decay current.json previous.json",
+    "expected_behavior": ["Routes to blog-decay sub-skill"]
+  },
+  {
+    "name": "update-alias-route",
+    "skills": ["blog"],
+    "query": "/blog update ./posts/example.md",
+    "expected_behavior": ["Routes to blog-rewrite in freshness-update mode"]
+  },
+  {
+    "name": "plan-alias-route",
+    "skills": ["blog"],
+    "query": "/blog plan quarterly",
+    "expected_behavior": ["Routes to blog-calendar sub-skill"]
+  },
+  {
+    "name": "ideation-alias-route",
+    "skills": ["blog"],
+    "query": "/blog ideation developer tools",
+    "expected_behavior": ["Routes to blog-strategy sub-skill"]
+  },
+  {
+    "name": "voice-of-customer-alias-route",
+    "skills": ["blog"],
+    "query": "/blog voice-of-customer passkeys",
+    "expected_behavior": ["Routes to blog-discourse sub-skill"]
+  },
+  {
+    "name": "seo-alias-route",
+    "skills": ["blog"],
+    "query": "/blog seo ./posts/example.md",
+    "expected_behavior": ["Routes to blog-seo-check sub-skill"]
+  },
+  {
+    "name": "aeo-alias-route",
+    "skills": ["blog"],
+    "query": "/blog aeo ./posts/example.md",
+    "expected_behavior": ["Routes to blog-geo sub-skill"]
+  },
+  {
+    "name": "health-alias-route",
+    "skills": ["blog"],
+    "query": "/blog health ./posts",
+    "expected_behavior": ["Routes to blog-audit sub-skill"]
+  },
+  {
+    "name": "notebook-alias-route",
+    "skills": ["blog"],
+    "query": "/blog notebook status",
+    "expected_behavior": ["Routes to blog-notebooklm status mode"]
+  },
+  {
+    "name": "narrate-alias-route",
+    "skills": ["blog"],
+    "query": "/blog narrate",
+    "expected_behavior": ["Routes to blog-audio and requests a file without installing dependencies"]
+  },
+  {
+    "name": "gsc-alias-route",
+    "skills": ["blog"],
+    "query": "/blog gsc",
+    "expected_behavior": ["Routes to blog-google GSC mode and requests required arguments before any API call"]
+  },
+  {
+    "name": "topic-cluster-alias-route",
+    "skills": ["blog"],
+    "query": "/blog topic-cluster plan observability",
+    "expected_behavior": ["Routes to blog-cluster plan mode"]
+  },
+  {
+    "name": "international-alias-route",
+    "skills": ["blog"],
+    "query": "/blog international observability --languages de,fr",
+    "expected_behavior": ["Routes to blog-multilingual sub-skill"]
+  },
+  {
+    "name": "cultural-adaptation-alias-route",
+    "skills": ["blog"],
+    "query": "/blog cultural-adaptation ./translations/de/example.md --locale de-DE",
+    "expected_behavior": ["Routes to blog-localize sub-skill"]
+  },
+  {
+    "name": "translation-audit-alias-route",
+    "skills": ["blog"],
+    "query": "/blog translation-audit ./translations",
+    "expected_behavior": ["Routes to blog-locale-audit sub-skill"]
+  },
+  {
+    "name": "flow-long-alias-route",
+    "skills": ["blog"],
+    "query": "/blog find-leverage-optimize-win",
+    "expected_behavior": ["Routes to blog-flow overview"]
+  },
+  {
+    "name": "negative-blog-theme-debug",
+    "skills": ["blog"],
+    "query": "Debug the CSS on my blog theme",
+    "expected_behavior": ["Blog content engine should NOT activate"]
+  },
+  {
+    "name": "negative-blog-parser-code",
+    "skills": ["blog"],
+    "query": "Write a Python parser for a variable named blog",
+    "expected_behavior": ["Blog content engine should NOT activate"]
+  },
+  {
+    "name": "negative-blog-definition",
+    "skills": ["blog"],
+    "query": "What does the word blog mean?",
+    "expected_behavior": ["Blog content engine should NOT activate"]
+  },
+  {
+    "name": "missing-subcommand-recovery",
+    "skills": ["blog"],
+    "query": "/blog",
+    "expected_behavior": ["Shows or asks for one of the supported actions without running a sub-skill"]
+  },
+  {
+    "name": "product-review-evidence-recovery",
+    "skills": ["blog"],
+    "query": "/blog write Is ExampleTool worth it? I have not used or tested it.",
+    "expected_behavior": ["Does not claim first-hand testing; selects a supported sourced format or returns an evidence-needs brief"]
   }
 ]

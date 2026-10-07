@@ -48,6 +48,8 @@ SURFACES = (
     ".github/SECURITY.md",
     "install.sh",
     "install.ps1",
+    "uninstall.sh",
+    "uninstall.ps1",
     "skills/blog/SKILL.md",
 )
 FORBIDDEN_PATTERNS = {
@@ -104,9 +106,34 @@ def validate(root: Path) -> dict:
             if path.name.startswith("PUBLIC-BACKLOG-TRIAGE-"):
                 errors.append({"kind": "private_triage_note", "file": relative})
 
+    # Inspect maintained execution and instruction surfaces as well as the
+    # canonical release metadata. Historical raw captures and test fixtures
+    # are evidence, and are intentionally outside this distribution check.
+    for directory, patterns in {
+        "skills": ("*.md", "*.py", "*.json", "*.txt"),
+        "agents": ("*.md",),
+        "scripts": ("*.py", "*.ps1"),
+        "data": ("*.json",),
+        ".github/workflows": ("*.yml", "*.yaml"),
+    }.items():
+        for pattern in patterns:
+            for path in (root / directory).rglob(pattern):
+                if path.is_symlink() or any(part in {".venv", "__pycache__"} for part in path.parts):
+                    continue
+                relative = path.relative_to(root).as_posix()
+                contents.setdefault(relative, path.read_text(encoding="utf-8"))
+
     for relative, text in contents.items():
+        if relative == "scripts/validate_public_release.py":
+            # The detector's own forbidden-pattern definitions contain the
+            # strings they must reject elsewhere. Keep scanning its runtime
+            # code, excluding only this declarative pattern table.
+            text = re.sub(
+                r"(?ms)^FORBIDDEN_PATTERNS = \{.*?(?=^RAW_INSTALLER_RE =)",
+                "", text,
+            )
         for kind, pattern in FORBIDDEN_PATTERNS.items():
-            if kind == "private_repository_url" and relative not in SURFACES:
+            if kind == "private_repository_url" and relative.startswith("docs/"):
                 # Attribution and migration history may legitimately mention
                 # the private repository. Canonical distribution surfaces may
                 # not identify it as the public package.

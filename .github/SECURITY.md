@@ -126,7 +126,7 @@ distinguish defended-by-design from accidental risk.
 
 **Where**: `skills/blog-notebooklm/scripts/{auth_manager,browser_session,
 browser_utils,ask_question,notebook_manager}.py`. Pinned at
-`patchright==1.61.2` with hash verification via `requirements.lock`.
+`patchright==1.63.0` with hash verification via `requirements.lock`.
 
 **Why a stealth fork rather than upstream Playwright**: NotebookLM is a
 Google product without a public API. To query NotebookLM programmatically,
