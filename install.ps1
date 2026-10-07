@@ -11,6 +11,14 @@ $ClaudeBlogVersion = "2.2.0"
 
 function Write-Color($Color, $Text) { Write-Host $Text -ForegroundColor $Color }
 
+function Resolve-ClaudeBlogGitApplication {
+    $applications = @(Get-Command git -CommandType Application -All -ErrorAction Stop)
+    if ($applications.Count -eq 0) { throw "Git executable was not found" }
+    # Get-Command -All returns commands in execution-precedence order. Keep one
+    # ApplicationInfo so its Source cannot expand into concatenated paths.
+    return $applications[0]
+}
+
 function Invoke-ClaudeBlogGit($GitCommand, [string[]]$Arguments, [switch]$CaptureOutput) {
     # Windows PowerShell 5.1 promotes redirected native stderr to an error
     # record. Git writes routine progress there, so use its exit code as the
@@ -165,7 +173,7 @@ function Main {
             $BootstrapOwned = $true
             $CheckoutDir = Join-Path $BootstrapRoot "checkout"
             Assert-ClaudeBlogNoReparsePath $BootstrapRoot
-            $GitCommand = Get-Command git -CommandType Application -ErrorAction Stop
+            $GitCommand = Resolve-ClaudeBlogGitApplication
             $clone = Invoke-ClaudeBlogGit $GitCommand @("clone", "--depth", "1", "--branch", $Ref, $Url, $CheckoutDir)
             if ($clone.ExitCode -ne 0) {
                 $CheckoutDir = Join-Path $BootstrapRoot "checkout-fallback"

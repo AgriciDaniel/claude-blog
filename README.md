@@ -304,7 +304,7 @@ echo "0735d4166f9fd7d4f660cf321328e20270190d51a437799f560808102693187a  install.
 CLAUDE_BLOG_REF=v2.2.0 bash install.sh
 ```
 
-The SHA-256 above is for the current `install.sh` at HEAD on `main`; `CLAUDE_BLOG_REF` pins the repository clone performed by the installer. Verify against [the canonical file](https://github.com/AgriciDaniel/claude-blog/blob/main/install.sh) before running. The `install.ps1` companion hash is `b2308ef6edcfec6463accce66bc95adc5703c1f33f032bc2c79343bd4ef1c503`.
+The SHA-256 above is for the current `install.sh` at HEAD on `main`; `CLAUDE_BLOG_REF` pins the repository clone performed by the installer. Verify against [the canonical file](https://github.com/AgriciDaniel/claude-blog/blob/main/install.sh) before running. The `install.ps1` companion hash is `3ff767388b8e19bf88cd04f9c625060be2a1a4d7b1f7166a49b8fa534937099c`.
 
 Restart Claude Code after installation to activate.
 

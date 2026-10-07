@@ -31,7 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Reconcile exact known public legacy installations using reviewed file hashes
   and manifest scopes, with transactional replacement and safe empty-directory
   pruning. Reject Windows reparse-point paths and unknown collisions before
-  mutation; native Windows lifecycle verification remains outstanding.
+  mutation; exercise native Windows lifecycle scenarios in dedicated CI jobs.
 - Use canonical Claude Code invocation metadata and a shared safe-YAML
   validator; resolve helpers and references from trusted installed roots when
   the caller's working directory is unrelated or untrusted.
@@ -45,8 +45,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   to validated public addresses, and reject symlinked hero output ancestors.
 - Require shipped, hash-checked Brain excerpt artifacts with source and review
   provenance, while separating excerpt integrity from full-capture review.
-- Handle normal Git stderr correctly on PowerShell 5.1, avoid binary pipelines
-  in legacy Windows fixtures, and preserve Bash 3.2 standalone uninstall.
+- Handle normal Git stderr correctly on PowerShell 5.1, select exactly one Git
+  executable when PATH contains duplicates, isolate disposable host caches,
+  avoid binary pipelines in legacy Windows fixtures, and preserve Bash 3.2
+  standalone uninstall.
 
 ### Changed
 
@@ -88,7 +90,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Authenticated Google, Gemini and NotebookLM operations remain unverified.
   Native route selection does not execute all 30 workflows. Single-pass writing
   samples require factual review and correction before delivery.
-- Native Windows and macOS CI results must be checked on the updated PR.
+- Native Windows and macOS acceptance depends on the exact PR revision.
   No release, installed-profile migration or merge is included.
 
 ## [2.2.0] - 2026-08-26

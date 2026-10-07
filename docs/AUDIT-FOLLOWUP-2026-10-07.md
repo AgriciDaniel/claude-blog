@@ -52,7 +52,7 @@ regressions.
 
 ## Verification evidence
 
-The root suite passes 720 tests on each of Python 3.11, 3.12 and 3.14, with
+The root suite passes 721 tests on each of Python 3.11, 3.12 and 3.14, with
 one expected private-only skip per run. Python 3.11 uses a fresh dev-only
 environment matching CI; the existing isolated browser cache allows all 12
 new browser regressions to run. CI without that cache explicitly skips those
@@ -115,8 +115,14 @@ Bash 3.2 empty-array uninstall failure on macOS and a missing dev dependency.
 PowerShell 7 passed that run. The repairs retain nonzero Git failure handling,
 replace binary pipelines with an owned archive file, keep uninstall argument
 arrays nonempty and declare the exact offline authentication-test dependency.
-Failed CI logs, fixture setup failures and the original independent review
-remain in the evidence pack beside passing reruns. A further independent
+A subsequent native run exposed multiple Git executable results being treated
+as one path. The resolver now selects exactly the first application, with a
+duplicate-PATH regression. Disposable PowerShell host caches stay outside the
+profile under test, and both the complete profile and `.claude` receive
+independent preservation assertions with safe diagnostics. The prior
+PowerShell 7 snapshot failure did not identify a changed path, so the cache
+explanation remains an inference. Failed CI logs, fixture setup failures and
+the original independent review remain in the evidence pack beside reruns. A further independent
 adversarial pass reproduced transparent author decoys and split-file excerpt
 budgets. Both reproductions now fail, with regressions for computed visibility,
 independent byline agreement, unused excerpt text and active-source bindings.
@@ -126,8 +132,10 @@ outside that gate; all 97 currently shipped artifacts are actively referenced.
 
 ## Remaining verification boundaries
 
-- The current native Windows and macOS installer jobs await updated-PR CI.
-  Linux exercises use disposable profiles and preserve user additions.
+- Native platform acceptance is revision-specific. Inspect the Windows
+  PowerShell 5.1/7 and macOS installer jobs in [PR 86 checks](https://github.com/AgriciDaniel/claude-blog/pull/86/checks).
+  Portable PowerShell checks do not establish native Windows acceptance.
+  Installer exercises use disposable profiles and preserve user additions.
 - Authenticated Google, Gemini and NotebookLM operations are unverified.
   Offline fixtures and SDK smoke checks do not establish real API operation.
 - The optional image MCP package still exposes retired preview IDs; use the

@@ -15,6 +15,31 @@ function Assert-Throws($Action, $Message) {
     try { & $Action } catch { $threw = $true }
     if (-not $threw) { throw "ASSERTION FAILED: expected refusal, $Message" }
 }
+function Assert-SnapshotEqual($Before, $After, $Message) {
+    if ($After -eq $Before) { return }
+    Write-Host "Disposable profile snapshot difference (relative paths and SHA-256 only):"
+    $beforeEntries = @($Before -split "`n" | Where-Object { $_ })
+    $afterEntries = @($After -split "`n" | Where-Object { $_ })
+    foreach ($entry in $beforeEntries) {
+        if ($afterEntries -notcontains $entry) { Write-Host ("  <= {0}" -f $entry) }
+    }
+    foreach ($entry in $afterEntries) {
+        if ($beforeEntries -notcontains $entry) { Write-Host ("  => {0}" -f $entry) }
+    }
+    throw "ASSERTION FAILED: $Message"
+}
+function Import-InstallerFunction($Script, $Name) {
+    $tokens = $null
+    $errors = $null
+    $ast = [System.Management.Automation.Language.Parser]::ParseFile($Script, [ref]$tokens, [ref]$errors)
+    if ($errors.Count -ne 0) { throw "could not parse installer for function test" }
+    $functionAst = $ast.Find({
+        param($node)
+        $node -is [System.Management.Automation.Language.FunctionDefinitionAst] -and $node.Name -eq $Name
+    }, $true)
+    if (-not $functionAst) { throw "installer function not found: $Name" }
+    return $functionAst.Extent.Text
+}
 function New-Profile($Root, $Name) {
     $profile = Join-Path $Root $Name
     New-Item -ItemType Directory -Path $profile | Out-Null
@@ -30,11 +55,24 @@ function Invoke-DownloadedBootstrap($Script, $Profile, $Url, $Ref, $Identifier) 
     $oldUrl = $env:CLAUDE_BLOG_URL
     $oldRef = $env:CLAUDE_BLOG_REF
     $oldIdentifier = $env:CLAUDE_BLOG_TEST_BOOTSTRAP_GUID
+    $oldLocalAppData = $env:LOCALAPPDATA
+    $oldAppData = $env:APPDATA
+    $oldXdgCacheHome = $env:XDG_CACHE_HOME
+    $oldTelemetryOptOut = $env:POWERSHELL_TELEMETRY_OPTOUT
+    $hostState = Join-Path (Split-Path -Parent $Profile) ("powershell-host-state-" + $Identifier)
+    New-Item -ItemType Directory -Path $hostState | Out-Null
     try {
         $env:USERPROFILE = $Profile
         $env:CLAUDE_BLOG_URL = $Url
         $env:CLAUDE_BLOG_REF = $Ref
         $env:CLAUDE_BLOG_TEST_BOOTSTRAP_GUID = $Identifier
+        # PowerShell 7 writes startup and telemetry caches at process launch.
+        # Keep that host state outside the profile whose installer immutability
+        # this scenario verifies.
+        $env:LOCALAPPDATA = $hostState
+        $env:APPDATA = $hostState
+        $env:XDG_CACHE_HOME = $hostState
+        $env:POWERSHELL_TELEMETRY_OPTOUT = "1"
         $hostExecutable = (Get-Process -Id $PID).Path
         $process = Start-Process -FilePath $hostExecutable -ArgumentList @("-NoProfile", "-File", ('"' + $Script + '"')) -NoNewWindow -Wait -PassThru
         return $process.ExitCode
@@ -43,6 +81,10 @@ function Invoke-DownloadedBootstrap($Script, $Profile, $Url, $Ref, $Identifier) 
         if ($null -eq $oldUrl) { Remove-Item Env:CLAUDE_BLOG_URL -ErrorAction SilentlyContinue } else { $env:CLAUDE_BLOG_URL = $oldUrl }
         if ($null -eq $oldRef) { Remove-Item Env:CLAUDE_BLOG_REF -ErrorAction SilentlyContinue } else { $env:CLAUDE_BLOG_REF = $oldRef }
         if ($null -eq $oldIdentifier) { Remove-Item Env:CLAUDE_BLOG_TEST_BOOTSTRAP_GUID -ErrorAction SilentlyContinue } else { $env:CLAUDE_BLOG_TEST_BOOTSTRAP_GUID = $oldIdentifier }
+        if ($null -eq $oldLocalAppData) { Remove-Item Env:LOCALAPPDATA -ErrorAction SilentlyContinue } else { $env:LOCALAPPDATA = $oldLocalAppData }
+        if ($null -eq $oldAppData) { Remove-Item Env:APPDATA -ErrorAction SilentlyContinue } else { $env:APPDATA = $oldAppData }
+        if ($null -eq $oldXdgCacheHome) { Remove-Item Env:XDG_CACHE_HOME -ErrorAction SilentlyContinue } else { $env:XDG_CACHE_HOME = $oldXdgCacheHome }
+        if ($null -eq $oldTelemetryOptOut) { Remove-Item Env:POWERSHELL_TELEMETRY_OPTOUT -ErrorAction SilentlyContinue } else { $env:POWERSHELL_TELEMETRY_OPTOUT = $oldTelemetryOptOut }
     }
 }
 function Snapshot($Path) {
@@ -86,6 +128,37 @@ $target = Join-Path $env:USERPROFILE "selected-ref-ran.txt"
     $downloadedBootstrap = Join-Path $RunRoot "downloaded-install.ps1"
     Copy-Item -LiteralPath (Join-Path $RepositoryRoot "install.ps1") -Destination $downloadedBootstrap
 
+    Write-Host "SCENARIO: duplicate Git application resolution"
+    Invoke-Expression (Import-InstallerFunction $downloadedBootstrap "Resolve-ClaudeBlogGitApplication")
+    $firstApplicationDirectory = Join-Path $RunRoot "git-first"
+    $secondApplicationDirectory = Join-Path $RunRoot "git-second"
+    New-Item -ItemType Directory -Path $firstApplicationDirectory | Out-Null
+    New-Item -ItemType Directory -Path $secondApplicationDirectory | Out-Null
+    if ($env:OS -eq "Windows_NT") {
+        $firstApplication = Join-Path $firstApplicationDirectory "git.cmd"
+        $secondApplication = Join-Path $secondApplicationDirectory "git.cmd"
+        Set-Content -LiteralPath $firstApplication -Value "@exit /b 0" -Encoding ASCII
+        Set-Content -LiteralPath $secondApplication -Value "@exit /b 0" -Encoding ASCII
+    } else {
+        $firstApplication = Join-Path $firstApplicationDirectory "git"
+        $secondApplication = Join-Path $secondApplicationDirectory "git"
+        Set-Content -LiteralPath $firstApplication -Value "#!/bin/sh`nexit 0" -Encoding UTF8
+        Set-Content -LiteralPath $secondApplication -Value "#!/bin/sh`nexit 0" -Encoding UTF8
+        chmod u+x $firstApplication $secondApplication
+        if ($LASTEXITCODE -ne 0) { throw "could not prepare duplicate Git applications" }
+    }
+    $oldPath = $env:PATH
+    try {
+        $env:PATH = $firstApplicationDirectory + [System.IO.Path]::PathSeparator + $secondApplicationDirectory + [System.IO.Path]::PathSeparator + $oldPath
+        $gitApplications = @(Get-Command git -CommandType Application -All)
+        Assert-True ($gitApplications.Count -ge 2) "duplicate Git applications are discoverable"
+        $resolvedGit = Resolve-ClaudeBlogGitApplication
+        Assert-True (@($resolvedGit).Count -eq 1) "resolver returns exactly one application"
+        Assert-True ([System.IO.Path]::GetFullPath($resolvedGit.Source) -eq [System.IO.Path]::GetFullPath($firstApplication)) "resolver selects first application in PATH"
+    } finally {
+        $env:PATH = $oldPath
+    }
+
     Write-Host "SCENARIO: bootstrap creation collision preservation"
     $collisionIdentifier = [Guid]::NewGuid().ToString("N")
     $collisionRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("claude-blog-install-" + $collisionIdentifier)
@@ -108,11 +181,15 @@ $target = Join-Path $env:USERPROFILE "selected-ref-ran.txt"
     Set-Content -LiteralPath $failureSentinel -Value "preserve"
     $failureProfile = New-Profile $RunRoot "bootstrap-failure-profile"
     $failureProfileBefore = Snapshot $failureProfile
+    $failureClaudeBefore = Snapshot (ClaudeRoot $failureProfile)
     $failureExit = Invoke-DownloadedBootstrap $downloadedBootstrap $failureProfile (Join-Path $RunRoot "missing-repository") "v2.2.0" $failureIdentifier
     Assert-True ($failureExit -ne 0) "failed clone returns nonzero"
     Assert-True (-not (Test-Path -LiteralPath $failureRoot)) "owned failed-clone root is cleaned"
     Assert-True ((Get-Content -LiteralPath $failureSentinel -Raw).Trim() -eq "preserve") "external clone-failure sentinel survives"
-    Assert-True ((Snapshot $failureProfile) -eq $failureProfileBefore) "failed clone does not mutate profile"
+    $failureProfileAfter = Snapshot $failureProfile
+    $failureClaudeAfter = Snapshot (ClaudeRoot $failureProfile)
+    Assert-SnapshotEqual $failureClaudeBefore $failureClaudeAfter "failed clone does not mutate .claude"
+    Assert-SnapshotEqual $failureProfileBefore $failureProfileAfter "failed clone does not mutate profile"
 
     Write-Host "SCENARIO: selected ref installer handoff"
     $bootstrapProfile = New-Profile $RunRoot "selected-ref-profile"

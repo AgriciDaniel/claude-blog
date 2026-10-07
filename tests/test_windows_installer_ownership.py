@@ -74,15 +74,18 @@ def test_cloned_ref_hands_off_to_its_own_installer() -> None:
 
 def test_bootstrap_git_uses_exit_codes_without_powershell_51_stderr_escalation() -> None:
     install = _read(INSTALL)
+    resolve_git = _function(install, "Resolve-ClaudeBlogGitApplication")
     invoke_git = _function(install, "Invoke-ClaudeBlogGit")
     main = _function(install, "Main")
+    assert "@(Get-Command git -CommandType Application -All -ErrorAction Stop)" in resolve_git
+    assert "return $applications[0]" in resolve_git
     assert '$previousErrorActionPreference = $ErrorActionPreference' in invoke_git
     assert '$ErrorActionPreference = "Continue"' in invoke_git
     assert "2>$null" in invoke_git
     assert "$exitCode = $LASTEXITCODE" in invoke_git
     assert "$ErrorActionPreference = $previousErrorActionPreference" in invoke_git
     assert "ExitCode = $exitCode" in invoke_git
-    assert "Get-Command git -CommandType Application -ErrorAction Stop" in main
+    assert "$GitCommand = Resolve-ClaudeBlogGitApplication" in main
     assert "if ($clone.ExitCode -ne 0)" in main
     assert "unable to clone repository (git exit $($clone.ExitCode))" in main
     assert "unable to clone $Url" not in main
@@ -121,6 +124,22 @@ def test_native_smoke_avoids_pre_74_binary_pipelines() -> None:
     assert 'git -C $RepositoryRoot archive --format=tar --output $baselineArchive $Baseline' in smoke
     assert "tar -xf $baselineArchive -C $fixture" in smoke
     assert 'Join-Path $RunRoot ("baseline-" + $Baseline + ".tar")' in smoke
+
+
+def test_native_smoke_covers_duplicate_git_resolution_and_host_state_isolation() -> None:
+    smoke = _read(SMOKE)
+    assert 'Write-Host "SCENARIO: duplicate Git application resolution"' in smoke
+    assert "Import-InstallerFunction $downloadedBootstrap \"Resolve-ClaudeBlogGitApplication\"" in smoke
+    assert '@(Get-Command git -CommandType Application -All)' in smoke
+    assert '@($resolvedGit).Count -eq 1' in smoke
+    assert '"resolver selects first application in PATH"' in smoke
+    assert '$env:LOCALAPPDATA = $hostState' in smoke
+    assert '$env:APPDATA = $hostState' in smoke
+    assert '$env:XDG_CACHE_HOME = $hostState' in smoke
+    assert '$env:POWERSHELL_TELEMETRY_OPTOUT = "1"' in smoke
+    assert "Compare-Object" not in _function(smoke, "Assert-SnapshotEqual")
+    assert '"failed clone does not mutate .claude"' in smoke
+    assert "Assert-SnapshotEqual $failureProfileBefore $failureProfileAfter" in smoke
 
 
 def test_pip_log_uses_owned_full_guid_root_and_is_retained_on_failure() -> None:
