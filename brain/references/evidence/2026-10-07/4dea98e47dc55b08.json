@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://www.bing.com/indexnow",
+  "normalized_full_document_sha256": "264109b855e89ca277eebe90c64e3895f739da5cc5befbbdfb4c2e6897d2697d",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "indexnow"
+  ],
+  "records": [
+    {
+      "source_id": "bing-submit",
+      "source_url": "https://www.bing.com/indexnow",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "confirmed_by_manual_review",
+      "excerpt_index": 0
+    }
+  ]
+}

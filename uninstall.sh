@@ -2,12 +2,13 @@
 set -euo pipefail
 
 # claude-blog uninstaller
-# Cleanly removes all blog skills, agents, templates, and scripts
+# Removes verified package-owned files and preserves unknown or edited content.
 
 main() {
     local SKILL_DIR="${HOME}/.claude/skills"
     local AGENT_DIR="${HOME}/.claude/agents"
     local MANIFEST="${HOME}/.claude/claude-blog-manifest.txt"
+    local SCRIPT_DIR
     local package_skills=(
         "blog-analyze" "blog-audio" "blog-audit" "blog-brand" "blog-brief"
         "blog-calendar" "blog-cannibalization" "blog-chart" "blog-cluster"
@@ -24,83 +25,53 @@ main() {
         "lint_prose.py" "sync_flow.py"
         "ai_citation_score.py" "content_decay.py" "quality_gate.py" "style_learn.py"
         "check_google_currentness.py" "check_secrets.py" "consistency_check.py" "dependency_smoke.py"
-        "sync_google_updates.py" "validate_public_release.py"
+        "installer_ownership.py" "sync_google_updates.py" "validate_public_release.py"
     )
     local agent_files=(
         "blog-researcher.md" "blog-reviewer.md" "blog-seo.md"
         "blog-translator.md" "blog-writer.md"
     )
 
-    is_known_helper() {
-        local base
-        base="$(basename "$1")"
-        local s
-        for s in "${helper_scripts[@]}"; do
-            [ "${base}" = "${s}" ] && return 0
-        done
-        return 1
-    }
+    # Retain the explicit package inventories for cross-platform sync checks and
+    # legacy review. The ownership engine below never applies a wildcard delete.
+    : "${SKILL_DIR}" "${AGENT_DIR}" "${package_skills[*]}" "${helper_scripts[*]}" "${agent_files[*]}"
 
-    safe_remove_path() {
-        local path="$1"
-        [ -n "${path}" ] || return 0
-        case "${path}" in
-            "${SKILL_DIR}/blog"|${SKILL_DIR}/blog-*)
-                rm -rf "${path}"
-                echo "  Removed: ${path}"
-                ;;
-            ${AGENT_DIR}/blog-*.md)
-                rm -f "${path}"
-                echo "  Removed: ${path}"
-                ;;
-            ${HOME}/.claude/scripts/*.py)
-                if is_known_helper "${path}"; then
-                    rm -f "${path}"
-                    echo "  Removed: ${path}"
-                fi
-                ;;
-        esac
-    }
+    if [ -f "${BASH_SOURCE[0]:-}" ] && [ -d "$(dirname "${BASH_SOURCE[0]}")/skills/blog" ]; then
+        SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    else
+        SCRIPT_DIR=""
+    fi
 
     echo "=== Uninstalling claude-blog ==="
     echo ""
 
-    if [ -f "${MANIFEST}" ]; then
-        while IFS= read -r installed_path; do
-            safe_remove_path "${installed_path}"
-        done <"${MANIFEST}"
-        rm -f "${MANIFEST}"
-        echo "  Removed: ${MANIFEST}"
-    else
-        # Legacy installs before v1.11.0 had no manifest. Use the package
-        # allowlist instead of deleting every user-owned blog-* skill.
-        safe_remove_path "${SKILL_DIR}/blog"
-
-        local skill
-        for skill in "${package_skills[@]}"; do
-            safe_remove_path "${SKILL_DIR}/${skill}"
-        done
-
-        local agent
-        for agent in "${agent_files[@]}"; do
-            safe_remove_path "${AGENT_DIR}/${agent}"
-        done
+    if ! command -v python3 &>/dev/null; then
+        echo "ERROR: python3 3.11+ is required for ownership-safe uninstall." >&2
+        return 1
     fi
 
-    local s
-    for s in "${helper_scripts[@]}"; do
-        if [ -f "${HOME}/.claude/scripts/${s}" ]; then
-            rm -f "${HOME}/.claude/scripts/${s}"
-            echo "  Removed: ${HOME}/.claude/scripts/${s}"
+    if [ -e "${MANIFEST}" ] || [ -L "${MANIFEST}" ]; then
+        local OWNERSHIP_ENGINE
+        # Bash 3.2 treats an empty array as unset under nounset. Keep the
+        # required command arguments in this array for standalone removal too.
+        local OWNERSHIP_ARGS=(
+            uninstall --profile "${HOME}/.claude" --manifest "${MANIFEST}"
+        )
+        if [ -n "${SCRIPT_DIR}" ] && [ -f "${SCRIPT_DIR}/scripts/installer_ownership.py" ]; then
+            OWNERSHIP_ENGINE="${SCRIPT_DIR}/scripts/installer_ownership.py"
+            OWNERSHIP_ARGS+=(--legacy-inventory "${SCRIPT_DIR}/data/legacy-install-ownership.json")
+        elif [ -f "${HOME}/.claude/scripts/installer_ownership.py" ]; then
+            OWNERSHIP_ENGINE="${HOME}/.claude/scripts/installer_ownership.py"
+        else
+            echo "ERROR: ownership engine is unavailable; use uninstall.sh from the complete reviewed repository." >&2
+            return 1
         fi
-    done
-    # Remove the dir if empty (defensive: don't nuke if user has other tools)
-    if [ -d "${HOME}/.claude/scripts" ] && [ -z "$(ls -A "${HOME}/.claude/scripts" 2>/dev/null)" ]; then
-        rmdir "${HOME}/.claude/scripts" 2>/dev/null || true
+
+        python3 "${OWNERSHIP_ENGINE}" "${OWNERSHIP_ARGS[@]}"
     fi
+
 
     echo "  Shared Google credentials under ~/.config/claude-seo were left intact."
-
     echo ""
     echo "=== claude-blog uninstalled ==="
     echo ""

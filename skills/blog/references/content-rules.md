@@ -93,11 +93,12 @@ For backward compatibility, blog-analyze accepts "TL;DR", "Key Takeaways",
 
 ### Rules
 - ONE H1 per page (the title only)
-- H2s for main sections (target 6-8 per post)
+- H2s for the main subject divisions the reader needs
 - Add headings where they clarify topic boundaries; no fixed spacing quota
-- H3 every 100-200 words under each H2 for deeper structure
+- H3s only where a section needs a real subsection
 - H3s for subsections - never skip levels (no H2 → H4)
-- Include primary keyword naturally in 2-3 headings
+- Use the primary topic terminology in headings only where it accurately labels
+  the section. Do not insert a keyword to meet a heading count.
 
 ### Heading Form
 Use questions only when they match how readers frame the task:
@@ -177,8 +178,8 @@ probability. Match the audience rather than forcing a universal grade level.
 
 | Parameter | Target | Minimum | Source |
 |-----------|--------|---------|--------|
-| Image/visual frequency | Every 200-350 words | 1 per 500 words | BuzzSumo, NNGroup |
-| Bold/emphasis | 3-5 per 300 words | - | Competitive analysis |
+| Image/visual frequency | Use when a visual explains, proves, or summarizes the subject better than prose | None | Editorial judgment |
+| Bold/emphasis | Emphasize only text a scanning reader needs | None | Editorial judgment |
 | Bold % of total text | <10% | - | Diminishing impact above 10% |
 
 ### Lists
@@ -192,15 +193,16 @@ are historical context rather than active 2026 targets. Use visuals when they
 clarify, prove, or summarize information. NNGroup scanning research supports
 using visuals to anchor key information for readers.
 
-### Visual Rhythm (Mandatory Pacing)
-Insert a visual element (image, chart, or callout) every 300-500 words.
-- Minimum: 1 visual per 500 words; optimal: 1 per 300-350 words
-- Alternate visual types: image -> chart -> callout -> image (no consecutive same-type)
+### Visual Selection
+Use visuals when they explain the subject more clearly than prose alone. The
+goal is reader understanding, not visual density. A concise post may need no
+inline media. A data-heavy guide may need several charts close to the claims
+they support. Do not insert an image, chart, video, or callout to satisfy a
+word-count interval.
+- Avoid consecutive visuals of the same type when variation improves comprehension
 - Hero image: above the fold, 1920x1080 (16:9) or 1200x630 (OG-compatible)
 - All images: explicit width/height attributes for CLS prevention (score <= 0.1)
 - Below-fold images: loading="lazy"; hero image: fetchpriority="high"
-- Posts with 10+ visuals are 2x more likely to report strong results (Orbit Media)
-- 79% of people scan content rather than reading it (NNGroup)
 
 ## Project Style Diagnostics
 
@@ -254,6 +256,18 @@ Reading time can be estimated from word count for reader convenience. Do not
 optimize toward a universal duration; the appropriate depth depends on intent.
 
 ## Citation Statistics Rules (AI Search SEO)
+
+### Preserve what the evidence says
+
+Carry the source's actor, conditions, time window, population and certainty into
+the article. Do not turn "can" into "will", an announcement into observed
+behavior, or a capability into a general policy approval. An inference needs
+its premises and a clear label; a missing product behavior stays unknown.
+
+Validate worked examples against every supplied rule and the complete input.
+A local check cannot establish a global property such as uniqueness. Compare
+the final recommendations and conclusions with the evidence again, especially
+when shortening a technical explanation or interpreting a policy update.
 
 | Parameter | Target | AI Search SEO Optimized | Source |
 |-----------|--------|--------------|--------|

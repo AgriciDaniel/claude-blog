@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://web.dev/articles/lcp",
+  "normalized_full_document_sha256": "0186eccf03cf671d6db41db06e0d666e0c1b0b8e3ff4aac45784a0a997a761f5",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "sites should strive to have largest contentful paint of 2.5 seconds or less"
+  ],
+  "records": [
+    {
+      "source_id": "wd-lcp",
+      "source_url": "https://web.dev/articles/lcp",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    }
+  ]
+}

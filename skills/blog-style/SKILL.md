@@ -2,11 +2,19 @@
 name: blog-style
 description: Learn author writing style from 5 to 10 existing blog posts and generate a voice profile for /blog style learn, VOICE.md, blog-persona, and blog-write when users ask to infer tone, analyze author voice, learn style, or build a writing baseline.
 argument-hint: "learn <paths>"
-user-invokable: true
+user-invocable: true
 license: MIT
 ---
 
 # Blog Style - Writing Style Learning
+
+Bundled paths below use host Markdown substitution of `${CLAUDE_SKILL_DIR}`;
+it is not an exported shell variable. Resolve them before execution, quote
+paths, and refuse nonabsolute overrides. Pass `blog_reference_root` resolved
+from `${CLAUDE_SKILL_DIR}/../blog/references`, `blog_template_root` from
+`${CLAUDE_SKILL_DIR}/../blog/templates`, and needed sibling roots to agents.
+Read the main reference `orchestration-details.md` before loading project
+context; pass only its helper-fenced output to downstream agents.
 
 Learn an author voice profile from existing posts, then use it as a baseline for
 VOICE.md, blog-persona, and blog-write. The profile captures measurable style
@@ -28,19 +36,21 @@ containing posts.
 Run the local learner:
 
 ```bash
-python3 scripts/style_learn.py <paths> --format markdown
+BLOG_SCRIPT_DIR="${CLAUDE_BLOG_SCRIPTS_DIR:-${CLAUDE_SKILL_DIR}/../../scripts}"
+case "$BLOG_SCRIPT_DIR" in /*) ;; *) echo "ERROR: script dir must be absolute" >&2; exit 1 ;; esac
+python3 "$BLOG_SCRIPT_DIR/style_learn.py" <paths> --format markdown
 ```
 
 For machine-readable output:
 
 ```bash
-python3 scripts/style_learn.py <paths> --format json --output voice-profile.json
+python3 "$BLOG_SCRIPT_DIR/style_learn.py" <paths> --format json --output voice-profile.json
 ```
 
 For a VOICE.md-ready block:
 
 ```bash
-python3 scripts/style_learn.py <paths> --format markdown --output VOICE.md
+python3 "$BLOG_SCRIPT_DIR/style_learn.py" <paths> --format markdown --output VOICE.md
 ```
 
 If fewer than the requested minimum sample count is supplied, warn and continue.

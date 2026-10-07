@@ -129,7 +129,7 @@ Every `/blog write` and `/blog rewrite` result must pass the delivery contract b
 | 2. Format Completeness | `.md`, `.html`, `.pdf`, and a real hero image exist | `scripts/blog_render.py`, `scripts/generate_hero.py` |
 | 3. Visual Verification | Screenshots render at 375, 768, and 1280 widths, JSON-LD is valid, dark mode holds, SVGs do not overflow | `patchright` or `playwright` |
 | 4. Content Review | `blog-reviewer` score is 90+ with zero P0 issues | `agents/blog-reviewer.md` |
-| 5. Asset and Link Integrity | Images resolve, `og:image` exists, links return 200, word count matches schema within 5% | `scripts/blog_preflight.py --gate 5` |
+| 5. Asset and Link Integrity | Images resolve, `og:image` exists, links satisfy the verified URL policy, word count matches schema within 5% | `scripts/blog_preflight.py --gate 5` |
 
 Hero image ladder: Banana MCP, direct Gemini API, premium stock APIs, then Openverse. First working source wins. Full spec: [`skills/blog/references/blog-delivery-contract.md`](skills/blog/references/blog-delivery-contract.md).
 
@@ -252,12 +252,23 @@ The Claude Blog Brain is vendored at `./brain` as a self-contained, evidence-gat
 
 ## Install
 
-Plugin install for Claude Code 1.0.33+:
+The plugin identifier is `blog-engine`, distributed through the existing
+`agricidaniel-blog` marketplace:
 
 ```bash
 /plugin marketplace add AgriciDaniel/claude-blog
-/plugin install claude-blog@agricidaniel-blog
+/plugin install blog-engine@agricidaniel-blog
 ```
+
+Plugin commands use `/blog-engine:blog`, for example
+`/blog-engine:blog write <topic>`. Standalone skill installations retain
+`/blog write <topic>` and every existing command and alias.
+The GitHub repository remains `AgriciDaniel/claude-blog`.
+
+Existing plugin users should follow the
+[identifier migration instructions](docs/INSTALLATION.md#plugin-identifier-migration).
+The published v2.2.0 tag retains its historical plugin identifier; the new
+identifier applies to the updated marketplace when this change is merged.
 
 Recommended clone, verify, then install flow:
 
@@ -269,10 +280,12 @@ chmod +x install.sh
 ./install.sh
 ```
 
-One-command install on Unix and macOS:
+Download, inspect, and run on Unix and macOS:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/AgriciDaniel/claude-blog/main/install.sh | CLAUDE_BLOG_REF=v2.2.0 bash
+curl -fsSLo install.sh https://raw.githubusercontent.com/AgriciDaniel/claude-blog/main/install.sh
+# Inspect install.sh and verify the digest below before execution.
+CLAUDE_BLOG_REF=v2.2.0 bash install.sh
 ```
 
 One-command install on Windows PowerShell:
@@ -287,11 +300,11 @@ Verify installer integrity before running:
 
 ```bash
 curl -fsSL -o install.sh https://raw.githubusercontent.com/AgriciDaniel/claude-blog/main/install.sh
-echo "25f73e7efbe9e714d00af34d2c6b48bd59d60a14976e2eb032b8ad5c2f756ce4  install.sh" | sha256sum -c
+echo "0735d4166f9fd7d4f660cf321328e20270190d51a437799f560808102693187a  install.sh" | sha256sum -c
 CLAUDE_BLOG_REF=v2.2.0 bash install.sh
 ```
 
-The SHA-256 above is for the current `install.sh` at HEAD on `main`; `CLAUDE_BLOG_REF` pins the repository clone performed by the installer. Verify against [the canonical file](https://github.com/AgriciDaniel/claude-blog/blob/main/install.sh) before running. The `install.ps1` companion hash is `a574688ba4ca27b7fbac7a26e6c95d1a6a596688f59d16ddbcc452d82f5fea7a`.
+The SHA-256 above is for the current `install.sh` at HEAD on `main`; `CLAUDE_BLOG_REF` pins the repository clone performed by the installer. Verify against [the canonical file](https://github.com/AgriciDaniel/claude-blog/blob/main/install.sh) before running. The `install.ps1` companion hash is `3ff767388b8e19bf88cd04f9c625060be2a1a4d7b1f7166a49b8fa534937099c`.
 
 Restart Claude Code after installation to activate.
 

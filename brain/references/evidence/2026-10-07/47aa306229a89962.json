@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://developers.google.com/search/docs/appearance/google-images",
+  "normalized_full_document_sha256": "7156ab7546356dc4f9bbef91e2b1d9dafaa6aace6f7b73ecf7b5e7c828e9cdd1",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "also consider the accessibility of your alt text"
+  ],
+  "records": [
+    {
+      "source_id": "g-google-images",
+      "source_url": "https://developers.google.com/search/docs/appearance/google-images",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "confirmed_by_manual_review",
+      "excerpt_index": 0
+    }
+  ]
+}

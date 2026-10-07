@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://developers.google.com/search/docs/appearance/structured-data/review-snippet",
+  "normalized_full_document_sha256": "ed2e7d6bd4f2f3bbb12bfc0ea1c6adff9ba889f4f2f84fc63be5665f255a9884",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "don't include fake or undisclosed incentivized reviews on your page or in your structured data markup"
+  ],
+  "records": [
+    {
+      "source_id": "review-snippet-integrity-2026-07-24",
+      "source_url": "https://developers.google.com/search/docs/appearance/structured-data/review-snippet",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    }
+  ]
+}

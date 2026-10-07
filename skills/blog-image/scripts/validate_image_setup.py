@@ -36,11 +36,13 @@ SET_MODEL_ALIASES = {
 PINNED_PACKAGE_ENV_MODELS = {
     "gemini-3.1-flash-image-preview": (
         "accepted by pinned package, but shut down on 2026-06-25; "
-        "use gemini-3.1-flash-image through direct API or a newer MCP package"
+        "use gemini-3.1-flash-image through direct API or a compatible MCP "
+        "release if one becomes available"
     ),
     "gemini-3-pro-image-preview": (
         "accepted by pinned package, but shut down on 2026-06-25; "
-        "use gemini-3-pro-image through direct API or a newer MCP package"
+        "use gemini-3-pro-image through direct API or a compatible MCP release "
+        "if one becomes available"
     ),
 }
 DIRECT_API_MODELS = {
@@ -65,15 +67,15 @@ DEPRECATED_MODEL_REPLACEMENTS = {
         "shut down on 2026-06-01; use gemini-3.1-flash-image"
     ),
     "imagen-4.0-fast-generate-001": (
-        "deprecated on 2026-06-15 and shuts down on 2026-08-17; "
+        "deprecated on 2026-06-15 and shut down on 2026-08-17; "
         "use gemini-3.1-flash-image"
     ),
     "imagen-4.0-generate-001": (
-        "deprecated on 2026-06-15 and shuts down on 2026-08-17; "
+        "deprecated on 2026-06-15 and shut down on 2026-08-17; "
         "use gemini-3.1-flash-image"
     ),
     "imagen-4.0-ultra-generate-001": (
-        "deprecated on 2026-06-15 and shuts down on 2026-08-17; "
+        "deprecated on 2026-06-15 and shut down on 2026-08-17; "
         "use gemini-3.1-flash-image"
     ),
 }

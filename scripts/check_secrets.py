@@ -14,12 +14,29 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 SHA_FIELD_RE = re.compile(
-    r'"(?:sha256|raw_snapshot_sha256|content_sha256|normalized_content_sha256)"\s*:\s*"[0-9a-f]{64}"',
+    r'"(?:sha256|raw_snapshot_sha256|content_sha256|normalized_content_sha256|captured_excerpt_sha256|normalized_full_document_sha256)"\s*:\s*"[0-9a-f]{64}"',
     re.IGNORECASE,
 )
 ACTION_PIN_RE = re.compile(r"uses:\s*[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+@[0-9a-f]{40}\b")
 ACTION_EXPECTATION_RE = re.compile(
     r'"actions/(?:checkout|setup-node|setup-python)"\s*:\s*"[0-9a-f]{40}"'
+)
+# These public Git commits pin the historical ownership evidence. Approval is
+# limited to their exact values and the evidence paths plus this policy file.
+# Other high-entropy values and all forbidden credential patterns still fail.
+REVIEWED_LEGACY_COMMITS = frozenset({
+    "7b6ca107adb40b7c59030568420c117e2ea61301",
+    "2500d4c765034864cede2bf215d00ccd4d7d6fb8",
+})
+LEGACY_COMMIT_PATHS = frozenset({
+    "scripts/check_secrets.py",
+    "data/legacy-install-ownership.json",
+    "tests/test_legacy_ownership_inventory.py",
+    "tests/test_windows_installer_ownership.py",
+    "tests/windows/windows_installer_ownership_smoke.ps1",
+})
+LEGACY_COMMIT_LINE_RE = re.compile(
+    r"""\s*(?:(?:"(?:commit|revision)"|\$Baseline)\s*(?::|=)\s*|assert\s+)?["'](?P<commit>[0-9a-f]{40})["'](?:\s+in\s+source)?\s*,?\s*"""
 )
 PLACEHOLDER_MARKERS = (
     "YOUR_",
@@ -90,10 +107,17 @@ def line_for(path: Path, number: int) -> str:
 def is_adjudicated(path: str, finding: dict[str, object], line: str) -> bool:
     finding_type = str(finding.get("type", ""))
     if finding_type == "Hex High Entropy String":
+        commit_line = LEGACY_COMMIT_LINE_RE.fullmatch(line)
+        reviewed_commit = (
+            path in LEGACY_COMMIT_PATHS
+            and commit_line is not None
+            and commit_line["commit"] in REVIEWED_LEGACY_COMMITS
+        )
         return bool(
             SHA_FIELD_RE.search(line)
             or ACTION_PIN_RE.search(line)
             or ACTION_EXPECTATION_RE.search(line)
+            or reviewed_commit
         )
     if finding_type == "Secret Keyword":
         return any(marker in line for marker in PLACEHOLDER_MARKERS)

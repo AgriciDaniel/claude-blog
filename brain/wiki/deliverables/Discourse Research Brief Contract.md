@@ -4,7 +4,7 @@ title: "Discourse Research Brief Contract"
 domain: "Blog Content Brain"
 status: active
 created: 2026-07-09
-updated: 2026-07-09
+updated: 2026-10-07
 tags: [deliverables, discourse, research]
 source_urls:
   - "https://developers.google.com/search/docs/fundamentals/creating-helpful-content"
@@ -38,3 +38,5 @@ Accepted inputs include platform, query operator, date range, thread URL, author
 ## Handoff Procedure For Weak Evidence
 
 If discourse only reveals vocabulary, hand it to [[Voice and Style]] or outline framing. If it suggests a factual claim, route it to [[Research Pack Index]] before drafting. If it suggests a product, legal, medical, or financial risk, escalate before publication. `g-ai-opt-guide` prevents the brief from inventing special AI-only files or markup as a response to community speculation.
+
+For Discourse Research Brief Contract, `nng-editorial-heuristics` supplies general interaction-design principles. Applying those principles to this note's editorial checks is a project adaptation, not an experimentally established SEO or AI-citation requirement.

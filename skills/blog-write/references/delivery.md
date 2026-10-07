@@ -73,3 +73,40 @@ Writer-specific companion to `skills/blog/references/blog-delivery-contract.md`.
 - Run `/blog analyze <file>` to verify quality score
 - Generate VideoObject schema with `/blog schema <file>` when videos are present
 ```
+
+## Optional Platform Embedding Examples
+
+Load these examples only when the draft uses images or charts.
+
+#### 5i. Image Embedding
+
+Standard markdown:
+```markdown
+![Descriptive alt text - topic keywords naturally](https://cdn.pixabay.com/photo/...)
+```
+
+MDX with Next.js Image (if detected):
+```mdx
+![Descriptive alt text - topic keywords naturally](https://cdn.pixabay.com/photo/...)
+```
+
+- Place images after H2 headings, before body text
+- Space evenly throughout the post (not clustered)
+- Alt text should be a full descriptive sentence
+
+#### 5j. Chart Embedding
+
+Standard markdown/HTML:
+```html
+<figure>
+  <svg viewBox="0 0 560 380" ...>...</svg>
+  <figcaption>Source: [Source Name], [Year]</figcaption>
+</figure>
+```
+
+MDX format:
+```mdx
+<figure className="chart-container" style={{margin: '2.5rem 0', textAlign: 'center', padding: '1.5rem', borderRadius: '12px'}}>
+  <svg viewBox="0 0 560 380" ...>...</svg>
+</figure>
+```

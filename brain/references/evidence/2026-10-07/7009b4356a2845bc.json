@@ -1,0 +1,35 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://developers.google.com/search/blog/2024/03/core-update-spam-policies",
+  "normalized_full_document_sha256": "be94e927025a76e063e23d2371a98753711d18bdd77070197f76ebc9cd100f0e",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "there's no longer one signal or system used to do this"
+  ],
+  "records": [
+    {
+      "source_id": "g-core-spam-2024-03",
+      "source_url": "https://developers.google.com/search/blog/2024/03/core-update-spam-policies",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    },
+    {
+      "source_id": "g-update-2024-03-05-march-2024-core-update-spam-updates",
+      "source_url": "https://developers.google.com/search/blog/2024/03/core-update-spam-policies",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    },
+    {
+      "source_id": "g-update-2024-05-05-site-reputation-abuse-enforcement-begins",
+      "source_url": "https://developers.google.com/search/blog/2024/03/core-update-spam-policies",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    }
+  ]
+}

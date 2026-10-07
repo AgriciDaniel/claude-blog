@@ -4,7 +4,7 @@ title: "Heading Hierarchy Rules"
 domain: "Blog Briefs"
 status: active
 created: 2026-07-06
-updated: 2026-07-09
+updated: 2026-10-07
 tags: [briefs-outlines, serp-briefs, active]
 ---
 
@@ -76,3 +76,5 @@ After: "What makes an answer passage easier to understand and cite." This keeps 
 ## Related Routes
 
 Use [[Search Intent Classification]] before ordering H2s, [[Evidence Block Requirements]] before adding fact-heavy headings, and [[Brief To Draft Handoff]] after the hierarchy is approved.
+
+For Heading Hierarchy Rules, `nng-editorial-heuristics` supplies general interaction-design principles. Applying those principles to this note's editorial checks is a project adaptation, not an experimentally established SEO or AI-citation requirement.

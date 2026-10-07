@@ -1,0 +1,27 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://developers.google.com/search/docs/fundamentals/ai-optimization-guide",
+  "normalized_full_document_sha256": "59d8c6886ae40a880009b1dae738f4706dbe0f93a70f8fa465e94ffa3263fba8",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "doing so will neither harm nor help your site's visibility or rankings in google search"
+  ],
+  "records": [
+    {
+      "source_id": "g-ai-opt-guide",
+      "source_url": "https://developers.google.com/search/docs/fundamentals/ai-optimization-guide",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "confirmed_by_manual_review",
+      "excerpt_index": 0
+    },
+    {
+      "source_id": "g-update-2026-06-15-llms-txt-clarified-as-unused-by-google-search",
+      "source_url": "https://developers.google.com/search/docs/fundamentals/ai-optimization-guide",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    }
+  ]
+}

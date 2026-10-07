@@ -7,6 +7,93 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Reject reviewer scorecards with missing, negated or contradictory P0
+  clearance, duplicate scores/nonces/decisions, or missing decision reasons.
+- Enforce the required browser check in strict delivery mode, and preserve
+  blocked diagnostics when preview mode explicitly bypasses delivery.
+- Validate external-link redirects and bounded HEAD-to-GET recovery, with
+  exact documented 403/405 exceptions that retain network safety checks.
+- Use canonical Openverse search, honor generated image MIME types, discover
+  PNG, JPEG and WebP heroes, and support WeasyPrint 70's guarded URL fetcher.
+- Reject symlinked rendering destinations and promote HTML and PDF outputs
+  through exclusive temporary files.
+- Analyze nested static-site content deterministically without following
+  symlinks into unrelated directories; support declared Indonesian content.
+- Diagnose disabled Google APIs, key restrictions, billing and quota errors
+  before offering permission advice.
+- Stop ordinary Google, audio and NotebookLM commands from installing
+  environments or browsers implicitly. Verify file ownership before Unix,
+  Windows and Brain installation changes, preserving user additions and
+  refusing modified managed files and parent-traversal manifest paths before
+  deletion.
+- Reconcile exact known public legacy installations using reviewed file hashes
+  and manifest scopes, with transactional replacement and safe empty-directory
+  pruning. Reject Windows reparse-point paths and unknown collisions before
+  mutation; exercise native Windows lifecycle scenarios in dedicated CI jobs.
+- Use canonical Claude Code invocation metadata and a shared safe-YAML
+  validator; resolve helpers and references from trusted installed roots when
+  the caller's working directory is unrelated or untrusted.
+- Reject retired, unverified or expired Brain evidence in all three adapters
+  and current wiki advice. Stage failed retrieval attempts separately from
+  reviewed source records and preserve immutable raw snapshots during tests.
+- Improve normal-text link and byline contrast in light and dark rendering.
+- Compare visible headline, author, publication date and hero with JSON-LD
+  in both delivery gates, including declared Open Graph image agreement.
+- Disable implicit proxies for guarded fetches, pin Brain source connections
+  to validated public addresses, and reject symlinked hero output ancestors.
+- Require shipped, hash-checked Brain excerpt artifacts with source and review
+  provenance, while separating excerpt integrity from full-capture review.
+- Handle normal Git stderr correctly on PowerShell 5.1, select exactly one Git
+  executable when PATH contains duplicates, account for the exact PowerShell
+  startup-cache file while protecting the rest of the disposable profile,
+  avoid binary pipelines in legacy Windows fixtures, and preserve Bash 3.2
+  standalone uninstall.
+
+### Changed
+
+- Resolve skill helpers from trusted installed paths, focus article prose on
+  the subject, and select evidence and media according to the reader's task.
+- Require separate delivery review for every locale and reconcile the P0
+  delivery gate with the unchanged 70-point configurable quality gate.
+- Differentiate 25 duplicated FLOW task prompts while preserving their names,
+  stage routing, attribution and reviewed upstream synchronization boundary.
+- Refresh Google guidance and its Brain projection from reviewed official
+  October sources, and qualify current Gemini and NotebookLM interfaces.
+- Refresh bounded dependencies and hash locks for Python 3.11 compatibility.
+  Retain the reported, unpatched NLTK model-artifact advisory as an explicit
+  limitation; no advisory-free claim is made.
+- Add optional Gemini 3.8 TTS aliases with Interactions schema and WAV checks,
+  retaining every legacy alias and the existing default model.
+- Correct active Brain readiness and version claims, distinguish model-provider
+  processing from local artifact storage, and remove unsupported fixed quotas.
+- Expand routing and recovery evaluations, public distribution checks, and
+  source-date workflow diagnostics.
+- Rename the Claude plugin identifier to `blog-engine` for current host
+  compatibility, with migration instructions. Keep the repository, marketplace,
+  standalone `/blog` commands, aliases and Python package identity unchanged.
+- Add opt-in persistent runtime directories for audio, Google and NotebookLM,
+  and a persistent FLOW snapshot selector shared by sync and downstream reads.
+  Existing standalone defaults remain available; no installed state is moved.
+- Review all prior Brain sources against content, retain 127 active reviewed
+  records and archive three retired records. The executable local Brain audit
+  passes at 98/100; historical ledger dates and raw snapshots remain intact.
+- Validate native plugin routing, controlled writing and default Chromium
+  rendering using the current host and matching isolated browser runtime.
+- Add explicit Linux/macOS installer and Windows PowerShell 5.1/7 CI jobs,
+  and validate both the prior and current Claude plugin validators.
+
+### Known verification limits
+
+- The pinned optional image MCP package still exposes retired preview models.
+  Use the documented direct API or stock-image route until it supports live IDs.
+- Authenticated Google, Gemini and NotebookLM operations remain unverified.
+  Native route selection does not execute all 30 workflows. Single-pass writing
+  samples require factual review and correction before delivery.
+- Native Windows and macOS acceptance depends on the exact PR revision.
+  No release, installed-profile migration or merge is included.
+
 ## [2.2.0] - 2026-08-26
 
 ### Added

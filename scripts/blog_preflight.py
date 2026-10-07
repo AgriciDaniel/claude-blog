@@ -35,6 +35,7 @@ import shutil
 import socket
 import sys
 import tempfile
+import urllib.error
 import urllib.parse
 import urllib.request
 from html.parser import HTMLParser
@@ -64,8 +65,7 @@ VIEWPORTS = [
 CONTRACT_VERSION = _project_version()
 HEAD_TIMEOUT = 10
 USER_AGENT = f"claude-blog/{CONTRACT_VERSION} preflight (+https://github.com/AgriciDaniel/claude-blog)"
-URL_ALLOWLIST = ("example.com", "example.org")
-URL_ALLOWLIST_FILE = "preflight-allowlist.json"
+EXTERNAL_LINKS_ALLOWED_FILE = "external-links.allowed"
 ALLOWED_HTTP_SCHEMES = frozenset({"http", "https"})
 GOOGLEBOT_HTML_BYTE_LIMIT = 2 * 1024 * 1024
 INLINE_BLOAT_WARNING_BYTES = 256 * 1024
@@ -375,30 +375,46 @@ def _safe_local_path(root: Path, ref: str) -> tuple[Path | None, str | None]:
     return resolved, None
 
 
-def _load_unreachable_allowlist(draft_dir: Path) -> set[str]:
-    """Load exact host allowlist for links that should not be probed."""
-    hosts = set(URL_ALLOWLIST)
-    cfg_path = draft_dir / URL_ALLOWLIST_FILE
-    if not cfg_path.is_file() or cfg_path.is_symlink():
-        return hosts
+def _normalize_external_url(url: str) -> str:
+    """Normalize an external URL for exact exception matching."""
+    parsed = urllib.parse.urlsplit(url.strip())
+    return urllib.parse.urlunsplit(
+        (parsed.scheme.lower(), parsed.netloc.lower(), parsed.path or "/", parsed.query, "")
+    )
+
+
+def _load_external_link_exceptions(draft_dir: Path) -> tuple[set[str], list[str]]:
+    """Load exact URLs allowed to return 403/405 from a project config.
+
+    ``external-links.allowed`` is line-oriented. Blank lines and lines that
+    start with ``#`` are ignored. Entries are exact http(s) URLs, with URL
+    fragments ignored for matching. The file never bypasses URL/DNS safety or
+    redirect validation; it only permits a 403/405 status after those checks.
+    """
+    config_path = draft_dir / EXTERNAL_LINKS_ALLOWED_FILE
+    if not config_path.exists():
+        return set(), []
+    if config_path.is_symlink():
+        return set(), [f"{EXTERNAL_LINKS_ALLOWED_FILE} must not be a symlink"]
     try:
-        data = json.loads(_read_text_no_follow(cfg_path))
-    except (OSError, ValueError, json.JSONDecodeError):
-        return hosts
-    raw_hosts = data.get("unreachable_hosts") or data.get("hosts") or []
-    if isinstance(raw_hosts, list):
-        for host in raw_hosts:
-            parsed = urllib.parse.urlparse(str(host))
-            name = (parsed.hostname or str(host)).strip().lower().rstrip(".")
-            if re.fullmatch(r"[a-z0-9.-]+", name):
-                hosts.add(name)
-    return hosts
+        raw = _read_text_no_follow(config_path)
+    except (OSError, ValueError) as exc:
+        return set(), [f"{EXTERNAL_LINKS_ALLOWED_FILE} unreadable: {exc}"]
 
-
-def _is_allowed_unreachable(url: str, allowed_hosts: set[str]) -> bool:
-    parsed = urllib.parse.urlparse(url)
-    host = (parsed.hostname or "").lower().rstrip(".")
-    return host in allowed_hosts
+    allowed: set[str] = set()
+    violations: list[str] = []
+    for line_number, raw_line in enumerate(raw.splitlines(), start=1):
+        entry = raw_line.strip()
+        if not entry or entry.startswith("#"):
+            continue
+        ok, reason = _well_formed_http_url(entry)
+        if not ok:
+            violations.append(
+                f"{EXTERNAL_LINKS_ALLOWED_FILE} line {line_number} invalid: {reason}"
+            )
+            continue
+        allowed.add(_normalize_external_url(entry))
+    return allowed, violations
 
 
 def _resolve_public_http_url(url: str) -> tuple[bool, str | None, str | None, int | None, list[Any]]:
@@ -537,7 +553,7 @@ def gate_1_capability_discovery(draft_dir: Path, live_tools: list[str] | None = 
     if not image_gen_available:
         violations.append("no image-gen path available: no live Banana MCP, API key, stock key, or Openverse fallback")
     if not py_deps["patchright"] and not py_deps["playwright"]:
-        warnings.append("neither patchright nor playwright installed; Gate 3 will warn-and-pass")
+        warnings.append("neither patchright nor playwright installed; strict Gate 3 will block delivery")
     if not py_deps["weasyprint"] and not py_deps["patchright"] and not py_deps["playwright"]:
         warnings.append("no PDF backend installed (patchright/playwright/weasyprint); PDF generation will fail")
 
@@ -593,8 +609,11 @@ def gate_3_visual_verification(draft_dir: Path, slug: str | None = None) -> dict
             pass
     if sync_playwright is None:
         return _gate_result(
-            3, "Visual Verification", True, [],
-            ["neither patchright nor playwright installed; skipping visual checks. Run pip install -e .[presentation] to enable."],
+            3, "Visual Verification", False,
+            [
+                "neither patchright nor playwright is installed; visual verification "
+                "is required. Run the documented environment setup before delivery"
+            ],
         )
 
     _stem, selected, artifact_violations = _select_artifact_stem(draft_dir, slug)
@@ -616,7 +635,7 @@ def gate_3_visual_verification(draft_dir: Path, slug: str | None = None) -> dict
     warnings = [f"backend: {backend}"]
     per_viewport: dict = {}
 
-    bbox_check_js = """
+    bbox_check_js = r"""
 () => {
   const overflows = [];
   const boxes = document.querySelectorAll('svg, figure');
@@ -652,21 +671,42 @@ def gate_3_visual_verification(draft_dir: Path, slug: str | None = None) -> dict
       const required = ['headline','image','datePublished','author'];
       jsonLdMissingFields = required.filter(k => !obj[k]);
       jsonLdWordCount = Number.isInteger(obj.wordCount) ? obj.wordCount : null;
-      const normalize = (value) => String(value || '').replace(/\\s+/g, ' ').trim().toLowerCase();
-      const visibleHeadline = normalize(document.querySelector('h1')?.textContent);
-      const schemaHeadline = normalize(obj.headline);
-      if (!visibleHeadline || visibleHeadline !== schemaHeadline) {
-        jsonLdConsistencyMismatches.push('headline');
-      }
-      const visibleDate = document.querySelector('time[datetime]')?.getAttribute('datetime');
-      if (visibleDate && !String(obj.datePublished || '').startsWith(visibleDate.slice(0, 10))) {
-        jsonLdConsistencyMismatches.push('datePublished');
-      }
-      jsonLdVisibleConsistent = jsonLdConsistencyMismatches.length === 0;
     } catch (e) { jsonLdValid = false; }
   }
+  // Keep head/schema markup, but remove body nodes hidden by actual computed layout.
+  const visibleDocument = document.documentElement.cloneNode(true);
+  const originals = [...document.body.querySelectorAll('*')];
+  const copies = [...visibleDocument.querySelector('body').querySelectorAll('*')];
+  const identitySelector = 'h1,.byline,[rel~=author],[itemprop~=author],[itemprop~=name],[itemprop~=datePublished],time,.author,.author-name,.byline-author,.p-author';
+  const originalText = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  const copiedText = document.createTreeWalker(visibleDocument.querySelector('body'), NodeFilter.SHOW_TEXT);
+  let originalNode, copiedNode;
+  while ((originalNode = originalText.nextNode()) && (copiedNode = copiedText.nextNode())) {
+    if (!originalNode.parentElement.closest(identitySelector)) continue;
+    const color = getComputedStyle(originalNode.parentElement).color;
+    const alpha = color.match(/(?:,|\/)\s*([.\d]+%?)\s*\)$/);
+    if (color === 'transparent' || ((color.startsWith('rgba(') || color.includes('/')) && alpha && parseFloat(alpha[1]) === 0)) {
+      copiedNode.nodeValue = '';
+    }
+  }
+  originals.forEach((element, index) => {
+    if (['SCRIPT', 'STYLE'].includes(element.tagName)) return;
+    const style = getComputedStyle(element);
+    // Opacity multiplies through ancestors, even when a child computes to 1.
+    let opacityHidden = false;
+    for (let ancestor = element; ancestor; ancestor = ancestor.parentElement) {
+      if (Number(getComputedStyle(ancestor).opacity) === 0) {
+        opacityHidden = true;
+        break;
+      }
+    }
+    if (opacityHidden || (!element.getClientRects().length && style.display !== 'contents') || style.visibility === 'hidden' || style.display === 'none') {
+      copies[index].remove();
+    }
+  });
+  const visibleIdentityHtml = visibleDocument.outerHTML;
   return {
-    overflows, bg, jsonLdValid, jsonLdType, jsonLdMissingFields,
+    visibleIdentityHtml, overflows, bg, jsonLdValid, jsonLdType, jsonLdMissingFields,
     jsonLdVisibleConsistent, jsonLdConsistencyMismatches, jsonLdWordCount
   };
 }
@@ -700,6 +740,16 @@ def gate_3_visual_verification(draft_dir: Path, slug: str | None = None) -> dict
                 screenshot = page.screenshot(full_page=True)
                 _atomic_write_bytes(preview_dir / f"{vp['name']}-{vp['width']}.png", screenshot)
                 result = page.evaluate(bbox_check_js)
+                identity_html = result.pop("visibleIdentityHtml")
+                identity_parser = _MetaParser()
+                identity_parser.feed(identity_html)
+                try:
+                    identity_nodes = _jsonld_nodes(json.loads("".join(identity_parser.json_ld_blocks)))
+                    identity_obj = next(node for node in identity_nodes if _is_blogposting_node(node))
+                    result["jsonLdConsistencyMismatches"] = _jsonld_identity_mismatches(identity_html, identity_obj, identity_nodes)
+                    result["jsonLdVisibleConsistent"] = not result["jsonLdConsistencyMismatches"]
+                except (ValueError, StopIteration, TypeError):
+                    result["jsonLdVisibleConsistent"] = False
                 per_viewport[vp["name"]] = {"result": result, "console_errors": console_errors}
                 if result["overflows"]:
                     violations.append(f"{vp['name']}: {len(result['overflows'])} SVG overflow(s)")
@@ -911,6 +961,258 @@ class _MetaParser(HTMLParser):
             self.article_text_chars += len(re.findall(r"\b\w+\b", data))
 
 
+class _IdentityHTMLParser(HTMLParser):
+    """Small element tree for visible article identity, never head metadata."""
+
+    _VOID = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr"}
+
+    def __init__(self):
+        super().__init__()
+        self.root = {"tag": "document", "attrs": {}, "children": []}
+        self.stack = [self.root]
+
+    def handle_starttag(self, tag, attrs):
+        node = {"tag": tag, "attrs": dict(attrs), "children": []}
+        self.stack[-1]["children"].append(node)
+        if tag not in self._VOID:
+            self.stack.append(node)
+
+    def handle_startendtag(self, tag, attrs):
+        self.handle_starttag(tag, attrs)
+        if tag not in self._VOID:
+            self.handle_endtag(tag)
+
+    def handle_endtag(self, tag):
+        for index in range(len(self.stack) - 1, 0, -1):
+            if self.stack[index]["tag"] == tag:
+                del self.stack[index:]
+                break
+
+    def handle_data(self, data):
+        self.stack[-1]["children"].append(data)
+
+
+def _identity_inline_style(style, property_name):
+    values = re.findall(r"(?:^|;)" + re.escape(property_name) + r":([^;]+)", style)
+    important = [value for value in values if value.endswith("!important")]
+    selected = (important or values)[-1] if values else ""
+    return selected.removesuffix("!important")
+
+
+def _identity_zero_alpha(value):
+    try:
+        return float(value.rstrip("%")) <= 0
+    except ValueError:
+        return False
+
+
+def _identity_transparent_color(color):
+    if color == "transparent" or re.fullmatch(r"#[0-9a-f]{3}0|#[0-9a-f]{6}00", color):
+        return True
+    if "/" in color:
+        return _identity_zero_alpha(color.rsplit("/", 1)[1].rstrip(")"))
+    if color.startswith(("rgba(", "hsla(")) and color.count(",") == 3:
+        return _identity_zero_alpha(color.rsplit(",", 1)[1].rstrip(")"))
+    return False
+
+
+def _identity_elements(node):
+    attrs = node["attrs"]
+    style = re.sub(r"\s+", "", (attrs.get("style") or "")).lower()
+    if (node["tag"] in {"head", "script", "style", "template", "noscript"}
+            or "hidden" in attrs or (attrs.get("aria-hidden") or "").lower() == "true"
+            or "display:none" in style or "visibility:hidden" in style
+            or _identity_zero_alpha(_identity_inline_style(style, "opacity"))):
+        return
+    yield node
+    for child in node["children"]:
+        if isinstance(child, dict):
+            yield from _identity_elements(child)
+
+
+def _identity_text(node, inherited_transparent=False):
+    style = re.sub(r"\s+", "", node["attrs"].get("style") or "").lower()
+    color = _identity_inline_style(style, "color")
+    transparent = _identity_transparent_color(color) if color else inherited_transparent
+    return "".join(
+        ("" if transparent else child) if isinstance(child, str)
+        else _identity_text(child, transparent)
+        for child in node["children"]
+        if isinstance(child, str) or list(_identity_elements(child))
+    )
+
+
+def _identity_normalize(value):
+    return re.sub(r"\s+", " ", str(value or "")).strip().casefold()
+
+
+def _identity_date(value):
+    text = str(value or "").strip()
+    try:
+        if re.fullmatch(r"\d{4}-\d{2}-\d{2}", text):
+            return dt.date.fromisoformat(text)
+        return dt.datetime.fromisoformat(text.replace("Z", "+00:00"))
+    except ValueError:
+        for pattern in ("%B %d, %Y", "%B %d %Y", "%b %d, %Y", "%b %d %Y", "%d %B %Y", "%d %b %Y"):
+            try:
+                return dt.datetime.strptime(text, pattern).date()
+            except ValueError:
+                pass
+    return None
+
+
+def _identity_dates_equal(left, right):
+    left, right = _identity_date(left), _identity_date(right)
+    if left is None or right is None:
+        return False
+    if isinstance(left, dt.datetime) and isinstance(right, dt.datetime):
+        if (left.tzinfo is None) == (right.tzinfo is None):
+            return left == right
+        return left.replace(tzinfo=None) == right.replace(tzinfo=None)
+    def dates(value):
+        if not isinstance(value, dt.datetime):
+            return {value}
+        result = {value.date()}
+        if value.tzinfo is not None:
+            result.add(value.astimezone(dt.timezone.utc).date())
+        return result
+    return bool(dates(left) & dates(right))
+
+
+def _identity_schema_values(value, nodes, field, seen=None):
+    """Accept name strings, Person/Organization/ImageObject objects and arrays."""
+    seen = set() if seen is None else seen
+    if isinstance(value, list):
+        return [part for item in value for part in _identity_schema_values(item, nodes, field, seen)]
+    if isinstance(value, str):
+        target = next((node for node in nodes if node.get("@id") == value), None)
+        if target is not None and value not in seen:
+            return _identity_schema_values(target, nodes, field, seen | {value})
+        return [value] if value.strip() else []
+    if isinstance(value, dict):
+        for key in (("name",) if field == "author" else ("url", "contentUrl")):
+            if value.get(key):
+                return _identity_schema_values(value[key], nodes, field, seen)
+        reference = value.get("@id")
+        if reference and reference not in seen:
+            target = next((node for node in nodes if node.get("@id") == reference and node is not value), None)
+            if target is not None:
+                return _identity_schema_values(target, nodes, field, seen | {reference})
+    return []
+
+
+def _identity_asset_urls(value, canonical):
+    """Resolve local assets both beside a document and below its publish URL."""
+    value = str(value or "").strip()
+    if not value:
+        return set()
+    candidates = {value}
+    if canonical and not urllib.parse.urlsplit(value).scheme:
+        candidates = {
+            urllib.parse.urljoin(canonical, value),
+            urllib.parse.urljoin(canonical.rstrip("/") + "/", value),
+        }
+    result = set()
+    for candidate in candidates:
+        parsed = urllib.parse.urlsplit(candidate)
+        host = (parsed.hostname or "").lower()
+        try:
+            port = parsed.port
+        except ValueError:
+            continue
+        if port and (parsed.scheme.lower(), port) not in {("http", 80), ("https", 443)}:
+            host += ":" + str(port)
+        path = urllib.parse.quote(urllib.parse.unquote(parsed.path), safe="/:@-._~!$&'()*+,;=")
+        result.add(urllib.parse.urlunsplit((parsed.scheme.lower(), host, path, parsed.query, "")))
+    return result
+
+
+def _jsonld_identity_mismatches(html, obj, nodes):
+    """Compare required schema identity against article markup, not meta tags."""
+    parser = _IdentityHTMLParser()
+    parser.feed(html)
+    elements = list(_identity_elements(parser.root))
+    article = next((node for node in elements if node["tag"] == "article"), parser.root)
+    visible = list(_identity_elements(article))
+    def tokens(node, key):
+        return set((node["attrs"].get(key) or "").split())
+    h1 = next((node for node in visible if node["tag"] == "h1"), None)
+    mismatches = []
+    if h1 is None or _identity_normalize(_identity_text(h1)) != _identity_normalize(obj.get("headline")):
+        mismatches.append("headline")
+
+    bylines = [node for node in visible if "byline" in tokens(node, "class")]
+    author_nodes = [node for node in visible if (
+        "author" in tokens(node, "itemprop") or "author" in tokens(node, "rel")
+        or tokens(node, "class") & {"author", "author-name", "byline-author", "p-author"}
+    )]
+    representations = []
+    if author_nodes:
+        visible_names = []
+        for node in author_nodes:
+            name_nodes = [child for child in _identity_elements(node) if "name" in tokens(child, "itemprop")]
+            visible_names.extend(_identity_text(child) for child in (name_nodes or [node]))
+        if any(_identity_normalize(name) for name in visible_names):
+            representations.append((" and ".join(visible_names), not bylines))
+    # A matching semantic author must never suppress a contradictory byline.
+    for byline in bylines:
+        text = re.split(r"[·•|]", _identity_text(byline))[0]
+        text = re.split(r"\d{4}-\d{2}-\d{2}", text)[0]
+        representations.append((text, True))
+    names = {_identity_normalize(name) for name in _identity_schema_values(obj.get("author"), nodes, "author")}
+    names.discard("")
+    author_ok = bool(representations and names)
+    for text, require_all in representations:
+        author_text = _identity_normalize(text)
+        matched = False
+        for name in sorted(names, key=len, reverse=True):
+            author_text, count = re.subn(r"(?<!\w)" + re.escape(name) + r"(?!\w)", " ", author_text)
+            matched = matched or count > 0
+            if require_all and count == 0:
+                author_ok = False
+        remainder = re.sub(r"\b(?:by|and|with)\b|[,;&/|]", " ", author_text).strip()
+        author_ok = author_ok and matched and not remainder
+    if not author_ok:
+        mismatches.append("author")
+
+    def publication_time(node):
+        return (node["tag"] == "time"
+                and "dateModified" not in tokens(node, "itemprop")
+                and not tokens(node, "class") & {"updated", "modified"})
+
+    date_nodes = [node for node in visible if "datePublished" in tokens(node, "itemprop")]
+    if not date_nodes:
+        date_nodes = [child for byline in bylines for child in _identity_elements(byline) if publication_time(child)]
+    if not date_nodes:
+        date_nodes = [child for header in visible if header["tag"] == "header"
+                      for child in _identity_elements(header) if publication_time(child)]
+    if not date_nodes and not bylines:
+        date_nodes = [node for node in visible if publication_time(node)][:1]
+    dates = [node["attrs"].get("datetime") or _identity_text(node) for node in date_nodes]
+    if not dates:
+        date_pattern = r"\d{4}-\d{2}-\d{2}(?:T[\d:.]+(?:Z|[+-]\d{2}:\d{2})?)?|(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},?\s+\d{4}"
+        dates = [match.group() for byline in bylines for match in re.finditer(date_pattern, _identity_text(byline), re.I)]
+    if not dates or not all(_identity_dates_equal(value, obj.get("datePublished")) for value in dates):
+        mismatches.append("datePublished")
+
+    hero_containers = [node for node in visible if "hero" in tokens(node, "class")]
+    hero_images = [child for node in hero_containers for child in _identity_elements(node) if child["tag"] == "img"]
+    if not hero_images:
+        hero_images = [node for node in visible if node["tag"] == "img" and "image" in tokens(node, "itemprop")]
+    if not hero_images:
+        hero_images = [node for node in visible if node["tag"] == "img"][:1]
+    canonical_parser = _MetaParser()
+    canonical_parser.feed(html)
+    canonical = canonical_parser.canonical
+    actual_images = set().union(*(_identity_asset_urls(node["attrs"].get("src"), canonical) for node in hero_images))
+    schema_images = set().union(*(_identity_asset_urls(value, canonical) for value in _identity_schema_values(obj.get("image"), nodes, "image")))
+    og_images = _identity_asset_urls(canonical_parser.og_image, canonical)
+    if (not actual_images or not actual_images & schema_images
+            or (og_images and not actual_images & schema_images & og_images)):
+        mismatches.append("image")
+    return mismatches
+
+
 class _PreflightNoRedirectHandler(urllib.request.HTTPRedirectHandler):
     """Refuse automatic redirect-following in Gate 5 link checks (VULN-804).
 
@@ -926,21 +1228,56 @@ class _PreflightNoRedirectHandler(urllib.request.HTTPRedirectHandler):
     http_error_308 = http_error_301
 
 
-_PREFLIGHT_NO_REDIRECT_OPENER = urllib.request.build_opener(_PreflightNoRedirectHandler())
+_PREFLIGHT_NO_REDIRECT_OPENER = urllib.request.build_opener(urllib.request.ProxyHandler({}), _PreflightNoRedirectHandler())
+
+
+def _http_request_status(
+    url: str,
+    *,
+    method: str,
+    headers: dict[str, str] | None = None,
+) -> tuple[int, str | None]:
+    """Return one HTTP status and Location without following redirects."""
+    ok, _reason, host, port, infos = _resolve_public_http_url(url)
+    if not ok or host is None or port is None:
+        return 0, None
+    request_headers = {"User-Agent": USER_AGENT, **(headers or {})}
+    req = urllib.request.Request(url, method=method, headers=request_headers)
+    try:
+        with _PinnedDNS(host, port, infos):
+            with _PREFLIGHT_NO_REDIRECT_OPENER.open(req, timeout=HEAD_TIMEOUT) as resp:
+                if method == "GET":
+                    resp.read(1)
+                response_headers = getattr(resp, "headers", {})
+                return int(getattr(resp, "status", 200)), response_headers.get("Location")
+    except urllib.error.HTTPError as exc:
+        return int(exc.code), exc.headers.get("Location") if exc.headers else None
+    except Exception:
+        return 0, None
 
 
 def _http_head(url: str) -> int:
-    """HEAD request with SSRF guards and no redirect following."""
-    ok, _reason, host, port, infos = _resolve_public_http_url(url)
-    if not ok or host is None or port is None:
-        return 0
-    try:
-        req = urllib.request.Request(url, method="HEAD", headers={"User-Agent": USER_AGENT})
-        with _PinnedDNS(host, port, infos):
-            with _PREFLIGHT_NO_REDIRECT_OPENER.open(req, timeout=HEAD_TIMEOUT) as resp:
-                return resp.status
-    except Exception:
-        return 0
+    """Probe a URL with HEAD, then a bounded GET when HEAD is blocked.
+
+    Redirects are never followed. A 3xx is returned only when its Location
+    resolves to another public http(s) URL. This keeps redirect and DNS safety
+    checks in force while allowing valid redirect responses under Gate 5.
+    """
+    status, location = _http_request_status(url, method="HEAD")
+    if status in {403, 405}:
+        status, location = _http_request_status(
+            url,
+            method="GET",
+            headers={"Range": "bytes=0-0"},
+        )
+    if 300 <= status < 400:
+        if not location:
+            return 0
+        redirect_url = urllib.parse.urljoin(url, location)
+        safe, _reason = _safe_http_url(redirect_url)
+        if not safe:
+            return 0
+    return status
 
 
 def _jsonld_nodes(value: Any) -> list[dict[str, Any]]:
@@ -1112,7 +1449,7 @@ def gate_5_asset_link_integrity(
     slug: str | None = None,
     rendered_schema_validation: dict[str, Any] | None = None,
 ) -> dict:
-    """Verify all <img> resolve, all <a> return 200, schema validates,
+    """Verify image resolution, safe external-link responses and schema,
     word count within +/-5%."""
     _stem, selected, artifact_violations = _select_artifact_stem(draft_dir, slug)
     htmls = selected["html"]
@@ -1134,7 +1471,8 @@ def gate_5_asset_link_integrity(
 
     violations = []
     warnings = []
-    allowed_hosts = _load_unreachable_allowlist(draft_dir)
+    allowed_status_urls, exception_config_violations = _load_external_link_exceptions(draft_dir)
+    violations.extend(exception_config_violations)
     byte_check = _googlebot_html_prefix_check(raw_bytes)
     violations.extend(byte_check["violations"])
     warnings.extend(byte_check["warnings"])
@@ -1151,10 +1489,9 @@ def gate_5_asset_link_integrity(
             if not ok:
                 violations.append(f"img src refused by URL safety policy: {src} ({reason})")
                 continue
-            if _is_allowed_unreachable(src, allowed_hosts):
-                continue
-            if _http_head(src) != 200:
-                violations.append(f"img src returned non-200: {src}")
+            status = _http_head(src)
+            if not 200 <= status < 400:
+                violations.append(f"img src returned {status}: {src}")
         else:
             local, local_error = _safe_local_path(draft_dir, src)
             if local_error:
@@ -1191,11 +1528,17 @@ def gate_5_asset_link_integrity(
             if not ok:
                 violations.append(f"link refused by URL safety policy: {href} ({reason})")
                 continue
-            if _is_allowed_unreachable(href, allowed_hosts):
-                continue
             status = _http_head(href)
-            if status != 200:
-                violations.append(f"link returned {status}: {href}")
+            if 200 <= status < 400:
+                continue
+            normalized_href = _normalize_external_url(href)
+            if status in {403, 405} and normalized_href in allowed_status_urls:
+                warnings.append(
+                    f"link returned documented {status} and is allowed by "
+                    f"{EXTERNAL_LINKS_ALLOWED_FILE}: {href}"
+                )
+                continue
+            violations.append(f"link returned {status}: {href}")
             continue
         if "://" in href or href.startswith(("javascript:", "data:", "vbscript:")):
             violations.append(
@@ -1235,6 +1578,9 @@ def gate_5_asset_link_integrity(
             missing = [k for k in required if not obj.get(k)]
             if missing:
                 schema_violations.append(f"JSON-LD missing required fields: {missing}")
+            mismatches = _jsonld_identity_mismatches(raw, obj, nodes)
+            if mismatches:
+                schema_violations.append(f"JSON-LD does not match visible content: {mismatches}")
             declared_word_count = obj.get("wordCount")
             if not isinstance(declared_word_count, int):
                 schema_violations.append("JSON-LD wordCount must be an integer")
@@ -1312,7 +1658,11 @@ def gate_4_content_review(draft_dir: Path) -> dict:
     expected_nonce, nonce_error = _read_expected_review_nonce(draft_dir)
     if nonce_error or expected_nonce is None:
         return _gate_result(4, "Content Review", False, [nonce_error or "review verifier state missing"])
-    nonce_match = NONCE_PATTERN.search(text)
+    nonce_matches = list(NONCE_PATTERN.finditer(text))
+    nonce_fields = re.findall(r"^\s*Nonce:", text, re.MULTILINE | re.IGNORECASE)
+    if len(nonce_fields) > 1:
+        return _gate_result(4, "Content Review", False, ["review.md contains duplicate or conflicting Nonce fields"])
+    nonce_match = nonce_matches[0] if len(nonce_matches) == 1 else None
     if not nonce_match:
         return _gate_result(
             4, "Content Review", False,
@@ -1346,8 +1696,13 @@ def gate_4_content_review(draft_dir: Path) -> dict:
             ["review.md contains conflicting BLOCKING decisions"],
         )
 
+    decision_fields = [line for line in non_empty if re.match(r"^BLOCKING:", line, re.IGNORECASE)]
+    if len(decision_fields) != 1:
+        return _gate_result(4, "Content Review", False, ["review.md must contain exactly one final BLOCKING decision"])
     blocking = final_match.group(1).lower() == "true"
     reason = (final_match.group(2) or "").strip()
+    if not reason:
+        return _gate_result(4, "Content Review", False, ["review.md final BLOCKING decision requires a non-empty reason"])
     if blocking:
         return _gate_result(
             4, "Content Review", False,
@@ -1355,7 +1710,11 @@ def gate_4_content_review(draft_dir: Path) -> dict:
             blocking=True, reason=reason,
         )
     metric_violations: list[str] = []
-    score_match = re.search(r"Overall Score:\s*(\d{1,3})\s*/\s*100", text, re.IGNORECASE)
+    score_matches = list(re.finditer(r"Overall Score:\s*(\d{1,3})\s*/\s*100", text, re.IGNORECASE))
+    score_fields = re.findall(r"Overall Score:", text, re.IGNORECASE)
+    score_match = score_matches[0] if len(score_matches) == 1 and len(score_fields) == 1 else None
+    if len(score_fields) > 1:
+        metric_violations.append("review.md contains duplicate or conflicting Overall Score fields")
     if not score_match:
         metric_violations.append("review.md missing machine-readable Overall Score: N/100")
         score = None
@@ -1366,8 +1725,33 @@ def gate_4_content_review(draft_dir: Path) -> dict:
         elif score < 90:
             metric_violations.append(f"review overall score {score}/100 is below 90")
 
-    if re.search(r"\bP0\b", text, re.IGNORECASE) and not re.search(r"\b(no|zero)\s+P0\b", text, re.IGNORECASE):
-        metric_violations.append("review mentions P0 without a no/zero P0 clearance")
+    # Accept the existing no/zero P0 forms only as affirmative fields or
+    # complete decision clauses. Substring matching would accept negation
+    # such as "There are not zero P0 issues" or "zero P0 issues except ...".
+    clearance_field = re.compile(
+        r"(?:[-*]\s+)?(?:no|zero)\s+P0(?:\s+issues?)?"
+        r"(?:\s+(?:found|remain|remaining|outstanding))?[.!]?",
+        re.IGNORECASE,
+    )
+    affirmative_lines = {line for line in non_empty if clearance_field.fullmatch(line)}
+    decision_clauses = [clause.strip() for clause in re.split(r"[;,]", reason)]
+    affirmative_clauses = [clause for clause in decision_clauses if clearance_field.fullmatch(clause)]
+    if not affirmative_lines and not affirmative_clauses:
+        metric_violations.append("review missing an explicit affirmative no/zero P0 clearance")
+    else:
+        for line in non_empty:
+            if line in affirmative_lines:
+                continue
+            if line == non_empty[-1]:
+                remainder = reason
+                for clause in affirmative_clauses:
+                    remainder = remainder.replace(clause, "", 1)
+            else:
+                remainder = line
+            if re.search(r"\bP0\b", remainder, re.IGNORECASE):
+                if not re.match(r"^(?:[-*]\s*)?(?:resolved|cleared|fixed)\s+P0\s*:", line, re.IGNORECASE):
+                    metric_violations.append("review mentions P0 without a no/zero P0 clearance for that finding")
+                    break
 
     if metric_violations:
         return _gate_result(4, "Content Review", False, metric_violations, blocking=False, reason=reason, score=score)

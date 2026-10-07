@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://web.dev/articles/optimize-inp",
+  "normalized_full_document_sha256": "c7f4bd59f915980bc23d32c0f41b302db8fba05aa7167a2d403bd5160df80e9a",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "the input delay"
+  ],
+  "records": [
+    {
+      "source_id": "wd-opt-inp",
+      "source_url": "https://web.dev/articles/optimize-inp",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "confirmed_by_manual_review",
+      "excerpt_index": 0
+    }
+  ]
+}

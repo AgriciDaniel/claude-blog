@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://developers.google.com/search/blog/2026/05/a-new-resource-for-optimizing",
+  "normalized_full_document_sha256": "ceaa2ce30c87382ed62dd79cd13c6a9131a876a1a5aa7d9db481ce22707db2de",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "seo best practices remain relevant and foundational to success with our generative ai features"
+  ],
+  "records": [
+    {
+      "source_id": "g-update-2026-05-15-new-generative-ai-optimization-guide",
+      "source_url": "https://developers.google.com/search/blog/2026/05/a-new-resource-for-optimizing",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "confirmed_by_manual_review",
+      "excerpt_index": 0
+    }
+  ]
+}

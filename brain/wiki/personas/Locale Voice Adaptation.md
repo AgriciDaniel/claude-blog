@@ -4,7 +4,7 @@ title: "Locale Voice Adaptation"
 domain: "Blog Voice"
 status: active
 created: 2026-07-06
-updated: 2026-07-09
+updated: 2026-10-07
 tags: [personas, voice-style, active]
 ---
 
@@ -76,3 +76,5 @@ Upstream consumer: [[Translation QA Matrix]] sends faithful translations here on
 ## Locale Voice Adaptation Drift Check
 
 Audit localized articles after major source updates, product renames, or regional legal changes. If a localized draft cannot carry the original caveat naturally, narrow the claim instead of forcing a literal translation.
+
+For Locale Voice Adaptation, `nng-editorial-heuristics` supplies general interaction-design principles. Applying those principles to this note's editorial checks is a project adaptation, not an experimentally established SEO or AI-citation requirement.

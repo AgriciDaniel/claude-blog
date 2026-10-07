@@ -3,7 +3,7 @@ type: spoke
 title: "Source Quality Ladder"
 status: evergreen
 created: 2026-07-06
-updated: 2026-07-09
+updated: 2026-10-07
 tags: [eeat, evergreen]
 domain: "Blog Trust"
 confidence: verified
@@ -73,3 +73,5 @@ A draft says AI Overviews reduced "our" clicks and that a May 2026 core update c
 ## Claim Register Feed
 
 [[Factcheck Claim Register]] consumes the ladder after claim wording is stable. Inputs are claim text, chosen source ID, evidence tier, date basis, limitation, confidence, and refresh trigger. The register expects a verdict label, owner, next review date, and rollback trigger for every claim that survives this ladder.
+
+For Source Quality Ladder, `nng-editorial-heuristics` supplies general interaction-design principles. Applying those principles to this note's editorial checks is a project adaptation, not an experimentally established SEO or AI-citation requirement.

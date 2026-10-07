@@ -9,22 +9,30 @@ description: >
   Briefs are optimized for Google rankings and AI citation visibility as part of SEO. Use
   when user says "content brief", "blog brief", "write brief", "SEO brief",
   "article brief", or "content requirements".
-user-invokable: true
+user-invocable: true
 argument-hint: "<topic>"
 license: MIT
 ---
 
 # Blog Brief Generator: Content Planning
 
+Bundled paths below use host Markdown substitution of `${CLAUDE_SKILL_DIR}`;
+it is not an exported shell variable. Resolve them before execution, quote
+paths, and refuse nonabsolute overrides. Pass `blog_reference_root` resolved
+from `${CLAUDE_SKILL_DIR}/../blog/references`, `blog_template_root` from
+`${CLAUDE_SKILL_DIR}/../blog/templates`, and needed sibling roots to agents.
+Read the main reference `orchestration-details.md` before loading project
+context; pass only its helper-fenced output to downstream agents.
+
 Generates comprehensive content briefs that guide blog writing for maximum
 impact on both Google rankings and AI citation platforms.
 
 Reference documents:
-- `skills/blog/references/content-templates.md`: template selection criteria
-- `skills/blog/references/distribution-playbook.md`: channel-specific distribution tactics
-- `skills/blog/references/internal-linking.md`: link architecture patterns
-- `skills/blog/references/research-quality.md` - 5-dim quality rubric, pre-flight trap classes, freshness floors (v1.8.0; cross-skill ref lives in the orchestrator's references dir)
-- `skills/blog/references/synthesis-contract.md` - 6 LAWs for synthesis output (v1.8.0)
+- `${CLAUDE_SKILL_DIR}/../blog/references/content-templates.md`: template selection criteria
+- `${CLAUDE_SKILL_DIR}/../blog/references/distribution-playbook.md`: channel-specific distribution tactics
+- `${CLAUDE_SKILL_DIR}/../blog/references/internal-linking.md`: link architecture patterns
+- `${CLAUDE_SKILL_DIR}/../blog/references/research-quality.md` - 5-dim quality rubric, pre-flight trap classes, freshness floors (v1.8.0; cross-skill ref lives in the orchestrator's references dir)
+- `${CLAUDE_SKILL_DIR}/../blog/references/synthesis-contract.md` - 6 LAWs for synthesis output (v1.8.0)
 
 ## Auto-loaded inputs (v1.8.0)
 
@@ -59,7 +67,7 @@ Using WebSearch:
 ### Step 2.5: Template Recommendation
 
 Analyze the topic, search intent, and competitive landscape to recommend one
-of 12 content templates. Load `skills/blog/references/content-templates.md` for selection
+of 12 content templates. Load `${CLAUDE_SKILL_DIR}/../blog/references/content-templates.md` for selection
 criteria.
 
 **Available templates:**
@@ -82,7 +90,7 @@ criteria.
 1. Match search intent to template strength
 2. Check what format top-ranking competitors use
 3. Consider the user's available assets (data, expertise, tools)
-4. Load the matching template file from `skills/blog/templates/[type].md`
+4. Load the matching template file from `${CLAUDE_SKILL_DIR}/../blog/templates/[type].md`
 5. Include the template name in the brief output
 
 ### Step 3: Competitive Analysis
@@ -119,7 +127,7 @@ Output format:
 
 ## Template
 **Recommended**: [template-name]: [1-sentence rationale]
-**Template file**: `skills/blog/templates/[type].md`
+**Template file**: `${CLAUDE_SKILL_DIR}/../blog/templates/[type].md`
 
 ## Target Keywords
 - **Primary**: [keyword]: [estimated monthly search volume if available]

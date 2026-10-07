@@ -4,14 +4,14 @@ title: "Google API Evidence Matrix"
 domain: "Blog Content Brain"
 status: active
 created: 2026-07-09
-updated: 2026-07-10
+updated: 2026-10-07
 tags: [deliverables, data-integrations, evidence]
 source_urls:
   - "https://developers.google.com/webmaster-tools/v1/searchanalytics/query"
-  - "https://developers.google.com/webmaster-tools/v1/urlInspection.index/inspect"
+  - "https://developers.google.com/webmaster-tools/v1/urlInspection.index/UrlInspectionResult"
   - "https://developers.google.com/speed/docs/insights/v5/get-started"
   - "https://developers.google.com/analytics/devguides/reporting/data/v1"
-  - "https://docs.cloud.google.com/natural-language/docs"
+  - "https://cloud.google.com/natural-language/docs/reference/rest/v1/Entity"
   - "https://developers.google.com/google-ads/api/docs/keyword-planning/overview"
 ---
 

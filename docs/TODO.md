@@ -9,7 +9,7 @@
 - [ ] Content performance dashboard (aggregate scores, traffic, citations)
 - [ ] `blog-sxo` skill (Florian Schmitz's SXO methodology, content-side persona scoring; deferred from v1.7.0 pending DataForSEO decoupling)
 - [ ] `blog-drift` skill (clean-room baseline + diff for blog content over time; original submission was rejected for hardcoded API key)
-- [ ] `docs/COMMANDS.md` sections for the 6 v1.7.0 commands (`cluster`, `multilingual`, `translate`, `localize`, `locale-audit`, `flow`)
+- [x] `docs/COMMANDS.md` sections for the 6 v1.7.0 commands (`cluster`, `multilingual`, `translate`, `localize`, `locale-audit`, `flow`)
 - [ ] `skills/blog-cluster/templates/cluster-map.html` reference template (skill currently generates from spec each invocation)
 
 ## Completed

@@ -4,7 +4,7 @@ title: "Terminology Control List"
 domain: "Blog Voice"
 status: active
 created: 2026-07-06
-updated: 2026-07-09
+updated: 2026-10-07
 tags: [personas, voice-style, active]
 ---
 
@@ -76,3 +76,5 @@ Voice consumer: [[Style Learning Voice Profile]] receives stable terms and banne
 ## Terminology Control List Drift Scan
 
 Scan new briefs, rewritten intros, title tags, schema names, and localized variants. If multiple names are already indexed, record the cleanup plan before changing published copy.
+
+For Terminology Control List, `nng-editorial-heuristics` supplies general interaction-design principles. Applying those principles to this note's editorial checks is a project adaptation, not an experimentally established SEO or AI-citation requirement.

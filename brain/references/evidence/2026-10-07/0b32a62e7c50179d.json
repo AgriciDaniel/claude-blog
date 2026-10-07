@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://developer.chrome.com/docs/crux/release-notes",
+  "normalized_full_document_sha256": "031af6a12a6d1411b5ed73724e30028094aa1807513a3e621e628482640b186c",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "55.9% of origins ( ↓ 0.8% ) have good core web vitals"
+  ],
+  "records": [
+    {
+      "source_id": "chrome-crux-notes",
+      "source_url": "https://developer.chrome.com/docs/crux/release-notes",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    }
+  ]
+}

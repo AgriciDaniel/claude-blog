@@ -5,8 +5,10 @@
 Google Search Essentials, Google Search Central, living documentation.
 URL: https://developers.google.com/search/docs/essentials
 Updated in source: 2025-12-10.
-Retrieved: 2026-07-09.
+Retrieved and reviewed: 2026-10-07.
 Confidence: EVIDENCE-BASED.
+
+Ledger source: `g-search-essentials`.
 
 ## Core Thesis
 

@@ -76,9 +76,11 @@ Vendor observations vary by product, time, geography, and query set:
 | Perplexity | Community sources appear in some vendor datasets |
 | AI Overviews | Eligible sources and links vary by query and Search surface |
 
-2026 wrinkle: AI Overviews now highlight links from a user's subscribed
-publications, so publisher subscriptions can influence which sources users see
-inside the AI answer (Nieman Lab, 2026-05).
+On May 6, 2026, Google announced a rollout highlighting links from users'
+news subscriptions in AI Mode and AI Overviews. This is a product feature with
+user linkage and eligibility conditions. It does not establish a general
+publisher ranking signal or traffic uplift. Source:
+https://blog.google/products-and-platforms/products/search/explore-web-generative-ai-search/
 
 Vendor datasets report rapid source turnover on some Perplexity query sets.
 Treat this as directional and query-dependent, not a universal content-decay

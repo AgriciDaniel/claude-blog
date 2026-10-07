@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://developers.google.com/google-ads/api/docs/release-notes",
+  "normalized_full_document_sha256": "cf2e542f6273e1553b01f4e3363ab303927fff73136e1a28cc47462c16291bf8",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "v25.1 (2026-08-19)"
+  ],
+  "records": [
+    {
+      "source_id": "google-ads-api-v25-1-2026-08-19",
+      "source_url": "https://developers.google.com/google-ads/api/docs/release-notes",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    }
+  ]
+}

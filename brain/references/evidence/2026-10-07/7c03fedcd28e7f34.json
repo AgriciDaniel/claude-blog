@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://web.dev/articles/cls",
+  "normalized_full_document_sha256": "10ba96ce720383b4bce0771bf9f6022b501ba9a001a1276cb01d5e1b307bd256",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "sites should strive to have a cls score of 0.1 or less"
+  ],
+  "records": [
+    {
+      "source_id": "wd-cls",
+      "source_url": "https://web.dev/articles/cls",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    }
+  ]
+}

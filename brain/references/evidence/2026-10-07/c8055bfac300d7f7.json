@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://www.semrush.com/blog/semrush-ai-overviews-study/",
+  "normalized_full_document_sha256": "a12fa2f7dca9be988b1dd44653fedc5a7912640bb9220d4001e88c370e50ef7e",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "10m+ keywords to find the share of queries triggering ai overviews"
+  ],
+  "records": [
+    {
+      "source_id": "semrush-aio",
+      "source_url": "https://www.semrush.com/blog/semrush-ai-overviews-study/",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    }
+  ]
+}

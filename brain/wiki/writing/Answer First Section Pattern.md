@@ -20,8 +20,7 @@ source_urls:
 This note owns the opening passage under important H2 and H3 headings. Its job
 is to make the section useful before the reader reaches background, brand
 narrative, or tactical caveats. Passage length follows the claim and reader
-intent; no word band earns readiness credit. It supports [[6-Pillar Dual
-Optimization]] by turning a section heading into a clear answer, then adding
+intent; no word band earns readiness credit. It supports [[6-Pillar Dual Optimization]] by turning a section heading into a clear answer, then adding
 proof and nuance.
 
 ### The Move Owned Here

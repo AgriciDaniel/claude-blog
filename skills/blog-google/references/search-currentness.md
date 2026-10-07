@@ -1,20 +1,24 @@
 # Google Search Currentness Playbook
 
-Verified against Google-owned sources on 2026-08-25. Treat product
+Verified against Google-owned sources on 2026-10-07. Treat product
 announcements as product context, not evidence of a ranking factor. Use
 `data/google-updates.json` for the machine-readable source ledger.
 
 Resolve the ledger in this order:
 
-1. In a repository checkout, use the repository-root
-   `data/google-updates.json`.
-2. In a standalone install, use `data/google-updates.json` beside the main
-   blog orchestrator skill, normally
-   `~/.claude/skills/blog/data/google-updates.json`.
+1. Resolve the main blog skill from the trusted installed sibling skill root
+   supplied by the caller. Ordinary reference files do not receive host path
+   substitutions themselves.
+2. If that skill's installed ancestor contains `.claude-plugin/plugin.json`,
+   use `../../data/google-updates.json` relative to the main skill. This covers
+   both repository and cached plugin layouts.
+3. Otherwise use `data/google-updates.json` beside the main blog skill, normally
+   `~/.claude/skills/blog/data/google-updates.json` for a standalone install.
 
 Do not substitute a same-named file from the current working directory. If
-neither trusted location exists, report the ledger as unavailable and continue
-with the cited primary sources below.
+the selected trusted location is missing, stop ledger-backed currentness work
+and report it as unavailable. Primary-source research can continue with an
+explicit evidence gap; it cannot establish that the missing ledger is current.
 
 The ledger separates four evidence states:
 
@@ -33,10 +37,11 @@ events automatically.
 
 ## Core and Spam Update Analysis
 
-The latest confirmed ranking event is the August 2026 spam update. Google says
-it ran from August 18 through August 21, applied globally, and covered all
-languages. Google did not publish a target profile. The earliest complete
-one-week post-update comparison is August 28. Until then, record impact as
+The latest confirmed ranking event is the September 2026 spam update. Google
+says it began on September 24, applies globally and to all languages, and may
+take up to two weeks to complete. Google did not publish a target profile.
+Wait for Google to mark the rollout complete and then collect one full
+post-rollout week before comparison. Until then, record impact as
 `PENDING_OBSERVATION`.
 
 1. Confirm the named update's start and end on the Search Status Dashboard.
@@ -61,7 +66,8 @@ ranking update. Google records these August 2026 logging defects:
 
 These defects affect logging only. They begin before the August 18 spam update,
 so their dates cannot be used as evidence that the spam rollout caused an
-August 13 through August 17 decline.
+August 13 through August 17 decline. Google's August 21 update says the missing
+generative-AI report data was restored. Do not describe it as an ongoing loss.
 
 ## Canonical Reevaluation
 
@@ -76,7 +82,9 @@ BroadcastEvent/VideoObject pages.
 
 ## Generative AI Performance Reports
 
-The dedicated Search Console generative-AI views are a gradual, subset rollout:
+Google announced the dedicated Search Console generative-AI views on June 3.
+The announcement's August 31 update says they have rolled out to all websites
+worldwide. Check the account for its actual available data:
 
 - Separate Search and Discover reports.
 - Search includes AI Overviews and AI Mode.
@@ -145,11 +153,13 @@ report the review as unverified and do not generate a review or rating.
 
 ## Google Ads API Currentness
 
-Google Ads API v25.1 was released on 2026-08-19. Google's support table lists
-Python client 31.2.0 as the minimum for API v25. Dependency updates require an
-offline compatibility test for the Keyword Plan services and requests before a
-live, credentialed call. Never use a developer token, enable billing, or run a
-live Ads request merely to prove package compatibility.
+Google Ads API v25.2 was released on 2026-09-23. Check Google's release notes
+and support table together before changing a versioned path or client library.
+The repository's existing Python client constraint may lag the current client
+release. Dependency updates require an offline compatibility test for Keyword
+Plan services and requests before a live, credentialed call. Never use a
+developer token, enable billing, or run a live Ads request merely to prove
+package compatibility.
 
 ## Crawl and Interaction Checks
 
@@ -186,6 +196,11 @@ clear page identity, and useful media.
 ## Primary Sources
 
 - https://developers.google.com/search/updates
+- https://developers.google.com/search/updates/search_docs_updates.rss
+- https://status.search.google.com/incidents.json
+- https://developers.google.com/search/docs/fundamentals/using-gen-ai-content
+- https://developers.google.com/search/docs/appearance/structured-data/video
+- https://developers.google.com/search/docs/appearance/regional-search-experiences
 - https://status.search.google.com/incidents/LEubPCm2octf2uMqCFKE
 - https://status.search.google.com/products/rGHU1u87FJnkP6W2GwMi/history
 - https://support.google.com/webmasters/answer/6211453?hl=en

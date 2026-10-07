@@ -3,9 +3,8 @@
 Blog Audio Generator - Gemini TTS
 Converts prepared text to speech using Google's Gemini TTS models.
 
-The SDK calls below use the generate_content compatibility path. Prefer the
-Interactions API for new Gemini 3.1 TTS features when the installed SDK
-supports it.
+The 3.1 and 2.5 aliases retain the generate_content compatibility path. The
+3.8 aliases use unary WAV responses from the Interactions API.
 
 Usage:
     python3 scripts/run.py generate_audio.py --text "Hello world" --voice Charon --json
@@ -15,16 +14,19 @@ Usage:
 
 import argparse
 import base64
+import binascii
 import html
+import io
 import json
 import mimetypes
 import os
+import re
 import shutil
 import subprocess
 import sys
 import struct
 import tempfile
-import time
+import wave
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -45,6 +47,8 @@ VOICES = {
 MODELS = {
     "flash": "gemini-3.1-flash-tts-preview",
     "flash31": "gemini-3.1-flash-tts-preview",
+    "flash38": "gemini-3.8-flash-tts",
+    "flash-lite38": "gemini-3.8-flash-lite-tts",
     "legacy-flash25": "gemini-2.5-flash-preview-tts",
     "pro": "gemini-2.5-pro-preview-tts",
     "legacy-pro25": "gemini-2.5-pro-preview-tts",
@@ -59,6 +63,8 @@ CHANNELS = 1         # Mono
 COST_PER_1M_OUTPUT = {
     "flash": 20.0,
     "flash31": 20.0,
+    "flash38": 9.0,
+    "flash-lite38": 6.0,
     "legacy-flash25": 10.0,
     "pro": 20.0,
     "legacy-pro25": 20.0,
@@ -66,9 +72,17 @@ COST_PER_1M_OUTPUT = {
 COST_PER_1M_INPUT = {
     "flash": 1.0,
     "flash31": 1.0,
+    "flash38": 0.50,
+    "flash-lite38": 0.50,
     "legacy-flash25": 0.50,
     "pro": 1.0,
     "legacy-pro25": 1.0,
+}
+INTERACTIONS_WAV_MODELS = frozenset({"flash38", "flash-lite38"})
+PRICE_CHANGE_2027 = datetime(2027, 1, 1, tzinfo=timezone.utc)
+POST_2026_PRICES = {
+    "flash38": (1.0, 18.0),
+    "flash-lite38": (1.0, 12.0),
 }
 AUDIO_TOKENS_PER_SECOND = 25
 MAX_INPUT_TOKENS = 8192
@@ -147,7 +161,23 @@ def resolve_output_path(path_value: str) -> Path:
     return _resolve_under_cwd(path_value, "output path", must_exist=False)
 
 
-def estimate_cost(text: str, model: str) -> dict:
+def get_token_prices(
+    model: str, as_of: datetime | None = None
+) -> tuple[float, float]:
+    """Return input and output prices per million tokens for an alias."""
+    if model not in MODELS:
+        raise ValueError(f"Unknown TTS model alias: {model}")
+    effective_at = as_of or datetime.now(timezone.utc)
+    if effective_at.tzinfo is None:
+        effective_at = effective_at.replace(tzinfo=timezone.utc)
+    if model in POST_2026_PRICES and effective_at >= PRICE_CHANGE_2027:
+        return POST_2026_PRICES[model]
+    return COST_PER_1M_INPUT[model], COST_PER_1M_OUTPUT[model]
+
+
+def estimate_cost(
+    text: str, model: str, as_of: datetime | None = None
+) -> dict:
     """Estimate generation cost from text length."""
     char_count = len(text)
     input_tokens = char_count / 4  # rough: 1 token ~ 4 chars
@@ -158,8 +188,9 @@ def estimate_cost(text: str, model: str) -> dict:
     # Rough output token estimate based on audio duration
     output_tokens = duration_seconds * AUDIO_TOKENS_PER_SECOND
 
-    input_cost = (input_tokens / 1_000_000) * COST_PER_1M_INPUT[model]
-    output_cost = (output_tokens / 1_000_000) * COST_PER_1M_OUTPUT[model]
+    input_price, output_price = get_token_prices(model, as_of)
+    input_cost = (input_tokens / 1_000_000) * input_price
+    output_cost = (output_tokens / 1_000_000) * output_price
     total_cost = input_cost + output_cost
 
     return {
@@ -302,8 +333,198 @@ def extract_audio_data(response) -> bytes:
     return base64.b64decode(data)
 
 
+def extract_interaction_wav_pcm(interaction) -> bytes:
+    """Decode and validate unary WAV output from a Gemini 3.8 interaction."""
+    output_audio = getattr(interaction, "output_audio", None)
+    data = getattr(output_audio, "data", None)
+    if not data:
+        raise ValueError("Gemini TTS response did not include output_audio.data")
+
+    mime_type = getattr(output_audio, "mime_type", None)
+    if mime_type:
+        normalized_mime = str(mime_type).split(";", 1)[0].strip().lower()
+        if normalized_mime not in {"audio/wav", "audio/wave", "audio/x-wav"}:
+            raise ValueError(
+                f"Gemini TTS returned {mime_type}; expected unary audio/wav"
+            )
+
+    if isinstance(data, bytes) and data.startswith(b"RIFF"):
+        wav_data = data
+    else:
+        try:
+            encoded = data.encode("ascii") if isinstance(data, str) else data
+            wav_data = base64.b64decode(encoded, validate=True)
+        except (
+            AttributeError,
+            binascii.Error,
+            TypeError,
+            UnicodeEncodeError,
+            ValueError,
+        ) as exc:
+            raise ValueError("Gemini TTS returned invalid base64 WAV audio data") from exc
+
+    if not wav_data.startswith(b"RIFF") or wav_data[8:12] != b"WAVE":
+        raise ValueError("Gemini TTS response was not a RIFF WAV file")
+
+    try:
+        with wave.open(io.BytesIO(wav_data), "rb") as wav_file:
+            channels = wav_file.getnchannels()
+            sample_rate = wav_file.getframerate()
+            sample_width = wav_file.getsampwidth()
+            compression = wav_file.getcomptype()
+            frame_count = wav_file.getnframes()
+            pcm_data = wav_file.readframes(frame_count)
+    except (EOFError, wave.Error) as exc:
+        raise ValueError(f"Gemini TTS returned an invalid WAV file: {exc}") from exc
+
+    if compression != "NONE":
+        raise ValueError("Gemini TTS WAV must use uncompressed PCM audio")
+    if channels != CHANNELS:
+        raise ValueError(
+            f"Gemini TTS WAV must be mono; received {channels} channels"
+        )
+    if sample_rate != SAMPLE_RATE:
+        raise ValueError(
+            f"Gemini TTS WAV must use a 24000 Hz sample rate; received {sample_rate}"
+        )
+    if sample_width != SAMPLE_WIDTH:
+        raise ValueError(
+            f"Gemini TTS WAV must use 16-bit samples; received {sample_width * 8}-bit"
+        )
+    if frame_count <= 0 or not pcm_data:
+        raise ValueError("Gemini TTS WAV contained no audio frames")
+    expected_size = frame_count * channels * sample_width
+    if len(pcm_data) != expected_size:
+        raise ValueError("Gemini TTS WAV audio data was truncated")
+    return pcm_data
+
+
+def _create_38_single_speaker_input(text: str) -> list[dict]:
+    """Build exact-text input without inventing style metadata."""
+    return [
+        {
+            "type": "user_input",
+            "content": [{"type": "text", "text": text}],
+        }
+    ]
+
+
+_DIALOGUE_LINE = re.compile(r"^(Speaker1|Speaker2):\s*(\S(?:.*\S)?)\s*$")
+
+
+def _parse_38_dialogue(text: str) -> list[tuple[str, str]]:
+    """Parse only explicit Speaker1 and Speaker2 lines without guessing turns."""
+    turns: list[tuple[str, str]] = []
+    for line_number, raw_line in enumerate(text.splitlines(), start=1):
+        line = raw_line.strip()
+        if not line:
+            continue
+        match = _DIALOGUE_LINE.fullmatch(line)
+        if not match:
+            raise ValueError(
+                "Gemini 3.8 dialogue requires every non-empty line to use "
+                f"Speaker1: or Speaker2: with text; invalid line {line_number}"
+            )
+        turns.append((match.group(1), match.group(2)))
+    if not turns:
+        raise ValueError(
+            "Gemini 3.8 dialogue requires Speaker1: and Speaker2: transcript lines"
+        )
+    return turns
+
+
+def _create_38_multi_speaker_input(text: str) -> list[dict]:
+    """Build structured speaker annotations from validated dialogue labels."""
+    content = []
+    for speaker, spoken_text in _parse_38_dialogue(text):
+        content.append(
+            {
+                "type": "text",
+                "text": spoken_text,
+                "annotations": [
+                    {"type": "speech_metadata", "speaker": speaker}
+                ],
+            }
+        )
+    return [{"type": "user_input", "content": content}]
+
+
+def split_38_dialogue_for_tts(
+    text: str, max_tokens: int = CHUNK_TARGET_TOKENS
+) -> list[str]:
+    """Split validated dialogue between turns while preserving speaker labels."""
+    turns = _parse_38_dialogue(text)
+    if {speaker for speaker, _ in turns} != {"Speaker1", "Speaker2"}:
+        raise ValueError(
+            "Gemini 3.8 dialogue requires both Speaker1: and Speaker2: turns"
+        )
+
+    chunks: list[str] = []
+    current: list[str] = []
+    for speaker, spoken_text in turns:
+        line = f"{speaker}: {spoken_text}"
+        if estimate_input_tokens(line) > max_tokens:
+            raise ValueError(
+                "Gemini 3.8 dialogue turn exceeds the safe input limit; "
+                "split that labeled turn without changing its speaker"
+            )
+        candidate = "\n".join([*current, line])
+        if current and estimate_input_tokens(candidate) > max_tokens:
+            chunks.append("\n".join(current))
+            current = [line]
+        else:
+            current.append(line)
+    if current:
+        chunks.append("\n".join(current))
+    return chunks
+
+
+def _generate_38_single_speaker(
+    client, text: str, voice: str, model: str
+) -> bytes:
+    interactions = getattr(client, "interactions", None)
+    if interactions is None or not callable(getattr(interactions, "create", None)):
+        raise RuntimeError(
+            "Gemini 3.8 TTS requires google-genai with the Interactions API"
+        )
+    interaction = interactions.create(
+        model=MODELS[model],
+        input=_create_38_single_speaker_input(text),
+        response_format={"type": "audio"},
+        generation_config={"speech_config": [{"voice": voice}]},
+    )
+    return extract_interaction_wav_pcm(interaction)
+
+
+def _generate_38_multi_speaker(
+    client, text: str, voice1: str, voice2: str, model: str
+) -> bytes:
+    interactions = getattr(client, "interactions", None)
+    if interactions is None or not callable(getattr(interactions, "create", None)):
+        raise RuntimeError(
+            "Gemini 3.8 TTS requires google-genai with the Interactions API"
+        )
+    interaction = interactions.create(
+        model=MODELS[model],
+        input=_create_38_multi_speaker_input(text),
+        response_format={"type": "audio"},
+        generation_config={
+            "speech_config": {
+                "speakers": [
+                    {"speaker": "Speaker1", "voice": voice1},
+                    {"speaker": "Speaker2", "voice": voice2},
+                ]
+            }
+        },
+    )
+    return extract_interaction_wav_pcm(interaction)
+
+
 def generate_single_speaker(client, text: str, voice: str, model: str) -> bytes:
-    """Generate audio with a single voice via the compatibility API."""
+    """Generate single-speaker PCM through the API required by the alias."""
+    if model in INTERACTIONS_WAV_MODELS:
+        return _generate_38_single_speaker(client, text, voice, model)
+
     from google.genai import types
 
     response = client.models.generate_content(
@@ -324,7 +545,10 @@ def generate_single_speaker(client, text: str, voice: str, model: str) -> bytes:
 
 
 def generate_multi_speaker(client, text: str, voice1: str, voice2: str, model: str) -> bytes:
-    """Generate audio with two speakers via the compatibility API."""
+    """Generate two-speaker PCM through the API required by the alias."""
+    if model in INTERACTIONS_WAV_MODELS:
+        return _generate_38_multi_speaker(client, text, voice1, voice2, model)
+
     from google.genai import types
 
     response = client.models.generate_content(
@@ -359,9 +583,14 @@ def generate_multi_speaker(client, text: str, voice1: str, voice2: str, model: s
     return extract_audio_data(response)
 
 
-def generate_audio_chunks(client, text: str, voice1: str, voice2: str, model: str) -> tuple[bytes, int]:
+def generate_audio_chunks(
+    client, text: str, voice1: str, voice2: str, model: str
+) -> tuple[bytes, int]:
     """Generate one or more TTS chunks and stitch the raw PCM bytes."""
-    chunks = split_text_for_tts(text)
+    if voice2 and model in INTERACTIONS_WAV_MODELS:
+        chunks = split_38_dialogue_for_tts(text)
+    else:
+        chunks = split_text_for_tts(text)
     audio_parts = []
     for chunk in chunks:
         if estimate_input_tokens(chunk) > MAX_INPUT_TOKENS:

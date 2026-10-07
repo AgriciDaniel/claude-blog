@@ -3,7 +3,7 @@ type: spoke
 title: "Claim To Source Mapping"
 status: active
 created: 2026-07-06
-updated: 2026-07-09
+updated: 2026-10-07
 tags: [sources, research-pack, active]
 domain: "Source Evidence"
 confidence: verified
@@ -46,12 +46,12 @@ Use this note before a claim appears in a blog brief, audit, quality score, sche
 
 | Claim pattern | Canonical note | Source ID | URL | Date checked | Claim coverage | Limitation |
 |---|---|---|---|---:|---|---|
-| People-first blog review should evaluate usefulness, trust, and reader value before optimization tactics. | [[E-E-A-T for Blog Content]] | `g-helpful-content` | https://developers.google.com/search/docs/fundamentals/creating-helpful-content | retrieved 2026-07-09 | Supports content self-review and E-E-A-T framing. | Does not guarantee ranking improvement. |
-| Google Search AI guidance does not require special AI-only files or markup. | [[AI Citation Mechanics]] | `g-ai-opt-guide` | https://developers.google.com/search/docs/fundamentals/ai-optimization-guide | retrieved 2026-07-08 | Supports Google Search AI feature guidance. | Does not prove behavior for non-Google assistants. |
-| A supported rich-result type must appear in Google's Search Gallery before it is recommended as a Google visual result tactic. | [[Blog Schema Stack]] | `g-search-gallery` | https://developers.google.com/search/docs/appearance/structured-data/search-gallery | retrieved 2026-07-08 | Supports current Google rich-result inventory checks. | Does not validate every Schema.org property. |
-| Confirmed ranking update status must come from Google's ranking history. | [[Google Algorithm Update Ledger]] | `g-ranking-history` | https://status.search.google.com/products/rGHU1u87FJnkP6W2GwMi/history | retrieved 2026-07-09 | Supports official update names and rollout history. | Does not diagnose a site's cause of change. |
-| FAQPage markup should not be sold as a current Google FAQ rich-result tactic. | [[Blog Schema Stack]] | `g-faqpage-sd` | https://developers.google.com/search/updates#deprecating-the-faq-rich-result-feature | retrieved 2026-07-09 | Supports FAQ rich-result retirement for Google Search. | Visible Q and A may still serve readers. |
-| llms.txt should not be presented as a Google Search visibility control. | [[llms.txt Caveat Note]] | `g-update-2026-06-15-llms-txt-clarified-as-unused-by-google-search` | https://developers.google.com/search/docs/fundamentals/ai-optimization-guide | retrieved 2026-07-06 | Supports the Google Search llms.txt clarification. | Other crawlers need separate evidence. |
+| People-first blog review should evaluate usefulness, trust, and reader value before optimization tactics. | [[E-E-A-T for Blog Content]] | `g-helpful-content` | https://developers.google.com/search/docs/fundamentals/creating-helpful-content | retrieved 2026-10-07 | Supports content self-review and E-E-A-T framing. | Does not guarantee ranking improvement. |
+| Google Search AI guidance does not require special AI-only files or markup. | [[AI Citation Mechanics]] | `g-ai-opt-guide` | https://developers.google.com/search/docs/fundamentals/ai-optimization-guide | retrieved 2026-10-07 | Supports Google Search AI feature guidance. | Does not prove behavior for non-Google assistants. |
+| A supported rich-result type must appear in Google's Search Gallery before it is recommended as a Google visual result tactic. | [[Blog Schema Stack]] | `g-search-gallery` | https://developers.google.com/search/docs/appearance/structured-data/search-gallery | retrieved 2026-10-07 | Supports current Google rich-result inventory checks. | Does not validate every Schema.org property. |
+| Confirmed ranking update status must come from Google's ranking history. | [[Google Algorithm Update Ledger]] | `g-ranking-history` | https://status.search.google.com/products/rGHU1u87FJnkP6W2GwMi/history | retrieved 2026-10-07 | Supports official update names and rollout history. | Does not diagnose a site's cause of change. |
+| FAQPage markup should not be sold as a current Google FAQ rich-result tactic. | [[Blog Schema Stack]] | `g-faqpage-sd` | https://developers.google.com/search/updates#deprecating-the-faq-rich-result-feature | retrieved 2026-10-07 | Supports FAQ rich-result retirement for Google Search. | Visible Q and A may still serve readers. |
+| llms.txt should not be presented as a Google Search visibility control. | [[llms.txt Caveat Note]] | `g-update-2026-06-15-llms-txt-clarified-as-unused-by-google-search` | https://developers.google.com/search/docs/fundamentals/ai-optimization-guide | retrieved 2026-10-07 | Supports the Google Search llms.txt clarification. | Other crawlers need separate evidence. |
 
 ## Source ID, URL, Date, Claim Coverage, And Limitation
 

@@ -77,6 +77,43 @@ SYNC_PATHS = [
 ]
 
 
+def resolve_references_dir(references_dir=None, *, require_existing=False):
+    """Select a trusted absolute reference root without consulting the CWD.
+
+    Explicit roots must be outside the package. Reference contents remain
+    untrusted data and cannot authorize execution, credentials or publication.
+    """
+    bundled = REFERENCES_DIR
+    selected = references_dir if references_dir is not None else os.environ.get("CLAUDE_BLOG_FLOW_REFERENCES_DIR")
+    package = SKILL_DIR.parent.parent.resolve()
+    if selected is None:
+        refs = bundled.resolve()
+        if refs != bundled.parent.resolve() / bundled.name:
+            raise ValueError("Bundled FLOW references must not traverse a symlink")
+    else:
+        raw = os.fspath(selected)
+        refs = Path(raw)
+        if not refs.is_absolute() or ".." in refs.parts or any(token in raw for token in ("$", "{", "}", "%")):
+            raise ValueError("FLOW references override must be a caller-resolved absolute path")
+        for component in (refs, *refs.parents):
+            if component.is_symlink():
+                raise ValueError("FLOW references override must not traverse a symlink")
+            if component.exists() and not component.is_dir():
+                raise ValueError("FLOW references override must name a directory")
+        refs = refs.resolve()
+        if refs == package or package in refs.parents or refs in package.parents:
+            raise ValueError("Persistent FLOW references must be outside the installed package")
+    if refs.exists() and not refs.is_dir():
+        raise ValueError("FLOW reference root must be a directory")
+    if require_existing and not refs.is_dir():
+        raise ValueError("Selected FLOW references are missing; sync the configured persistent root first")
+    if refs.exists():
+        for entry in refs.rglob("*"):
+            if entry.is_symlink() and not entry.resolve().is_relative_to(refs):
+                raise ValueError("FLOW reference symlink escapes the selected root")
+    return refs
+
+
 class NoRedirect(urllib.request.HTTPRedirectHandler):
     def redirect_request(self, req, fp, code, msg, headers, newurl):  # noqa: D401
         """Reject redirects so the final host cannot change silently."""
@@ -153,14 +190,14 @@ def _fetch_content(path: str, ref: str, token: str | None) -> bytes:
     return content
 
 
-def _target_for(path: str) -> Path:
+def _target_for(path: str, references_dir: Path | None = None) -> Path:
     if not path.startswith("references/"):
         raise ValueError(f"Refusing non-reference path: {path}")
     rel = Path(path).relative_to("references")
     if any(part in {"..", ""} for part in rel.parts):
         raise ValueError(f"Unsafe relative path: {path}")
-    target = (REFERENCES_DIR / rel).resolve()
-    root = REFERENCES_DIR.resolve()
+    root = (references_dir if references_dir is not None else REFERENCES_DIR).resolve()
+    target = (root / rel).resolve()
     if target != root and root not in target.parents:
         raise ValueError(f"Refusing to write outside references: {target}")
     if target.exists() and target.is_symlink():
@@ -183,11 +220,12 @@ def _atomic_write(path: Path, data: bytes) -> None:
         raise
 
 
-def _load_lock() -> dict[str, str]:
-    if not LOCK_FILE.exists():
+def _load_lock(lock_path: Path | None = None) -> dict[str, str]:
+    lock_path = lock_path if lock_path is not None else LOCK_FILE
+    if not lock_path.exists():
         return {}
     entries = {}
-    for line in LOCK_FILE.read_text(encoding="utf-8").splitlines():
+    for line in lock_path.read_text(encoding="utf-8").splitlines():
         if not line.strip() or line.startswith("#"):
             continue
         digest, _, rel = line.partition("  ")
@@ -196,7 +234,10 @@ def _load_lock() -> dict[str, str]:
     return entries
 
 
-def sync(ref: str, dry_run: bool = False) -> dict[str, Any]:
+def sync(ref: str, dry_run: bool = False, allow_drift: bool = False, references_dir: str | Path | None = None) -> dict[str, Any]:
+    refs = resolve_references_dir(references_dir)
+    lock_path = refs / "flow-prompts.lock"
+    baseline_lock = lock_path if lock_path.exists() else LOCK_FILE
     token = _github_token()
     summary: dict[str, Any] = {
         "status": "success",
@@ -209,20 +250,19 @@ def sync(ref: str, dry_run: bool = False) -> dict[str, Any]:
         "lock_drift": [],
         "errors": [],
     }
-    lock = _load_lock()
+    lock_exists = baseline_lock.exists()
+    lock = _load_lock(baseline_lock)
     new_lock: dict[str, str] = {}
+    pending: list[tuple[Path, bytes]] = []
 
     for path in SYNC_PATHS:
         try:
             content = _fetch_content(path, ref, token)
             rel = str(Path(path).relative_to("references"))
             lock_rel = f"{LOCK_PREFIX}/{rel}"
-            target = _target_for(path)
+            target = _target_for(path, refs)
             digest = hashlib.sha256(content).hexdigest()
             new_lock[lock_rel] = digest
-            old_digest = lock.get(lock_rel)
-            if old_digest and old_digest != digest:
-                summary["lock_drift"].append(rel)
             if target.exists() and target.read_bytes() == content:
                 summary["unchanged"].append(rel)
                 continue
@@ -230,15 +270,14 @@ def sync(ref: str, dry_run: bool = False) -> dict[str, Any]:
                 summary["updated"].append(rel)
             else:
                 summary["added"].append(rel)
-            if not dry_run:
-                _atomic_write(target, content)
+            pending.append((target, content))
         except urllib.error.HTTPError as exc:
             if exc.code == 403 and not token:
                 token = _github_token()
                 time.sleep(1)
                 try:
                     content = _fetch_content(path, ref, token)
-                    target = _target_for(path)
+                    target = _target_for(path, refs)
                     rel = str(Path(path).relative_to("references"))
                     lock_rel = f"{LOCK_PREFIX}/{rel}"
                     digest = hashlib.sha256(content).hexdigest()
@@ -247,12 +286,10 @@ def sync(ref: str, dry_run: bool = False) -> dict[str, Any]:
                         summary["unchanged"].append(rel)
                     elif target.exists():
                         summary["updated"].append(rel)
-                        if not dry_run:
-                            _atomic_write(target, content)
+                        pending.append((target, content))
                     else:
                         summary["added"].append(rel)
-                        if not dry_run:
-                            _atomic_write(target, content)
+                        pending.append((target, content))
                     continue
                 except Exception as retry_exc:
                     summary["errors"].append({"path": path, "error": str(retry_exc)})
@@ -261,11 +298,35 @@ def sync(ref: str, dry_run: bool = False) -> dict[str, Any]:
         except Exception as exc:
             summary["errors"].append({"path": path, "error": str(exc)})
 
+    if lock_exists:
+        for lock_rel, digest in sorted(new_lock.items()):
+            if lock.get(lock_rel) != digest:
+                summary["lock_drift"].append(lock_rel.removeprefix(f"{LOCK_PREFIX}/"))
+        for lock_rel in sorted(set(lock) - set(new_lock)):
+            summary["lock_drift"].append(lock_rel.removeprefix(f"{LOCK_PREFIX}/"))
+
     if summary["errors"]:
         summary["status"] = "error"
+    elif summary["lock_drift"] and not dry_run and not allow_drift:
+        summary["status"] = "error"
+        summary["errors"].append({
+            "path": str(lock_path),
+            "error": (
+                "Lockfile drift detected; reviewed references were not changed. "
+                "Review the upstream diff, then rerun with --allow-drift to accept it."
+            ),
+        })
     elif not dry_run:
+        # Validate every staged destination before the first write.
+        for target, _content in pending:
+            if not target.resolve().is_relative_to(refs):
+                raise ValueError("FLOW target escaped selected references before writing")
+        if not lock_path.resolve().is_relative_to(refs):
+            raise ValueError("FLOW lock escaped selected references before writing")
+        for target, content in pending:
+            _atomic_write(target, content)
         lines = [f"{digest}  {rel}\n" for rel, digest in sorted(new_lock.items())]
-        _atomic_write(LOCK_FILE, "".join(lines).encode("utf-8"))
+        _atomic_write(lock_path, "".join(lines).encode("utf-8"))
 
     return summary
 
@@ -274,12 +335,22 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Sync blog-applicable FLOW prompt files")
     parser.add_argument("--dry-run", action="store_true", help="Report planned changes without writing")
     parser.add_argument("--ref", default="main", help="Branch, tag, or commit SHA to fetch")
+    parser.add_argument(
+        "--allow-drift",
+        action="store_true",
+        help="Accept reviewed upstream changes and update flow-prompts.lock",
+    )
+    parser.add_argument("--references-dir", help="Caller-resolved absolute persistent reference root outside the package")
+    parser.add_argument("--resolve-references", action="store_true", help="Print the selected existing reference root without network access or writes")
     return parser.parse_args()
 
 
 def main() -> int:
     args = parse_args()
-    result = sync(args.ref, dry_run=args.dry_run)
+    if args.resolve_references:
+        print(resolve_references_dir(args.references_dir, require_existing=True))
+        return 0
+    result = sync(args.ref, dry_run=args.dry_run, allow_drift=args.allow_drift, references_dir=args.references_dir)
     print(json.dumps(result, indent=2))
     return 0 if result["status"] == "success" else 1
 

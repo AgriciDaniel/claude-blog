@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://status.search.google.com/incidents/LEubPCm2octf2uMqCFKE",
+  "normalized_full_document_sha256": "3abe791fc58a3b5d41896330a5516afd95961dc84f3615c59e77bcb134d8a244",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "incident began at 2026-08-18 09:27 and ended at 2026-08-21 01:49"
+  ],
+  "records": [
+    {
+      "source_id": "ranking-august-2026-spam",
+      "source_url": "https://status.search.google.com/incidents/LEubPCm2octf2uMqCFKE",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "confirmed_by_manual_review",
+      "excerpt_index": 0
+    }
+  ]
+}

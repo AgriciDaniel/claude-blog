@@ -9,7 +9,7 @@ description: >
   Use when user says "blog audio", "narrate blog", "audio version",
   "text to speech", "tts", "podcast mode", "read aloud", "audio narration",
   "voice", "narration", "generate audio".
-user-invokable: true
+user-invocable: true
 argument-hint: "[generate|voices|setup] [file-or-text] [--mode summary|full|dialogue] [--voice name]"
 license: MIT
 metadata:
@@ -18,6 +18,14 @@ metadata:
 ---
 
 # Blog Audio: Gemini TTS Narration for Blog Posts
+
+Bundled paths below use host Markdown substitution of `${CLAUDE_SKILL_DIR}`;
+it is not an exported shell variable. Resolve them before execution, quote
+paths, and refuse nonabsolute overrides. Pass `blog_reference_root` resolved
+from `${CLAUDE_SKILL_DIR}/../blog/references`, `blog_template_root` from
+`${CLAUDE_SKILL_DIR}/../blog/templates`, and needed sibling roots to agents.
+Read the main reference `orchestration-details.md` before loading project
+context; pass only its helper-fenced output to downstream agents.
 
 Generate professional audio narration of blog content using Google's Gemini TTS.
 Three modes: summary (200-300 word spoken overview), full article read-aloud,
@@ -33,19 +41,51 @@ or two-speaker podcast dialogue. 30 voices, 80+ languages, HTML5 embed output.
 
 ## Prerequisites
 
-- Python 3.11+ (venv managed automatically by `run.py`)
+- Python 3.11+; the explicit setup action owns the managed venv
 - `GOOGLE_AI_API_KEY` environment variable (same key used by blog-image)
 - FFmpeg (for WAV-to-MP3 conversion; falls back to WAV if missing)
 
-## Always Use run.py Wrapper
+## Persistent runtime directory
+
+`CLAUDE_BLOG_RUNTIME_DIR` optionally selects one trusted absolute persistent
+root. This integration uses `<root>/blog-audio/.venv`; NotebookLM also
+uses `<root>/blog-notebooklm/data` for its library, authentication and browser
+state. Without this override, the existing skill-local defaults stay in use.
+Google's shared credential config/token paths stay unchanged. No state is
+copied or migrated automatically, and ordinary runs never perform setup.
+
+Preserve an existing validated operator override. For a plugin without one,
+explicitly pass the host-substituted `${CLAUDE_PLUGIN_DATA}/claude-blog-runtime`
+path on both setup and every later runner call. This is Markdown substitution,
+not an exported shell variable. Execute only once it is an absolute resolved
+path. Single quotes keep an unresolved placeholder literal so validation
+rejects it instead of expanding it to a different shell path:
 
 ```bash
-# CORRECT:
-python3 scripts/run.py generate_audio.py --text "..." --voice Charon --json
-
-# WRONG:
-python3 scripts/generate_audio.py --text "..."  # Fails without venv
+CLAUDE_BLOG_RUNTIME_DIR='${CLAUDE_PLUGIN_DATA}/claude-blog-runtime' python3 "${CLAUDE_SKILL_DIR}/scripts/setup_environment.py" --check --json
+CLAUDE_BLOG_RUNTIME_DIR='${CLAUDE_PLUGIN_DATA}/claude-blog-runtime' python3 "${CLAUDE_SKILL_DIR}/scripts/run.py" generate_audio.py --help
 ```
+
+Only explicit setup without `--check` installs dependencies. Standalone users
+keep the default unless they explicitly choose an absolute runtime root.
+Relative, unresolved, or linked managed subdirectories fail closed. Changing
+the root selects separate state; it never authorizes a migration or cleanup of
+the old root. Plugin persistent data follows the host's uninstall retention
+rules; preserve it explicitly when uninstalling if it is still needed.
+
+## Use the Installed run.py Wrapper
+
+```bash
+BLOG_SKILLS_DIR="${CLAUDE_BLOG_SKILLS_DIR:-${CLAUDE_SKILL_DIR}/..}"
+case "$BLOG_SKILLS_DIR" in /*) ;; *) echo "ERROR: skills dir must be absolute" >&2; exit 1 ;; esac
+AUDIO_RUN="$BLOG_SKILLS_DIR/blog-audio/scripts/run.py"
+python3 "$AUDIO_RUN" generate_audio.py --text "..." --voice Charon --json
+```
+
+Ordinary generate and voices commands perform a nonmutating capability check.
+If the managed environment is absent, return a setup-required result. Only
+`/blog audio setup` may create `.venv` or install dependencies. Never resolve
+the wrapper from the current project's `scripts/` directory.
 
 ## API Key Check (Gate Pattern)
 
@@ -70,13 +110,14 @@ For `/blog audio setup`:
 1. Check if `GOOGLE_AI_API_KEY` is set in environment
 2. If blog-image uses project `.mcp.json`, confirm the referenced env var is exported
 3. If not, guide user to https://aistudio.google.com/apikey
-4. Verify with a dry run: `python3 scripts/run.py generate_audio.py --text "Test" --dry-run --json`
+4. Create or refresh the managed environment, then verify with a dry run:
+   `python3 "$AUDIO_RUN" generate_audio.py --text "Test" --dry-run --json`
 
 ## Voice Selection
 
 For `/blog audio voices`:
 
-Load `references/voices.md` and present the voice catalog to the user.
+Load `${CLAUDE_SKILL_DIR}/references/voices.md` and present the voice catalog to the user.
 
 Ask the user which voice they prefer, or recommend based on content type:
 - **Article narration**: Charon (Informative) or Sadaltager (Knowledgeable)
@@ -151,7 +192,7 @@ Write the prepared text to a file under the working directory, then call:
 
 ```bash
 # Single voice (summary or full mode)
-python3 scripts/run.py generate_audio.py \
+python3 "$AUDIO_RUN" generate_audio.py \
   --text-file blog_audio_prepared.txt \
   --voice Charon \
   --model flash \
@@ -159,7 +200,7 @@ python3 scripts/run.py generate_audio.py \
   --json
 
 # Two voices (dialogue mode)
-python3 scripts/run.py generate_audio.py \
+python3 "$AUDIO_RUN" generate_audio.py \
   --text-file blog_audio_dialogue.txt \
   --voice Puck \
   --voice2 Kore \
@@ -171,8 +212,18 @@ python3 scripts/run.py generate_audio.py \
 **Model selection:**
 - `flash` (default): maps to `gemini-3.1-flash-tts-preview`, good for summaries and standard narration.
 - `flash31`: explicit alias for `gemini-3.1-flash-tts-preview`.
+- `flash38`: `gemini-3.8-flash-tts`, through the Interactions API.
+- `flash-lite38`: `gemini-3.8-flash-lite-tts`, through the Interactions API.
 - `legacy-flash25`: retained only for older compatibility.
 - `pro` or `legacy-pro25`: maps to `gemini-2.5-pro-preview-tts`, use only when needed.
+
+The existing `flash` default remains on 3.1 for compatibility. The 3.8 aliases
+have offline SDK schema and WAV parsing checks; authenticated availability and
+voice quality still require provider testing. For 3.8, pass a verbatim transcript,
+not embedded narration directions. Dialogue must use explicit `Speaker1:` and
+`Speaker2:` lines; the helper does not infer speakers. Cost estimates use the
+reviewed 2026 promotional rates through December 31 and the published 2027 rates
+from January 1. They remain estimates, not a billing quote.
 
 ### Step 6: Deliver
 
@@ -217,7 +268,7 @@ When invoked internally from blog-write:
 - `text`: Prepared text (already cleaned by Claude)
 - `voice`: Voice name (default: Charon)
 - `voice2`: Second voice for dialogue (optional)
-- `model`: flash or pro
+- `model`: `flash`, `flash31`, `pro`, a retained `legacy-*` alias, `flash38`, or `flash-lite38`
 - `output_path`: Where to save the file
 
 **Output:**
@@ -248,4 +299,4 @@ blog-write because audio generation is unavailable.
 ## Reference Documentation
 
 Load on-demand: do NOT load all at startup:
-- `references/voices.md`: Full 30-voice catalog, recommendations by content type, dialogue pairings
+- `${CLAUDE_SKILL_DIR}/references/voices.md`: Full 30-voice catalog, recommendations by content type, dialogue pairings

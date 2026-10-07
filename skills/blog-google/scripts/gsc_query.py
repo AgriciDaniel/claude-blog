@@ -29,11 +29,11 @@ except ImportError:
     sys.exit(1)
 
 try:
-    from google_auth import get_oauth_credentials, load_config, execute_with_retries
+    from google_auth import describe_google_api_error, get_oauth_credentials, load_config, execute_with_retries
 except ImportError:
     import os
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-    from google_auth import get_oauth_credentials, load_config, execute_with_retries
+    from google_auth import describe_google_api_error, get_oauth_credentials, load_config, execute_with_retries
 
 GSC_SCOPES = ["https://www.googleapis.com/auth/webmasters.readonly"]
 
@@ -144,10 +144,8 @@ def query_search_analytics(
     except Exception as e:
         error_str = str(e)
         if "403" in error_str:
-            result["error"] = (
-                f"Permission denied for property '{site_url}'. "
-                "Ensure the service account email is added as a user in "
-                "Google Search Console > Settings > Users and permissions."
+            result["error"] = describe_google_api_error(
+                e, 'Search Console', 'Add the service account as a user in Google Search Console > Settings > Users and permissions for this property.'
             )
         elif "404" in error_str:
             result["error"] = (

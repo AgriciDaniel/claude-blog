@@ -19,6 +19,7 @@ import json
 import os
 import re
 import sys
+import tempfile
 from collections import Counter, defaultdict
 from datetime import date
 from pathlib import Path
@@ -53,9 +54,10 @@ def _resolve_output(path: str, root: Path) -> Path:
 
 def _atomic_write(path: Path, content: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_name(f".{path.name}.tmp-{os.getpid()}")
+    fd, tmp_name = tempfile.mkstemp(prefix=f".{path.name}.", suffix=".tmp", dir=path.parent)
+    tmp = Path(tmp_name)
     try:
-        with open(tmp, "w", encoding="utf-8") as handle:
+        with os.fdopen(fd, "w", encoding="utf-8") as handle:
             handle.write(content)
         os.replace(tmp, path)
     finally:

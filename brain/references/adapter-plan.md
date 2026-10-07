@@ -1,7 +1,10 @@
 # Claude Blog Brain Adapter Plan
 
-Status: market-ready. Domain code adapters are implemented, CLI-wired,
-test-covered, and release-verified with current research evidence.
+Status: market-ready. Domain code adapters are implemented and CLI-wired. The
+2026-10-07 executable local Brain audit scores 98/100 with no critical failures
+or warnings; a separate adapter regression run passes 23 tests on Python 3.11.
+Source and adapter verification have separate evidence boundaries. Current
+readiness requires the executable audit, not a metadata edit or an old result.
 
 ## Current Adapter Honesty
 
@@ -9,7 +12,8 @@ test-covered, and release-verified with current research evidence.
 importers, synthesis modules, and report renderers are implemented, CLI-wired,
 and covered by tests. Adapter completion did not override the source-freshness
 gate. The due ledger entries were revalidated on 2026-08-25 before maturity was
-promoted.
+promoted at that time. That historical result does not establish current
+research readiness. Adapter verification dates cover adapter checks only.
 The adapter evidence now covers importers, synthesis modules, renderers,
 fixtures, package CLI, malformed-input envelopes, deterministic output,
 output-file assertions, and citation coverage for blog post, topic cluster, and

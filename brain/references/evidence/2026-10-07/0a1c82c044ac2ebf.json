@@ -1,0 +1,27 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://developers.google.com/search/docs/essentials/spam-policies",
+  "normalized_full_document_sha256": "0e12c19c6d5742a6355a96c31b3c98ac5bbf9e32bf5d8181cd9a6e31c9448d28",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "we have made changes applicable to the policy in the european economic area (eea)"
+  ],
+  "records": [
+    {
+      "source_id": "g-spam-policies",
+      "source_url": "https://developers.google.com/search/docs/essentials/spam-policies",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    },
+    {
+      "source_id": "g-update-2026-05-15-spam-policies-update-gen-ai-scaled-content",
+      "source_url": "https://developers.google.com/search/docs/essentials/spam-policies",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    }
+  ]
+}

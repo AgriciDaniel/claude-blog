@@ -46,8 +46,7 @@ The selector needs intent, reader maturity, claim sensitivity, source availabili
 
 ## Interpretation Rules For Write Brief Outline
 
-Sensitive topics need stronger reviewer involvement through [[E-E-A-T for Blog
-Content]]. A template can improve clarity, but it cannot compensate for weak
+Sensitive topics need stronger reviewer involvement through [[E-E-A-T for Blog Content]]. A template can improve clarity, but it cannot compensate for weak
 evidence. Planning estimates are optional, intent-dependent, and never score or
 block a complete article. When two templates fit, pick the one with the clearest
 completion test. If the selected format requires claims the source packet

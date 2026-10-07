@@ -134,8 +134,9 @@ a review, reviewer, rating, or experience is authentic.
 
 ## Search Console Generative-AI Reports
 
-Google documents separate Search and Discover generative-AI reports for a
-subset of properties. Do not promise clicks or queries in those dedicated
+Google announced separate Search and Discover generative-AI reports on June 3,
+initially for a subset of properties. Its August 31 update says the insights
+have rolled out to all websites worldwide. Do not promise clicks or queries in those dedicated
 views. No supported Search Console API endpoint is documented for the dedicated
 reports, so API tooling must report the capability as unavailable rather than
 synthesize it.

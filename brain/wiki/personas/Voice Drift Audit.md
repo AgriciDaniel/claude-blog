@@ -4,7 +4,7 @@ title: "Voice Drift Audit"
 domain: "Blog Voice"
 status: active
 created: 2026-07-06
-updated: 2026-07-09
+updated: 2026-10-07
 tags: [personas, voice-style, active]
 ---
 
@@ -16,7 +16,7 @@ Voice Drift Audit detects when drafts, clusters, or distributed assets move away
 
 ### Drift Types This Spoke Owns
 
-Use `g-helpful-content` to test reader usefulness, `g-qrg-full` for trust and topic purpose, `g-update-2025-01-23-qrg-update-jan-2025` for filler, copied, or low-value AI-generated content warnings, and `g-update-2025-09-11-qrg-update-sept-2025` when AI Overview examples or expanded YMYL treatment affect review. `g-spam-policies` helps when drift resembles scaled content abuse rather than ordinary tone variance.
+Use `g-helpful-content` to test reader usefulness, `g-qrg-full` for trust and topic purpose, `g-update-2025-01-23-qrg-update-jan-2025` for filler, copied, or low-value AI-generated content warnings, and `g-update-2025-09-11-qrg-update-sept-2025` when updated YMYL definitions or illustrative examples affect review. `g-spam-policies` helps when drift resembles scaled content abuse rather than ordinary tone variance.
 
 ### Human Review For Systemic Drift
 

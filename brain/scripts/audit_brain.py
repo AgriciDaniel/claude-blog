@@ -16,6 +16,8 @@ from typing import Any
 from urllib.parse import urlparse
 
 
+from source_evidence import can_support, citation_errors, ledger_errors, ledger_index, lifecycle
+
 REPO = Path(__file__).resolve().parent.parent
 RESEARCH_FILES = [
     "references/current-requirements.md",
@@ -177,7 +179,9 @@ def audit_repo(*, run_verification: bool = False) -> dict[str, Any]:
     add_category(categories, "packaging", *check_packaging())
     add_category(categories, "installability", *check_paths(["install.sh", "uninstall.sh", "pyproject.toml"]))
     add_category(categories, "docs", *check_paths(["README.md", "docs/OPERATOR_KIT.md", "docs/PRODUCT_BOUNDARIES.md", "RELEASE_CHECKLIST.md"]))
-    add_category(categories, "obsidian_vault_quality", *check_paths(["assets/template-brain/CODEX.md", "assets/template-brain/.raw/.manifest.json", "assets/template-brain/wiki/hot.md", "assets/template-brain/wiki/index.md", "assets/template-brain/wiki/overview.md", "assets/template-brain/wiki/log.md", "assets/template-brain/wiki/meta/dashboard.md", "assets/template-brain/wiki/canvases/Onboarding Canvas.canvas"]))
+    vault_ok, vault_score, vault_notes, vault_critical = check_vault_quality()
+    add_category(categories, "obsidian_vault_quality", vault_ok, vault_score, vault_notes)
+    critical.extend(vault_critical)
 
     for name, category in categories.items():
         if not category["ok"]:
@@ -317,6 +321,10 @@ def check_source_ledger(*, requires_fresh: bool) -> tuple[bool, int, list[str], 
         critical.append("source-ledger has no captured official/primary sources")
         return False, 35, notes, critical
 
+    # Shared validation reads packaged excerpt artifacts here even when the
+    # broader executable release checks are disabled. Metadata alone cannot
+    # promote a source into the official count or the readiness gate.
+    critical.extend(ledger_errors(data))
     official_count = 0
     invalid_confidence: dict[str, int] = {}
     legacy_date_count = 0
@@ -330,6 +338,9 @@ def check_source_ledger(*, requires_fresh: bool) -> tuple[bool, int, list[str], 
             critical.append(f"{label} must be an object")
             continue
         source_id = clean_string(source.get("id")) or label
+        if lifecycle(source) != "active":
+            notes.append(f"{source_id} excluded from current evidence ({lifecycle(source)})")
+            continue
         source_type = clean_string(source.get("source_type")).lower()
         retrieved = parse_iso_date(clean_string(source.get("retrieved")))
         refresh_due = parse_iso_date(clean_string(source.get("refresh_due")))
@@ -342,7 +353,7 @@ def check_source_ledger(*, requires_fresh: bool) -> tuple[bool, int, list[str], 
         if not is_valid_source_url(url):
             critical.append(f"{source_id} has invalid or placeholder URL")
         if source_type in PRIMARY_SOURCE_TYPES:
-            official_count += 1
+            official_count += int(can_support(source))
         elif source_type not in {"market", "practitioner", "supporting", "fixture"}:
             critical.append(f"{source_id} has unsupported source_type")
         if retrieved is None:
@@ -371,6 +382,10 @@ def check_source_ledger(*, requires_fresh: bool) -> tuple[bool, int, list[str], 
             elif refresh_due < date.today():
                 critical.append(f"{source_id} refresh_due is stale")
 
+    try:
+        critical.extend(citation_errors(['g-helpful-content', 'g-intro-sd', 'g-faqpage-sd', 'g-block-indexing', 'g-canonical', 'g-mobile-first', 'g-ai-features', 'g-gsc-api', 'g-nlp', 'schema-org-type', 'dfs-labs', 'blog-aimode', 'g-qrg-full', 'g-genai-reports', 'g-ai-opt-guide', 'g-search-gallery', 'g-update-2026-06-05-guidance-on-third-party-seo-tools-services-and-advice', 'seer-aio-impact-ctr-2026', 'semrush-ai-mode-comparison', 'ziptie-aio-source-selection'], ledger_index(data)))
+    except ValueError:
+        pass  # ledger_errors already reports malformed or duplicate IDs
     minimum_official = 2 if requires_fresh else 1
     if official_count < minimum_official:
         critical.append(f"source-ledger needs at least {minimum_official} official/primary sources")
@@ -426,7 +441,7 @@ def check_adapters() -> tuple[bool, int, list[str], list[str]]:
 def check_citations() -> tuple[bool, int, list[str], list[str]]:
     notes: list[str] = []
     critical: list[str] = []
-    for folder in ["assets/template-brain/wiki/deliverables", "assets/template-brain/wiki/reports", "examples/sample-vault/wiki/deliverables", "examples/sample-vault/wiki/reports"]:
+    for folder in ["wiki/deliverables", "wiki/reports", "assets/template-brain/wiki/deliverables", "assets/template-brain/wiki/reports", "examples/sample-vault/wiki/deliverables", "examples/sample-vault/wiki/reports"]:
         root = REPO / folder
         if not root.exists():
             continue
@@ -436,6 +451,29 @@ def check_citations() -> tuple[bool, int, list[str], list[str]]:
                 rel = path.relative_to(REPO).as_posix()
                 notes.append(f"missing source citation in {rel}")
                 critical.append(f"unsourced deliverable/report: {rel}")
+    ledger, errors = load_json_object(REPO / "references" / "source-ledger.json")
+    if not errors:
+        try:
+            index = ledger_index(ledger)
+        except ValueError:
+            index = {}  # check_source_ledger reports structural ledger errors
+        unavailable = {source_id for source_id, source in index.items() if not can_support(source)}
+        pattern = compile_source_id_pattern(unavailable)
+        active_urls = {canonical_source_url(clean_string(source.get("url"))) for source in index.values() if can_support(source)}
+        unavailable_urls = {
+            canonical_source_url(clean_string(source.get("url"))): source_id
+            for source_id, source in index.items() if source_id in unavailable
+            and canonical_source_url(clean_string(source.get("url"))) not in active_urls
+        }
+        for path in (REPO / "wiki").rglob("*.md"):
+            text = read(path)
+            frontmatter, _body = split_frontmatter(text)
+            if re.search(r"^status:\s*['\"]?archived['\"]?\s*$", frontmatter, re.M):
+                continue
+            cited = set(pattern.findall(text)) if pattern else set()
+            cited.update(unavailable_urls[url] for match in URL_RE.finditer(text) if (url := canonical_source_url(match.group(0))) in unavailable_urls)
+            for source_id in sorted(cited):
+                critical.append(f"unavailable source in current wiki note {path.relative_to(REPO).as_posix()}: {source_id}")
     return not critical, max(0, 100 - 15 * len(critical)), notes, critical
 
 
@@ -606,7 +644,7 @@ def load_source_index(repo_root: Path) -> tuple[set[str], dict[str, tuple[str, .
     if not isinstance(sources, list):
         return source_ids, {}
     for source in sources:
-        if not isinstance(source, dict):
+        if not isinstance(source, dict) or not can_support(source):
             continue
         source_id = clean_string(source.get("id")) or clean_string(source.get("source_id"))
         if not source_id:
@@ -881,10 +919,11 @@ def check_release_verification(*, run_verification: bool) -> tuple[bool, int, li
     critical: list[str] = []
     commands: list[tuple[str, list[str]]] = [
         ("compileall", [sys.executable, "-m", "compileall", "scripts", "claude_blog_brain", "tests"]),
-        ("adapter tests", [sys.executable, "-m", "pytest", "tests/test_blog_adapters.py"]),
+        ("adapter tests", [sys.executable, "-m", "pytest", "-p", "no:cacheprovider", "tests"]),
         ("pipeline", [sys.executable, "tests/test_pipeline.py", "--skip-release"]),
         ("audit self-check", [sys.executable, "scripts/audit_brain.py", "--json", "--report-only", "--no-exec"]),
     ]
+    commands.append(("packaged source evidence", [sys.executable, "scripts/verify_source_ledger.py", "--offline-check"]))
     with tempfile.TemporaryDirectory(prefix="claude-blog-brain-release-") as tmp:
         commands.append(
             (
@@ -907,6 +946,24 @@ def check_release_verification(*, run_verification: bool) -> tuple[bool, int, li
                 critical.append(f"verification command failed ({label}): {detail}")
             else:
                 notes.append(f"verification command passed: {label}")
+    return not critical, max(0, 100 - 22 * len(critical)), notes, critical
+
+
+def check_vault_quality() -> tuple[bool, int, list[str], list[str]]:
+    """Lint the actual canonical vault as well as shipped examples, read-only."""
+    notes: list[str] = []
+    critical: list[str] = []
+    for vault in (".", "assets/template-brain", "examples/sample-vault"):
+        proc = run_command([sys.executable, "scripts/lint_vault.py", "--vault", vault, "--json"])
+        if proc.returncode:
+            try:
+                diagnostics = json.loads(proc.stdout).get("diagnostics", [])
+                errors = [row["message"] for row in diagnostics if row.get("severity") == "error"]
+            except (ValueError, TypeError, KeyError):
+                errors = []
+            critical.extend(f"vault lint {vault}: {error}" for error in (errors or [first_nonempty_line(proc.stderr) or "lint failed"]))
+        else:
+            notes.append(f"vault lint passed: {vault}")
     return not critical, max(0, 100 - 22 * len(critical)), notes, critical
 
 

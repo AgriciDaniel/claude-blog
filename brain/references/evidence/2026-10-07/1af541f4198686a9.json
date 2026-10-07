@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://docs.firecrawl.dev/introduction",
+  "normalized_full_document_sha256": "23d7c7bd3c81feab0af4e62c10fd79921e7f3c8190f9c2cde71ff70e755d470a",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "javascript rendering, and dynamic content"
+  ],
+  "records": [
+    {
+      "source_id": "firecrawl",
+      "source_url": "https://docs.firecrawl.dev/introduction",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "confirmed_by_manual_review",
+      "excerpt_index": 0
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 # claude-blog -- Python Dependencies
 # Bounded version pinning with security-conscious minimums
-# Last updated: February 18, 2026
+# Reviewed: October 7, 2026. Exact tested resolutions are in requirements.lock.
 
 # Core dependencies (required for full functionality)
 textstat>=0.7.3,<1.0.0          # Readability scoring (Flesch, Gunning Fog, SMOG)

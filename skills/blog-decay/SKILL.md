@@ -2,11 +2,19 @@
 name: blog-decay
 description: Detect content decay from Google Search Console exports by comparing current and previous page performance, flagging quarter-over-quarter traffic drops, dropped pages, and refresh, consolidate, prune, or query-shift actions. Use when the user says "/blog decay", "content decay", "traffic drop", "QoQ decline", "GSC decay", or "refresh declining posts".
 argument-hint: "<current-gsc.json> <previous-gsc.json> [threshold] [metric]"
-user-invokable: true
+user-invocable: true
 license: MIT
 ---
 
 # Blog Decay
+
+Bundled paths below use host Markdown substitution of `${CLAUDE_SKILL_DIR}`;
+it is not an exported shell variable. Resolve them before execution, quote
+paths, and refuse nonabsolute overrides. Pass `blog_reference_root` resolved
+from `${CLAUDE_SKILL_DIR}/../blog/references`, `blog_template_root` from
+`${CLAUDE_SKILL_DIR}/../blog/templates`, and needed sibling roots to agents.
+Read the main reference `orchestration-details.md` before loading project
+context; pass only its helper-fenced output to downstream agents.
 
 Use `/blog decay` to find pages whose Google Search Console performance has
 declined quarter-over-quarter. The command compares a current-period export
@@ -18,15 +26,19 @@ default, and recommends the next content action.
 Run the local analyzer against two GSC page exports:
 
 ```bash
-python3 scripts/content_decay.py current.json previous.json
+BLOG_SCRIPT_DIR="${CLAUDE_BLOG_SCRIPTS_DIR:-${CLAUDE_SKILL_DIR}/../../scripts}"
+BLOG_SKILLS_DIR="${CLAUDE_BLOG_SKILLS_DIR:-${CLAUDE_SKILL_DIR}/..}"
+case "$BLOG_SCRIPT_DIR" in /*) ;; *) echo "ERROR: script dir must be absolute" >&2; exit 1 ;; esac
+case "$BLOG_SKILLS_DIR" in /*) ;; *) echo "ERROR: skills dir must be absolute" >&2; exit 1 ;; esac
+python3 "$BLOG_SCRIPT_DIR/content_decay.py" current.json previous.json
 ```
 
 Useful options:
 
 ```bash
-python3 scripts/content_decay.py current.json previous.json --threshold 0.30
-python3 scripts/content_decay.py current.json previous.json --metric impressions
-python3 scripts/content_decay.py current.json previous.json --format markdown --output decay-report.md
+python3 "$BLOG_SCRIPT_DIR/content_decay.py" current.json previous.json --threshold 0.30
+python3 "$BLOG_SCRIPT_DIR/content_decay.py" current.json previous.json --metric impressions
+python3 "$BLOG_SCRIPT_DIR/content_decay.py" current.json previous.json --format markdown --output decay-report.md
 ```
 
 The script accepts JSON lists of page rows with `page` or `url`, `clicks`, and
@@ -35,13 +47,20 @@ the rows are under a top-level `rows` key.
 
 ## Optional Live GSC Export
 
+Before these Google calls, load `${CLAUDE_SKILL_DIR}/../blog-google/SKILL.md`
+for runtime guidance. Propagate the same absolute `CLAUDE_BLOG_RUNTIME_DIR`
+used by Google setup. For plugin use without an operator override, pass the
+resolved `${CLAUDE_PLUGIN_DATA}/claude-blog-runtime` path explicitly. For
+standalone use with no override, omit the variable and keep its existing
+default; never execute an unresolved placeholder or derive a root from CWD.
+
 For live data, use `/blog google gsc` or the underlying `blog-google` command
 to create each period export, then run the offline analyzer:
 
 ```bash
-python3 skills/blog-google/scripts/run.py gsc_query --property sc-domain:example.com --dimensions page --start-date YYYY-MM-DD --end-date YYYY-MM-DD --json > gsc-current.json
-python3 skills/blog-google/scripts/run.py gsc_query --property sc-domain:example.com --dimensions page --start-date YYYY-MM-DD --end-date YYYY-MM-DD --json > gsc-previous.json
-python3 scripts/content_decay.py gsc-current.json gsc-previous.json --format markdown
+python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" gsc_query --property sc-domain:example.com --dimensions page --start-date YYYY-MM-DD --end-date YYYY-MM-DD --json > gsc-current.json
+python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" gsc_query --property sc-domain:example.com --dimensions page --start-date YYYY-MM-DD --end-date YYYY-MM-DD --json > gsc-previous.json
+python3 "$BLOG_SCRIPT_DIR/content_decay.py" gsc-current.json gsc-previous.json --format markdown
 ```
 
 Use adjacent periods of similar length for short-term checks. For seasonality,

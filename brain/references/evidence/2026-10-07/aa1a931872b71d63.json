@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://blog.google/products-and-platforms/products/search/explore-web-generative-ai-search/",
+  "normalized_full_document_sha256": "e4bef17bd99f76ca82378a089cc1ff3b9d782471ca6d5e0c85992a7dfaf70a70",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "highlights links from your news subscriptions in ai mode and ai overviews"
+  ],
+  "records": [
+    {
+      "source_id": "g-ai-search-subscription-links-2026-05-06",
+      "source_url": "https://blog.google/products-and-platforms/products/search/explore-web-generative-ai-search/",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "qualified",
+      "excerpt_index": 0
+    }
+  ]
+}

@@ -106,8 +106,9 @@ Each row: `keys[]`, `clicks`, `impressions`, `ctr`, `position`.
 
 - Data lag by `dataState`: `final` = ~2-3 days; `all` = shorter lag; `hourly_all` = few hours (April 2025). Retention: ~16 months. Use `gsc_query.py --data-state hourly_all --dimensions date,hour,...`.
 - Country codes are **ISO 3166-1 alpha-3** (e.g., `USA`, `GBR`).
-- The dedicated generative-AI Search and Discover reports are a gradual
-  Search Console UI rollout. They are not an extra `type` or
+- The dedicated generative-AI Search and Discover reports are Search Console
+  UI views. Google's August 31 update says they rolled out to all websites
+  worldwide. They are not an extra `type` or
   `searchAppearance` value documented for this endpoint. Do not synthesize
   clicks or queries for those reports or claim this API isolates AI Overviews
   and AI Mode.
@@ -146,7 +147,10 @@ Each row: `keys[]`, `clicks`, `impressions`, `ctr`, `position`.
 
 ---
 
-## GA4 Data API v1beta
+## Google Analytics Data API v1
+
+This integration uses the `google.analytics.data_v1beta` Python client
+namespace and its beta endpoint. The product documentation is Data API v1.
 
 **Base URL:** `https://analyticsdata.googleapis.com/v1beta`
 
@@ -214,9 +218,10 @@ Gold-standard source for keyword search volume. Methods: **GenerateKeywordIdeas*
 from seeds), **GenerateKeywordHistoricalMetrics** (volume for specific keywords), and
 **GenerateKeywordForecastMetrics** (future projections). Returns volume, competition, CPC bids.
 
-**Current API version guidance:** Google Ads API release notes list v25.1 dated
-2026-08-19. Google's support table lists Python client 31.2.0 as the minimum for
-API v25. Check both official pages before changing a client or versioned path:
+**Current API version guidance:** Google Ads API release notes list v25.2 dated
+2026-09-23. Check the release notes and support table together before changing
+a client or versioned path. The repository's existing client constraint may
+lag the current Python package, so validate Keyword Plan compatibility offline:
 https://developers.google.com/google-ads/api/docs/release-notes
 https://developers.google.com/google-ads/api/docs/sunset-dates
 

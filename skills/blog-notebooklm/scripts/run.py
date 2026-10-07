@@ -10,11 +10,15 @@ import subprocess
 import hashlib
 from pathlib import Path
 
+# Load only the helper shipped beside this installed script, never from CWD.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from runtime_paths import resolve_runtime_paths
+
 
 def get_venv_python():
     """Get the virtual environment Python executable"""
-    skill_dir = Path(__file__).parent.parent
-    venv_dir = skill_dir / ".venv"
+    skill_dir = Path(__file__).resolve().parent.parent
+    venv_dir = resolve_runtime_paths(skill_dir, "blog-notebooklm").venv
 
     if os.name == 'nt':  # Windows
         venv_python = venv_dir / "Scripts" / "python.exe"
@@ -25,10 +29,9 @@ def get_venv_python():
 
 
 def ensure_venv():
-    """Ensure virtual environment exists"""
-    skill_dir = Path(__file__).parent.parent
-    venv_dir = skill_dir / ".venv"
-    setup_script = skill_dir / "scripts" / "setup_environment.py"
+    """Return a ready interpreter without installing or updating anything."""
+    skill_dir = Path(__file__).resolve().parent.parent
+    venv_dir = resolve_runtime_paths(skill_dir, "blog-notebooklm").venv
     lock_file = skill_dir / "scripts" / "requirements.lock"
     requirements_file = skill_dir / "scripts" / "requirements.txt"
     stamp_file = venv_dir / ".requirements.stamp"
@@ -37,20 +40,20 @@ def ensure_venv():
     expected_stamp = hashlib.sha256(source.read_bytes()).hexdigest() if source.exists() else None
     current_stamp = stamp_file.read_text().strip() if stamp_file.exists() else None
 
-    # Check if venv exists
-    if not venv_dir.exists() or (expected_stamp and current_stamp != expected_stamp):
-        print("🔧 First-time setup: Creating virtual environment...")
-        print("   This may take a minute...")
-
-        # Run setup with system Python
-        result = subprocess.run([sys.executable, str(setup_script)])
-        if result.returncode != 0:
-            print("❌ Failed to set up environment")
-            sys.exit(1)
-
-        print("✅ Environment ready!")
-
-    return get_venv_python()
+    venv_python = get_venv_python()
+    if not venv_python.is_file():
+        print(
+            "❌ NotebookLM setup required. Run: "
+            "python3 skills/blog-notebooklm/scripts/setup_environment.py"
+        )
+        sys.exit(1)
+    if expected_stamp and current_stamp != expected_stamp:
+        print(
+            "❌ NotebookLM dependencies are missing or stale. Run: "
+            "python3 skills/blog-notebooklm/scripts/setup_environment.py"
+        )
+        sys.exit(1)
+    return venv_python
 
 
 def main():
@@ -77,7 +80,7 @@ def main():
         script_name += '.py'
 
     # Get script path
-    skill_dir = Path(__file__).parent.parent
+    skill_dir = Path(__file__).resolve().parent.parent
     scripts_dir = (skill_dir / "scripts").resolve()
     script_path = (scripts_dir / script_name).resolve()
 
@@ -95,7 +98,11 @@ def main():
         sys.exit(1)
 
     # Ensure venv exists and get Python executable
-    venv_python = ensure_venv()
+    try:
+        venv_python = ensure_venv()
+    except ValueError as exc:
+        print(f"ERROR: {exc}")
+        sys.exit(1)
 
     # Build command
     cmd = [str(venv_python), str(script_path)] + script_args

@@ -1,8 +1,12 @@
 # Claude Blog Brain Product Spec
 
-Status: market-ready. Implemented adapters, deterministic demo verification,
-source review, public-projection safety, and executable release verification
-pass as of 2026-08-25.
+Status: market-ready. The executable local audit on 2026-10-07 scores 98/100
+with no critical failures or warnings after source review, adapter and pipeline
+tests, vault lint and disposable packaging checks. The source ledger has 127
+active reviewed records and three retired records. This internal readiness
+result does not establish authenticated API behavior or content performance.
+Source-review completion alone does not establish readiness; rerun the audit
+after maintained changes or source expiry.
 
 ## Buyer
 
@@ -14,7 +18,7 @@ Claude Blog Brain serves blog content creation, optimization, and management. It
 
 ## Skill Surface
 
-The brain is grounded in the claude-blog v1.11.0 skill. The served user-facing workflows include `/blog write`, `/blog rewrite`, `/blog analyze`, `/blog brief`, `/blog outline`, `/blog calendar`, `/blog strategy`, `/blog seo-check`, `/blog schema`, `/blog repurpose`, `/blog geo`, `/blog image`, `/blog audit`, `/blog cannibalization`, `/blog factcheck`, `/blog persona`, `/blog brand`, `/blog discourse`, `/blog taxonomy`, `/blog notebooklm`, `/blog audio`, `/blog google`, `/blog update`, `/blog cluster`, `/blog multilingual`, `/blog translate`, `/blog localize`, `/blog locale-audit`, `/blog flow`, `/blog style`, and `/blog decay`. `blog-chart` remains internal-only.
+The brain is grounded in the maintained claude-blog v2.2.0 skill. The served user-facing workflows include `/blog write`, `/blog rewrite`, `/blog analyze`, `/blog brief`, `/blog outline`, `/blog calendar`, `/blog strategy`, `/blog seo-check`, `/blog schema`, `/blog repurpose`, `/blog geo`, `/blog image`, `/blog audit`, `/blog cannibalization`, `/blog factcheck`, `/blog persona`, `/blog brand`, `/blog discourse`, `/blog taxonomy`, `/blog notebooklm`, `/blog audio`, `/blog google`, `/blog update`, `/blog cluster`, `/blog multilingual`, `/blog translate`, `/blog localize`, `/blog locale-audit`, `/blog flow`, `/blog style`, and `/blog decay`. `blog-chart` remains internal-only.
 
 ## Core Workflows
 

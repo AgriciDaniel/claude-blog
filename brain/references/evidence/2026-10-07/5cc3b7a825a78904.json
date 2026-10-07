@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://developers.google.com/search/blog/2026/07/platform-properties-social-video-guide",
+  "normalized_full_document_sha256": "062b01af98029fcfe4c16a9a75a38ac5c9fa1dd0da3f0265df86de9d79d3d9bb",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "today, platform properties are globally available to everyone"
+  ],
+  "records": [
+    {
+      "source_id": "search-console-platform-properties-2026-07-29",
+      "source_url": "https://developers.google.com/search/blog/2026/07/platform-properties-social-video-guide",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "qualified",
+      "excerpt_index": 0
+    }
+  ]
+}

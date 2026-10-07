@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://developers.google.com/search/blog/2026/08/update-site-reputation-policy",
+  "normalized_full_document_sha256": "43df9501872dbff96da3aeb3542ab60942b4d1254afe3b97242e3238d9984a89",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "for users inside the eea, the impact of the manual action won't apply"
+  ],
+  "records": [
+    {
+      "source_id": "g-site-reputation-eea-2026-08-28",
+      "source_url": "https://developers.google.com/search/blog/2026/08/update-site-reputation-policy",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "confirmed_by_manual_review",
+      "excerpt_index": 0
+    }
+  ]
+}

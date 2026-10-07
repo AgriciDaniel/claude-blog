@@ -1,0 +1,35 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://developers.google.com/search/updates",
+  "normalized_full_document_sha256": "849f60a7acae93c60e98acf5306f1addae64c266760670781b6ba84d0f7f0750",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "the faq rich result feature is no longer shown in google search results"
+  ],
+  "records": [
+    {
+      "source_id": "g-faqpage-sd",
+      "source_url": "https://developers.google.com/search/updates#deprecating-the-faq-rich-result-feature",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "confirmed_by_manual_review",
+      "excerpt_index": 0
+    },
+    {
+      "source_id": "g-update-2026-05-07-faq-rich-results-retired",
+      "source_url": "https://developers.google.com/search/updates#deprecating-the-faq-rich-result-feature",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    },
+    {
+      "source_id": "g-search-docs-updates-2026-07-07-product-structured-data",
+      "source_url": "https://developers.google.com/search/updates#july-2026",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    }
+  ]
+}

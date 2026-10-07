@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://status.search.google.com/incidents/YUX1peHev5a4fkxLDiUQ",
+  "normalized_full_document_sha256": "2aa7eeb700e27666959a50935a56746c87f82906ebf376bbd44d15e3485200d5",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "incident began at 2026-06-24 09:00 and ended at 2026-06-26 10:00"
+  ],
+  "records": [
+    {
+      "source_id": "g-update-2026-06-24-june-2026-spam-update",
+      "source_url": "https://status.search.google.com/incidents/YUX1peHev5a4fkxLDiUQ",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "confirmed_by_manual_review",
+      "excerpt_index": 0
+    }
+  ]
+}

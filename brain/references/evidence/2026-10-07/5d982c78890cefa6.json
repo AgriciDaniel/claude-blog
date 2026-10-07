@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://developers.google.com/search/docs/crawling-indexing/googlebot",
+  "normalized_full_document_sha256": "f54b23a5f010d3b760b864565f09af2eefec59fd92e3815d13677154c84bc912",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "googlebot crawls the first 2mb of a supported file type , and the first 64mb of a pdf file"
+  ],
+  "records": [
+    {
+      "source_id": "g-googlebot",
+      "source_url": "https://developers.google.com/search/docs/crawling-indexing/googlebot",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    }
+  ]
+}

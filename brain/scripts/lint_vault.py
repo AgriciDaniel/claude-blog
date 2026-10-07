@@ -14,7 +14,7 @@ REPO = Path(__file__).resolve().parent.parent
 DEFAULT_VAULT = REPO / "assets" / "template-brain"
 REQUIRED_FRONTMATTER = {"type", "title", "domain", "status", "created", "updated", "tags"}
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
-ALLOWED_STATUSES = {"active", "draft", "seed", "archived", "review"}
+ALLOWED_STATUSES = {"active", "draft", "seed", "archived", "review", "evergreen"}
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -105,7 +105,7 @@ def validate_frontmatter(vault: Path, path: Path, text: str, errors: list[str], 
         if value and not DATE_RE.match(value) and "{{date}}" not in value:
             errors.append(f"frontmatter invalid {key} date: {rel}")
     tags = fields.get("tags")
-    if tags is not None and not str(tags).strip().startswith("["):
+    if tags is not None and (not isinstance(tags, list) or not all(isinstance(tag, str) and tag.strip() for tag in tags)):
         errors.append(f"frontmatter tags must be an array: {rel}")
 
 
@@ -118,14 +118,58 @@ def frontmatter_block(text: str) -> str | None:
     return text[4:end]
 
 
-def parse_frontmatter(frontmatter: str) -> dict[str, str]:
-    fields: dict[str, str] = {}
+def parse_frontmatter(frontmatter: str) -> dict[str, object]:
+    """Parse the supported flat YAML fields, including scalar block sequences.
+
+    Nested mappings and arbitrary YAML objects are outside this vault contract.
+    Tag lists must be complete arrays, never just a string starting with '['.
+    """
+    fields: dict[str, object] = {}
+    current: str | None = None
     for line in frontmatter.splitlines():
-        if not line.strip() or line.lstrip().startswith("-") or ":" not in line:
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        if line[:1].isspace() or stripped.startswith("-"):
+            if current and re.match(r"^\s*-\s+", line):
+                value = tag_scalar(re.sub(r"^\s*-\s+", "", line).strip())
+                if isinstance(fields[current], list):
+                    fields[current].append(value)
+            elif current:
+                # Invalid/nested block values stay non-array so lint rejects tags.
+                fields[current] = "<unsupported block>"
+            continue
+        current = None
+        if ":" not in line:
             continue
         key, value = line.split(":", 1)
-        fields[key.strip()] = value.strip()
+        key, value = key.strip(), value.strip()
+        if not value:
+            fields[key] = []
+            current = key
+        elif value.startswith("[") and value.endswith("]"):
+            inner = value[1:-1].strip()
+            fields[key] = [tag_scalar(item.strip()) for item in inner.split(",")] if inner else []
+        else:
+            fields[key] = value
     return fields
+
+
+def tag_scalar(value: str) -> object:
+    """Reject nested or typed YAML objects where this schema needs a tag string."""
+    if len(value) >= 2 and value[0] == value[-1] == "'":
+        return value[1:-1].replace("''", "'")
+    if len(value) >= 2 and value[0] == value[-1] == '"':
+        try:
+            return json.loads(value)
+        except ValueError:
+            return None
+    value = re.split(r"\s+#", value, maxsplit=1)[0].strip()
+    if not value or any(char in value for char in "[]{}") or re.search(r":\s", value):
+        return None
+    if value.lower() in {"true", "false", "yes", "no", "on", "off", "null", "~"} or re.fullmatch(r"[-+]?\d+(?:\.\d+)?", value):
+        return None
+    return value
 
 
 def safe_link_exists(vault: Path, raw_target: str) -> bool:

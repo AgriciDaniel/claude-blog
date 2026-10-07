@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://developer.chrome.com/blog/final-soft-navigations-origin-trial",
+  "normalized_full_document_sha256": "5490e67cd7b05d029754e1920e3a4c4a65350a1d318e09af4e15102ebe56d305",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "one more origin trial starting in chrome 147 until chrome 149"
+  ],
+  "records": [
+    {
+      "source_id": "chrome-softnav-final",
+      "source_url": "https://developer.chrome.com/blog/final-soft-navigations-origin-trial",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "qualified",
+      "excerpt_index": 0
+    }
+  ]
+}

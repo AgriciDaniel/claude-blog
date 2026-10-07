@@ -8,7 +8,7 @@ description: >
   DACH, Francophone, Hispanic, and Japanese markets.
   Use when user says "localize blog", "blog localize", "cultural adaptation",
   "adapt for Germany", "lokalisieren", "localiser", "adaptar".
-user-invokable: true
+user-invocable: true
 argument-hint: "<file> --locale <locale-code>"
 license: MIT
 compatibility: Standalone within claude-blog. Invoked by blog-multilingual.
@@ -20,6 +20,14 @@ metadata:
 
 # Blog Localize, Cultural Deep-Adaptation
 
+Bundled paths below use host Markdown substitution of `${CLAUDE_SKILL_DIR}`;
+it is not an exported shell variable. Resolve them before execution, quote
+paths, and refuse nonabsolute overrides. Pass `blog_reference_root` resolved
+from `${CLAUDE_SKILL_DIR}/../blog/references`, `blog_template_root` from
+`${CLAUDE_SKILL_DIR}/../blog/templates`, and needed sibling roots to agents.
+Read the main reference `orchestration-details.md` before loading project
+context; pass only its helper-fenced output to downstream agents.
+
 Takes a translated blog post and performs cultural adaptation so the result
 feels like it was written for the target market, not translated into it.
 This is the layer above `blog-translate`: it replaces examples, adjusts
@@ -30,7 +38,7 @@ tone, swaps references, and localizes the entire reading experience.
 
 ## Key References
 
-- `../blog-translate/references/cultural-adaptation.md`, the shared cultural
+- `${CLAUDE_SKILL_DIR}/../blog-translate/references/cultural-adaptation.md`, the shared cultural
   profiles file with substitution tables for DACH, Francophone, Hispanic,
   Japanese, and a custom template. Do not duplicate this file.
 
@@ -53,7 +61,7 @@ tone, swaps references, and localizes the entire reading experience.
    (`de`, `fr`). Require a region or explicit neutral mode for ambiguous
    language-only targets such as `es`, `pt`, and `zh`.
 2. Load the cultural profile from
-   `../blog-translate/references/cultural-adaptation.md`.
+   `${CLAUDE_SKILL_DIR}/../blog-translate/references/cultural-adaptation.md`.
    - If the locale has a profile, use it.
    - If not, follow the "Custom-locale template" section in that reference
      to build a minimal profile inline.
@@ -143,7 +151,7 @@ Rewrite calls-to-action per the cultural profile:
 
 #### 3f. Brand Example Swaps (Quick Map)
 
-Profiles in `../blog-translate/references/cultural-adaptation.md` provide
+Profiles in `${CLAUDE_SKILL_DIR}/../blog-translate/references/cultural-adaptation.md` provide
 substitution tables. Common examples:
 
 | Source (US) | DACH | FR | ES (Spain) | LATAM | JA |
@@ -175,7 +183,21 @@ substitution tables. Common examples:
    show a diff summary. Resolve every output path inside the project root and
    reject traversal, symlinked paths, or writes outside that root.
 
-2. Present the summary:
+2. Before reporting complete, run the final artifact through the public delivery
+   contract. Resolve
+   `BLOG_SCRIPT_DIR="${CLAUDE_BLOG_SCRIPTS_DIR:-${CLAUDE_SKILL_DIR}/../../scripts}"`, reject
+   it unless absolute, and never use the current project's `scripts/`
+   directory. Create a per-locale delivery staging directory beneath the output
+   root, then:
+   - Generate or reuse a locale-appropriate hero.
+   - Run `python3 "$BLOG_SCRIPT_DIR/blog_render.py" --md <localized-file> --out-dir <locale-delivery-dir>`.
+   - Run `python3 "$BLOG_SCRIPT_DIR/blog_preflight.py" --draft <locale-delivery-dir> --init-review-nonce` and pass the printed nonce to a fresh `blog-reviewer` invocation against the rendered locale HTML.
+   - Run `python3 "$BLOG_SCRIPT_DIR/blog_preflight.py" --draft <locale-delivery-dir> --strict --slug <localized-slug>`.
+   - Require 90+/100, zero P0, matching nonce, final `BLOCKING: false`, and all
+     other gates. On failure, retain the file as `draft-blocked` and report the
+     diagnostic instead of calling localization complete.
+
+3. Present the summary only after the locale passes:
 
    ```
    ## Localization complete: [Title]
@@ -200,6 +222,12 @@ substitution tables. Common examples:
 
    ### Remaining recommendations
    - [Optional adaptations not applied]
+
+   ### Delivery contract
+   - Score: [N]/100
+   - P0: zero
+   - Nonce: verified
+   - Preflight: [report path]
    ```
 
 ## Error Handling

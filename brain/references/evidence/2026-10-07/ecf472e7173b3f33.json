@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://seranking.com/blog/ai-mode-research/",
+  "normalized_full_document_sha256": "187ba1f2530d5e3d714b9b8e0f13f8065fe73cd5c416d66ba272d230531f5108",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "on average, each ai mode response includes 12.6 urls (sources)"
+  ],
+  "records": [
+    {
+      "source_id": "se-ranking-ai-mode-research",
+      "source_url": "https://seranking.com/blog/ai-mode-research/",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "qualified",
+      "excerpt_index": 0
+    }
+  ]
+}

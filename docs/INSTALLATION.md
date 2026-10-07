@@ -11,13 +11,53 @@ ecosystem for blog content creation, optimization, and management.
 | Python | 3.11+ | Quality scoring + 5-gate delivery contract runners (analyze_blog, blog_preflight, blog_render, generate_hero, lint_prose, ...) |
 | pip | Latest | Python dependency management |
 
-Claude Code must be installed and configured before installing `claude-blog`.
+Claude Code must be installed and configured before installing the skills.
+The current plugin identifier is `blog-engine` in marketplace
+`agricidaniel-blog`; the repository, Python metadata package, standalone
+installer receipts and environment variable names retain `claude-blog`.
+
 Python 3.11+ is required for quality scoring and helper workflows including
 `analyze_blog.py`, `blog_preflight.py`, `blog_render.py`, `generate_hero.py`,
 `lint_prose.py`, and related script checks. Commands that do not invoke those
 helpers may still run without Python, but production installs should include it.
 
 ---
+
+## Plugin Identifier Migration
+
+Current manifests use `blog-engine` because Claude Code 2.1.292 reserves
+third-party plugin names beginning with `claude-`. Both the plugin manifest
+and marketplace entry use the same identifier. The marketplace name remains
+`agricidaniel-blog`.
+
+After this change reaches the marketplace branch, install with:
+
+```text
+/plugin marketplace add AgriciDaniel/claude-blog
+/plugin install blog-engine@agricidaniel-blog
+```
+
+Use `/blog-engine:blog write <topic>` for the plugin's orchestrator, and
+`/blog-engine:blog-analyze <file>` for a directly invoked sub-skill.
+The standalone skill-copy installation keeps `/blog write <topic>` and
+existing direct skill names. The historical v2.2.0 tag keeps its original
+manifest; installing that tag does not provide the renamed plugin.
+
+An existing plugin installation is not renamed automatically. First record
+its install scope and any locally configured plugin state. Install the new
+identifier at the same intended scope, confirm its commands load, then
+explicitly uninstall the old `claude-blog@agricidaniel-blog` entry. Claude Code
+may continue loading the old identifier even when strict validation rejects
+it. Keep it only until the replacement is verified, since loading both can
+expose duplicate skills. No migration command is run by the standalone
+installer, and this repository change does not edit existing user profiles.
+
+For a local candidate check without registering a plugin in a profile:
+
+```bash
+claude plugin validate .
+claude --plugin-dir .
+```
 
 ## Quick Install (One Command)
 
@@ -67,13 +107,13 @@ python3 -m pip install -r requirements.txt
 
 #### Reproducible install via uv (v1.9.1+)
 
-For deterministic supply-chain hygiene, the repo ships `uv.lock` (142
-packages with SHA-256 hashes for every wheel). Reproduce the exact
+For deterministic supply-chain hygiene, the repo ships `uv.lock` with hashes
+for resolved artifacts. Reproduce the exact
 dev environment with:
 
 ```bash
 pip install uv          # one-time
-uv sync --frozen        # installs from uv.lock with hash verification
+uv sync --frozen --extra dev  # installs the declared dev environment
 ```
 
 This is the recommended path for CI, audit, and any context where
@@ -330,8 +370,16 @@ git pull
 ./install.sh
 ```
 
-The installer overwrites existing files, so updates are safe to run
-at any time. Restart Claude Code after updating.
+The installer verifies ownership before replacing files. It can migrate a
+legacy directory manifest from the reviewed public v2.2.0 release or the pinned
+public audit baseline when installed bytes match the bundled historical hash
+inventory. Unknown user additions remain outside package ownership.
+
+Modified managed files, unknown collisions and unsafe paths stop the update
+before payload changes. Preserve the reported files and review or merge your
+changes before retrying. A legacy installation from another revision needs
+reviewed ownership evidence before automatic adoption. Restart Claude Code
+after a successful update.
 
 ---
 
@@ -345,34 +393,31 @@ chmod +x uninstall.sh
 ./uninstall.sh
 ```
 
-This removes:
+The uninstaller removes verified package-owned files from:
 
 - `~/.claude/skills/blog/` and `~/.claude/skills/blog-*/` (32 skill directories: 1 orchestrator + 31 sub-skills; 30 user-facing commands; `blog-chart` is internal-only)
-- `~/.claude/scripts/` (17 root-level scripts: ai_citation_score, analyze_blog, blog_hygiene, blog_preflight, blog_render, cognitive_load, consistency_check, content_decay, dependency_smoke, discourse_research, generate_hero, lint_prose, load_untrusted_root, quality_gate, style_learn, sync_flow, validate_public_release)
+- `~/.claude/scripts/` (20 existing helpers plus the shared `installer_ownership.py` engine)
 - `~/.claude/agents/blog-*.md` (all 5 agents: blog-researcher, blog-writer, blog-seo, blog-reviewer, blog-translator)
 
 Shared Google credentials under `~/.config/claude-seo/` are owned by the user
 and may be used by other skills. Both uninstallers leave them intact.
+User additions and unknown skills remain. Directories are pruned only after
+verified files are removed and only when empty. Modified managed files or
+unsafe ownership paths stop removal before payload changes.
 
 ### Manual Uninstall
 
-```bash
-# Main skill + all blog-* skill directories (auto-discovers blog-* via glob)
-rm -rf ~/.claude/skills/blog
-rm -rf ~/.claude/skills/blog-*
-
-# All 5 agents
-rm -f ~/.claude/agents/blog-{researcher,writer,seo,reviewer,translator}.md
-
-# All 17 root-level scripts (only if no other plugin uses ~/.claude/scripts/)
-rm -f ~/.claude/scripts/{ai_citation_score,analyze_blog,blog_hygiene,blog_preflight,blog_render,cognitive_load,consistency_check,content_decay,dependency_smoke,discourse_research,generate_hero,lint_prose,load_untrusted_root,quality_gate,style_learn,sync_flow,validate_public_release}.py
-```
+Use the ownership-aware uninstaller from the reviewed repository. For manual
+recovery, inspect `~/.claude/claude-blog-manifest.txt`, preserve local edits,
+and remove only individually verified package files. A directory name or
+`blog-*` prefix alone does not establish ownership. Keep unknown files and
+prune a directory only after confirming it is empty.
 
 ### Clean Up Python Dependencies (Optional)
 
-```bash
-pip uninstall textstat beautifulsoup4 lxml jsonschema
-```
+Remove dependencies only from a disposable environment dedicated to this
+plugin. Shared Python environments can support other skills, so their
+dependency ownership must be reviewed separately.
 
 Restart Claude Code after uninstalling to complete removal.
 

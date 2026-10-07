@@ -1,0 +1,27 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://developers.google.com/search/blog/2024/11/site-reputation-abuse",
+  "normalized_full_document_sha256": "cd0d2df510ec0bccf64f9e1526bd80baf138a52d16ba0443e0e69ce015e6bb12",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "regardless of whether there is first-party involvement or oversight of the content"
+  ],
+  "records": [
+    {
+      "source_id": "g-site-rep-abuse",
+      "source_url": "https://developers.google.com/search/blog/2024/11/site-reputation-abuse",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "qualified",
+      "excerpt_index": 0
+    },
+    {
+      "source_id": "g-update-2024-11-19-site-reputation-abuse-policy-clarified",
+      "source_url": "https://developers.google.com/search/blog/2024/11/site-reputation-abuse",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "qualified",
+      "excerpt_index": 0
+    }
+  ]
+}

@@ -19,6 +19,7 @@ import argparse
 import json
 import os
 import random
+import re
 import secrets
 import sys
 import tempfile
@@ -50,6 +51,63 @@ SERVICE_AUTH = {
 }
 
 OAUTH_REDIRECT_URI = "http://127.0.0.1:8085"
+
+
+def describe_google_api_error(error, service: str, permission_hint: str = "") -> str:
+    """Preserve Google error reasons without confusing setup with property access.
+
+    Accept discovery-client exceptions, API-core exceptions, or REST JSON.
+    Diagnostics deliberately omit request URLs and redact credential parameters.
+    """
+    payload = error if isinstance(error, dict) else {}
+    if not payload:
+        content = getattr(error, "content", None)
+        try:
+            if content:
+                payload = json.loads(content)
+        except (TypeError, ValueError, UnicodeDecodeError):
+            pass
+    detail = payload.get("error", payload) if isinstance(payload, dict) else {}
+    detail = detail if isinstance(detail, dict) else {}
+    message = str(detail.get("message") or getattr(error, "message", "") or error)
+    message = re.sub(
+        r"(?i)([?&](?:key|api_key|access_token|refresh_token|client_secret)=)[^&\s\"'<>]+",
+        r"\1[redacted]", message,
+    )
+    message = re.sub(r"(?i)\bBearer\s+[^\s\"'<>]+", "Bearer [redacted]", message)
+    reasons = []
+    nodes = [detail, getattr(error, "errors", ()), getattr(error, "details", ())]
+    while nodes:
+        node = nodes.pop()
+        if isinstance(node, dict):
+            reason = node.get("reason")
+            if isinstance(reason, str) and reason not in reasons:
+                reasons.append(reason)
+            nodes.extend(node.get(key, ()) for key in ("errors", "details"))
+        elif isinstance(node, (list, tuple)):
+            nodes.extend(node)
+        elif isinstance(getattr(node, "reason", None), str):
+            reasons.append(node.reason)
+    if isinstance(getattr(error, "reason", None), str):
+        reasons.append(error.reason)
+    reason_text = ", ".join(sorted(set(reasons)))
+    search = (reason_text + " " + message).casefold()
+    diagnostic = f"{service} API error"
+    if reason_text:
+        diagnostic += f" ({reason_text})"
+    diagnostic += ": " + message[:1000]
+    if any(reason in search for reason in ("accessnotconfigured", "service_disabled", "api_disabled")):
+        return diagnostic + " Enable the API in the calling Google Cloud project, then retry."
+    if "billing_disabled" in search or "billingnotactive" in search:
+        return diagnostic + " Check billing configuration for the calling Google Cloud project."
+    if any(reason in search for reason in ("api_key_service_blocked", "apikeyserviceblocked", "api_key_invalid", "apikeyinvalid")):
+        return diagnostic + " Check the API key and its API/application restrictions."
+    if any(reason in search for reason in ("quotaexceeded", "ratelimitexceeded", "resource_exhausted")):
+        return diagnostic + " Check the service quota and retry policy."
+    status = detail.get("code", getattr(getattr(error, "resp", None), "status", None))
+    if permission_hint and (status == 403 or "permission_denied" in search or "403" in search):
+        return diagnostic + " " + permission_hint
+    return diagnostic
 
 
 def _write_secret_atomic(path: str, content: str) -> None:
@@ -102,7 +160,7 @@ SERVICE_NAMES = {
     "nlp": "Cloud Natural Language API",
     "gsc": "Google Search Console API",
     "indexing": "Google Indexing API v3",
-    "ga4": "GA4 Data API v1beta",
+    "ga4": "Google Analytics Data API v1 (beta client)",
     "keywords": "Google Ads Keyword Planner",
 }
 

@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://developer.chrome.com/docs/crux/history-api",
+  "normalized_full_document_sha256": "2d1e918874d197037f17deb080a10c93f9927ac186217e115c1347c8f4ed7492",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "it contains the previous 40 weeks (approximately 10 months) worth of data"
+  ],
+  "records": [
+    {
+      "source_id": "chrome-crux-history",
+      "source_url": "https://developer.chrome.com/docs/crux/history-api",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "qualified",
+      "excerpt_index": 0
+    }
+  ]
+}

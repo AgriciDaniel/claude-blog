@@ -1,10 +1,22 @@
 # Gemini Image Generation Models - Nano Banana
 
-> Last updated: 2026-07-08
-> Aligned with Google's July 2026 model availability state. Check live pricing
+> Last updated: 2026-10-07
+> Aligned with Google's October 2026 model availability state. Check live pricing
 > and project limits before quoting cost or throughput.
 
 ## Available Models
+
+### gemini-nano-banana-2.1 (Newest Stable)
+| Property | Value |
+|----------|-------|
+| **Model ID** | `gemini-nano-banana-2.1` |
+| **Status** | Stable, released 2026-10-06 |
+| **Use** | Current Google image-generation option for new integrations |
+
+Treat this as an additional stable model. Preserve existing image aliases until
+the direct API wrapper and its output handling pass compatibility tests. The
+pinned Nano Banana MCP package has a separate compatibility boundary and must
+not be assumed to accept this ID.
 
 ### gemini-3.1-flash-image (Recommended - Speed + Quality)
 | Property | Value |
@@ -74,7 +86,7 @@ Lite from Claude Code.
 | **Speed** | Fastest | Medium | Slowest |
 | **Best For** | Batch generation, drafts | General-purpose blog images | Maximum detail, print |
 
-**Status:** Deprecated on 2026-06-15; shutdown scheduled for 2026-08-17. Use `gemini-3.1-flash-image` for current standard image generation, or `gemini-3-pro-image` for highest quality.
+**Status:** Deprecated on 2026-06-15; shut down on 2026-08-17. Use `gemini-3.1-flash-image` for current standard image generation, or `gemini-3-pro-image` for highest quality.
 
 **Notes:** Imagen 4 models are dedicated image generators (not multimodal LLMs). They lack conversational editing and should not be used for new workflows.
 

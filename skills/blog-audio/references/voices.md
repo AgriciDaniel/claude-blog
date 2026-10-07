@@ -67,19 +67,23 @@ Recommended voice combinations for two-speaker podcast/dialogue format:
 
 ## Model Support
 
-Google's Gemini TTS supported-model list changes. As of 2026-07-08, use the
-current Gemini 3.1 Flash TTS model for new work and keep 2.5 aliases only for
-compatibility:
+Google's Gemini TTS supported-model list changes. As of 2026-10-07, use the
+current Gemini 3.8 TTS models for new work and preserve older local aliases only
+for compatibility:
 
 | Model | ID | Single speaker | Multispeaker | Note |
 |-------|----|----------------|--------------|------|
-| Gemini 3.1 Flash TTS | `gemini-3.1-flash-tts-preview` | Yes | Yes | Local `flash` and `flash31` aliases map here |
+| Gemini 3.8 Flash TTS | `gemini-3.8-flash-tts` | Yes | Yes | Current general-purpose TTS model |
+| Gemini 3.8 Flash Lite TTS | `gemini-3.8-flash-lite-tts` | Yes | Yes | Current lower-cost TTS model |
+| Gemini 3.1 Flash TTS Preview | `gemini-3.1-flash-tts-preview` | Yes | Yes | Legacy model; migrate new work to 3.8 |
 | Gemini 2.5 Flash Preview TTS | `gemini-2.5-flash-preview-tts` | Yes | Yes | Local `legacy-flash25` alias |
 | Gemini 2.5 Pro Preview TTS | `gemini-2.5-pro-preview-tts` | Yes | Yes | Local `pro` and `legacy-pro25` aliases |
 
-**Default:** Flash for summary/full modes, Pro for dialogue mode. The local
-wrapper accepts the aliases listed above; verify `scripts/generate_audio.py`
-before using a newly listed model ID.
+**Runtime note:** `flash` and `flash31` retain the 3.1 preview mapping.
+`flash38` and `flash-lite38` use the Interactions API and validate unary WAV
+output before normalizing it for the existing audio pipeline. Dialogue requires
+explicit `Speaker1:` and `Speaker2:` labels. Offline SDK and parsing checks do
+not establish authenticated model availability or generated voice quality.
 
 ## Language Notes
 
@@ -108,4 +112,7 @@ Audio tag examples for 3.1 TTS:
 Keep tags sparse and test the output, because unsupported tags may be spoken
 literally by older models.
 
-The TTS model interprets natural language prosody cues automatically.
+For 3.8, the transcript is verbatim. Sustained delivery instructions belong in
+structured `speech_metadata.style` rather than the transcript. This helper
+currently exposes voice and speaker configuration, not a style flag; keep
+stage directions out of 3.8 input.

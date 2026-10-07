@@ -1,0 +1,27 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://blog.google/products-and-platforms/products/search/search-io-2026/",
+  "normalized_full_document_sha256": "162353a1711af23a1d67434c368085e29aba761f9367088933f3a638cc1c466c",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "ai mode has surpassed one billion monthly users"
+  ],
+  "records": [
+    {
+      "source_id": "blog-io2026",
+      "source_url": "https://blog.google/products-and-platforms/products/search/search-io-2026/",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "qualified",
+      "excerpt_index": 0
+    },
+    {
+      "source_id": "g-update-2026-05-19-google-i-o-2026-gemini-3-5-flash-powers-ai-mode",
+      "source_url": "https://blog.google/products-and-platforms/products/search/search-io-2026/",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "qualified",
+      "excerpt_index": 0
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://blog.google/products-and-platforms/products/search/ai-mode-agentic-personalized/",
+  "normalized_full_document_sha256": "a177e2a3f03316faee8541151237f8980d84dd1227d44337ca602ff24483b43d",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "expand ai mode to over 180 new countries and territories in english"
+  ],
+  "records": [
+    {
+      "source_id": "g-update-2025-08-21-ai-mode-expands-to-180-countries",
+      "source_url": "https://blog.google/products-and-platforms/products/search/ai-mode-agentic-personalized/",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "qualified",
+      "excerpt_index": 0
+    }
+  ]
+}

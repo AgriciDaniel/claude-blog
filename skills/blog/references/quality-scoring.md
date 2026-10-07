@@ -43,7 +43,7 @@ itself. Reference: `flow-alignment.md`.
 
 | Check | Points | Pass Criteria |
 |-------|--------|---------------|
-| Schema markup priority baseline | 4 | Article/BlogPosting + Person + Organization + BreadcrumbList; FAQPage optional visible-content markup with no score bonus |
+| Schema markup internal heuristic | 4 | Article or BlogPosting (2) + Person (1) + either Organization or BreadcrumbList (1); this is an internal completeness heuristic, not a Google requirement. FAQPage is optional visible-content markup with no score bonus |
 | Image optimization (alt text, format, lazy load) | 3 | AVIF/WebP, descriptive alt text, lazy except LCP |
 | Structured data elements | 2 | Tables, lists, comparison blocks for AI extraction |
 | Page speed signals (no render-blocking) | 2 | LCP < 2.5s, no render-blocking JS, fetchpriority on hero |
@@ -88,8 +88,8 @@ When reporting issues, classify by priority:
 - Important sections obscure their conclusion or lack support
 - A paragraph's density or structure creates a demonstrated comprehension
   problem; paragraph length alone does not set priority
-- Missing Article/Person/Organization/BreadcrumbList schema baseline
-- Fewer than 8 sourced statistics
+- Missing the internal Article-or-BlogPosting/Person/either-Organization-or-BreadcrumbList schema heuristic
+- Material claims lack enough reliable evidence for the reader to verify them
 - Missing meta description
 - Title tag outside 40-60 character range
 - No internal links
@@ -99,16 +99,16 @@ When reporting issues, classify by priority:
 - Passive voice > 15%
 
 ### Medium Priority
-- Fewer than 2 charts
-- Fewer than 3 images
+- A chart is absent where comparison or trend data would be materially clearer as a visual
+- An image, diagram, or screenshot is absent where prose alone does not explain the subject clearly
 - Tier 4-5 sources present
 - Self-promotion > 1 mention
 - Sections exceeding 300 words between headings
 - Unsupported first-hand testing or experience claims
 - Images not in AVIF/WebP format
 - `loading="lazy"` on LCP image
-- Average sentence length > 22 words
-- Transition words < 15% or > 35%
+- Sentence structure repeatedly obscures meaning for the intended audience
+- Transitions repeatedly hide the relationship between ideas
 
 ### Low Priority
 - Localized paragraph pacing that mildly slows comprehension

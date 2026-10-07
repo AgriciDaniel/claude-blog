@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://developers.google.com/search/docs/crawling-indexing/qualify-outbound-links",
+  "normalized_full_document_sha256": "637c2131bbff4b8800ef34ee6a38fdc09fc085cf70c7d408b0d7a9f18d3ff00c",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "nofollow attribute was previously recommended for these types of links and is still an acceptable way"
+  ],
+  "records": [
+    {
+      "source_id": "g-qualify-links",
+      "source_url": "https://developers.google.com/search/docs/crawling-indexing/qualify-outbound-links",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    }
+  ]
+}

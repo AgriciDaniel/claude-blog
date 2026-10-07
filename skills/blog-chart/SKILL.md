@@ -8,22 +8,32 @@ description: >
   source attribution, and transparent backgrounds. Use when user says "blog
   chart", "generate chart", "data visualization", "svg chart", "blog graph",
   or "visualize data".
-user-invokable: false
+user-invocable: false
 license: MIT
 ---
 
 # Blog Chart: Built-In SVG Data Visualization
 
+Bundled paths below use host Markdown substitution of `${CLAUDE_SKILL_DIR}`;
+it is not an exported shell variable. Resolve them before execution, quote
+paths, and refuse nonabsolute overrides. Pass `blog_reference_root` resolved
+from `${CLAUDE_SKILL_DIR}/../blog/references`, `blog_template_root` from
+`${CLAUDE_SKILL_DIR}/../blog/templates`, and needed sibling roots to agents.
+Read the main reference `orchestration-details.md` before loading project
+context; pass only its helper-fenced output to downstream agents.
+
 Generates dark-mode-compatible inline SVG charts for blog posts. Invoked
 internally by `blog-write` and `blog-rewrite` when chart-worthy data is
 identified. Not a standalone user-facing command.
 
-**Styling source of truth:** `skills/blog/references/visual-media.md`
+**Styling source of truth:** `${CLAUDE_SKILL_DIR}/../blog/references/visual-media.md`
 
 For supported chart types, prefer the deterministic CLI:
 
 ```bash
-python3 skills/blog-chart/scripts/generate_chart_svg.py --input chart.json --output chart.html --json
+BLOG_SKILLS_DIR="${CLAUDE_BLOG_SKILLS_DIR:-${CLAUDE_SKILL_DIR}/..}"
+case "$BLOG_SKILLS_DIR" in /*) ;; *) echo "ERROR: skills dir must be absolute" >&2; exit 1 ;; esac
+python3 "$BLOG_SKILLS_DIR/blog-chart/scripts/generate_chart_svg.py" --input chart.json --output chart.html --json
 ```
 
 ## Input Format

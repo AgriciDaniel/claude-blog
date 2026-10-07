@@ -486,7 +486,7 @@ def section_cwv_audit(psi_data, crux_data, charts, history_data=None):
 
     # CrUX History timeline
     if history_data and not history_data.get("error"):
-        html += '<h3>Core Web Vitals Trends (25-week)</h3>'
+        html += '<h3>Core Web Vitals Trends (25 weeks by default, up to 40 requested)</h3>'
         html += charts.get("timeline", "")
         trends = history_data.get("trends", {})
         if trends:

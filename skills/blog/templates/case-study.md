@@ -11,6 +11,14 @@
 - **Best For:** Client success stories, internal project retrospectives, before/after transformations, strategy validation, process documentation
 - **Avoid When:** You lack specific metrics or measurable outcomes (vague "it went well" stories don't qualify), or when the subject hasn't given permission to be referenced
 
+### Evidence gate
+
+Confirm measurable before-and-after evidence, the method used to derive it, and
+permission to identify the subject before drafting. If any is missing, do not
+invent results or imply permission. Use a process retrospective with anonymized,
+supported facts when authorized, choose another template, or return an
+evidence-needs brief.
+
 ---
 
 ## Section-by-Section Structure

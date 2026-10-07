@@ -233,15 +233,14 @@ blog-writer, etc.), and instead tries to do everything inline.
    Expected: `blog-researcher.md`, `blog-writer.md`, `blog-seo.md`,
    `blog-reviewer.md`, `blog-translator.md`
 
-2. **Unsupported skill frontmatter**: `allowed-tools` is not a valid
-   `SKILL.md` field and does not enable delegation. Check the sub-skill file:
-   ```bash
-   head -20 ~/.claude/skills/blog-write/SKILL.md
-   ```
-   Valid skill fields include `name`, `description`, `user-invokable`,
-   `argument-hint`, `license`, `compatibility`, `metadata`, and
-   `disable-model-invocation`. Agent tools live in
-   `~/.claude/agents/blog-*.md`.
+2. **Skill metadata or tool restrictions**: validate frontmatter with
+   `python3 scripts/validate_skills.py --root .` in the source checkout.
+   The correct visibility field is `user-invocable`; `allowed-tools` is
+   supported by Claude Code and grants permission preapprovals. It does not
+   spawn agents or restrict the available tool pool. This project keeps skill
+   preapprovals empty by policy. Agent `tools` fields define their tool
+   allowlists; ensure the orchestrator can delegate and passes resolved
+   reference paths to the child.
 
 3. **Claude Code version**: Agent spawning via `Task` requires a recent
    version of Claude Code. Update to the latest version.

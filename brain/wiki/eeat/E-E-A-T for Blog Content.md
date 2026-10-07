@@ -3,7 +3,7 @@ type: hub
 title: "E-E-A-T for Blog Content"
 status: active
 created: 2026-07-06
-updated: 2026-07-09
+updated: 2026-10-07
 tags: [eeat, active]
 domain: "Blog Trust"
 confidence: verified
@@ -73,3 +73,5 @@ A planned "best budgeting apps for students" article starts as a product compari
 ## Analyzer Routing Contract
 
 [[Blog Analyzer Score Report]] consumes this hub as the routing map for trust findings. Inputs are page purpose, author and reviewer packet, source IDs, AI-use notes, YMYL flags, and visible trust signals. The report expects spoke assignments, blocker labels, owner names, and the source-backed reason each trust issue affects the advisory score.
+
+For E-E-A-T for Blog Content, `nng-editorial-heuristics` supplies general interaction-design principles. Applying those principles to this note's editorial checks is a project adaptation, not an experimentally established SEO or AI-citation requirement.

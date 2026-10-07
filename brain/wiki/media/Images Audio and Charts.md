@@ -4,7 +4,7 @@ title: "Images Audio and Charts"
 domain: "Blog Media"
 status: active
 created: 2026-07-06
-updated: 2026-07-09
+updated: 2026-10-07
 tags: [media, images, audio, charts, active]
 ---
 
@@ -60,3 +60,5 @@ Claims about broad AI behavior belong in [[AI Citation Mechanics]]. Schema gener
 ## Images Audio and Charts Source IDs
 
 Hub-level source IDs are `g-google-images`, `g-ai-opt-guide`, `schema-full`, and `g-common-crawlers`. Spoke notes carry narrower source packets when a decision needs video, chart, or product-media evidence.
+
+For Images Audio and Charts, `nng-editorial-heuristics` supplies general interaction-design principles. Applying those principles to this note's editorial checks is a project adaptation, not an experimentally established SEO or AI-citation requirement.

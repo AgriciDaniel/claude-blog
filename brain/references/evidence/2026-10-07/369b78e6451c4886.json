@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://aisearch.similarweb.com/blog/gen-ai-stats/",
+  "normalized_full_document_sha256": "0f0a2bec4f300de43df4695fdeef283307ff2f5246ed7f6f3359ca84f4ff6827",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "76% in june 2025 to roughly 53% by may 2026"
+  ],
+  "records": [
+    {
+      "source_id": "similarweb-gen-ai-stats-2026",
+      "source_url": "https://aisearch.similarweb.com/blog/gen-ai-stats/",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "qualified",
+      "excerpt_index": 0
+    }
+  ]
+}

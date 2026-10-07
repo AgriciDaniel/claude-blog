@@ -24,7 +24,7 @@ class NotebookLibrary:
 
     def __init__(self):
         """Initialize the notebook library"""
-        # Store data within the skill directory
+        # Store data at the shared configured runtime root (legacy default: skill/data)
         self.data_dir = DATA_DIR
         self.data_dir.mkdir(parents=True, exist_ok=True)
         try:

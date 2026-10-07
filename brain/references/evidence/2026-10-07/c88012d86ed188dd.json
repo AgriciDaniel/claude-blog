@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://developers.google.com/search/docs/appearance/video",
+  "normalized_full_document_sha256": "0a6ac7413c47f75b81666bd44caf5ab69c1efd0935bdb9a05f2bb46400af1d72",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "video rich result report : review and fix issues with your videoobject structured data implementation"
+  ],
+  "records": [
+    {
+      "source_id": "g-video",
+      "source_url": "https://developers.google.com/search/docs/appearance/video",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "confirmed_by_manual_review",
+      "excerpt_index": 0
+    }
+  ]
+}

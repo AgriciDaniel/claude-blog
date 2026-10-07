@@ -4,7 +4,7 @@ title: "Persona Profile Contract"
 domain: "Voice and Style"
 status: active
 created: 2026-07-09
-updated: 2026-07-09
+updated: 2026-10-07
 tags: [deliverables, personas, voice, active]
 ---
 
@@ -43,3 +43,5 @@ The profile must output reading level, tone dimensions, vocabulary to use, vocab
 ## Source IDs Used
 
 Persona profiles use `g-helpful-content`, `g-qrg-full`, `nng-editorial-heuristics`, and `g-ai-opt-guide`.
+
+For Persona Profile Contract, `nng-editorial-heuristics` supplies general interaction-design principles. Applying those principles to this note's editorial checks is a project adaptation, not an experimentally established SEO or AI-citation requirement.
