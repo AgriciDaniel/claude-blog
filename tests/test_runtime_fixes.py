@@ -165,7 +165,9 @@ def _write_gate_5_fixture(directory: Path, external_url: str) -> None:
         '<script type="application/ld+json">'
         '{"@type":"BlogPosting","headline":"Fixture","image":"hero.png",'
         '"datePublished":"2026-10-07","author":{"name":"Tester"},"wordCount":2}'
-        '</script></head><body><article>'
+        '</script></head><body><article><header><h1>Fixture</h1>'
+        '<p class="byline"><strong>By Tester</strong> · 2026-10-07</p></header>'
+        '<figure class="hero"><img src="hero.png"></figure>'
         f'<a href="{external_url}">source</a> word'
         '</article></body></html>',
         encoding="utf-8",

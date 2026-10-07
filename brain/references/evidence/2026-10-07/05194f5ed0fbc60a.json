@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://docs.dataforseo.com/v3/dataforseo_labs/overview/",
+  "normalized_full_document_sha256": "05abf9a9a8209c9866f6b4d53c7a4327e0364a2ea9707c3560967edbff421afa",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "dataforseo labs api provides data on keywords, serps, and domains based on our in-house databases"
+  ],
+  "records": [
+    {
+      "source_id": "dfs-labs",
+      "source_url": "https://docs.dataforseo.com/v3/dataforseo_labs/overview/",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "confirmed_by_manual_review",
+      "excerpt_index": 0
+    }
+  ]
+}

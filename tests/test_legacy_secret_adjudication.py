@@ -46,3 +46,32 @@ def test_public_commit_on_line_does_not_disable_credential_detection(tmp_path, m
     # Construct the hostile fixture at runtime so no real credential is stored.
     path.write_text(PUBLIC_COMMIT + " " + "ghp_" + "A" * 36 + "\n")
     assert POLICY.scan_forbidden_values() == [{"file": "data/legacy-install-ownership.json", "line": 1, "type": "GitHub token"}]
+
+
+@pytest.mark.parametrize("field", ["captured_excerpt_sha256", "normalized_full_document_sha256"])
+def test_packaged_evidence_digests_remain_narrowly_adjudicated(field):
+    line = f'  "{field}": "' + "a1" * 32 + '",'
+    finding = {"type": "Hex High Entropy String"}
+    assert POLICY.is_adjudicated("brain/references/evidence/review.json", finding, line)
+    assert not POLICY.is_adjudicated(
+        "brain/references/evidence/review.json", finding, line.replace("a1" * 32, "a1" * 31)
+    )
+    assert not POLICY.is_adjudicated(
+        "brain/references/evidence/review.json", finding, line.replace(field, "unknown_digest")
+    )
+    assert not POLICY.is_adjudicated(
+        "brain/references/evidence/review.json", {"type": "Secret Keyword"}, line
+    )
+
+
+def test_packaged_evidence_digest_does_not_disable_credential_detection(tmp_path, monkeypatch):
+    monkeypatch.setattr(POLICY, "ROOT", tmp_path)
+    path = tmp_path / "brain/references/evidence/review.json"
+    path.parent.mkdir(parents=True)
+    path.write_text(
+        '"captured_excerpt_sha256": "' + "a1" * 32 + '", "value": "'
+        + "ghp_" + "B" * 36 + '"\n'
+    )
+    assert POLICY.scan_forbidden_values() == [
+        {"file": "brain/references/evidence/review.json", "line": 1, "type": "GitHub token"}
+    ]

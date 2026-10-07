@@ -11,6 +11,26 @@ $ClaudeBlogVersion = "2.2.0"
 
 function Write-Color($Color, $Text) { Write-Host $Text -ForegroundColor $Color }
 
+function Invoke-ClaudeBlogGit($GitCommand, [string[]]$Arguments, [switch]$CaptureOutput) {
+    # Windows PowerShell 5.1 promotes redirected native stderr to an error
+    # record. Git writes routine progress there, so use its exit code as the
+    # failure signal while this one native invocation is in progress.
+    $previousErrorActionPreference = $ErrorActionPreference
+    try {
+        $ErrorActionPreference = "Continue"
+        if ($CaptureOutput) {
+            $commandOutput = @(& $GitCommand.Source @Arguments 2>$null)
+        } else {
+            & $GitCommand.Source @Arguments *> $null
+            $commandOutput = @()
+        }
+        $exitCode = $LASTEXITCODE
+    } finally {
+        $ErrorActionPreference = $previousErrorActionPreference
+    }
+    return [PSCustomObject]@{ ExitCode = $exitCode; Output = $commandOutput }
+}
+
 function Assert-ClaudeBlogNoReparsePath($Path) {
     $full = [System.IO.Path]::GetFullPath($Path)
     $root = [System.IO.Path]::GetPathRoot($full)
@@ -145,17 +165,20 @@ function Main {
             $BootstrapOwned = $true
             $CheckoutDir = Join-Path $BootstrapRoot "checkout"
             Assert-ClaudeBlogNoReparsePath $BootstrapRoot
-            git clone --depth 1 --branch $Ref $Url $CheckoutDir 2>$null
-            if ($LASTEXITCODE -ne 0) {
+            $GitCommand = Get-Command git -CommandType Application -ErrorAction Stop
+            $clone = Invoke-ClaudeBlogGit $GitCommand @("clone", "--depth", "1", "--branch", $Ref, $Url, $CheckoutDir)
+            if ($clone.ExitCode -ne 0) {
                 $CheckoutDir = Join-Path $BootstrapRoot "checkout-fallback"
                 Assert-ClaudeBlogNoReparsePath $BootstrapRoot
-                git clone $Url $CheckoutDir 2>$null
-                if ($LASTEXITCODE -ne 0) { throw "unable to clone $Url" }
-                git -C $CheckoutDir checkout --detach $Ref *> $null
-                if ($LASTEXITCODE -ne 0) { throw "unable to check out $Ref" }
+                $clone = Invoke-ClaudeBlogGit $GitCommand @("clone", $Url, $CheckoutDir)
+                if ($clone.ExitCode -ne 0) { throw "unable to clone repository (git exit $($clone.ExitCode))" }
+                $checkout = Invoke-ClaudeBlogGit $GitCommand @("-C", $CheckoutDir, "checkout", "--detach", $Ref)
+                if ($checkout.ExitCode -ne 0) { throw "unable to check out requested ref (git exit $($checkout.ExitCode))" }
             }
             $ScriptDir = $CheckoutDir
-            $CheckedOut = git -C $ScriptDir rev-parse --short HEAD
+            $revParse = Invoke-ClaudeBlogGit $GitCommand @("-C", $ScriptDir, "rev-parse", "--short", "HEAD") -CaptureOutput
+            if ($revParse.ExitCode -ne 0) { throw "unable to identify checked out revision (git exit $($revParse.ExitCode))" }
+            $CheckedOut = ($revParse.Output -join "`n").Trim()
             Write-Color Green "  + checked out $CheckedOut"
             if ($Ref -eq "main") { Write-Color Yellow "  Tip: set CLAUDE_BLOG_REF to a tag or commit SHA for a pinned install." }
 

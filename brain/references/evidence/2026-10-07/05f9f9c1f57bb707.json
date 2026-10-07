@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://support.google.com/webmasters/answer/17148418?hl=en-GB",
+  "normalized_full_document_sha256": "b629ac50cfb9395894578a28f808a234226a0e0556e6b01d63c745092fe0711f",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "we’re rolling out this feature gradually, so it might not be available to everyone yet"
+  ],
+  "records": [
+    {
+      "source_id": "search-console-platform-help-2026-08-25",
+      "source_url": "https://support.google.com/webmasters/answer/17148418?hl=en-GB",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "qualified",
+      "excerpt_index": 0
+    }
+  ]
+}

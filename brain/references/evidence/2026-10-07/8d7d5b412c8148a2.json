@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://developers.google.com/search/docs/fundamentals/creating-helpful-content",
+  "normalized_full_document_sha256": "544e13ea75d00edc00fd60a190d1c3900e0df8dd4b50e42676719251daf7767a",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "self-assess your content"
+  ],
+  "records": [
+    {
+      "source_id": "g-helpful-content",
+      "source_url": "https://developers.google.com/search/docs/fundamentals/creating-helpful-content",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "confirmed_by_manual_review",
+      "excerpt_index": 0
+    }
+  ]
+}

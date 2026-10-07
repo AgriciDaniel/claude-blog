@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://developers.google.com/search/blog/2026/03/crawler-blog-post",
+  "normalized_full_document_sha256": "405e3a723363ea9a6e3afc618e9afca36f915d050442469e2b78d312fae3ff8d",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "for each requested resource, the 2mb limit also applies"
+  ],
+  "records": [
+    {
+      "source_id": "g-inside-googlebot",
+      "source_url": "https://developers.google.com/search/blog/2026/03/crawler-blog-post",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    }
+  ]
+}

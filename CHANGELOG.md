@@ -39,6 +39,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and current wiki advice. Stage failed retrieval attempts separately from
   reviewed source records and preserve immutable raw snapshots during tests.
 - Improve normal-text link and byline contrast in light and dark rendering.
+- Compare visible headline, author, publication date and hero with JSON-LD
+  in both delivery gates, including declared Open Graph image agreement.
+- Disable implicit proxies for guarded fetches, pin Brain source connections
+  to validated public addresses, and reject symlinked hero output ancestors.
+- Require shipped, hash-checked Brain excerpt artifacts with source and review
+  provenance, while separating excerpt integrity from full-capture review.
+- Handle normal Git stderr correctly on PowerShell 5.1, avoid binary pipelines
+  in legacy Windows fixtures, and preserve Bash 3.2 standalone uninstall.
 
 ### Changed
 

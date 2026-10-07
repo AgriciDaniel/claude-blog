@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from audit_brain import check_wiki_substance  # noqa: E402
-from evidence_fixtures import reviewed_source
+from evidence_fixtures import captured_evidence_root, reviewed_source
 
 
 def write_source_ledger(root: Path, sources: dict[str, str]) -> None:

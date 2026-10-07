@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://developers.google.com/webmaster-tools/v1/urlInspection.index/UrlInspectionResult",
+  "normalized_full_document_sha256": "281ff560d10f1e269604c2349055f82cf95fc54a49f1430b0a8c7f0226d9ab13",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "richresultsresult object ( richresultsinspectionresult ) result of the rich results analysis"
+  ],
+  "records": [
+    {
+      "source_id": "g-urlinspect",
+      "source_url": "https://developers.google.com/webmaster-tools/v1/urlInspection.index/UrlInspectionResult",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    }
+  ]
+}

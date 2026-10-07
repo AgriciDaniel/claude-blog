@@ -52,7 +52,11 @@ main() {
 
     if [ -e "${MANIFEST}" ] || [ -L "${MANIFEST}" ]; then
         local OWNERSHIP_ENGINE
-        local OWNERSHIP_ARGS=()
+        # Bash 3.2 treats an empty array as unset under nounset. Keep the
+        # required command arguments in this array for standalone removal too.
+        local OWNERSHIP_ARGS=(
+            uninstall --profile "${HOME}/.claude" --manifest "${MANIFEST}"
+        )
         if [ -n "${SCRIPT_DIR}" ] && [ -f "${SCRIPT_DIR}/scripts/installer_ownership.py" ]; then
             OWNERSHIP_ENGINE="${SCRIPT_DIR}/scripts/installer_ownership.py"
             OWNERSHIP_ARGS+=(--legacy-inventory "${SCRIPT_DIR}/data/legacy-install-ownership.json")
@@ -63,10 +67,7 @@ main() {
             return 1
         fi
 
-        python3 "${OWNERSHIP_ENGINE}" uninstall \
-            --profile "${HOME}/.claude" \
-            --manifest "${MANIFEST}" \
-            "${OWNERSHIP_ARGS[@]}"
+        python3 "${OWNERSHIP_ENGINE}" "${OWNERSHIP_ARGS[@]}"
     fi
 
 

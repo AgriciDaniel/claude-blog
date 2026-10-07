@@ -37,9 +37,14 @@ precision, refresh due date, confidence, evidence tier, limitations, and claim
 coverage. Markdown research notes alone do not satisfy market-ready release.
 Active records require a dated claim review, excerpt, rationale and normalized
 content hash. Retired and unverified records cannot support current advice.
-The offline ledger check validates review records, not the availability of
-external captured files; retain and hash-check the separate source evidence
-pack. See `references/source-map.md` for lifecycle and capture conventions.
+The offline ledger check requires contained, nonsymlinked reviewed excerpt
+artifacts under `references/evidence/`. It checks their bytes, hashes, excerpt
+agreement and source provenance. It does not recompute the retained
+full-document hash or establish full-page availability or semantic entailment.
+Retain and independently hash-check the separate full-capture evidence pack.
+Secure descriptor-relative excerpt reads are verified on Linux; unsupported
+platforms fail closed. See `references/source-map.md` for lifecycle and capture
+conventions.
 
 ## Adapter Rule
 

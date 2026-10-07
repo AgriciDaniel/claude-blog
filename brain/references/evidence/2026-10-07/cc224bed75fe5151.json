@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://developers.google.com/search/docs/essentials",
+  "normalized_full_document_sha256": "cd30c5a392993cf721db9ac5158d52a3c106fe247132a8859161fbf543d9f56d",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "doesn't mean that google will crawl, index, or serve its content"
+  ],
+  "records": [
+    {
+      "source_id": "g-search-essentials",
+      "source_url": "https://developers.google.com/search/docs/essentials",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "confirmed_by_manual_review",
+      "excerpt_index": 0
+    }
+  ]
+}

@@ -209,7 +209,7 @@ class _NoRedirectHandler(urllib.request.HTTPRedirectHandler):
     http_error_308 = http_error_301
 
 
-_NO_REDIRECT_OPENER = urllib.request.build_opener(_NoRedirectHandler())
+_NO_REDIRECT_OPENER = urllib.request.build_opener(urllib.request.ProxyHandler({}), _NoRedirectHandler())
 
 
 def _url_for_log(url: str) -> str:
@@ -238,10 +238,20 @@ def _image_ext(data: bytes, fallback: str = ".jpg") -> str:
     return fallback
 
 
+def _symlink_component(path: Path) -> Path | None:
+    """Inspect unresolved components before mkdir/resolve can follow an alias."""
+    candidate = path if path.is_absolute() else Path.cwd() / path
+    for component in (candidate, *candidate.parents):
+        if component.is_symlink():
+            return component
+    return None
+
+
 def _atomic_write_bytes(path: Path, data: bytes) -> None:
     """Atomic write via mkstemp + os.replace. Mirrors load_untrusted_root.py."""
-    if path.exists() and path.is_symlink():
-        raise ValueError(f"refusing to overwrite symlink: {path}")
+    unsafe = _symlink_component(path)
+    if unsafe is not None:
+        raise ValueError(f"refusing symlink output path component: {unsafe}")
     fd, tmp = tempfile.mkstemp(dir=str(path.parent), prefix=f".{path.name}.", suffix=".tmp")
     try:
         with os.fdopen(fd, "wb") as f:
@@ -257,8 +267,9 @@ def _atomic_write_bytes(path: Path, data: bytes) -> None:
 
 def _atomic_write_text(path: Path, text: str) -> None:
     """Atomic text write that refuses symlink output paths."""
-    if path.exists() and path.is_symlink():
-        raise ValueError(f"refusing to overwrite symlink: {path}")
+    unsafe = _symlink_component(path)
+    if unsafe is not None:
+        raise ValueError(f"refusing symlink output path component: {unsafe}")
     fd, tmp = tempfile.mkstemp(dir=str(path.parent), prefix=f".{path.name}.", suffix=".tmp")
     try:
         with os.fdopen(fd, "w", encoding="utf-8") as f:
@@ -618,8 +629,9 @@ def main() -> int:
         return 1
 
     raw_out_dir = Path(args.out)
-    if raw_out_dir.exists() and raw_out_dir.is_symlink():
-        msg = f"ERROR: refusing symlink output directory {raw_out_dir}"
+    unsafe = _symlink_component(raw_out_dir)
+    if unsafe is not None:
+        msg = f"ERROR: refusing symlink output directory component {unsafe}"
         if args.json:
             print(json.dumps({"error": "out-dir-symlink", "message": msg}))
         else:

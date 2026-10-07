@@ -63,13 +63,29 @@ def test_both_wrappers_use_one_shared_ownership_engine() -> None:
 
 def test_cloned_ref_hands_off_to_its_own_installer() -> None:
     install = _read(INSTALL)
-    clone = install.index("git clone --depth 1 --branch $Ref")
+    clone = install.index('$clone = Invoke-ClaudeBlogGit $GitCommand @("clone", "--depth"')
     handoff = install.index('$SelectedInstaller = Join-Path $ScriptDir "install.ps1"')
     current_helper = install.index('$OwnershipHelper = Join-Path $ScriptDir "scripts/windows_installer_ownership.ps1"')
     assert clone < handoff < current_helper
     assert "Start-Process -FilePath $HostExecutable" in install[handoff:current_helper]
     assert "selected ref installer failed" in install[handoff:current_helper]
     assert "return" in install[handoff:current_helper]
+
+
+def test_bootstrap_git_uses_exit_codes_without_powershell_51_stderr_escalation() -> None:
+    install = _read(INSTALL)
+    invoke_git = _function(install, "Invoke-ClaudeBlogGit")
+    main = _function(install, "Main")
+    assert '$previousErrorActionPreference = $ErrorActionPreference' in invoke_git
+    assert '$ErrorActionPreference = "Continue"' in invoke_git
+    assert "2>$null" in invoke_git
+    assert "$exitCode = $LASTEXITCODE" in invoke_git
+    assert "$ErrorActionPreference = $previousErrorActionPreference" in invoke_git
+    assert "ExitCode = $exitCode" in invoke_git
+    assert "Get-Command git -CommandType Application -ErrorAction Stop" in main
+    assert "if ($clone.ExitCode -ne 0)" in main
+    assert "unable to clone repository (git exit $($clone.ExitCode))" in main
+    assert "unable to clone $Url" not in main
 
 
 def test_clone_bootstrap_uses_exclusive_owned_full_guid_root_and_child_checkout() -> None:
@@ -85,7 +101,7 @@ def test_clone_bootstrap_uses_exclusive_owned_full_guid_root_and_child_checkout(
     assert "FileMode]::CreateNew" in creator
     assert ".claude-blog-bootstrap-owner" in creator
     assert '$CheckoutDir = Join-Path $BootstrapRoot "checkout"' in main
-    assert "git clone --depth 1 --branch $Ref $Url $CheckoutDir" in main
+    assert '@("clone", "--depth", "1", "--branch", $Ref, $Url, $CheckoutDir)' in main
     assert main.index("$BootstrapOwned = $true") > main.index("$bootstrap = New-ClaudeBlogOwnedTempRoot")
     assert "Substring(0,8)" not in install
     assert "if ($BootstrapOwned)" in main
@@ -97,6 +113,14 @@ def test_clone_bootstrap_uses_exclusive_owned_full_guid_root_and_child_checkout(
     assert "Remove-Item -LiteralPath $fullRoot -Recurse" in cleanup
     assert '$CheckoutDir = Join-Path $BootstrapRoot "checkout-fallback"' in main
     assert "Remove-Item -LiteralPath $CheckoutDir -Recurse" not in main
+
+
+def test_native_smoke_avoids_pre_74_binary_pipelines() -> None:
+    smoke = _read(SMOKE)
+    assert "git -C $RepositoryRoot archive $Baseline | tar" not in smoke
+    assert 'git -C $RepositoryRoot archive --format=tar --output $baselineArchive $Baseline' in smoke
+    assert "tar -xf $baselineArchive -C $fixture" in smoke
+    assert 'Join-Path $RunRoot ("baseline-" + $Baseline + ".tar")' in smoke
 
 
 def test_pip_log_uses_owned_full_guid_root_and_is_retained_on_failure() -> None:

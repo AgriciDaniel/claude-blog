@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://schema.org/Product",
+  "normalized_full_document_sha256": "82d59276d702a6f35664d4049865e8335b9a40ecc55e34aa0c8a3aabffee3839",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "aggregaterating aggregaterating"
+  ],
+  "records": [
+    {
+      "source_id": "schema-product",
+      "source_url": "https://schema.org/Product",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "confirmed_by_manual_review",
+      "excerpt_index": 0
+    }
+  ]
+}

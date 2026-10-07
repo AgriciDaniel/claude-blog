@@ -10,7 +10,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
-from evidence_fixtures import reviewed_source
+from evidence_fixtures import FIXTURE_FULL_HASH, captured_evidence_root, reviewed_source, set_review_decision
 from source_evidence import can_support, ledger_errors, source_errors
 from verify_source_ledger import offline_check
 
@@ -80,8 +80,8 @@ def test_offline_accepts_reasoned_archive_without_invented_dates():
     result = offline_check({"sources": [good, retired]}, date.today())
     assert result["status"] == "pass"
     assert result["verified"] == 1
-    assert result["evidence_validation"]["captured_artifacts_checked"] is False
-    assert result["evidence_validation"]["mode"] == "review_record"
+    assert result["evidence_validation"]["captured_artifacts_checked"] is True
+    assert result["evidence_validation"]["mode"] == "packaged_reviewed_excerpt"
     assert not can_support(retired)
     retired["replacement_source_ids"] = ["missing"]
     assert offline_check({"sources": [good, retired]}, date.today())["status"] == "fail"
@@ -112,7 +112,7 @@ def test_offline_rejects_invalid_review_state(mutate):
 
 def test_qualification_requires_narrowed_supported_scope_and_limits():
     source = reviewed_source()
-    source["verification"]["decision"] = "qualified"
+    set_review_decision(source, "qualified")
     assert source_errors(source)
     source["limitations"] = "Supports only this narrow scope, not product availability in every account."
     assert can_support(source)
@@ -191,7 +191,7 @@ def test_current_wiki_cannot_cite_retired_evidence_but_archive_can(tmp_path, mon
 ])
 def test_qualified_citations_preserve_narrow_scope_and_render_limits(module_name, renderer_name):
     source = reviewed_source()
-    source["verification"]["decision"] = "qualified"
+    set_review_decision(source, "qualified")
     source["limitations"] = "Practitioner editorial heuristic, no validated citation gain."
     module = importlib.import_module(module_name)
     citations = module.source_citations([source["id"]], {source["id"]: source})
@@ -263,7 +263,7 @@ def test_successful_fetch_alone_cannot_advance_review(tmp_path, monkeypatch, dec
     source["retrieved"] = source["last_verified"] = "2000-01-01"
     decisions = {decision: {source["id"]: {}} if decision == "corrected" else [source["id"]]}
     verifier, path, args = setup_live_review(tmp_path, monkeypatch, [source], decisions)
-    monkeypatch.setattr(verifier, "fetch_source", lambda url: {"text": "reviewed scoped source claim.", "normalized_content_sha256": "a" * 64})
+    monkeypatch.setattr(verifier, "fetch_source", lambda url: {"text": "reviewed scoped source claim.", "normalized_content_sha256": FIXTURE_FULL_HASH})
     assert verifier.main(args) == 1
     result = json.loads(path.read_text())
     assert result["sources"][0]["verification"] == source["verification"]
@@ -276,9 +276,10 @@ def test_partial_success_updates_only_reviewed_record(tmp_path, monkeypatch):
         source["verification"]["reviewed_on"] = "2000-01-01"
         source["retrieved"] = source["last_verified"] = "2000-01-01"
         source["refresh_due"] = "2000-02-01"
-    evidence = {"first": {"normalized_content_sha256": "a" * 64, "evidence_path": "outputs/source.txt", "evidence_excerpt": "reviewed scoped source claim.", "review_note": "Read and verified the complete scoped source claim."}}
+    evidence = {"first": {"normalized_content_sha256": FIXTURE_FULL_HASH, "evidence_path": "outputs/source.txt", "evidence_excerpt": "reviewed scoped source claim.", "review_note": "Read and verified the complete scoped source claim."}}
+    evidence["first"].update({key: first["verification"][key] for key in ("captured_excerpt_path", "captured_excerpt_sha256")})
     verifier, path, args = setup_live_review(tmp_path, monkeypatch, [first, second], {"confirmed_by_manual_review": ["first"]}, evidence=evidence)
-    monkeypatch.setattr(verifier, "fetch_source", lambda url: {"text": "reviewed scoped source claim.", "normalized_content_sha256": "a" * 64, "http_status": 200, "final_url": url, "content_type": "text/plain", "reviewable_text_bytes": 27})
+    monkeypatch.setattr(verifier, "fetch_source", lambda url: {"text": "reviewed scoped source claim.", "normalized_content_sha256": FIXTURE_FULL_HASH, "http_status": 200, "final_url": url, "content_type": "text/plain", "reviewable_text_bytes": 27})
     assert verifier.main(args) == 1
     ledger = json.loads(path.read_text())
     assert ledger["sources"][0]["verification"]["reviewed_on"] == date.today().isoformat()
@@ -289,8 +290,29 @@ def test_partial_success_updates_only_reviewed_record(tmp_path, monkeypatch):
 def test_low_overlap_cannot_be_content_confirmed_even_with_retrieval_evidence(tmp_path, monkeypatch):
     source = reviewed_source()
     source["claims"] = source["supports_claims"] = ["Quantum certification guarantees revenue increases."]
-    evidence = {source["id"]: {"normalized_content_sha256": "a" * 64, "evidence_path": "outputs/source.txt", "evidence_excerpt": "reviewed scoped source claim.", "review_note": "Reviewed the source and recorded the supported scoped sentence."}}
+    evidence = {source["id"]: {"normalized_content_sha256": FIXTURE_FULL_HASH, "evidence_path": "outputs/source.txt", "evidence_excerpt": "reviewed scoped source claim.", "review_note": "Reviewed the source and recorded the supported scoped sentence."}}
     verifier, path, args = setup_live_review(tmp_path, monkeypatch, [source], {"confirmed_by_content": [source["id"]]}, evidence=evidence)
-    monkeypatch.setattr(verifier, "fetch_source", lambda url: {"text": "reviewed scoped source claim.", "normalized_content_sha256": "a" * 64})
+    monkeypatch.setattr(verifier, "fetch_source", lambda url: {"text": "reviewed scoped source claim.", "normalized_content_sha256": FIXTURE_FULL_HASH})
     assert verifier.main(args) == 1
     assert json.loads(path.read_text())["sources"][0] == source
+
+
+@pytest.mark.parametrize("defect", ["missing", "forged"])
+def test_live_review_cannot_apply_matching_fetch_without_valid_packaged_excerpt(tmp_path, monkeypatch, defect):
+    import source_evidence
+    source = reviewed_source()
+    reviewed = copy.deepcopy(source["verification"])
+    artifact = source_evidence.BRAIN_ROOT / reviewed["captured_excerpt_path"]
+    if defect == "missing":
+        artifact.unlink()
+    else:
+        artifact.write_text("forged artifact bytes")
+    verifier, path, args = setup_live_review(tmp_path, monkeypatch, [source],
+        {"confirmed_by_manual_review": [source["id"]]}, evidence={source["id"]: reviewed})
+    monkeypatch.setattr(verifier, "fetch_source", lambda url: {
+        "text": "reviewed scoped source claim.", "normalized_content_sha256": FIXTURE_FULL_HASH,
+        "http_status": 200, "final_url": url, "content_type": "text/plain", "reviewable_text_bytes": 27})
+    assert verifier.main(args) == 1
+    actual = json.loads(path.read_text())
+    assert actual["sources"][0] == source
+    assert actual["last_verified"] == "2000-01-01"

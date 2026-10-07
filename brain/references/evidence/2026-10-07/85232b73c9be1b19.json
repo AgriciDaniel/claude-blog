@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://developers.google.com/search/docs/fundamentals/using-gen-ai-content",
+  "normalized_full_document_sha256": "12751d8f8140f7452a03a81484b04d80a855506d65b6146de205e0ccac2cc1fb",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "manually factcheck and review all ai-generated content for accuracy and trustworthiness before publishing"
+  ],
+  "records": [
+    {
+      "source_id": "g-using-gen-ai-content",
+      "source_url": "https://developers.google.com/search/docs/fundamentals/using-gen-ai-content",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "confirmed_by_manual_review",
+      "excerpt_index": 0
+    }
+  ]
+}

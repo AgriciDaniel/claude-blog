@@ -635,7 +635,7 @@ def gate_3_visual_verification(draft_dir: Path, slug: str | None = None) -> dict
     warnings = [f"backend: {backend}"]
     per_viewport: dict = {}
 
-    bbox_check_js = """
+    bbox_check_js = r"""
 () => {
   const overflows = [];
   const boxes = document.querySelectorAll('svg, figure');
@@ -671,21 +671,42 @@ def gate_3_visual_verification(draft_dir: Path, slug: str | None = None) -> dict
       const required = ['headline','image','datePublished','author'];
       jsonLdMissingFields = required.filter(k => !obj[k]);
       jsonLdWordCount = Number.isInteger(obj.wordCount) ? obj.wordCount : null;
-      const normalize = (value) => String(value || '').replace(/\\s+/g, ' ').trim().toLowerCase();
-      const visibleHeadline = normalize(document.querySelector('h1')?.textContent);
-      const schemaHeadline = normalize(obj.headline);
-      if (!visibleHeadline || visibleHeadline !== schemaHeadline) {
-        jsonLdConsistencyMismatches.push('headline');
-      }
-      const visibleDate = document.querySelector('time[datetime]')?.getAttribute('datetime');
-      if (visibleDate && !String(obj.datePublished || '').startsWith(visibleDate.slice(0, 10))) {
-        jsonLdConsistencyMismatches.push('datePublished');
-      }
-      jsonLdVisibleConsistent = jsonLdConsistencyMismatches.length === 0;
     } catch (e) { jsonLdValid = false; }
   }
+  // Keep head/schema markup, but remove body nodes hidden by actual computed layout.
+  const visibleDocument = document.documentElement.cloneNode(true);
+  const originals = [...document.body.querySelectorAll('*')];
+  const copies = [...visibleDocument.querySelector('body').querySelectorAll('*')];
+  const identitySelector = 'h1,.byline,[rel~=author],[itemprop~=author],[itemprop~=name],[itemprop~=datePublished],time,.author,.author-name,.byline-author,.p-author';
+  const originalText = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  const copiedText = document.createTreeWalker(visibleDocument.querySelector('body'), NodeFilter.SHOW_TEXT);
+  let originalNode, copiedNode;
+  while ((originalNode = originalText.nextNode()) && (copiedNode = copiedText.nextNode())) {
+    if (!originalNode.parentElement.closest(identitySelector)) continue;
+    const color = getComputedStyle(originalNode.parentElement).color;
+    const alpha = color.match(/(?:,|\/)\s*([.\d]+%?)\s*\)$/);
+    if (color === 'transparent' || ((color.startsWith('rgba(') || color.includes('/')) && alpha && parseFloat(alpha[1]) === 0)) {
+      copiedNode.nodeValue = '';
+    }
+  }
+  originals.forEach((element, index) => {
+    if (['SCRIPT', 'STYLE'].includes(element.tagName)) return;
+    const style = getComputedStyle(element);
+    // Opacity multiplies through ancestors, even when a child computes to 1.
+    let opacityHidden = false;
+    for (let ancestor = element; ancestor; ancestor = ancestor.parentElement) {
+      if (Number(getComputedStyle(ancestor).opacity) === 0) {
+        opacityHidden = true;
+        break;
+      }
+    }
+    if (opacityHidden || (!element.getClientRects().length && style.display !== 'contents') || style.visibility === 'hidden' || style.display === 'none') {
+      copies[index].remove();
+    }
+  });
+  const visibleIdentityHtml = visibleDocument.outerHTML;
   return {
-    overflows, bg, jsonLdValid, jsonLdType, jsonLdMissingFields,
+    visibleIdentityHtml, overflows, bg, jsonLdValid, jsonLdType, jsonLdMissingFields,
     jsonLdVisibleConsistent, jsonLdConsistencyMismatches, jsonLdWordCount
   };
 }
@@ -719,6 +740,16 @@ def gate_3_visual_verification(draft_dir: Path, slug: str | None = None) -> dict
                 screenshot = page.screenshot(full_page=True)
                 _atomic_write_bytes(preview_dir / f"{vp['name']}-{vp['width']}.png", screenshot)
                 result = page.evaluate(bbox_check_js)
+                identity_html = result.pop("visibleIdentityHtml")
+                identity_parser = _MetaParser()
+                identity_parser.feed(identity_html)
+                try:
+                    identity_nodes = _jsonld_nodes(json.loads("".join(identity_parser.json_ld_blocks)))
+                    identity_obj = next(node for node in identity_nodes if _is_blogposting_node(node))
+                    result["jsonLdConsistencyMismatches"] = _jsonld_identity_mismatches(identity_html, identity_obj, identity_nodes)
+                    result["jsonLdVisibleConsistent"] = not result["jsonLdConsistencyMismatches"]
+                except (ValueError, StopIteration, TypeError):
+                    result["jsonLdVisibleConsistent"] = False
                 per_viewport[vp["name"]] = {"result": result, "console_errors": console_errors}
                 if result["overflows"]:
                     violations.append(f"{vp['name']}: {len(result['overflows'])} SVG overflow(s)")
@@ -930,6 +961,258 @@ class _MetaParser(HTMLParser):
             self.article_text_chars += len(re.findall(r"\b\w+\b", data))
 
 
+class _IdentityHTMLParser(HTMLParser):
+    """Small element tree for visible article identity, never head metadata."""
+
+    _VOID = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr"}
+
+    def __init__(self):
+        super().__init__()
+        self.root = {"tag": "document", "attrs": {}, "children": []}
+        self.stack = [self.root]
+
+    def handle_starttag(self, tag, attrs):
+        node = {"tag": tag, "attrs": dict(attrs), "children": []}
+        self.stack[-1]["children"].append(node)
+        if tag not in self._VOID:
+            self.stack.append(node)
+
+    def handle_startendtag(self, tag, attrs):
+        self.handle_starttag(tag, attrs)
+        if tag not in self._VOID:
+            self.handle_endtag(tag)
+
+    def handle_endtag(self, tag):
+        for index in range(len(self.stack) - 1, 0, -1):
+            if self.stack[index]["tag"] == tag:
+                del self.stack[index:]
+                break
+
+    def handle_data(self, data):
+        self.stack[-1]["children"].append(data)
+
+
+def _identity_inline_style(style, property_name):
+    values = re.findall(r"(?:^|;)" + re.escape(property_name) + r":([^;]+)", style)
+    important = [value for value in values if value.endswith("!important")]
+    selected = (important or values)[-1] if values else ""
+    return selected.removesuffix("!important")
+
+
+def _identity_zero_alpha(value):
+    try:
+        return float(value.rstrip("%")) <= 0
+    except ValueError:
+        return False
+
+
+def _identity_transparent_color(color):
+    if color == "transparent" or re.fullmatch(r"#[0-9a-f]{3}0|#[0-9a-f]{6}00", color):
+        return True
+    if "/" in color:
+        return _identity_zero_alpha(color.rsplit("/", 1)[1].rstrip(")"))
+    if color.startswith(("rgba(", "hsla(")) and color.count(",") == 3:
+        return _identity_zero_alpha(color.rsplit(",", 1)[1].rstrip(")"))
+    return False
+
+
+def _identity_elements(node):
+    attrs = node["attrs"]
+    style = re.sub(r"\s+", "", (attrs.get("style") or "")).lower()
+    if (node["tag"] in {"head", "script", "style", "template", "noscript"}
+            or "hidden" in attrs or (attrs.get("aria-hidden") or "").lower() == "true"
+            or "display:none" in style or "visibility:hidden" in style
+            or _identity_zero_alpha(_identity_inline_style(style, "opacity"))):
+        return
+    yield node
+    for child in node["children"]:
+        if isinstance(child, dict):
+            yield from _identity_elements(child)
+
+
+def _identity_text(node, inherited_transparent=False):
+    style = re.sub(r"\s+", "", node["attrs"].get("style") or "").lower()
+    color = _identity_inline_style(style, "color")
+    transparent = _identity_transparent_color(color) if color else inherited_transparent
+    return "".join(
+        ("" if transparent else child) if isinstance(child, str)
+        else _identity_text(child, transparent)
+        for child in node["children"]
+        if isinstance(child, str) or list(_identity_elements(child))
+    )
+
+
+def _identity_normalize(value):
+    return re.sub(r"\s+", " ", str(value or "")).strip().casefold()
+
+
+def _identity_date(value):
+    text = str(value or "").strip()
+    try:
+        if re.fullmatch(r"\d{4}-\d{2}-\d{2}", text):
+            return dt.date.fromisoformat(text)
+        return dt.datetime.fromisoformat(text.replace("Z", "+00:00"))
+    except ValueError:
+        for pattern in ("%B %d, %Y", "%B %d %Y", "%b %d, %Y", "%b %d %Y", "%d %B %Y", "%d %b %Y"):
+            try:
+                return dt.datetime.strptime(text, pattern).date()
+            except ValueError:
+                pass
+    return None
+
+
+def _identity_dates_equal(left, right):
+    left, right = _identity_date(left), _identity_date(right)
+    if left is None or right is None:
+        return False
+    if isinstance(left, dt.datetime) and isinstance(right, dt.datetime):
+        if (left.tzinfo is None) == (right.tzinfo is None):
+            return left == right
+        return left.replace(tzinfo=None) == right.replace(tzinfo=None)
+    def dates(value):
+        if not isinstance(value, dt.datetime):
+            return {value}
+        result = {value.date()}
+        if value.tzinfo is not None:
+            result.add(value.astimezone(dt.timezone.utc).date())
+        return result
+    return bool(dates(left) & dates(right))
+
+
+def _identity_schema_values(value, nodes, field, seen=None):
+    """Accept name strings, Person/Organization/ImageObject objects and arrays."""
+    seen = set() if seen is None else seen
+    if isinstance(value, list):
+        return [part for item in value for part in _identity_schema_values(item, nodes, field, seen)]
+    if isinstance(value, str):
+        target = next((node for node in nodes if node.get("@id") == value), None)
+        if target is not None and value not in seen:
+            return _identity_schema_values(target, nodes, field, seen | {value})
+        return [value] if value.strip() else []
+    if isinstance(value, dict):
+        for key in (("name",) if field == "author" else ("url", "contentUrl")):
+            if value.get(key):
+                return _identity_schema_values(value[key], nodes, field, seen)
+        reference = value.get("@id")
+        if reference and reference not in seen:
+            target = next((node for node in nodes if node.get("@id") == reference and node is not value), None)
+            if target is not None:
+                return _identity_schema_values(target, nodes, field, seen | {reference})
+    return []
+
+
+def _identity_asset_urls(value, canonical):
+    """Resolve local assets both beside a document and below its publish URL."""
+    value = str(value or "").strip()
+    if not value:
+        return set()
+    candidates = {value}
+    if canonical and not urllib.parse.urlsplit(value).scheme:
+        candidates = {
+            urllib.parse.urljoin(canonical, value),
+            urllib.parse.urljoin(canonical.rstrip("/") + "/", value),
+        }
+    result = set()
+    for candidate in candidates:
+        parsed = urllib.parse.urlsplit(candidate)
+        host = (parsed.hostname or "").lower()
+        try:
+            port = parsed.port
+        except ValueError:
+            continue
+        if port and (parsed.scheme.lower(), port) not in {("http", 80), ("https", 443)}:
+            host += ":" + str(port)
+        path = urllib.parse.quote(urllib.parse.unquote(parsed.path), safe="/:@-._~!$&'()*+,;=")
+        result.add(urllib.parse.urlunsplit((parsed.scheme.lower(), host, path, parsed.query, "")))
+    return result
+
+
+def _jsonld_identity_mismatches(html, obj, nodes):
+    """Compare required schema identity against article markup, not meta tags."""
+    parser = _IdentityHTMLParser()
+    parser.feed(html)
+    elements = list(_identity_elements(parser.root))
+    article = next((node for node in elements if node["tag"] == "article"), parser.root)
+    visible = list(_identity_elements(article))
+    def tokens(node, key):
+        return set((node["attrs"].get(key) or "").split())
+    h1 = next((node for node in visible if node["tag"] == "h1"), None)
+    mismatches = []
+    if h1 is None or _identity_normalize(_identity_text(h1)) != _identity_normalize(obj.get("headline")):
+        mismatches.append("headline")
+
+    bylines = [node for node in visible if "byline" in tokens(node, "class")]
+    author_nodes = [node for node in visible if (
+        "author" in tokens(node, "itemprop") or "author" in tokens(node, "rel")
+        or tokens(node, "class") & {"author", "author-name", "byline-author", "p-author"}
+    )]
+    representations = []
+    if author_nodes:
+        visible_names = []
+        for node in author_nodes:
+            name_nodes = [child for child in _identity_elements(node) if "name" in tokens(child, "itemprop")]
+            visible_names.extend(_identity_text(child) for child in (name_nodes or [node]))
+        if any(_identity_normalize(name) for name in visible_names):
+            representations.append((" and ".join(visible_names), not bylines))
+    # A matching semantic author must never suppress a contradictory byline.
+    for byline in bylines:
+        text = re.split(r"[·•|]", _identity_text(byline))[0]
+        text = re.split(r"\d{4}-\d{2}-\d{2}", text)[0]
+        representations.append((text, True))
+    names = {_identity_normalize(name) for name in _identity_schema_values(obj.get("author"), nodes, "author")}
+    names.discard("")
+    author_ok = bool(representations and names)
+    for text, require_all in representations:
+        author_text = _identity_normalize(text)
+        matched = False
+        for name in sorted(names, key=len, reverse=True):
+            author_text, count = re.subn(r"(?<!\w)" + re.escape(name) + r"(?!\w)", " ", author_text)
+            matched = matched or count > 0
+            if require_all and count == 0:
+                author_ok = False
+        remainder = re.sub(r"\b(?:by|and|with)\b|[,;&/|]", " ", author_text).strip()
+        author_ok = author_ok and matched and not remainder
+    if not author_ok:
+        mismatches.append("author")
+
+    def publication_time(node):
+        return (node["tag"] == "time"
+                and "dateModified" not in tokens(node, "itemprop")
+                and not tokens(node, "class") & {"updated", "modified"})
+
+    date_nodes = [node for node in visible if "datePublished" in tokens(node, "itemprop")]
+    if not date_nodes:
+        date_nodes = [child for byline in bylines for child in _identity_elements(byline) if publication_time(child)]
+    if not date_nodes:
+        date_nodes = [child for header in visible if header["tag"] == "header"
+                      for child in _identity_elements(header) if publication_time(child)]
+    if not date_nodes and not bylines:
+        date_nodes = [node for node in visible if publication_time(node)][:1]
+    dates = [node["attrs"].get("datetime") or _identity_text(node) for node in date_nodes]
+    if not dates:
+        date_pattern = r"\d{4}-\d{2}-\d{2}(?:T[\d:.]+(?:Z|[+-]\d{2}:\d{2})?)?|(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},?\s+\d{4}"
+        dates = [match.group() for byline in bylines for match in re.finditer(date_pattern, _identity_text(byline), re.I)]
+    if not dates or not all(_identity_dates_equal(value, obj.get("datePublished")) for value in dates):
+        mismatches.append("datePublished")
+
+    hero_containers = [node for node in visible if "hero" in tokens(node, "class")]
+    hero_images = [child for node in hero_containers for child in _identity_elements(node) if child["tag"] == "img"]
+    if not hero_images:
+        hero_images = [node for node in visible if node["tag"] == "img" and "image" in tokens(node, "itemprop")]
+    if not hero_images:
+        hero_images = [node for node in visible if node["tag"] == "img"][:1]
+    canonical_parser = _MetaParser()
+    canonical_parser.feed(html)
+    canonical = canonical_parser.canonical
+    actual_images = set().union(*(_identity_asset_urls(node["attrs"].get("src"), canonical) for node in hero_images))
+    schema_images = set().union(*(_identity_asset_urls(value, canonical) for value in _identity_schema_values(obj.get("image"), nodes, "image")))
+    og_images = _identity_asset_urls(canonical_parser.og_image, canonical)
+    if (not actual_images or not actual_images & schema_images
+            or (og_images and not actual_images & schema_images & og_images)):
+        mismatches.append("image")
+    return mismatches
+
+
 class _PreflightNoRedirectHandler(urllib.request.HTTPRedirectHandler):
     """Refuse automatic redirect-following in Gate 5 link checks (VULN-804).
 
@@ -945,7 +1228,7 @@ class _PreflightNoRedirectHandler(urllib.request.HTTPRedirectHandler):
     http_error_308 = http_error_301
 
 
-_PREFLIGHT_NO_REDIRECT_OPENER = urllib.request.build_opener(_PreflightNoRedirectHandler())
+_PREFLIGHT_NO_REDIRECT_OPENER = urllib.request.build_opener(urllib.request.ProxyHandler({}), _PreflightNoRedirectHandler())
 
 
 def _http_request_status(
@@ -1295,6 +1578,9 @@ def gate_5_asset_link_integrity(
             missing = [k for k in required if not obj.get(k)]
             if missing:
                 schema_violations.append(f"JSON-LD missing required fields: {missing}")
+            mismatches = _jsonld_identity_mismatches(raw, obj, nodes)
+            if mismatches:
+                schema_violations.append(f"JSON-LD does not match visible content: {mismatches}")
             declared_word_count = obj.get("wordCount")
             if not isinstance(declared_word_count, int):
                 schema_violations.append("JSON-LD wordCount must be an integer")

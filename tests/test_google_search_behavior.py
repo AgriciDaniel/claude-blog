@@ -101,6 +101,7 @@ def test_gate_5_warns_without_blocking_on_first_2mb_visibility(
     slug = "cutoff-fixture"
     (tmp_path / f"{slug}.md").write_text("# Fixture\n", encoding="utf-8")
     (tmp_path / f"{slug}.pdf").write_bytes(b"%PDF-1.4\n")
+    (tmp_path / "hero.jpg").write_bytes(b"\xff\xd8\xff")
     critical = (
         '<title>Fixture</title>'
         '<meta name="description" content="Fixture">'
@@ -108,7 +109,9 @@ def test_gate_5_warns_without_blocking_on_first_2mb_visibility(
         '<script type="application/ld+json">'
         '{"@type":"BlogPosting","headline":"Fixture","image":"hero.jpg",'
         '"datePublished":"2026-07-23","author":{"name":"Tester"},"wordCount":2}'
-        "</script><article>Primary content</article>"
+        "</script><article><header><h1>Fixture</h1>"
+        '<p class="byline"><strong>By Tester</strong> · 2026-07-23</p></header>'
+        '<figure class="hero"><img src="hero.jpg"></figure>Primary content</article>'
     )
     (tmp_path / f"{slug}.html").write_text(
         "x" * preflight.GOOGLEBOT_HTML_BYTE_LIMIT + critical,

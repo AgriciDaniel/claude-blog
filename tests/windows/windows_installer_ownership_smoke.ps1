@@ -107,10 +107,12 @@ $target = Join-Path $env:USERPROFILE "selected-ref-ran.txt"
     $failureSentinel = Join-Path $RunRoot "clone-failure-sentinel.txt"
     Set-Content -LiteralPath $failureSentinel -Value "preserve"
     $failureProfile = New-Profile $RunRoot "bootstrap-failure-profile"
+    $failureProfileBefore = Snapshot $failureProfile
     $failureExit = Invoke-DownloadedBootstrap $downloadedBootstrap $failureProfile (Join-Path $RunRoot "missing-repository") "v2.2.0" $failureIdentifier
     Assert-True ($failureExit -ne 0) "failed clone returns nonzero"
     Assert-True (-not (Test-Path -LiteralPath $failureRoot)) "owned failed-clone root is cleaned"
     Assert-True ((Get-Content -LiteralPath $failureSentinel -Raw).Trim() -eq "preserve") "external clone-failure sentinel survives"
+    Assert-True ((Snapshot $failureProfile) -eq $failureProfileBefore) "failed clone does not mutate profile"
 
     Write-Host "SCENARIO: selected ref installer handoff"
     $bootstrapProfile = New-Profile $RunRoot "selected-ref-profile"
@@ -200,7 +202,10 @@ $target = Join-Path $env:USERPROFILE "selected-ref-ran.txt"
     Write-Host "SCENARIO: legacy baseline migration"
     $fixture = Join-Path $RunRoot "baseline"
     New-Item -ItemType Directory -Path $fixture | Out-Null
-    git -C $RepositoryRoot archive $Baseline | tar -xf - -C $fixture
+    $baselineArchive = Join-Path $RunRoot ("baseline-" + $Baseline + ".tar")
+    git -C $RepositoryRoot archive --format=tar --output $baselineArchive $Baseline
+    if ($LASTEXITCODE -ne 0) { throw "could not archive real public baseline $Baseline" }
+    tar -xf $baselineArchive -C $fixture
     if ($LASTEXITCODE -ne 0) { throw "could not extract real public baseline $Baseline" }
     $p = New-Profile $RunRoot "legacy"
     Write-RealLegacyBaseline $p $fixture

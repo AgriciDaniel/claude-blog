@@ -32,21 +32,31 @@ dates are separate; the historical ledger-wide date remains unchanged.
 The shared evidence gate prevents retired, unverified or expired sources from
 supporting current advice in adapters or wiki notes. Failed live retrievals
 do not overwrite prior reviews. Qualified source limitations travel into
-reports. The offline check validates recorded review evidence; the separate
-capture checker verifies actual artifact hashes and excerpts. Neither
-automated check alone proves semantic entailment. Immutable `.raw/` snapshots
-remain intact.
+reports. The offline check now requires 97 shipped, bounded excerpt artifacts
+and verifies actual bytes, hashes, normalized excerpts and source/review
+provenance for all 127 active records. The aggregate excerpts per original
+document stay below the 25-word allowance. Secure descriptor-relative reads
+reject path escapes and symlinks, and fail closed on unsupported platforms.
+The separate capture checker verifies the retained full-document hashes and
+excerpts. The packaged gate does not recompute those full-document digests or
+establish full-page availability. Neither automated check alone proves
+semantic entailment. Immutable `.raw/` snapshots remain intact.
 
 The lead's executable whole-Brain audit passes at 98/100 with no critical
 failures or warnings, including tests, pipeline, source review, vault lint and
 disposable packaging. A separate run passes 23 adapter regressions. This is
 an internal local readiness result, not authenticated provider verification,
-publication approval or a prediction of content performance.
+publication approval or a prediction of content performance. The final whole
+Brain suite passes 182 tests, including the stronger evidence and transport
+regressions.
 
 ## Verification evidence
 
-The root suite passes 656 tests on each of Python 3.11, 3.12 and 3.14, with
-one expected private-only skip per run. Prose, consistency, public-distribution,
+The root suite passes 720 tests on each of Python 3.11, 3.12 and 3.14, with
+one expected private-only skip per run. Python 3.11 uses a fresh dev-only
+environment matching CI; the existing isolated browser cache allows all 12
+new browser regressions to run. CI without that cache explicitly skips those
+12 cases. Prose, consistency, public-distribution,
 skill metadata, current plugin validation, lock agreement, projection,
 actionlint and diff checks pass. The live Google check reports current against
 the official October 1 documentation feed and September 24 ranking incident.
@@ -84,7 +94,35 @@ and both PDF pages were inspected. Link and byline contrast corrections have
 focused regressions and actual-browser checks above 4.5 for the observed normal
 text. WeasyPrint 70 also renders the same fixture, with all three PDF pages
 inspected. Pagination differs between engines. This is not a full accessibility
-conformance audit.
+conformance audit. A final rendering rerun also passes after visible headline,
+author, publication date and hero comparison was added to both delivery gates,
+with declared Open Graph image agreement. Negative cases reject conflicting
+schema and hidden identity markup while preserving historical body timestamps.
+
+## Independent review repairs
+
+The independent review of commit `6c3cb9a` found two P1 defects and one P2
+defect: the packaged evidence gate accepted invented review metadata, delivery
+gates missed visible/schema identity conflicts, and environment proxies
+bypassed destination controls. These findings received concrete negative
+regressions and repairs. The optional P3 hero-output ancestor symlink finding
+was also repaired. Guarded fetchers now avoid implicit proxies; the Brain
+transport connects directly to validated public addresses, preserves TLS
+hostname verification and revalidates redirects.
+
+The first updated CI run exposed PowerShell 5.1 native-stderr behavior, a
+Bash 3.2 empty-array uninstall failure on macOS and a missing dev dependency.
+PowerShell 7 passed that run. The repairs retain nonzero Git failure handling,
+replace binary pipelines with an owned archive file, keep uninstall argument
+arrays nonempty and declare the exact offline authentication-test dependency.
+Failed CI logs, fixture setup failures and the original independent review
+remain in the evidence pack beside passing reruns. A further independent
+adversarial pass reproduced transparent author decoys and split-file excerpt
+budgets. Both reproductions now fail, with regressions for computed visibility,
+independent byline agreement, unused excerpt text and active-source bindings.
+The excerpt gate covers paths referenced by active ledger sources, including
+every excerpt and record in those files. Unreferenced and historical files are
+outside that gate; all 97 currently shipped artifacts are actively referenced.
 
 ## Remaining verification boundaries
 

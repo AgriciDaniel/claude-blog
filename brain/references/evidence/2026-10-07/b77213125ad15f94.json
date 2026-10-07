@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://blog.google/products-and-platforms/products/search/google-search-ai-mode-update/",
+  "normalized_full_document_sha256": "961eb6453deb366c46483601343f5d6e73aa290983b93da57b10aeaba8a01dda",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "no labs sign-up required"
+  ],
+  "records": [
+    {
+      "source_id": "g-update-2025-05-20-ai-mode-general-rollout-us",
+      "source_url": "https://blog.google/products/search/google-search-ai-mode-update/",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "confirmed_by_manual_review",
+      "excerpt_index": 0
+    }
+  ]
+}

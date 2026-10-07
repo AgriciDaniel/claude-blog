@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://developers.google.com/search/docs/fundamentals/third-party-seo",
+  "normalized_full_document_sha256": "e23bf0d7d5748cc7642cdb612d792d25b61a826981b2a659e5dec60d94817de6",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "third-party tools don't have access to our internal ranking data"
+  ],
+  "records": [
+    {
+      "source_id": "g-update-2026-06-05-guidance-on-third-party-seo-tools-services-and-advice",
+      "source_url": "https://developers.google.com/search/docs/fundamentals/third-party-seo",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "confirmed_by_manual_review",
+      "excerpt_index": 0
+    }
+  ]
+}

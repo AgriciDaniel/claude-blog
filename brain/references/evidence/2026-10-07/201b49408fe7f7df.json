@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://docs.ahrefs.com/",
+  "normalized_full_document_sha256": "0963f19de21959a6d6dac64ae86141cfd39bcfcc56f7860f2a97ad1205aa796f",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "backlinks, organic traffic, and domain metrics"
+  ],
+  "records": [
+    {
+      "source_id": "ahrefs-api",
+      "source_url": "https://docs.ahrefs.com/",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    }
+  ]
+}

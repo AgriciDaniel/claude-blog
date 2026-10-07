@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://blogs.bing.com/search/2026/2/Elevating-the-Role-of-Grounding-on-the-AI-Web/",
+  "normalized_full_document_sha256": "d997c2b4eec06cafa324a5f7d62700196ef692c0d37e5d6f7d57720eb2295a76",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "including citation and grounding signals"
+  ],
+  "records": [
+    {
+      "source_id": "bing-grounding-ai-web-2026-02-12",
+      "source_url": "https://blogs.bing.com/search/2026/2/Elevating-the-Role-of-Grounding-on-the-AI-Web/",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "qualified",
+      "excerpt_index": 0
+    }
+  ]
+}

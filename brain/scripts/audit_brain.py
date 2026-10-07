@@ -321,6 +321,9 @@ def check_source_ledger(*, requires_fresh: bool) -> tuple[bool, int, list[str], 
         critical.append("source-ledger has no captured official/primary sources")
         return False, 35, notes, critical
 
+    # Shared validation reads packaged excerpt artifacts here even when the
+    # broader executable release checks are disabled. Metadata alone cannot
+    # promote a source into the official count or the readiness gate.
     critical.extend(ledger_errors(data))
     official_count = 0
     invalid_confidence: dict[str, int] = {}
@@ -920,7 +923,7 @@ def check_release_verification(*, run_verification: bool) -> tuple[bool, int, li
         ("pipeline", [sys.executable, "tests/test_pipeline.py", "--skip-release"]),
         ("audit self-check", [sys.executable, "scripts/audit_brain.py", "--json", "--report-only", "--no-exec"]),
     ]
-    commands.append(("source evidence", [sys.executable, "scripts/verify_source_ledger.py", "--offline-check"]))
+    commands.append(("packaged source evidence", [sys.executable, "scripts/verify_source_ledger.py", "--offline-check"]))
     with tempfile.TemporaryDirectory(prefix="claude-blog-brain-release-") as tmp:
         commands.append(
             (

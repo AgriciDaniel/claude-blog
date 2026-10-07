@@ -1,0 +1,35 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://static.googleusercontent.com/media/guidelines.raterhub.com/en//searchqualityevaluatorguidelines.pdf",
+  "normalized_full_document_sha256": "aa77d98c83678547527051cf544652d888b83bbfd052bb4dc765adfcda8d172f",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "general guidelines september 11, 2025"
+  ],
+  "records": [
+    {
+      "source_id": "g-qrg-full",
+      "source_url": "https://guidelines.raterhub.com/searchqualityevaluatorguidelines.pdf",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "confirmed_by_manual_review",
+      "excerpt_index": 0
+    },
+    {
+      "source_id": "g-update-2025-01-23-qrg-update-jan-2025",
+      "source_url": "https://guidelines.raterhub.com/searchqualityevaluatorguidelines.pdf",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    },
+    {
+      "source_id": "g-update-2025-09-11-qrg-update-sept-2025",
+      "source_url": "https://guidelines.raterhub.com/searchqualityevaluatorguidelines.pdf",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    }
+  ]
+}

@@ -7,16 +7,19 @@ import argparse
 import concurrent.futures
 import copy
 import hashlib
+import http.client
 import ipaddress
 import json
 import re
 import socket
+import ssl
 import subprocess
 import tempfile
+import time
 from datetime import date, timedelta
 from pathlib import Path
 from typing import Any
-from urllib.parse import urljoin, urlparse
+from urllib.parse import urljoin, urlparse, urlunsplit
 
 from source_evidence import can_support, ledger_errors, ledger_index, lifecycle, source_errors
 
@@ -79,69 +82,119 @@ def parse_day(value: str, label: str) -> date:
         raise SystemExit(f"ERROR: {label} must be YYYY-MM-DD") from exc
 
 
-def validate_public_https(url: str) -> None:
+def public_address(value: str) -> bool:
+    address = ipaddress.ip_address(value)
+    return (address.is_global and not address.is_reserved and not address.is_multicast
+            and not address.is_loopback and not address.is_link_local and not address.is_unspecified)
+
+
+def validate_public_https(url: str) -> tuple[str, int, list[Any]]:
     parsed = urlparse(url)
     if parsed.scheme != "https" or not parsed.hostname or parsed.username or parsed.password:
         raise ValueError("URL must be public HTTPS without credentials")
+    host = parsed.hostname
+    if host.lower().rstrip(".") in {"localhost"} or host.lower().rstrip(".").endswith((".localhost", ".local", ".onion")):
+        raise ValueError("URL host is not public")
+    port = parsed.port or 443
+    if not 1 <= port <= 65535:
+        raise ValueError("URL port is invalid")
     try:
-        addresses = socket.getaddrinfo(
-            parsed.hostname,
-            parsed.port or 443,
-            type=socket.SOCK_STREAM,
-        )
-    except socket.gaierror as exc:
+        addresses = socket.getaddrinfo(host, port, type=socket.SOCK_STREAM, proto=socket.IPPROTO_TCP)
+    except OSError as exc:
         raise ValueError(f"DNS resolution failed: {exc}") from exc
-    for address in addresses:
-        resolved = ipaddress.ip_address(address[4][0])
-        if not resolved.is_global:
-            raise ValueError(f"URL resolved to a non-public address: {resolved}")
+    if not addresses:
+        raise ValueError("DNS resolution returned no addresses")
+    for family, kind, protocol, _name, sockaddr in addresses:
+        if (family not in {socket.AF_INET, socket.AF_INET6} or kind != socket.SOCK_STREAM
+                or protocol != socket.IPPROTO_TCP or sockaddr[1] != port or not public_address(sockaddr[0])):
+            raise ValueError(f"URL resolved to a non-public or invalid address: {sockaddr[0]}")
+    return host, port, list(addresses)
+
+
+class PinnedHTTPSConnection(http.client.HTTPSConnection):
+    """Connect only to prevalidated sockaddr tuples, preserving TLS host/SNI.
+
+    Direct stdlib sockets do not consult environment proxies or perform another
+    hostname lookup. No process-global DNS monkeypatch is used by worker threads.
+    """
+    def __init__(self, host: str, port: int, addresses: list[Any], *, timeout: float):
+        super().__init__(host, port, timeout=timeout, context=ssl.create_default_context())
+        self.addresses = addresses
+
+    def connect(self) -> None:
+        last_error = None
+        deadline = time.monotonic() + self.timeout
+        for family, kind, protocol, _name, sockaddr in self.addresses:
+            if not public_address(sockaddr[0]) or sockaddr[1] != self.port:
+                raise ValueError("pinned connection address is not public or changed port")
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                raise TimeoutError("source connection timed out")
+            raw = socket.socket(family, kind, protocol)
+            try:
+                raw.settimeout(remaining)
+                raw.connect(sockaddr)
+                self.sock = self._context.wrap_socket(raw, server_hostname=self.host)
+                return
+            except OSError as exc:
+                raw.close()
+                last_error = exc
+        if last_error:
+            raise last_error
+        raise ValueError("no pinned public connection address")
 
 
 def fetch_source(url: str) -> dict[str, Any]:
-    import requests
-
-    session = requests.Session()
+    # No requests Session or environment proxy trust: every redirect gets its
+    # own validated address set and connects directly to those exact addresses.
     current = url
+    deadline = time.monotonic() + 30
     for _ in range(7):
-        validate_public_https(current)
-        response = session.get(
-            current,
-            headers={
+        host, port, addresses = validate_public_https(current)
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            raise TimeoutError("source fetch timed out")
+        connection = PinnedHTTPSConnection(host, port, addresses, timeout=remaining)
+        try:
+            parsed = urlparse(current)
+            target = urlunsplit(("", "", parsed.path or "/", parsed.query, ""))
+            connection.request("GET", target, headers={
                 "User-Agent": "Mozilla/5.0 ClaudeBlogSourceAudit/1.0",
                 "Accept": "text/html,application/pdf,application/json,text/plain,*/*;q=0.5",
-            },
-            timeout=30,
-            allow_redirects=False,
-            stream=True,
-        )
-        if response.is_redirect or response.is_permanent_redirect:
-            location = response.headers.get("location")
-            if not location:
-                raise ValueError("redirect response is missing Location")
-            current = urljoin(current, location)
-            continue
-        response.raise_for_status()
-        final_url = response.url
-        validate_public_https(final_url)
-        body = bytearray()
-        for chunk in response.iter_content(64 * 1024):
-            body.extend(chunk)
-            if len(body) > MAX_BYTES:
-                raise ValueError(f"source exceeds {MAX_BYTES} bytes")
-        content_type = response.headers.get("content-type", "").split(";", 1)[0].lower()
-        text = extract_text(bytes(body), content_type, final_url)
-        normalized = normalize_text(text)
-        return {
-            "http_status": response.status_code,
-            "final_url": final_url,
-            "content_type": content_type,
-            "bytes": len(body),
-            "normalized_content_sha256": hashlib.sha256(
-                normalized.encode("utf-8")
-            ).hexdigest(),
-            "text": normalized,
-            "reviewable_text_bytes": len(normalized.encode("utf-8")),
-        }
+            })
+            response = connection.getresponse()
+            if response.status in {301, 302, 303, 307, 308}:
+                location = response.getheader("location")
+                if not location:
+                    raise ValueError("redirect response is missing Location")
+                current = urljoin(current, location)
+                continue
+            if not 200 <= response.status < 300:
+                raise ValueError(f"source returned HTTP {response.status}")
+            body = bytearray()
+            while True:
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    raise TimeoutError("source fetch timed out")
+                if connection.sock is not None:
+                    connection.sock.settimeout(remaining)
+                chunk = response.read1(64 * 1024)
+                if not chunk:
+                    break
+                body.extend(chunk)
+                if len(body) > MAX_BYTES:
+                    raise ValueError(f"source exceeds {MAX_BYTES} bytes")
+            content_type = response.getheader("content-type", "").split(";", 1)[0].lower()
+            text = extract_text(bytes(body), content_type, current)
+            normalized = normalize_text(text)
+            return {
+                "http_status": response.status, "final_url": current,
+                "content_type": content_type, "bytes": len(body),
+                "normalized_content_sha256": hashlib.sha256(normalized.encode("utf-8")).hexdigest(),
+                "text": normalized, "reviewable_text_bytes": len(normalized.encode("utf-8")),
+            }
+        finally:
+            connection.close()
     raise ValueError("too many redirects")
 
 
@@ -156,6 +209,7 @@ def extract_text(body: bytes, content_type: str, final_url: str) -> str:
                     text=True,
                     capture_output=True,
                     check=False,
+                    timeout=30,
                 )
                 if result.returncode:
                     raise ValueError("pdftotext could not extract the review source")
@@ -275,9 +329,14 @@ def offline_check(ledger: dict[str, Any], as_of: date) -> dict[str, Any]:
         "status": "pass" if not failures else "fail", "verified": verified,
         "failures": failures, "lifecycle_counts": states,
         "evidence_validation": {
-            "mode": "review_record",
-            "captured_artifacts_checked": False,
-            "scope": "Inline reviewed claims, excerpt, rationale, hash format, artifact reference, lifecycle, chronology and freshness. Captured-file content and source entailment require the separate source review.",
+            "mode": "packaged_reviewed_excerpt",
+            "captured_artifacts_checked": True,
+            "excerpt_integrity_checked": True,
+            "full_capture_checked": False,
+            "full_document_artifacts_checked": False,
+            "semantic_entailment_checked": False,
+            "artifact_coverage": "Unique paths referenced by active ledger records; every excerpt and provenance record in those files must bind to an active source. Unreferenced and historical files are outside this gate.",
+            "scope": "Packaged excerpt bytes/hash, normalized excerpt agreement, URL/retrieval/review/full-document-hash provenance, lifecycle, chronology and freshness. Full-page availability and semantic entailment remain separate review boundaries.",
         },
     }
 
@@ -373,6 +432,9 @@ def main(argv: list[str] | None = None) -> int:
                 "review_note": reviewed.get("review_note", ""),
                 "evidence_excerpt": excerpt,
                 "evidence_path": reviewed.get("evidence_path", ""),
+                "captured_excerpt_path": reviewed.get("captured_excerpt_path", ""),
+                "captured_excerpt_sha256": reviewed.get("captured_excerpt_sha256", ""),
+                "normalized_content_hash_scope": "full reviewed document; excerpt artifact hash recorded separately",
             }
         errors = source_errors(source, as_of=as_of)
         if errors:
