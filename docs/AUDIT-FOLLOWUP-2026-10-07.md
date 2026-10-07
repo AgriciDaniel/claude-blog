@@ -117,12 +117,14 @@ replace binary pipelines with an owned archive file, keep uninstall argument
 arrays nonempty and declare the exact offline authentication-test dependency.
 A subsequent native run exposed multiple Git executable results being treated
 as one path. The resolver now selects exactly the first application, with a
-duplicate-PATH regression. Disposable PowerShell host caches stay outside the
-profile under test, and both the complete profile and `.claude` receive
-independent preservation assertions with safe diagnostics. The prior
-PowerShell 7 snapshot failure did not identify a changed path, so the cache
-explanation remains an inference. Failed CI logs, fixture setup failures and
-the original independent review remain in the evidence pack beside reruns. A further independent
+duplicate-PATH regression. Native Windows PowerShell 5.1 then passed. The
+PowerShell 7 diagnostics identified its own noninteractive startup-cache file
+inside the disposable profile. Environment overrides did not relocate that
+file. The fixture records this exact host-owned file separately and compares
+every other profile file plus all of `.claude` without exclusions. Negative
+probes reject a sibling cache file and a `.claude` mutation. Failed CI logs,
+fixture setup failures and the original independent review remain in the
+evidence pack beside reruns. A further independent
 adversarial pass reproduced transparent author decoys and split-file excerpt
 budgets. Both reproductions now fail, with regressions for computed visibility,
 independent byline agreement, unused excerpt text and active-source bindings.

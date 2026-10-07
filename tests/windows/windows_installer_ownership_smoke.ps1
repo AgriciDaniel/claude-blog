@@ -7,6 +7,7 @@ $ErrorActionPreference = "Stop"
 $Baseline = "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
 $Helper = Join-Path $RepositoryRoot "scripts/windows_installer_ownership.ps1"
 $LegacyInventory = Join-Path $RepositoryRoot "data/legacy-install-ownership.json"
+$PowerShellStartupCacheRelativePath = "\AppData\Local\Microsoft\PowerShell\StartupProfileData-NonInteractive"
 . $Helper
 
 function Assert-True($Value, $Message) { if (-not $Value) { throw "ASSERTION FAILED: $Message" } }
@@ -27,6 +28,27 @@ function Assert-SnapshotEqual($Before, $After, $Message) {
         if ($beforeEntries -notcontains $entry) { Write-Host ("  => {0}" -f $entry) }
     }
     throw "ASSERTION FAILED: $Message"
+}
+function Get-SnapshotEntryPath($Entry) {
+    $separator = $Entry.LastIndexOf('=')
+    if ($separator -lt 0) { return $Entry }
+    return $Entry.Substring(0, $separator)
+}
+function Assert-SnapshotEqualExceptPowerShellStartupCache($Before, $After, $Message) {
+    $beforeEntries = @($Before -split "`n" | Where-Object { $_ })
+    $afterEntries = @($After -split "`n" | Where-Object { $_ })
+    $beforeCacheEntries = @($beforeEntries | Where-Object { (Get-SnapshotEntryPath $_) -eq $PowerShellStartupCacheRelativePath })
+    $afterCacheEntries = @($afterEntries | Where-Object { (Get-SnapshotEntryPath $_) -eq $PowerShellStartupCacheRelativePath })
+    Assert-True ($beforeCacheEntries.Count -le 1) "startup-cache snapshot contains at most one exact entry before bootstrap"
+    Assert-True ($afterCacheEntries.Count -le 1) "startup-cache snapshot contains at most one exact entry after bootstrap"
+
+    Write-Host "PowerShell startup-cache lane evidence (relative path and SHA-256 only):"
+    Write-Host ("  before: {0}" -f $(if ($beforeCacheEntries.Count) { $beforeCacheEntries[0] } else { "<absent>" }))
+    Write-Host ("  after:  {0}" -f $(if ($afterCacheEntries.Count) { $afterCacheEntries[0] } else { "<absent>" }))
+
+    $beforeProtectedEntries = @($beforeEntries | Where-Object { (Get-SnapshotEntryPath $_) -ne $PowerShellStartupCacheRelativePath })
+    $afterProtectedEntries = @($afterEntries | Where-Object { (Get-SnapshotEntryPath $_) -ne $PowerShellStartupCacheRelativePath })
+    Assert-SnapshotEqual ($beforeProtectedEntries -join "`n") ($afterProtectedEntries -join "`n") $Message
 }
 function Import-InstallerFunction($Script, $Name) {
     $tokens = $null
@@ -55,23 +77,13 @@ function Invoke-DownloadedBootstrap($Script, $Profile, $Url, $Ref, $Identifier) 
     $oldUrl = $env:CLAUDE_BLOG_URL
     $oldRef = $env:CLAUDE_BLOG_REF
     $oldIdentifier = $env:CLAUDE_BLOG_TEST_BOOTSTRAP_GUID
-    $oldLocalAppData = $env:LOCALAPPDATA
-    $oldAppData = $env:APPDATA
-    $oldXdgCacheHome = $env:XDG_CACHE_HOME
     $oldTelemetryOptOut = $env:POWERSHELL_TELEMETRY_OPTOUT
-    $hostState = Join-Path (Split-Path -Parent $Profile) ("powershell-host-state-" + $Identifier)
-    New-Item -ItemType Directory -Path $hostState | Out-Null
     try {
         $env:USERPROFILE = $Profile
         $env:CLAUDE_BLOG_URL = $Url
         $env:CLAUDE_BLOG_REF = $Ref
         $env:CLAUDE_BLOG_TEST_BOOTSTRAP_GUID = $Identifier
-        # PowerShell 7 writes startup and telemetry caches at process launch.
-        # Keep that host state outside the profile whose installer immutability
-        # this scenario verifies.
-        $env:LOCALAPPDATA = $hostState
-        $env:APPDATA = $hostState
-        $env:XDG_CACHE_HOME = $hostState
+        # Avoid telemetry writes while testing the installer's filesystem ownership.
         $env:POWERSHELL_TELEMETRY_OPTOUT = "1"
         $hostExecutable = (Get-Process -Id $PID).Path
         $process = Start-Process -FilePath $hostExecutable -ArgumentList @("-NoProfile", "-File", ('"' + $Script + '"')) -NoNewWindow -Wait -PassThru
@@ -81,9 +93,6 @@ function Invoke-DownloadedBootstrap($Script, $Profile, $Url, $Ref, $Identifier) 
         if ($null -eq $oldUrl) { Remove-Item Env:CLAUDE_BLOG_URL -ErrorAction SilentlyContinue } else { $env:CLAUDE_BLOG_URL = $oldUrl }
         if ($null -eq $oldRef) { Remove-Item Env:CLAUDE_BLOG_REF -ErrorAction SilentlyContinue } else { $env:CLAUDE_BLOG_REF = $oldRef }
         if ($null -eq $oldIdentifier) { Remove-Item Env:CLAUDE_BLOG_TEST_BOOTSTRAP_GUID -ErrorAction SilentlyContinue } else { $env:CLAUDE_BLOG_TEST_BOOTSTRAP_GUID = $oldIdentifier }
-        if ($null -eq $oldLocalAppData) { Remove-Item Env:LOCALAPPDATA -ErrorAction SilentlyContinue } else { $env:LOCALAPPDATA = $oldLocalAppData }
-        if ($null -eq $oldAppData) { Remove-Item Env:APPDATA -ErrorAction SilentlyContinue } else { $env:APPDATA = $oldAppData }
-        if ($null -eq $oldXdgCacheHome) { Remove-Item Env:XDG_CACHE_HOME -ErrorAction SilentlyContinue } else { $env:XDG_CACHE_HOME = $oldXdgCacheHome }
         if ($null -eq $oldTelemetryOptOut) { Remove-Item Env:POWERSHELL_TELEMETRY_OPTOUT -ErrorAction SilentlyContinue } else { $env:POWERSHELL_TELEMETRY_OPTOUT = $oldTelemetryOptOut }
     }
 }
@@ -159,6 +168,19 @@ $target = Join-Path $env:USERPROFILE "selected-ref-ran.txt"
         $env:PATH = $oldPath
     }
 
+    Write-Host "SCENARIO: exact PowerShell startup-cache allowance"
+    $startupCacheEntry = $PowerShellStartupCacheRelativePath + "=" + ("a" * 64)
+    Assert-SnapshotEqualExceptPowerShellStartupCache "" "" "empty snapshots remain equal"
+    Assert-SnapshotEqualExceptPowerShellStartupCache "" $startupCacheEntry "exact PowerShell startup cache is allowed"
+    Assert-Throws {
+        $siblingEntry = "\AppData\Local\Microsoft\PowerShell\StartupProfileData-Interactive=" + ("b" * 64)
+        Assert-SnapshotEqualExceptPowerShellStartupCache "" ($startupCacheEntry + "`n" + $siblingEntry) "PowerShell cache sibling must remain protected"
+    } "PowerShell cache sibling mutation"
+    Assert-Throws {
+        $claudeEntry = "\.claude\unexpected.txt=" + ("c" * 64)
+        Assert-SnapshotEqualExceptPowerShellStartupCache "" ($startupCacheEntry + "`n" + $claudeEntry) ".claude must remain protected"
+    } ".claude mutation"
+
     Write-Host "SCENARIO: bootstrap creation collision preservation"
     $collisionIdentifier = [Guid]::NewGuid().ToString("N")
     $collisionRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("claude-blog-install-" + $collisionIdentifier)
@@ -189,7 +211,7 @@ $target = Join-Path $env:USERPROFILE "selected-ref-ran.txt"
     $failureProfileAfter = Snapshot $failureProfile
     $failureClaudeAfter = Snapshot (ClaudeRoot $failureProfile)
     Assert-SnapshotEqual $failureClaudeBefore $failureClaudeAfter "failed clone does not mutate .claude"
-    Assert-SnapshotEqual $failureProfileBefore $failureProfileAfter "failed clone does not mutate profile"
+    Assert-SnapshotEqualExceptPowerShellStartupCache $failureProfileBefore $failureProfileAfter "failed clone mutates profile outside exact PowerShell startup cache"
 
     Write-Host "SCENARIO: selected ref installer handoff"
     $bootstrapProfile = New-Profile $RunRoot "selected-ref-profile"

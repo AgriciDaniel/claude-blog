@@ -126,20 +126,33 @@ def test_native_smoke_avoids_pre_74_binary_pipelines() -> None:
     assert 'Join-Path $RunRoot ("baseline-" + $Baseline + ".tar")' in smoke
 
 
-def test_native_smoke_covers_duplicate_git_resolution_and_host_state_isolation() -> None:
+def test_native_smoke_covers_duplicate_git_resolution_and_exact_host_cache_lane() -> None:
     smoke = _read(SMOKE)
     assert 'Write-Host "SCENARIO: duplicate Git application resolution"' in smoke
     assert "Import-InstallerFunction $downloadedBootstrap \"Resolve-ClaudeBlogGitApplication\"" in smoke
     assert '@(Get-Command git -CommandType Application -All)' in smoke
     assert '@($resolvedGit).Count -eq 1' in smoke
     assert '"resolver selects first application in PATH"' in smoke
-    assert '$env:LOCALAPPDATA = $hostState' in smoke
-    assert '$env:APPDATA = $hostState' in smoke
-    assert '$env:XDG_CACHE_HOME = $hostState' in smoke
+    assert '$env:LOCALAPPDATA = $hostState' not in smoke
+    assert '$env:APPDATA = $hostState' not in smoke
+    assert '$env:XDG_CACHE_HOME = $hostState' not in smoke
     assert '$env:POWERSHELL_TELEMETRY_OPTOUT = "1"' in smoke
     assert "Compare-Object" not in _function(smoke, "Assert-SnapshotEqual")
     assert '"failed clone does not mutate .claude"' in smoke
-    assert "Assert-SnapshotEqual $failureProfileBefore $failureProfileAfter" in smoke
+    assert '$PowerShellStartupCacheRelativePath = "\\AppData\\Local\\Microsoft\\PowerShell\\StartupProfileData-NonInteractive"' in smoke
+    cache_comparison = _function(smoke, "Assert-SnapshotEqualExceptPowerShellStartupCache")
+    assert "-eq $PowerShellStartupCacheRelativePath" in cache_comparison
+    assert "-ne $PowerShellStartupCacheRelativePath" in cache_comparison
+    assert "-like" not in cache_comparison
+    assert "-match" not in cache_comparison
+    assert "StartsWith" not in cache_comparison
+    assert "Assert-SnapshotEqual ($beforeProtectedEntries" in cache_comparison
+    assert 'Write-Host "PowerShell startup-cache lane evidence (relative path and SHA-256 only):"' in cache_comparison
+    assert 'Write-Host "SCENARIO: exact PowerShell startup-cache allowance"' in smoke
+    assert 'Assert-SnapshotEqualExceptPowerShellStartupCache "" ""' in smoke
+    assert "StartupProfileData-Interactive=" in smoke
+    assert '"\\.claude\\unexpected.txt="' in smoke
+    assert "Assert-SnapshotEqualExceptPowerShellStartupCache $failureProfileBefore $failureProfileAfter" in smoke
 
 
 def test_pip_log_uses_owned_full_guid_root_and_is_retained_on_failure() -> None:

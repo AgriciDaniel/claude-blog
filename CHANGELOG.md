@@ -46,7 +46,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Require shipped, hash-checked Brain excerpt artifacts with source and review
   provenance, while separating excerpt integrity from full-capture review.
 - Handle normal Git stderr correctly on PowerShell 5.1, select exactly one Git
-  executable when PATH contains duplicates, isolate disposable host caches,
+  executable when PATH contains duplicates, account for the exact PowerShell
+  startup-cache file while protecting the rest of the disposable profile,
   avoid binary pipelines in legacy Windows fixtures, and preserve Bash 3.2
   standalone uninstall.
 
