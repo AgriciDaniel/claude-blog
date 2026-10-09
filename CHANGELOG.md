@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Added Spanish, Portuguese, Russian, and Ukrainian analyzer profiles with
+  localized summary labels, trust and editorial phrases, first-person and
+  methodology phrases, example markers, entity definitions, FAQ headings,
+  generic anchor texts, percentage detection, and Unicode topic tokens.
+- Added language-specific readability without textstat: Fernández-Huerta
+  (scored) with Szigriszt-Pazos/INFLESZ (reported) for Spanish, Flesch
+  adapted by Martins et al. (1996) for Portuguese, Oborneva (2006) for
+  Russian, and Oborneva as a flagged approximation (`estimated: true`) for
+  Ukrainian.
+- Added a protected sentence splitter for the new profiles that keeps
+  thousands separators (`1.000.000`, `1 000 000`) and abbreviations
+  (`p. ej.`, `Sr.`, `т. е.`) inside one sentence and treats headings and list
+  items as separate segments.
+- Added `--lang` to force a profile, a conservative stopword fallback when
+  no `lang`/`language`/`inLanguage` is declared, and `language_detection`
+  in the JSON output.
+- Added opt-in `--primary-source-domain` (repeatable) and
+  `CLAUDE_BLOG_PRIMARY_SOURCE_DOMAINS` to count the official documentation of
+  the entity under review as tier-1 sources.
+
+### Changed
+
+- Moved every score-affecting, language-dependent analyzer heuristic into
+  `LANGUAGE_PROFILES` fields with the English values as defaults. English
+  and Turkish results are unchanged.
+
 ## [2.2.0] - 2026-08-26
 
 ### Added

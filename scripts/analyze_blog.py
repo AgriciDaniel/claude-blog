@@ -13,6 +13,15 @@ Usage:
     python3 analyze_blog.py <directory> --batch --sort score # Batch with sorting
     python3 analyze_blog.py <file> --category seo           # Single category detail
     python3 analyze_blog.py <file> --fix                    # Output specific fixes
+    python3 analyze_blog.py <file> --lang es                # Force a language profile
+    python3 analyze_blog.py <file> --primary-source-domain bybit.com
+                                                            # Official docs count as tier 1
+
+Language profiles:
+    en (Flesch), tr (Ateşman), es (Fernández-Huerta + INFLESZ),
+    pt (Flesch adapted by Martins et al.), ru (Oborneva),
+    uk (Oborneva, approximate). Selected from frontmatter lang/language/
+    inLanguage, then a conservative stopword fallback, then English.
 
 Scoring:
     Content Quality       30 pts   Coverage, readability, originality, structure, utility, grammar
@@ -153,8 +162,58 @@ TIER2_DOMAINS = [
     'mckinsey.com', 'gartner.com', 'statista.com', 'pew', 'gallup.com',
 ]
 
+# ---------------------------------------------------------------------------
+# Language profiles
+# ---------------------------------------------------------------------------
+#
+# Every language-dependent heuristic that can move the score lives in a
+# profile field. ``LANGUAGE_PROFILES['en']`` holds the complete set of fields
+# and acts as the default: other profiles only override what differs, so a
+# profile that omits a field (for example ``tr``) keeps the English behaviour
+# for it. Use ``_language_profile()`` to read a merged profile.
+#
+# Fields:
+#   summary_labels         regexes for summary boxes (TL;DR, Key Takeaways...)
+#   about_patterns         regexes for about-page links/mentions (trust)
+#   contact_patterns       regexes for contact links/mentions (trust)
+#   editorial_patterns     regexes for editorial-policy / reviewer mentions
+#   first_person_patterns  first-hand experience claims (originality)
+#   methodology_patterns   transparent method descriptions (originality)
+#   example_patterns       worked-example markers ("for example")
+#   definition_patterns    "**term** is/are" style entity definitions
+#   faq_heading_pattern    FAQ section heading (reported, not scored)
+#   bad_anchor_texts       generic anchor texts that lose a linking point
+#   percent_pattern        statistic detector ("43%", "43 %", "2,5 %")
+#   topic_token_pattern    tokenizer for title/heading/body topic overlap
+#   topic_stopwords        stopwords removed from topic overlap
+#   letters_pattern        "intro contains real words" purpose check
+#   sentence_splitting     'legacy' (historical regex) or 'protected'
+#                          (thousands separators, abbreviations, block breaks)
+#   abbreviations          abbreviations whose periods never end a sentence
+#   readability_model      key in READABILITY_MODELS
+#   detection_stopwords    frequent words exclusive to the language, used only
+#                          by the conservative fallback language detector
+
+_EN_EXAMPLE_PATTERNS = (
+    r'\bfor example\b', r'\bfor instance\b', r'\bsuch as\b',
+    r'\bconsider\b', r'\blet\'s say\b', r'\bimagine\b',
+    r"\bhere's (?:an|a) example\b",
+)
+
+_TOPIC_STOPWORDS = {
+    'about', 'after', 'also', 'and', 'are', 'but', 'for', 'from', 'have',
+    'how', 'into', 'its', 'not', 'that', 'the', 'their', 'this', 'with',
+    'what', 'when', 'where', 'which', 'why', 'your',
+}
+
+# Unicode-aware tokenizer used by the non-legacy profiles. The English
+# profile keeps the historical ASCII tokenizer so its scores do not move.
+_UNICODE_TOPIC_TOKEN = r"[^\W_][\w'’-]*"
+_UNICODE_LETTERS = r'[^\W\d_]{3,}'
+
 LANGUAGE_PROFILES: dict[str, dict[str, Any]] = {
     'en': {
+        'label': 'English',
         'summary_labels': (
             r'TL;?DR', r'key takeaway', r'the bottom line',
             r'what you.ll learn', r'at a glance', r'in brief',
@@ -163,6 +222,9 @@ LANGUAGE_PROFILES: dict[str, dict[str, Any]] = {
             r'\babout\s+(?:us|the author|me)\b', r'/about(?:[/?#]|$)',
         ),
         'contact_patterns': (r'\bcontact\b', r'/contact(?:[/?#]|$)'),
+        'editorial_patterns': (
+            r'\b(?:editorial|reviewed by|fact.?check|editor)\b',
+        ),
         'first_person_patterns': (
             r'\bI\s+(?:found|discovered|tested|built|created|noticed|learned|experienced)\b',
             r'\b(?:we|our team)\s+(?:tested|built|ran|analyzed|measured|conducted|found|discovered)\b',
@@ -174,9 +236,27 @@ LANGUAGE_PROFILES: dict[str, dict[str, Any]] = {
             r'\b(?:we|I|our team)\s+(?:tested|measured|analyzed|conducted)\b[^.\n]{0,180}'
             r'(?:\d|https?://|\[[^\]]+\]\(https?://)',
         ),
+        'example_patterns': _EN_EXAMPLE_PATTERNS,
+        'definition_patterns': (r'\*\*[^*]+\*\*\s*(?:is|are|refers to|means)',),
+        'faq_heading_pattern': r'(?:FAQ|Frequently Asked)',
+        'bad_anchor_texts': frozenset({
+            'click here', 'read more', 'this article', 'here', 'link', 'this',
+        }),
+        'percent_pattern': r'\d+\.?\d*%',
+        'topic_token_pattern': r"[A-Za-z0-9][A-Za-z0-9'-]*",
+        'topic_stopwords': frozenset(_TOPIC_STOPWORDS),
+        'letters_pattern': r'[A-Za-z]{3,}',
+        'sentence_splitting': 'legacy',
+        'abbreviations': (),
         'readability_model': 'flesch',
+        'detection_stopwords': frozenset({
+            'the', 'and', 'of', 'to', 'is', 'that', 'for', 'with', 'this',
+            'are', 'was', 'it', 'you', 'your', 'be', 'by', 'from', 'or', 'an',
+            'at', 'have', 'has', 'not', 'which', 'can', 'will',
+        }),
     },
     'tr': {
+        'label': 'Turkish',
         'summary_labels': (r'özet', r'özetle', r'kısaca'),
         'about_patterns': (
             r'/biz-kimiz(?:[/?#]|$)', r'/hakk[ıi]m[ıi]zda(?:[/?#]|$)',
@@ -198,6 +278,365 @@ LANGUAGE_PROFILES: dict[str, dict[str, Any]] = {
             r'(?:\d|https?://|\[[^\]]+\]\(https?://)',
         ),
         'readability_model': 'atesman',
+    },
+    'es': {
+        'label': 'Spanish',
+        'summary_labels': (
+            r'TL;?DR', r'lo esencial', r'puntos clave', r'en resumen',
+            r'\bresumen\b', r'conclusiones clave', r'en pocas palabras',
+            r'lo más importante',
+        ),
+        # "acerca de" alone is ordinary prose ("acerca de los riesgos"), so it
+        # only counts when followed by an about-page object.
+        'about_patterns': (
+            r'\bsobre\s+(?:nosotros|m[ií]|el autor|la autora)\b',
+            r'\bqui[eé]nes\s+somos\b',
+            r'\bacerca\s+de\s+(?:nosotros|m[ií]|el autor|la autora)\b',
+            r'/(?:sobre|acerca|autor|autora|autores|quienes-somos|nosotros|about)'
+            r'(?:[-/?#]|$)',
+        ),
+        'contact_patterns': (
+            r'\bcontacto\b', r'\bcont[aá]ct(?:anos|enos)\b',
+            r'/(?:contacto|contact)(?:[/?#]|$)',
+        ),
+        'editorial_patterns': (
+            r'\b(?:pol[ií]tica editorial|l[ií]nea editorial|equipo editorial'
+            r'|revisado por|verificado por|verificaci[oó]n de datos|editor|editora)\b',
+        ),
+        'first_person_patterns': (
+            # Accented preterite forms only: "revise"/"pruebe" are imperatives.
+            r'\b(?:comprobé|probé|medí|analicé|revisé|verifiqué|descubrí|constaté)\b',
+            r'\b(?:comprobamos|medimos|analizamos|verificamos|constatamos)\b',
+            r'\ben (?:mi|nuestra) experiencia\b',
+            r'\blo aprend[ií]\b',
+            r'\b(?:en|seg[uú]n) (?:mis|nuestras) pruebas\b',
+        ),
+        'methodology_patterns': (
+            r'\b(?:metodolog[ií]a|tama[ñn]o de (?:la )?muestra|m[eé]todo de (?:prueba|an[aá]lisis)'
+            r'|c[oó]mo lo (?:comprobamos|verificamos|hemos (?:comprobado|verificado))'
+            r'|fuentes consultadas)\b',
+            r'\b(?:comprobamos|medimos|analizamos|verificamos|comprobé|medí|probé)\b'
+            r'[^.\n]{0,180}(?:\d|https?://|\[[^\]]+\]\(https?://)',
+        ),
+        'example_patterns': (
+            r'\bpor ejemplo\b', r'\bp\.\s?ej\.', r'\bpongamos que\b',
+            r'\bsupongamos que\b', r'\bimagina(?:te)? que\b', r'\bun ejemplo\b',
+            r'\bejemplo pr[aá]ctico\b', r'\bcaso pr[aá]ctico\b', r'\btales como\b',
+        ),
+        'definition_patterns': (
+            r'\*\*[^*]+\*\*\s*(?:es|son|significa|se refiere a|consiste en|se define como)\b',
+        ),
+        'faq_heading_pattern': r'(?:FAQ|Preguntas frecuentes)',
+        'bad_anchor_texts': frozenset({
+            'aquí', 'aqui', 'haz clic aquí', 'pincha aquí', 'clic aquí',
+            'leer más', 'más información', 'este artículo', 'enlace', 'esto',
+            'click here', 'read more', 'here', 'link',
+        }),
+        'percent_pattern': r'\d+(?:[.,]\d+)?\s?%',
+        'topic_token_pattern': _UNICODE_TOPIC_TOKEN,
+        'topic_stopwords': frozenset({
+            'que', 'qué', 'como', 'cómo', 'para', 'por', 'con', 'sin', 'los',
+            'las', 'del', 'una', 'uno', 'unos', 'unas', 'este', 'esta', 'estos',
+            'estas', 'eso', 'esto', 'sus', 'tus', 'más', 'pero', 'cuando',
+            'cuál', 'cual', 'quién', 'quien', 'dónde', 'donde', 'porque',
+            'sobre', 'entre', 'hasta', 'desde', 'también', 'muy', 'son',
+            'está', 'están', 'hay', 'puede', 'tiene', 'cada', 'todo', 'todos',
+            'les', 'nos', 'ser', 'sí', 'tu', 'te', 'se', 'su',
+        }),
+        'letters_pattern': _UNICODE_LETTERS,
+        'sentence_splitting': 'protected',
+        'abbreviations': (
+            'p. ej.', 'p.ej.', 'ej.', 'Sr.', 'Sra.', 'Srta.', 'Dr.', 'Dra.',
+            'D.', 'Dña.', 'Ud.', 'Uds.', 'Vd.', 'EE. UU.', 'EE.UU.', 'S. A.',
+            'aprox.', 'núm.', 'nº.', 'pág.', 'págs.', 'art.', 'vs.', 'máx.',
+            'mín.', 'tel.', 'cap.', 'fig.', 'admón.',
+        ),
+        'readability_model': 'fernandez-huerta',
+        'detection_stopwords': frozenset({
+            'el', 'los', 'las', 'y', 'del', 'una', 'con', 'pero', 'muy', 'hay',
+            'donde', 'sus', 'es', 'son', 'también', 'puede', 'pueden', 'lo',
+            'al', 'estos', 'esto', 'qué', 'cómo', 'cuando', 'más', 'sin', 'en',
+            'usted', 'están', 'cuál', 'hasta', 'según',
+        }),
+    },
+    'pt': {
+        'label': 'Portuguese',
+        'summary_labels': (
+            r'TL;?DR', r'pontos[- ]chave', r'pontos principais', r'o essencial',
+            r'em resumo', r'\bresumo\b', r'resumindo', r'principais conclus[oõ]es',
+        ),
+        'about_patterns': (
+            r'\bsobre\s+(?:n[oó]s|mim|o autor|a autora)\b',
+            r'\bquem\s+somos\b',
+            r'/(?:sobre|quem-somos|autor|autora|autores|about)(?:[-/?#]|$)',
+        ),
+        'contact_patterns': (
+            r'\bcontat(?:o|os)\b', r'\bcontact(?:o|os)\b', r'\bfale conosco\b',
+            r'/(?:contato|contacto|contact|fale-conosco)(?:[/?#]|$)',
+        ),
+        'editorial_patterns': (
+            r'\b(?:pol[ií]tica editorial|linha editorial|equipe editorial'
+            r'|revisado por|verificado por|verifica[cç][aã]o de fatos|editor|editora)\b',
+        ),
+        'first_person_patterns': (
+            r'\b(?:testei|medi|analisei|verifiquei|descobri|comprovei|constatei)\b',
+            r'\b(?:testamos|medimos|analisamos|verificamos|comprovamos|constatamos)\b',
+            r'\bna (?:minha|nossa) experi[eê]ncia\b',
+            r'\b(?:nos|em) (?:meus|nossos) testes\b',
+        ),
+        'methodology_patterns': (
+            r'\b(?:metodologia|tamanho da amostra|m[eé]todo de (?:teste|an[aá]lise)'
+            r'|como (?:verificamos|testamos)|fontes consultadas)\b',
+            r'\b(?:testamos|medimos|analisamos|verificamos|testei|medi)\b'
+            r'[^.\n]{0,180}(?:\d|https?://|\[[^\]]+\]\(https?://)',
+        ),
+        'example_patterns': (
+            r'\bpor exemplo\b', r'\bp\.\s?ex\.', r'\bdigamos que\b',
+            r'\bsuponha que\b', r'\bimagine que\b', r'\bum exemplo\b',
+            r'\bexemplo pr[aá]tico\b', r'\btais como\b',
+        ),
+        'definition_patterns': (
+            r'\*\*[^*]+\*\*\s*(?:é|são|significa|refere-se a|se refere a|consiste em)(?!\w)',
+        ),
+        'faq_heading_pattern': r'(?:FAQ|Perguntas frequentes)',
+        'bad_anchor_texts': frozenset({
+            'aqui', 'clique aqui', 'leia mais', 'saiba mais', 'este artigo',
+            'link', 'isto', 'click here', 'read more', 'here',
+        }),
+        'percent_pattern': r'\d+(?:[.,]\d+)?\s?%',
+        'topic_token_pattern': _UNICODE_TOPIC_TOKEN,
+        'topic_stopwords': frozenset({
+            'que', 'como', 'para', 'por', 'com', 'sem', 'os', 'as', 'do', 'da',
+            'dos', 'das', 'uma', 'um', 'uns', 'umas', 'este', 'esta', 'isso',
+            'isto', 'seu', 'sua', 'seus', 'suas', 'mais', 'mas', 'quando',
+            'qual', 'quem', 'onde', 'porque', 'sobre', 'entre', 'até', 'desde',
+            'também', 'muito', 'são', 'está', 'há', 'pode', 'tem', 'cada',
+            'todo', 'todos', 'nos', 'nas', 'pelo', 'pela', 'você', 'ao', 'aos',
+        }),
+        'letters_pattern': _UNICODE_LETTERS,
+        'sentence_splitting': 'protected',
+        'abbreviations': (
+            'p. ex.', 'p.ex.', 'ex.', 'Sr.', 'Sra.', 'Srta.', 'Dr.', 'Dra.',
+            'D.', 'V. Sa.', 'aprox.', 'núm.', 'nº.', 'pág.', 'págs.', 'art.',
+            'vs.', 'máx.', 'mín.', 'tel.', 'cap.', 'fig.', 'Ltda.', 'S.A.',
+        ),
+        'readability_model': 'flesch-pt',
+        'detection_stopwords': frozenset({
+            'o', 'os', 'e', 'em', 'um', 'uma', 'não', 'do', 'da', 'dos', 'das',
+            'na', 'nas', 'ao', 'aos', 'há', 'você', 'vocês', 'pelo', 'pela',
+            'isso', 'isto', 'mais', 'muito', 'também', 'pode', 'podem',
+            'quando', 'sem', 'com', 'são', 'é', 'seu', 'sua', 'seus', 'suas',
+            'onde', 'mas', 'ou', 'já', 'até', 'então', 'ainda', 'às', 'à',
+        }),
+    },
+    'ru': {
+        'label': 'Russian',
+        'summary_labels': (
+            r'TL;?DR', r'главное', r'кратко', r'ключевые выводы', r'\bитоги\b',
+            r'коротко о главном', r'основные выводы', r'резюме',
+        ),
+        'about_patterns': (
+            r'\bо\s+нас\b', r'\bоб\s+авторе\b', r'\bкто\s+мы\b',
+            r'/(?:about|o-nas|ob-avtore|avtor|avtory|o-proekte)(?:[-/?#]|$)',
+        ),
+        'contact_patterns': (
+            r'\bконтакты\b', r'\bсвяжитесь с нами\b', r'\bобратная связь\b',
+            r'/(?:kontakty|contacts?)(?:[/?#]|$)',
+        ),
+        'editorial_patterns': (
+            r'\b(?:редакционн\w+ политик\w+|редакци\w+|проверено|рецензент\w*'
+            r'|фактчекинг|редактор\w*)\b',
+        ),
+        'first_person_patterns': (
+            r'\b(?:я|мы)\s+(?:проверил[аи]?|протестировал[аи]?|измерил[аи]?'
+            r'|проанализировал[аи]?|выяснил[аи]?|обнаружил[аи]?)\b',
+            r'\bпо (?:моему|нашему) опыту\b',
+            r'\bиз (?:моего|нашего) опыта\b',
+            r'\bв (?:моих|наших) тестах\b',
+        ),
+        'methodology_patterns': (
+            r'\b(?:методология|методика|размер выборки|выборк[аи]|как мы проверяли'
+            r'|источники данных)\b',
+            r'\b(?:мы|я)\s+(?:проверил[аи]?|протестировал[аи]?|измерил[аи]?'
+            r'|проанализировал[аи]?)\b[^.\n]{0,180}(?:\d|https?://|\[[^\]]+\]\(https?://)',
+        ),
+        'example_patterns': (
+            r'\bнапример\b', r'\bк примеру\b', r'\bдопустим\b',
+            r'\bпредположим\b', r'\bпредставьте\b', r'\bтакие как\b',
+            r'\bпример:',
+        ),
+        'definition_patterns': (
+            r'\*\*[^*]+\*\*\s*(?:[\u2014\u2013-]\s*)?(?:это|означает|называется'
+            r'|представляет собой)\b',
+        ),
+        'faq_heading_pattern': r'(?:FAQ|Частые вопросы|Часто задаваемые вопросы)',
+        'bad_anchor_texts': frozenset({
+            'здесь', 'тут', 'нажмите здесь', 'подробнее', 'читать далее',
+            'ссылка', 'эта статья', 'click here', 'read more', 'here', 'link',
+        }),
+        'percent_pattern': r'\d+(?:[.,]\d+)?\s?%',
+        'topic_token_pattern': _UNICODE_TOPIC_TOKEN,
+        'topic_stopwords': frozenset({
+            'что', 'как', 'для', 'это', 'или', 'при', 'его', 'она', 'они', 'так',
+            'вы', 'мы', 'вам', 'вас', 'без', 'над', 'под', 'про', 'все', 'всё',
+            'где', 'когда', 'почему', 'зачем', 'какой', 'какие', 'если', 'чтобы',
+            'также', 'тоже', 'уже', 'только', 'есть', 'был', 'была', 'были',
+        }),
+        'letters_pattern': _UNICODE_LETTERS,
+        'sentence_splitting': 'protected',
+        'abbreviations': (
+            'т. е.', 'т.е.', 'т. к.', 'т.к.', 'т. н.', 'т.н.', 'т. ч.', 'т.ч.',
+            'напр.', 'см.', 'ср.', 'им.', 'ул.', 'проф.', 'акад.', 'стр.',
+            'тыс.', 'млн.', 'млрд.', 'руб.', 'коп.',
+        ),
+        'readability_model': 'oborneva',
+        'detection_stopwords': frozenset({
+            'и', 'что', 'это', 'как', 'но', 'только', 'или', 'также', 'уже',
+            'если', 'чтобы', 'был', 'была', 'его', 'она', 'они', 'вы', 'он',
+            'мы', 'их', 'же', 'бы', 'когда', 'может', 'нужно', 'очень',
+        }),
+    },
+    'uk': {
+        'label': 'Ukrainian',
+        'summary_labels': (
+            r'TL;?DR', r'головне', r'коротко', r'ключові висновки', r'підсумки',
+            r'основні висновки', r'стисло',
+        ),
+        'about_patterns': (
+            r'\bпро\s+нас\b', r'\bпро\s+автора\b', r'\bхто\s+ми\b',
+            r'/(?:about|pro-nas|pro-avtora|avtor|avtory|pro-proiekt)(?:[-/?#]|$)',
+        ),
+        'contact_patterns': (
+            r'\bконтакти\b', r"\bзв['’]яжіться з нами\b", r"\bзворотний зв['’]язок\b",
+            r'/(?:kontakty|contacts?)(?:[/?#]|$)',
+        ),
+        'editorial_patterns': (
+            r'\b(?:редакційн\w+ політик\w+|редакці\w+|перевірено|рецензент\w*'
+            r'|фактчекінг|редактор\w*)\b',
+        ),
+        'first_person_patterns': (
+            r'\b(?:я|ми)\s+(?:перевірил[аи]?|перевірив|протестувал[аи]?|протестував'
+            r'|виміряли|виміряв|проаналізувал[аи]?|проаналізував|з[\'’]ясувал[аи]?)\b',
+            r'\bз (?:мого|нашого) досвіду\b',
+            r'\bна (?:моєму|нашому) досвіді\b',
+            r'\bу (?:моїх|наших) тестах\b',
+        ),
+        'methodology_patterns': (
+            r'\b(?:методологія|методика|розмір вибірки|вибірк[аи]|як ми перевіряли'
+            r'|джерела даних)\b',
+            r'\b(?:ми|я)\s+(?:перевірил[аи]?|перевірив|протестувал[аи]?|виміряли'
+            r'|проаналізувал[аи]?)\b[^.\n]{0,180}(?:\d|https?://|\[[^\]]+\]\(https?://)',
+        ),
+        'example_patterns': (
+            r'\bнаприклад\b', r'\bприміром\b', r'\bприпустимо\b',
+            r'\bуявіть\b', r'\bтакі як\b', r'\bприклад:',
+        ),
+        'definition_patterns': (
+            r'\*\*[^*]+\*\*\s*(?:[\u2014\u2013-]\s*)?(?:це|означає|називається'
+            r'|являє собою|є)\b',
+        ),
+        'faq_heading_pattern': r'(?:FAQ|Часті запитання|Поширені запитання)',
+        'bad_anchor_texts': frozenset({
+            'тут', 'натисніть тут', 'детальніше', 'читати далі', 'посилання',
+            'ця стаття', 'click here', 'read more', 'here', 'link',
+        }),
+        'percent_pattern': r'\d+(?:[.,]\d+)?\s?%',
+        'topic_token_pattern': _UNICODE_TOPIC_TOKEN,
+        'topic_stopwords': frozenset({
+            'що', 'як', 'для', 'це', 'або', 'при', 'його', 'вона', 'вони', 'так',
+            'ви', 'ми', 'вам', 'вас', 'без', 'над', 'під', 'про', 'все', 'всі',
+            'де', 'коли', 'чому', 'навіщо', 'який', 'які', 'якщо', 'щоб',
+            'також', 'теж', 'вже', 'лише', 'тільки', 'є', 'був', 'була', 'були',
+        }),
+        'letters_pattern': _UNICODE_LETTERS,
+        'sentence_splitting': 'protected',
+        'abbreviations': (
+            'т. зв.', 'т.зв.', 'т. ч.', 'т.ч.', 'напр.', 'див.', 'пор.', 'ім.',
+            'вул.', 'проф.', 'акад.', 'с.', 'стор.', 'тис.', 'млн.', 'млрд.',
+            'грн.', 'коп.',
+        ),
+        'readability_model': 'oborneva-uk',
+        'detection_stopwords': frozenset({
+            'і', 'й', 'та', 'що', 'це', 'як', 'але', 'також', 'вже', 'або',
+            'якщо', 'щоб', 'ви', 'вони', 'є', 'від', 'він', 'ми', 'їх', 'би',
+            'коли', 'може', 'потрібно', 'дуже', 'ще', 'цей', 'ця',
+        }),
+    },
+}
+
+# Language names and frequent non-ISO codes accepted in declarations.
+_LANGUAGE_ALIASES: dict[str, str] = {
+    'english': 'en', 'spanish': 'es', 'español': 'es', 'espanol': 'es',
+    'castellano': 'es', 'portuguese': 'pt', 'português': 'pt',
+    'portugues': 'pt', 'russian': 'ru', 'русский': 'ru', 'ukrainian': 'uk',
+    'українська': 'uk', 'ua': 'uk', 'turkish': 'tr', 'türkçe': 'tr',
+    'turkce': 'tr',
+}
+
+
+def _language_profile(language: str) -> dict[str, Any]:
+    """Return the profile for ``language`` merged over the English defaults."""
+    profile = dict(LANGUAGE_PROFILES['en'])
+    if language != 'en':
+        profile.update(LANGUAGE_PROFILES.get(language, {}))
+    return profile
+
+
+# ---------------------------------------------------------------------------
+# Readability models and their rubric mapping
+# ---------------------------------------------------------------------------
+#
+# ``bands`` maps a model score onto the 7-point readability slot of the
+# Content Quality category: the first (low, high, points) band containing the
+# score wins; outside every band the slot earns 1 point and an issue is added.
+# The English bands are the historical ones. For the new models the 7-point
+# band is the "standard to fairly easy" class of each formula's own
+# interpretation table, and the 5- and 3-point bands mirror the English
+# offsets (-5/+5 and -15/+10 around the target band).
+READABILITY_MODELS: dict[str, dict[str, Any]] = {
+    'flesch': {
+        'label': 'Flesch Reading Ease',
+        'bands': ((60, 70, 7), (55, 75, 5), (45, 80, 3)),
+        'target': '60-70',
+    },
+    'atesman': {
+        'label': 'Ateşman',
+        'bands': ((50, 69, 7), (30, 89, 5), (0, 100, 3)),
+        'target': '50-69',
+    },
+    # Fernández Huerta, J. (1959). "Medidas sencillas de lecturabilidad".
+    # Consigna 214, 29-32. L = 206.84 - 0.60 P - 1.02 F, with P = syllables per
+    # 100 words and F = sentences per 100 words. Interpretation follows
+    # Flesch's classes (60-70 normal, 70-80 fairly easy).
+    'fernandez-huerta': {
+        'label': 'Fernández-Huerta',
+        'bands': ((60, 80, 7), (55, 85, 5), (45, 90, 3)),
+        'target': '60-80',
+    },
+    # Martins, T. B. F., Ghiraldelo, C. M., Nunes, M. G. V. & Oliveira Jr.,
+    # O. N. (1996). "Readability formulas applied to textbooks in Brazilian
+    # Portuguese". Notas do ICMC-USP 28. 248.835 - 1.015 ASL - 84.6 ASW.
+    # Classes: 75-100 very easy, 50-75 easy, 25-50 difficult, 0-25 very
+    # difficult.
+    'flesch-pt': {
+        'label': 'Flesch (Portuguese, Martins et al. 1996)',
+        'bands': ((50, 75, 7), (45, 80, 5), (35, 85, 3)),
+        'target': '50-75',
+    },
+    # Oborneva, I. V. (2006). "Автоматизированная оценка сложности учебных
+    # текстов на основе статистических параметров". Candidate dissertation,
+    # Moscow. 206.835 - 1.3 ASL - 60.1 ASW, calibrated to Flesch's scale.
+    'oborneva': {
+        'label': 'Oborneva (Russian Flesch)',
+        'bands': ((60, 80, 7), (55, 85, 5), (45, 90, 3)),
+        'target': '60-80',
+    },
+    # No consolidated Ukrainian formula exists; Oborneva's Russian coefficients
+    # are used as an approximation and the result is flagged as estimated.
+    'oborneva-uk': {
+        'label': 'Oborneva (approximation for Ukrainian)',
+        'bands': ((60, 80, 7), (55, 85, 5), (45, 90, 3)),
+        'target': '60-80',
     },
 }
 
@@ -525,37 +964,137 @@ def extract_html_for_analysis(content: str) -> tuple[dict[str, Any], str]:
     return dict(parser.metadata), parser.analysis_text()
 
 
-def _detect_language(frontmatter: dict[str, Any], body: str) -> str:
-    """Resolve a supported language profile without broad language guessing."""
-    declared = str(
+def _normalize_language_code(value: Any) -> str:
+    """Map a declared language (``es-ES``, ``pt_BR``, ``Spanish``) to a code."""
+    declared = str(value or '').strip().lower()
+    if not declared:
+        return ''
+    if declared in _LANGUAGE_ALIASES:
+        return _LANGUAGE_ALIASES[declared]
+    primary = re.split(r'[-_\s]', declared, maxsplit=1)[0]
+    return _LANGUAGE_ALIASES.get(primary, primary)
+
+
+# Minimum evidence for the stopword fallback. It only switches away from
+# English when a supported language clearly dominates a reasonably long text.
+_DETECTION_MIN_TOKENS = 40
+_DETECTION_MIN_RATIO = 0.06
+_DETECTION_DOMINANCE = 2.0
+_DETECTION_MIN_DISTINCT = 6   # distinct stopwords, so "E-E-A-T" is not Portuguese
+
+
+def _detect_language_by_stopwords(body: str) -> str | None:
+    """Conservative fallback: frequent exclusive words plus script markers.
+
+    Returns a language code only when one supported language clearly
+    dominates; otherwise ``None`` so the caller keeps the English default.
+    """
+    text = _plain_text_for_analysis(body).lower()
+    tokens = re.findall(r"[^\W\d_]+(?:['’][^\W\d_]+)?", text)
+    if len(tokens) < _DETECTION_MIN_TOKENS:
+        return None
+
+    cyrillic = sum(1 for token in tokens if re.match(r'[Ѐ-ӿ]', token))
+    if cyrillic / len(tokens) >= 0.5:
+        candidates = ('ru', 'uk')
+        # Letters that exist in only one of the two alphabets.
+        script_bonus = {
+            'uk': len(re.findall(r'[іїєґ]', text)),
+            'ru': len(re.findall(r'[ыэъё]', text)),
+        }
+    else:
+        candidates = ('en', 'es', 'pt')
+        script_bonus = {}
+
+    scores: dict[str, float] = {}
+    distinct: dict[str, int] = {}
+    for code in candidates:
+        words = LANGUAGE_PROFILES[code]['detection_stopwords']
+        matched = [token for token in tokens if token in words]
+        distinct[code] = len(set(matched))
+        scores[code] = (len(matched) + script_bonus.get(code, 0) / 3) / len(tokens)
+
+    ranked = sorted(scores.items(), key=lambda item: item[1], reverse=True)
+    best, best_score = ranked[0]
+    runner_up = ranked[1][1] if len(ranked) > 1 else 0.0
+    if best_score < _DETECTION_MIN_RATIO or distinct[best] < _DETECTION_MIN_DISTINCT:
+        return None
+    if best_score < _DETECTION_DOMINANCE * runner_up:
+        return None
+    return best if best != 'en' else None
+
+
+def detect_language_details(frontmatter: dict[str, Any], body: str) -> tuple[str, str]:
+    """Return ``(language, method)`` for the analysis profile.
+
+    Order: declared ``lang``/``language``/``inLanguage`` (any BCP 47 variant
+    such as ``es-ES`` or ``pt-BR``), then the historical Turkish character
+    check, then a conservative stopword fallback, then English.
+    """
+    raw = (
         frontmatter.get('lang')
         or frontmatter.get('language')
         or frontmatter.get('inLanguage')
         or ''
-    ).strip().lower()
+    )
+    declared = _normalize_language_code(raw)
     if declared:
-        primary = re.split(r'[-_]', declared, maxsplit=1)[0]
-        return primary if primary in LANGUAGE_PROFILES else 'en'
+        if declared in LANGUAGE_PROFILES:
+            return declared, 'declared'
+        return 'en', 'declared-unsupported'
 
     strong_turkish_markers = len(re.findall(r'[ığşİĞŞ]', body))
     letters = len(re.findall(r'[^\W\d_]', body, re.UNICODE))
     if strong_turkish_markers >= 2 and strong_turkish_markers / max(letters, 1) >= 0.002:
-        return 'tr'
-    return 'en'
+        return 'tr', 'turkish-markers'
+
+    guessed = _detect_language_by_stopwords(body)
+    if guessed:
+        return guessed, 'stopwords'
+    return 'en', 'default'
 
 
-def _plain_text_for_analysis(content: str) -> str:
-    """Remove non-prose payloads while retaining reader-visible prose."""
-    text = re.sub(r'```.*?```', '', content, flags=re.DOTALL)
+def _detect_language(frontmatter: dict[str, Any], body: str) -> str:
+    """Resolve a supported language profile without broad language guessing."""
+    return detect_language_details(frontmatter, body)[0]
+
+
+def _plain_text_for_analysis(content: str, block_breaks: bool = False) -> str:
+    """Remove non-prose payloads while retaining reader-visible prose.
+
+    With ``block_breaks`` (used by the ``protected`` sentence-splitting
+    profiles) every heading, list item and blockquote line is followed by a
+    blank line so it forms its own segment instead of being glued to the next
+    sentence, and MDX comments (``{/* ... */}``) are removed. The default keeps
+    the historical output byte for byte.
+    """
+    text = content
+    if block_breaks:
+        text = re.sub(r'\{/\*.*?\*/\}', '', text, flags=re.DOTALL)
+        text = re.sub(
+            r'^([ \t]*(?:#{1,6}\s|[-*+]\s|\d+\.\s|>).*)$', r'\1\n', text,
+            flags=re.MULTILINE,
+        )
+    text = re.sub(r'```.*?```', '', text, flags=re.DOTALL)
     text = re.sub(r'<(?:script|style|svg)\b.*?</(?:script|style|svg)\s*>', '', text,
                   flags=re.DOTALL | re.IGNORECASE)
-    text = re.sub(r'^\s*\|.*\|\s*$', '', text, flags=re.MULTILINE)
+    if block_breaks:
+        # Horizontal whitespace only, so the blank lines that separate blocks
+        # survive (the legacy ``^\s*`` patterns can swallow them).
+        text = re.sub(r'^[ \t]*\|.*\|[ \t]*$', '', text, flags=re.MULTILINE)
+    else:
+        text = re.sub(r'^\s*\|.*\|\s*$', '', text, flags=re.MULTILINE)
     text = re.sub(r'<[^>]+>', '', text)
     text = re.sub(r'!\[.*?\]\(.*?\)', '', text)
     text = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', text)
-    text = re.sub(r'^#{1,6}\s+', '', text, flags=re.MULTILINE)
-    text = re.sub(r'^\s*(?:[-*+]|\d+\.)\s+', '', text, flags=re.MULTILINE)
-    text = re.sub(r'^\s*>\s?', '', text, flags=re.MULTILINE)
+    if block_breaks:
+        text = re.sub(r'^[ \t]*(?:>[ \t]?)+', '', text, flags=re.MULTILINE)
+        text = re.sub(r'^#{1,6}[ \t]+', '', text, flags=re.MULTILINE)
+        text = re.sub(r'^[ \t]*(?:[-*+]|\d+\.)[ \t]+', '', text, flags=re.MULTILINE)
+    else:
+        text = re.sub(r'^#{1,6}\s+', '', text, flags=re.MULTILINE)
+        text = re.sub(r'^\s*(?:[-*+]|\d+\.)\s+', '', text, flags=re.MULTILINE)
+        text = re.sub(r'^\s*>\s?', '', text, flags=re.MULTILINE)
     return re.sub(r'\n{3,}', '\n\n', text).strip()
 
 
@@ -734,11 +1273,69 @@ def analyze_charts(content: str) -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 
-def _classify_source_tier(url: str) -> int:
-    """Classify a URL into tier 1, 2, or 3."""
+PRIMARY_SOURCE_ENV = 'CLAUDE_BLOG_PRIMARY_SOURCE_DOMAINS'
+
+
+def normalize_primary_source_domain(value: str) -> str:
+    """Validate one ``--primary-source-domain`` value and return its host.
+
+    Accepts ``bybit.com``, ``https://www.bybit.com/en/help`` or
+    ``*.bybit.com``; returns ``bybit.com``. Rejects single-label values such
+    as ``com`` so a typo cannot promote a whole top-level domain.
+    """
+    raw = str(value or '').strip().lower()
+    if '://' in raw:
+        raw = urllib.parse.urlparse(raw).hostname or ''
+    raw = raw.split('/', 1)[0].split(':', 1)[0].strip('.')
+    if raw.startswith('*.'):
+        raw = raw[2:]
+    if raw.startswith('www.'):
+        raw = raw[4:]
+    try:
+        raw = raw.encode('idna').decode('ascii')
+    except UnicodeError as exc:
+        raise ValueError(f'invalid primary source domain: {value!r}') from exc
+    if not re.fullmatch(r'(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9-]{2,63}', raw):
+        raise ValueError(f'invalid primary source domain: {value!r}')
+    return raw
+
+
+def resolve_primary_source_domains(
+    cli_values: list[str] | tuple[str, ...] | None = None,
+    environ: dict[str, str] | None = None,
+) -> tuple[str, ...]:
+    """Merge ``--primary-source-domain`` values with the environment variable.
+
+    The environment variable holds a comma- or whitespace-separated list.
+    Nothing is promoted unless one of the two is set explicitly.
+    """
+    env = os.environ if environ is None else environ
+    values = list(cli_values or [])
+    values.extend(part for part in re.split(r'[,\s]+', env.get(PRIMARY_SOURCE_ENV, '')) if part)
+    domains: list[str] = []
+    for value in values:
+        domain = normalize_primary_source_domain(value)
+        if domain not in domains:
+            domains.append(domain)
+    return tuple(domains)
+
+
+def _is_primary_source(url: str, primary_domains: tuple[str, ...] | list[str] = ()) -> bool:
+    host = _hostname(url)
+    return bool(host) and any(_host_matches_domain(host, d) for d in primary_domains)
+
+
+def _classify_source_tier(url: str, primary_domains: tuple[str, ...] | list[str] = ()) -> int:
+    """Classify a URL into tier 1, 2, or 3.
+
+    Hosts under an explicitly configured primary-source domain (official
+    documentation of the entity the article is about) count as tier 1.
+    """
     host = _hostname(url)
     if not host:
         return 3
+    if _is_primary_source(url, primary_domains):
+        return 1
     for domain in TIER1_DOMAINS:
         if _host_matches_domain(host, domain):
             return 1
@@ -748,9 +1345,10 @@ def _classify_source_tier(url: str) -> int:
     return 3
 
 
-def analyze_citations(content: str) -> dict[str, Any]:
+def analyze_citations(content: str, language: str = 'en',
+                      primary_domains: tuple[str, ...] | list[str] = ()) -> dict[str, Any]:
     """Analyze statistics and their citations with tier classification."""
-    stat_patterns = re.findall(r'\d+\.?\d*%', content)
+    stat_patterns = re.findall(_language_profile(language)['percent_pattern'], content)
 
     # Inline citations: [text](url)
     inline_matches = re.findall(r'\[([^\]]+)\]\((https?://[^)]+)\)', content)
@@ -761,9 +1359,12 @@ def analyze_citations(content: str) -> dict[str, Any]:
 
     # Tier classification
     tier_counts = {1: 0, 2: 0, 3: 0}
+    primary_citations = 0
     for _, url in citations_with_urls:
-        tier = _classify_source_tier(url)
+        tier = _classify_source_tier(url, primary_domains)
         tier_counts[tier] += 1
+        if primary_domains and _is_primary_source(url, primary_domains):
+            primary_citations += 1
 
     # Sourced vs unsourced stats
     sourced_stats = 0
@@ -785,6 +1386,7 @@ def analyze_citations(content: str) -> dict[str, Any]:
         'paren_citations': len(paren_citations),
         'unique_sources': len(set(url.lower() for _, url in citations_with_urls)),
         'tier_counts': tier_counts,
+        'primary_source_citations': primary_citations,
     }
 
 
@@ -793,14 +1395,15 @@ def analyze_citations(content: str) -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 
-def analyze_faq(content: str) -> dict[str, Any]:
+def analyze_faq(content: str, language: str = 'en') -> dict[str, Any]:
     """Check for FAQ section and schema."""
-    has_faq_section = bool(re.search(r'(?i)#{1,3}\s*(?:FAQ|Frequently Asked)', content))
+    faq_heading = _language_profile(language)['faq_heading_pattern']
+    has_faq_section = bool(re.search(r'(?i)#{1,3}\s*' + faq_heading, content))
     has_faq_schema = bool(re.search(r'(?i)FAQSchema|FAQPage|faqpage', content))
 
     faq_items = 0
     if has_faq_section:
-        faq_match = re.search(r'(?i)#{1,3}\s*(?:FAQ|Frequently Asked).*', content, re.DOTALL)
+        faq_match = re.search(r'(?i)#{1,3}\s*' + faq_heading + r'.*', content, re.DOTALL)
         if faq_match:
             faq_text = faq_match.group()
             faq_items = len(re.findall(r'^#{3,4}\s+.+\?', faq_text, re.MULTILINE))
@@ -853,15 +1456,205 @@ def analyze_self_promotion(content: str, brand_name: str = '') -> dict[str, Any]
 # ---------------------------------------------------------------------------
 
 
+_WORD_RE = re.compile(r"[^\W\d_]+(?:['’][^\W\d_]+)?", re.UNICODE)
+
+# Placeholders (Unicode private use area) that hide non-terminal periods from
+# the protected sentence splitter. They are restored before returning.
+_PH_DOT = '\ue000'
+_SENTENCE_END_RE = re.compile(r'[.!?…]+[»"”’)\]]*(?=\s)')
+
+
+def _protect_abbreviation(text: str, abbreviation: str) -> str:
+    """Hide the periods of one abbreviation (spacing-insensitive)."""
+    parts = [re.escape(part) for part in abbreviation.split()]
+    pattern = r'(?<![^\W\d_])' + r'\s?'.join(parts)
+    return re.sub(
+        pattern,
+        lambda match: match.group(0).replace('.', _PH_DOT),
+        text,
+        flags=re.IGNORECASE,
+    )
+
+
+def _split_sentences(text: str, language: str = 'en') -> list[str]:
+    """Split prose into sentences according to the language profile.
+
+    ``legacy`` profiles (English, Turkish) keep the historical
+    ``(?<=[.!?])\\s+`` split. ``protected`` profiles additionally:
+
+    * never split inside numbers: ``1.000.000``, ``2,5`` and ``1 000 000``
+      (space, no-break space or narrow no-break space group separators; the
+      groups are joined so the number counts as one token);
+    * never split after a listed abbreviation (``p. ej.``, ``Sr.``, ``т. е.``);
+    * never split when the next sentence would start with a lowercase letter;
+    * always split at blank lines (paragraph, heading and list-item breaks).
+    """
+    profile = _language_profile(language)
+    if profile.get('sentence_splitting') != 'protected':
+        return re.split(r'(?<=[.!?])\s+', text)
+
+    work = re.sub(r'(?<=\d)\.(?=\d)', _PH_DOT, text)
+    work = re.sub(r'(?<=\d)[ \u00a0\u202f](?=\d{3}(?!\d))', '', work)
+    for abbreviation in sorted(profile.get('abbreviations', ()), key=len, reverse=True):
+        work = _protect_abbreviation(work, abbreviation)
+
+    segments: list[str] = []
+    for block in re.split(r'\n\s*\n', work):
+        start = 0
+        for match in _SENTENCE_END_RE.finditer(block):
+            following = block[match.end():].lstrip()
+            if following and following[0].islower():
+                continue
+            segment = block[start:match.end()].strip()
+            if segment:
+                segments.append(segment)
+            start = match.end()
+        tail = block[start:].strip()
+        if tail:
+            segments.append(tail)
+    return [segment.replace(_PH_DOT, '.') for segment in segments]
+
+
+# Vowel inventories for the syllable heuristics.
+_ES_STRONG = set('aeoáéíóú')     # accented i/u break a diphthong (hiatus)
+_ES_VOWELS = _ES_STRONG | set('iuü')
+_PT_STRONG = set('aeoáâãàéêíóôõú')
+_PT_VOWELS = _PT_STRONG | set('iuü')
+_RU_VOWELS = set('аеёиоуыэюя')
+_UK_VOWELS = set('аеєиіїоуюя')
+
+
+def _count_syllables(word: str, language: str) -> int:
+    """Approximate syllables of one word with language-specific vowel rules.
+
+    * Spanish: each run of consecutive vowels is one nucleus unless it holds
+      several strong vowels (a, e, o or an accented i/u), which form a hiatus.
+      ``bueno`` 2, ``día`` 2, ``ciudad`` 2, ``país`` 2, ``leer`` 2. A ``y``
+      between consonants is a vowel (``Bybit`` 2).
+    * Portuguese: same rule; ``e``/``o`` after a nasal ``ã``/``õ`` are glides
+      (``mão``, ``põe`` are one syllable).
+    * Russian and Ukrainian: every vowel letter is a syllable nucleus, because
+      Cyrillic orthography has no vowel digraphs.
+    Every word counts at least one syllable.
+    """
+    lower = word.lower()
+    if language in ('ru', 'uk'):
+        vowels = _RU_VOWELS if language == 'ru' else _UK_VOWELS
+        return max(1, sum(1 for char in lower if char in vowels))
+
+    if language == 'pt':
+        vowels, strong = _PT_VOWELS, _PT_STRONG
+    else:
+        vowels, strong = _ES_VOWELS, _ES_STRONG
+    # "y" is a vowel only between consonants or alone ("Bybit", "y"); next to
+    # a vowel it is a consonant ("ya", "mayo") or a glide ("hoy", "muy").
+    if 'y' in lower:
+        chars = list(lower)
+        for index, char in enumerate(chars):
+            if char != 'y':
+                continue
+            before = chars[index - 1] if index > 0 else ''
+            after = chars[index + 1] if index + 1 < len(chars) else ''
+            if before not in vowels and after not in vowels:
+                chars[index] = 'i'
+        lower = ''.join(chars)
+    count = 0
+    run: list[str] = []
+    for char in lower + ' ':
+        if char in vowels:
+            run.append(char)
+            continue
+        if run:
+            nuclei = 0
+            for index, vowel in enumerate(run):
+                glide = (
+                    language == 'pt' and index > 0
+                    and vowel in 'eo' and run[index - 1] in 'ãõ'
+                )
+                if vowel in strong and not glide:
+                    nuclei += 1
+            count += max(1, nuclei)
+            run = []
+    return max(1, count)
+
+
+def _formula_readability(text: str, language: str, model: str) -> dict[str, Any]:
+    """Readability for the language-specific formulas (no textstat needed)."""
+    words = _WORD_RE.findall(text)
+    word_count = len(words)
+    sentence_count = sum(
+        1 for segment in _split_sentences(text, language) if _WORD_RE.search(segment)
+    ) or 1
+    syllable_count = sum(_count_syllables(word, language) for word in words)
+    asl = word_count / sentence_count
+    asw = syllable_count / max(word_count, 1)
+
+    result: dict[str, Any] = {'reading_model': model}
+    if model == 'fernandez-huerta':
+        p = asw * 100                      # syllables per 100 words
+        f = sentence_count / max(word_count, 1) * 100   # sentences per 100 words
+        score = 206.84 - 0.60 * p - 1.02 * f
+        # Szigriszt-Pazos (1993) perspicuity, read on the INFLESZ scale of
+        # Barrio-Cantalejo et al. (2008). Reported only; never scored.
+        szigriszt = 206.835 - 62.3 * asw - asl
+        if szigriszt < 40:
+            inflesz = 'muy difícil'
+        elif szigriszt < 55:
+            inflesz = 'algo difícil'
+        elif szigriszt < 65:
+            inflesz = 'normal'
+        elif szigriszt <= 80:
+            inflesz = 'bastante fácil'
+        else:
+            inflesz = 'muy fácil'
+        # Informational only: G. Law (2011) argued that the published formula
+        # should subtract 1.02 x words-per-sentence (Flesch's ASL term) rather
+        # than 1.02 x sentences-per-100-words. Scoring uses the published form.
+        corrected = 206.84 - 0.60 * p - 1.02 * asl
+        result['fernandez_huerta_reading_ease'] = round(max(0.0, min(100.0, score)), 1)
+        result['fernandez_huerta_law_variant'] = round(max(0.0, min(100.0, corrected)), 1)
+        result['szigriszt_pazos'] = round(max(0.0, min(100.0, szigriszt)), 1)
+        result['inflesz_band'] = inflesz
+    elif model == 'flesch-pt':
+        score = 248.835 - 1.015 * asl - 84.6 * asw
+        result['flesch_pt_reading_ease'] = round(max(0.0, min(100.0, score)), 1)
+    else:  # oborneva / oborneva-uk
+        score = 206.835 - 1.3 * asl - 60.1 * asw
+        result['oborneva_reading_ease'] = round(max(0.0, min(100.0, score)), 1)
+
+    score = max(0.0, min(100.0, score))
+    result.update({
+        'reading_ease': round(score, 1),
+        'reading_time_minutes': round(word_count / 238, 1),
+        'avg_sentence_length': round(asl, 1),
+        'mean_syllables_per_word': round(asw, 2),
+        'word_count': word_count,
+        'sentence_count': sentence_count,
+        'syllable_count': syllable_count,
+        'target_band': READABILITY_MODELS[model]['target'],
+        'estimated': model == 'oborneva-uk',
+    })
+    if model == 'oborneva-uk':
+        result['approximation_note'] = (
+            'No validated Ukrainian readability formula is available; '
+            "Oborneva's Russian coefficients are used as an approximation."
+        )
+    return result
+
+
 def analyze_readability(text: str, language: str = 'en') -> dict[str, Any]:
     """Compute readability metrics using textstat if available, else estimate."""
-    words = re.findall(r"[^\W\d_]+(?:['’][^\W\d_]+)?", text, re.UNICODE)
+    model = _language_profile(language)['readability_model']
+    if model in ('fernandez-huerta', 'flesch-pt', 'oborneva', 'oborneva-uk'):
+        return _formula_readability(text, language, model)
+
+    words = _WORD_RE.findall(text)
     word_count = len(words)
     sentences = re.findall(r'[.!?]+', text)
     sentence_count = len(sentences) if sentences else 1
     avg_sentence_len = word_count / sentence_count
 
-    if LANGUAGE_PROFILES.get(language, LANGUAGE_PROFILES['en'])["readability_model"] == 'atesman':
+    if model == 'atesman':
         vowel_count = sum(len(re.findall(r'[aeıioöuü]', word.lower())) for word in words)
         mean_syllables = vowel_count / max(word_count, 1)
         score = 198.825 - 40.175 * mean_syllables - 2.610 * avg_sentence_len
@@ -914,9 +1707,9 @@ def analyze_readability(text: str, language: str = 'en') -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 
-def analyze_sentences(text: str) -> dict[str, Any]:
+def analyze_sentences(text: str, language: str = 'en') -> dict[str, Any]:
     """Analyze sentence lengths, burstiness (variance), and engagement."""
-    sentences = re.split(r'(?<=[.!?])\s+', text)
+    sentences = _split_sentences(text, language)
     lengths = [len(s.split()) for s in sentences if len(s.split()) > 2]
     if not lengths:
         return {
@@ -1131,21 +1924,25 @@ def analyze_schema(content: str) -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 
-def analyze_links(content: str) -> dict[str, Any]:
+def analyze_links(content: str, language: str = 'en',
+                  primary_domains: tuple[str, ...] | list[str] = ()) -> dict[str, Any]:
     """Analyze internal and external links, anchor quality, and tiers."""
     # Internal links: relative paths (not starting with http or /)
     internal = re.findall(r'\[([^\]]+)\]\((?!https?://|#)([^)]+)\)', content)
     # External links
     external = re.findall(r'\[([^\]]+)\]\((https?://[^)]+)\)', content)
 
-    bad_anchor_keywords = {'click here', 'read more', 'this article', 'here', 'link', 'this'}
+    bad_anchor_keywords = _language_profile(language)['bad_anchor_texts']
     bad_anchors = [a for a, _ in internal + external if a.lower().strip() in bad_anchor_keywords]
 
     # Tier classification for external links
     tier_counts = {1: 0, 2: 0, 3: 0}
+    primary_links = 0
     for _, url in external:
-        tier = _classify_source_tier(url)
+        tier = _classify_source_tier(url, primary_domains)
         tier_counts[tier] += 1
+        if primary_domains and _is_primary_source(url, primary_domains):
+            primary_links += 1
 
     return {
         'internal_count': len(internal),
@@ -1153,6 +1950,7 @@ def analyze_links(content: str) -> dict[str, Any]:
         'total_links': len(internal) + len(external),
         'bad_anchor_texts': bad_anchors,
         'external_tier_counts': tier_counts,
+        'primary_source_links': primary_links,
     }
 
 
@@ -1172,7 +1970,7 @@ def analyze_originality(content: str, language: str = 'en') -> dict[str, Any]:
     if re.search(r'(?:\[|<!--\s*)UNIQUE INSIGHT(?:\]|(?:\s*:.*)?-->)', content, re.IGNORECASE):
         markers.append('unique_insight_tag')
 
-    profile = LANGUAGE_PROFILES.get(language, LANGUAGE_PROFILES['en'])
+    profile = _language_profile(language)
     first_person_patterns = profile['first_person_patterns']
     first_person_count = 0
     for pattern in first_person_patterns:
@@ -1218,7 +2016,7 @@ def analyze_originality(content: str, language: str = 'en') -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 
-def analyze_engagement(content: str) -> dict[str, Any]:
+def analyze_engagement(content: str, language: str = 'en') -> dict[str, Any]:
     """Detect questions in body text, examples, call-to-action patterns."""
     # Questions in body (not in headings)
     body_lines = [line for line in content.split('\n') if not line.strip().startswith('#')]
@@ -1226,12 +2024,8 @@ def analyze_engagement(content: str) -> dict[str, Any]:
     questions_in_text = len(re.findall(r'[^#]\?', body_text))
 
     # Example markers
-    example_patterns = [
-        r'(?i)\bfor example\b', r'(?i)\bfor instance\b', r'(?i)\bsuch as\b',
-        r'(?i)\bconsider\b', r'(?i)\blet\'s say\b', r'(?i)\bimagine\b',
-        r'(?i)\bhere\'s (?:an|a) example\b',
-    ]
-    example_count = sum(len(re.findall(p, content)) for p in example_patterns)
+    example_patterns = _language_profile(language)['example_patterns']
+    example_count = sum(len(re.findall(p, content, re.IGNORECASE)) for p in example_patterns)
 
     return {
         'questions_in_text': questions_in_text,
@@ -1253,6 +2047,8 @@ def analyze_ai_citation_readiness(content: str, headings_info: dict[str, Any],
         re.MULTILINE | re.DOTALL,
     )
     sections = section_pattern.findall(content)
+    profile = _language_profile(language)
+    definition_pattern = '|'.join(f'(?:{p})' for p in profile['definition_patterns'])
     evidence_backed_sections = 0
     self_contained_sections = 0
     for heading, section in sections:
@@ -1262,11 +2058,7 @@ def analyze_ai_citation_readiness(content: str, headings_info: dict[str, Any],
             section,
             re.IGNORECASE,
         ))
-        has_definition = bool(re.search(
-            r'\*\*[^*]+\*\*\s*(?:is|are|refers to|means)',
-            section,
-            re.IGNORECASE,
-        ))
+        has_definition = bool(re.search(definition_pattern, section, re.IGNORECASE))
         has_specific_support = bool(re.search(r'\b\d+(?:\.\d+)?%?\b', section))
         if has_source or has_evidence_marker:
             evidence_backed_sections += 1
@@ -1288,10 +2080,9 @@ def analyze_ai_citation_readiness(content: str, headings_info: dict[str, Any],
                     break
 
     # Entity clarity: detect defined terms (bold terms followed by explanations)
-    entity_definitions = len(re.findall(r'\*\*[^*]+\*\*\s*(?:is|are|refers to|means)', content))
+    entity_definitions = len(re.findall(definition_pattern, content))
 
     # Extraction-friendly structures
-    profile = LANGUAGE_PROFILES.get(language, LANGUAGE_PROFILES['en'])
     summary_pattern = '|'.join(profile['summary_labels'])
     has_tldr = bool(re.search(rf'(?i)(?:{summary_pattern})', content))
     table_count = len(re.findall(r'^\|.+\|$', content, re.MULTILINE))
@@ -1303,7 +2094,7 @@ def analyze_ai_citation_readiness(content: str, headings_info: dict[str, Any],
         content,
     ))
     intro = re.split(r'^##\s+', content, maxsplit=1, flags=re.MULTILINE)[0]
-    purpose_statement = bool(re.search(r'[A-Za-z]{3,}', intro))
+    purpose_statement = bool(re.search(profile['letters_pattern'], intro))
     relevant_media_count = (
         len(re.findall(r'!\[[^\]]+\]\([^)]+\)', content))
         + len(re.findall(r'<(?:img|figure|svg)\b', content, re.IGNORECASE))
@@ -1380,19 +2171,18 @@ def analyze_structured_data(content: str) -> dict[str, Any]:
 # Scoring: 5-category, 100-point system
 # ---------------------------------------------------------------------------
 
-_TOPIC_STOPWORDS = {
-    'about', 'after', 'also', 'and', 'are', 'but', 'for', 'from', 'have',
-    'how', 'into', 'its', 'not', 'that', 'the', 'their', 'this', 'with',
-    'what', 'when', 'where', 'which', 'why', 'your',
-}
+def _topic_terms(value: str, language: str = 'en') -> set[str]:
+    """Return normalized topic terms for purpose-consistency checks.
 
-
-def _topic_terms(value: str) -> set[str]:
-    """Return normalized topic terms for purpose-consistency checks."""
+    English and Turkish keep the historical ASCII tokenizer; the other
+    profiles use a Unicode tokenizer so accented and Cyrillic words survive.
+    """
+    profile = _language_profile(language)
+    stopwords = profile['topic_stopwords']
     return {
         token
-        for token in re.findall(r"[A-Za-z0-9][A-Za-z0-9'-]*", value.lower())
-        if token not in _TOPIC_STOPWORDS and not token.isdigit()
+        for token in re.findall(profile['topic_token_pattern'], value.lower())
+        if token not in stopwords and not token.isdigit()
     }
 
 
@@ -1469,22 +2259,22 @@ def calculate_score(analysis: dict[str, Any]) -> dict[str, Any]:
         'reading_ease', readability.get('flesch_reading_ease', 50)
     )
     reading_model = readability.get('reading_model', 'flesch')
-    if reading_model == 'atesman' and 50 <= reading_ease <= 69:
-        read_score = 7
-    elif reading_model == 'atesman' and 30 <= reading_ease <= 89:
-        read_score = 5
-    elif reading_model == 'atesman' and 0 <= reading_ease <= 100:
-        read_score = 3
-    elif 60 <= reading_ease <= 70:
-        read_score = 7
-    elif 55 <= reading_ease <= 75:
-        read_score = 5
-    elif 45 <= reading_ease <= 80:
-        read_score = 3
-    else:
-        read_score = 1
-        issues.append({'category': 'content', 'severity': 'medium',
-                       'issue': f'Flesch reading ease ({reading_ease}) outside acceptable range (55-75)'})
+    # Unknown models (including the textstat-free 'flesch-estimate') use the
+    # historical English Flesch bands.
+    model_info = READABILITY_MODELS.get(reading_model, READABILITY_MODELS['flesch'])
+    read_score = 1
+    for low, high, points in model_info['bands']:
+        if low <= reading_ease <= high:
+            read_score = points
+            break
+    if read_score == 1:
+        if model_info is READABILITY_MODELS['flesch']:
+            issue = f'Flesch reading ease ({reading_ease}) outside acceptable range (55-75)'
+        else:
+            low, high, _ = model_info['bands'][1]
+            issue = (f'{model_info["label"]} readability ({reading_ease}) outside '
+                     f'acceptable range ({low}-{high})')
+        issues.append({'category': 'content', 'severity': 'medium', 'issue': issue})
     cq += read_score
     cq_breakdown['readability'] = read_score
 
@@ -1584,9 +2374,10 @@ def calculate_score(analysis: dict[str, Any]) -> dict[str, Any]:
     title_score = 0
     body = analysis.get('_body_text', '')
     heading_text = ' '.join(h['text'] for h in headings['headings'])
-    title_terms = _topic_terms(title)
-    body_terms = _topic_terms(body)
-    heading_terms = _topic_terms(heading_text)
+    language = analysis.get('language', 'en')
+    title_terms = _topic_terms(title, language)
+    body_terms = _topic_terms(body, language)
+    heading_terms = _topic_terms(heading_text, language)
     if title:
         title_score += 1
         if title.strip().lower() not in {'home', 'blog', 'post', 'untitled'}:
@@ -1655,7 +2446,7 @@ def calculate_score(analysis: dict[str, Any]) -> dict[str, Any]:
     meta_score = 0
     if desc:
         meta_score += 1
-        desc_terms = _topic_terms(desc)
+        desc_terms = _topic_terms(desc, language)
         if desc_terms & (title_terms | heading_terms):
             meta_score += 1
         if desc_terms & body_terms:
@@ -1740,15 +2531,15 @@ def calculate_score(analysis: dict[str, Any]) -> dict[str, Any]:
     # Trust indicators: 4 pts (about/contact links, editorial mentions)
     trust_score = 0
     body = analysis.get('_body_text', '')
-    language = analysis.get('language', 'en')
-    profile = LANGUAGE_PROFILES.get(language, LANGUAGE_PROFILES['en'])
+    profile = _language_profile(language)
     if any(re.search(pattern, body, re.IGNORECASE)
            for pattern in profile['about_patterns']):
         trust_score += 2
     if any(re.search(pattern, body, re.IGNORECASE)
            for pattern in profile['contact_patterns']):
         trust_score += 1
-    if re.search(r'(?i)\b(?:editorial|reviewed by|fact.?check|editor)\b', body):
+    if any(re.search(pattern, body, re.IGNORECASE)
+           for pattern in profile['editorial_patterns']):
         trust_score += 1
     trust_score = min(trust_score, 4)
     eeat += trust_score
@@ -2006,8 +2797,17 @@ def calculate_score(analysis: dict[str, Any]) -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 
-def analyze_file(file_path: str) -> dict[str, Any]:
-    """Analyze a single blog file with all analyzers."""
+def analyze_file(
+    file_path: str,
+    language: str | None = None,
+    primary_source_domains: tuple[str, ...] | list[str] | None = None,
+) -> dict[str, Any]:
+    """Analyze a single blog file with all analyzers.
+
+    ``language`` forces a profile (``en``, ``tr``, ``es``, ``pt``, ``ru``,
+    ``uk``); ``None`` or ``'auto'`` detects it. ``primary_source_domains``
+    lists hosts treated as tier-1 primary sources (opt-in, empty by default).
+    """
     path = Path(file_path)
     if not path.exists():
         return {'error': f'File not found: {file_path}'}
@@ -2021,14 +2821,24 @@ def analyze_file(file_path: str) -> dict[str, Any]:
     else:
         frontmatter = extract_frontmatter(content)
         body = strip_frontmatter(content)
-    language = _detect_language(frontmatter, body)
+    if language and language != 'auto':
+        forced = _normalize_language_code(language)
+        if forced not in LANGUAGE_PROFILES:
+            return {'error': f'Unsupported language profile: {language}'}
+        language, detection_method = forced, 'cli-override'
+    else:
+        language, detection_method = detect_language_details(frontmatter, body)
+    primary_domains = tuple(primary_source_domains or ())
+    profile = _language_profile(language)
 
     # Strip markdown formatting for plain-text analysis
-    plain_text = _plain_text_for_analysis(body)
+    plain_text = _plain_text_for_analysis(
+        body, block_breaks=profile['sentence_splitting'] == 'protected'
+    )
 
     headings_info = analyze_headings(body)
-    sentences_info = analyze_sentences(plain_text)
-    faq_info = analyze_faq(body)
+    sentences_info = analyze_sentences(plain_text, language)
+    faq_info = analyze_faq(body, language)
 
     ai_citation_readiness = analyze_ai_citation_readiness(
         body, headings_info, faq_info, language
@@ -2043,6 +2853,16 @@ def analyze_file(file_path: str) -> dict[str, Any]:
         'file': str(path),
         'format': path.suffix,
         'language': language,
+        'language_detection': {
+            'method': detection_method,
+            'profile': profile['label'],
+            'readability_model': profile['readability_model'],
+            'sentence_splitting': profile['sentence_splitting'],
+        },
+        'source_policy': {
+            'primary_source_domains': list(primary_domains),
+            'primary_sources_count_as_tier': 1 if primary_domains else None,
+        },
         'methodology': {
             'name': 'internal editorial readiness heuristic',
             'calibrated_probability': False,
@@ -2053,7 +2873,7 @@ def analyze_file(file_path: str) -> dict[str, Any]:
         'paragraphs': analyze_paragraphs(body),
         'images': analyze_images(content),
         'charts': analyze_charts(content),
-        'citations': analyze_citations(body),
+        'citations': analyze_citations(body, language, primary_domains),
         'faq': faq_info,
         'freshness': analyze_freshness(frontmatter),
         'self_promotion': analyze_self_promotion(body),
@@ -2064,9 +2884,9 @@ def analyze_file(file_path: str) -> dict[str, Any]:
         'transition_words': analyze_transition_words(plain_text),
         'ai_trigger_words': analyze_ai_trigger_words(plain_text),
         'schema': analyze_schema(content),
-        'links': analyze_links(body),
+        'links': analyze_links(body, language, primary_domains),
         'originality': analyze_originality(body, language),
-        'engagement': analyze_engagement(body),
+        'engagement': analyze_engagement(body, language),
         'ai_citation_readiness': ai_citation_readiness,
         'social_meta': analyze_social_meta(content, frontmatter),
         'structured_data': analyze_structured_data(body),
@@ -2142,7 +2962,19 @@ def _format_markdown(result: dict[str, Any]) -> str:
     ai_triggers = result.get('ai_trigger_words', {})
     sents = result.get('sentences', {})
     lines.append('### Readability')
-    lines.append(f'- Flesch Reading Ease: {read.get("flesch_reading_ease", "N/A")} (target: 60-70)')
+    reading_model = read.get('reading_model', 'flesch')
+    if reading_model in ('flesch', 'flesch-estimate'):
+        lines.append(f'- Flesch Reading Ease: {read.get("flesch_reading_ease", "N/A")} (target: 60-70)')
+    else:
+        model_info = READABILITY_MODELS.get(reading_model, {})
+        lines.append(
+            f'- {model_info.get("label", reading_model)}: {read.get("reading_ease", "N/A")} '
+            f'(target: {model_info.get("target", "N/A")}; language: {result.get("language", "en")})'
+        )
+        if read.get('szigriszt_pazos') is not None:
+            lines.append(
+                f'- Szigriszt-Pazos / INFLESZ: {read["szigriszt_pazos"]} ({read.get("inflesz_band")})'
+            )
     if read.get('flesch_kincaid_grade'):
         lines.append(f'- Flesch-Kincaid Grade: {read.get("flesch_kincaid_grade")} (target: 7-8)')
     lines.append(f'- Reading time: {read.get("reading_time_minutes", "N/A")} minutes')
@@ -2153,7 +2985,9 @@ def _format_markdown(result: dict[str, Any]) -> str:
     if ai_triggers.get('found'):
         trigger_list = ', '.join(f'{t["word"]}({t["count"]})' for t in ai_triggers['found'][:5])
         lines.append(f'- Trigger words found: {trigger_list}')
-    if read.get('estimated'):
+    if read.get('approximation_note'):
+        lines.append(f'- *(Approximate: {read["approximation_note"]})*')
+    elif read.get('estimated'):
         lines.append('- *(Estimated - install textstat for accurate metrics)*')
     lines.append('')
 
@@ -2292,12 +3126,14 @@ def _format_category_detail(result: dict[str, Any], category: str) -> str:
 # ---------------------------------------------------------------------------
 
 
-def _process_batch(directory: Path, sort_key: str = 'score') -> dict[str, Any]:
+def _process_batch(directory: Path, sort_key: str = 'score',
+                   language: str | None = None,
+                   primary_source_domains: tuple[str, ...] = ()) -> dict[str, Any]:
     """Analyze all blog files in a directory."""
     results: list[dict[str, Any]] = []
     for ext in ['*.md', '*.mdx', '*.html']:
         for f in directory.glob(ext):
-            results.append(analyze_file(str(f)))
+            results.append(analyze_file(str(f), language, primary_source_domains))
 
     # Sort
     if sort_key == 'score':
@@ -2322,10 +3158,14 @@ def main(args: argparse.Namespace) -> None:
     category = getattr(args, 'category', None)
     fix_mode = getattr(args, 'fix', False)
     sort_key = getattr(args, 'sort', 'score')
+    language = getattr(args, 'lang', None)
+    primary_domains = resolve_primary_source_domains(
+        getattr(args, 'primary_source_domain', None)
+    )
 
     # Batch mode
     if path.is_dir() and getattr(args, 'batch', False):
-        batch_result = _process_batch(path, sort_key)
+        batch_result = _process_batch(path, sort_key, language, primary_domains)
 
         if fmt == 'markdown':
             for r in batch_result['results']:
@@ -2353,7 +3193,7 @@ def main(args: argparse.Namespace) -> None:
             print(f"ERROR: {error['error']}")
         sys.exit(1)
 
-    result = analyze_file(str(path))
+    result = analyze_file(str(path), language, primary_domains)
 
     # Category detail mode
     if category:
@@ -2398,6 +3238,11 @@ Examples:
   python3 analyze_blog.py ./posts --batch --sort score     Batch analysis
   python3 analyze_blog.py post.md --category seo           Single category detail
   python3 analyze_blog.py post.md --fix                    Prioritized fix list
+  python3 analyze_blog.py post.md --lang es                Force the Spanish profile
+  python3 analyze_blog.py post.md --primary-source-domain bybit.com
+                                                           Count bybit.com as a primary source
+
+Language profiles: en, tr, es, pt, ru, uk (uk readability is approximate)
 
 Scoring Categories (100 points):
   Content Quality        30 pts   Depth, readability, originality, structure
@@ -2428,8 +3273,23 @@ Optional dependencies (graceful degradation):
                              '(content, seo, eeat, technical, ai)')
     parser.add_argument('--fix', action='store_true',
                         help='Output prioritized list of specific fixes')
+    parser.add_argument('--lang', default='auto',
+                        choices=['auto', *sorted(LANGUAGE_PROFILES)],
+                        help='Language profile (default: auto = frontmatter '
+                             'lang/language/inLanguage, then conservative '
+                             'detection, then en)')
+    parser.add_argument('--primary-source-domain', action='append', default=None,
+                        metavar='DOMAIN',
+                        help='Treat links to DOMAIN (and its subdomains) as '
+                             'tier-1 primary sources, e.g. the official docs of '
+                             'the product the article covers. Repeatable. Also '
+                             f'read from ${PRIMARY_SOURCE_ENV} (comma separated).')
 
     args = parser.parse_args()
+    try:
+        resolve_primary_source_domains(args.primary_source_domain)
+    except ValueError as exc:
+        parser.error(str(exc))
 
     try:
         main(args)
