@@ -14,6 +14,8 @@ Usage:
     python3 analyze_blog.py <file> --category seo           # Single category detail
     python3 analyze_blog.py <file> --fix                    # Output specific fixes
     python3 analyze_blog.py <file> --lang es                # Force a language profile
+    python3 analyze_blog.py <file> --primary-source-domain bybit.com
+                                                            # Official docs count as tier 1
 
 Language profiles:
     en (Flesch), tr (Ateşman), es (Fernández-Huerta + INFLESZ),
@@ -1271,11 +1273,69 @@ def analyze_charts(content: str) -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 
-def _classify_source_tier(url: str) -> int:
-    """Classify a URL into tier 1, 2, or 3."""
+PRIMARY_SOURCE_ENV = 'CLAUDE_BLOG_PRIMARY_SOURCE_DOMAINS'
+
+
+def normalize_primary_source_domain(value: str) -> str:
+    """Validate one ``--primary-source-domain`` value and return its host.
+
+    Accepts ``bybit.com``, ``https://www.bybit.com/en/help`` or
+    ``*.bybit.com``; returns ``bybit.com``. Rejects single-label values such
+    as ``com`` so a typo cannot promote a whole top-level domain.
+    """
+    raw = str(value or '').strip().lower()
+    if '://' in raw:
+        raw = urllib.parse.urlparse(raw).hostname or ''
+    raw = raw.split('/', 1)[0].split(':', 1)[0].strip('.')
+    if raw.startswith('*.'):
+        raw = raw[2:]
+    if raw.startswith('www.'):
+        raw = raw[4:]
+    try:
+        raw = raw.encode('idna').decode('ascii')
+    except UnicodeError as exc:
+        raise ValueError(f'invalid primary source domain: {value!r}') from exc
+    if not re.fullmatch(r'(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9-]{2,63}', raw):
+        raise ValueError(f'invalid primary source domain: {value!r}')
+    return raw
+
+
+def resolve_primary_source_domains(
+    cli_values: list[str] | tuple[str, ...] | None = None,
+    environ: dict[str, str] | None = None,
+) -> tuple[str, ...]:
+    """Merge ``--primary-source-domain`` values with the environment variable.
+
+    The environment variable holds a comma- or whitespace-separated list.
+    Nothing is promoted unless one of the two is set explicitly.
+    """
+    env = os.environ if environ is None else environ
+    values = list(cli_values or [])
+    values.extend(part for part in re.split(r'[,\s]+', env.get(PRIMARY_SOURCE_ENV, '')) if part)
+    domains: list[str] = []
+    for value in values:
+        domain = normalize_primary_source_domain(value)
+        if domain not in domains:
+            domains.append(domain)
+    return tuple(domains)
+
+
+def _is_primary_source(url: str, primary_domains: tuple[str, ...] | list[str] = ()) -> bool:
+    host = _hostname(url)
+    return bool(host) and any(_host_matches_domain(host, d) for d in primary_domains)
+
+
+def _classify_source_tier(url: str, primary_domains: tuple[str, ...] | list[str] = ()) -> int:
+    """Classify a URL into tier 1, 2, or 3.
+
+    Hosts under an explicitly configured primary-source domain (official
+    documentation of the entity the article is about) count as tier 1.
+    """
     host = _hostname(url)
     if not host:
         return 3
+    if _is_primary_source(url, primary_domains):
+        return 1
     for domain in TIER1_DOMAINS:
         if _host_matches_domain(host, domain):
             return 1
@@ -1285,7 +1345,8 @@ def _classify_source_tier(url: str) -> int:
     return 3
 
 
-def analyze_citations(content: str, language: str = 'en') -> dict[str, Any]:
+def analyze_citations(content: str, language: str = 'en',
+                      primary_domains: tuple[str, ...] | list[str] = ()) -> dict[str, Any]:
     """Analyze statistics and their citations with tier classification."""
     stat_patterns = re.findall(_language_profile(language)['percent_pattern'], content)
 
@@ -1298,9 +1359,12 @@ def analyze_citations(content: str, language: str = 'en') -> dict[str, Any]:
 
     # Tier classification
     tier_counts = {1: 0, 2: 0, 3: 0}
+    primary_citations = 0
     for _, url in citations_with_urls:
-        tier = _classify_source_tier(url)
+        tier = _classify_source_tier(url, primary_domains)
         tier_counts[tier] += 1
+        if primary_domains and _is_primary_source(url, primary_domains):
+            primary_citations += 1
 
     # Sourced vs unsourced stats
     sourced_stats = 0
@@ -1322,6 +1386,7 @@ def analyze_citations(content: str, language: str = 'en') -> dict[str, Any]:
         'paren_citations': len(paren_citations),
         'unique_sources': len(set(url.lower() for _, url in citations_with_urls)),
         'tier_counts': tier_counts,
+        'primary_source_citations': primary_citations,
     }
 
 
@@ -1859,7 +1924,8 @@ def analyze_schema(content: str) -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 
-def analyze_links(content: str, language: str = 'en') -> dict[str, Any]:
+def analyze_links(content: str, language: str = 'en',
+                  primary_domains: tuple[str, ...] | list[str] = ()) -> dict[str, Any]:
     """Analyze internal and external links, anchor quality, and tiers."""
     # Internal links: relative paths (not starting with http or /)
     internal = re.findall(r'\[([^\]]+)\]\((?!https?://|#)([^)]+)\)', content)
@@ -1871,9 +1937,12 @@ def analyze_links(content: str, language: str = 'en') -> dict[str, Any]:
 
     # Tier classification for external links
     tier_counts = {1: 0, 2: 0, 3: 0}
+    primary_links = 0
     for _, url in external:
-        tier = _classify_source_tier(url)
+        tier = _classify_source_tier(url, primary_domains)
         tier_counts[tier] += 1
+        if primary_domains and _is_primary_source(url, primary_domains):
+            primary_links += 1
 
     return {
         'internal_count': len(internal),
@@ -1881,6 +1950,7 @@ def analyze_links(content: str, language: str = 'en') -> dict[str, Any]:
         'total_links': len(internal) + len(external),
         'bad_anchor_texts': bad_anchors,
         'external_tier_counts': tier_counts,
+        'primary_source_links': primary_links,
     }
 
 
@@ -2727,11 +2797,16 @@ def calculate_score(analysis: dict[str, Any]) -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 
-def analyze_file(file_path: str, language: str | None = None) -> dict[str, Any]:
+def analyze_file(
+    file_path: str,
+    language: str | None = None,
+    primary_source_domains: tuple[str, ...] | list[str] | None = None,
+) -> dict[str, Any]:
     """Analyze a single blog file with all analyzers.
 
     ``language`` forces a profile (``en``, ``tr``, ``es``, ``pt``, ``ru``,
-    ``uk``); ``None`` or ``'auto'`` detects it.
+    ``uk``); ``None`` or ``'auto'`` detects it. ``primary_source_domains``
+    lists hosts treated as tier-1 primary sources (opt-in, empty by default).
     """
     path = Path(file_path)
     if not path.exists():
@@ -2753,6 +2828,7 @@ def analyze_file(file_path: str, language: str | None = None) -> dict[str, Any]:
         language, detection_method = forced, 'cli-override'
     else:
         language, detection_method = detect_language_details(frontmatter, body)
+    primary_domains = tuple(primary_source_domains or ())
     profile = _language_profile(language)
 
     # Strip markdown formatting for plain-text analysis
@@ -2783,6 +2859,10 @@ def analyze_file(file_path: str, language: str | None = None) -> dict[str, Any]:
             'readability_model': profile['readability_model'],
             'sentence_splitting': profile['sentence_splitting'],
         },
+        'source_policy': {
+            'primary_source_domains': list(primary_domains),
+            'primary_sources_count_as_tier': 1 if primary_domains else None,
+        },
         'methodology': {
             'name': 'internal editorial readiness heuristic',
             'calibrated_probability': False,
@@ -2793,7 +2873,7 @@ def analyze_file(file_path: str, language: str | None = None) -> dict[str, Any]:
         'paragraphs': analyze_paragraphs(body),
         'images': analyze_images(content),
         'charts': analyze_charts(content),
-        'citations': analyze_citations(body, language),
+        'citations': analyze_citations(body, language, primary_domains),
         'faq': faq_info,
         'freshness': analyze_freshness(frontmatter),
         'self_promotion': analyze_self_promotion(body),
@@ -2804,7 +2884,7 @@ def analyze_file(file_path: str, language: str | None = None) -> dict[str, Any]:
         'transition_words': analyze_transition_words(plain_text),
         'ai_trigger_words': analyze_ai_trigger_words(plain_text),
         'schema': analyze_schema(content),
-        'links': analyze_links(body, language),
+        'links': analyze_links(body, language, primary_domains),
         'originality': analyze_originality(body, language),
         'engagement': analyze_engagement(body, language),
         'ai_citation_readiness': ai_citation_readiness,
@@ -3047,12 +3127,13 @@ def _format_category_detail(result: dict[str, Any], category: str) -> str:
 
 
 def _process_batch(directory: Path, sort_key: str = 'score',
-                   language: str | None = None) -> dict[str, Any]:
+                   language: str | None = None,
+                   primary_source_domains: tuple[str, ...] = ()) -> dict[str, Any]:
     """Analyze all blog files in a directory."""
     results: list[dict[str, Any]] = []
     for ext in ['*.md', '*.mdx', '*.html']:
         for f in directory.glob(ext):
-            results.append(analyze_file(str(f), language))
+            results.append(analyze_file(str(f), language, primary_source_domains))
 
     # Sort
     if sort_key == 'score':
@@ -3078,10 +3159,13 @@ def main(args: argparse.Namespace) -> None:
     fix_mode = getattr(args, 'fix', False)
     sort_key = getattr(args, 'sort', 'score')
     language = getattr(args, 'lang', None)
+    primary_domains = resolve_primary_source_domains(
+        getattr(args, 'primary_source_domain', None)
+    )
 
     # Batch mode
     if path.is_dir() and getattr(args, 'batch', False):
-        batch_result = _process_batch(path, sort_key, language)
+        batch_result = _process_batch(path, sort_key, language, primary_domains)
 
         if fmt == 'markdown':
             for r in batch_result['results']:
@@ -3109,7 +3193,7 @@ def main(args: argparse.Namespace) -> None:
             print(f"ERROR: {error['error']}")
         sys.exit(1)
 
-    result = analyze_file(str(path), language)
+    result = analyze_file(str(path), language, primary_domains)
 
     # Category detail mode
     if category:
@@ -3155,6 +3239,8 @@ Examples:
   python3 analyze_blog.py post.md --category seo           Single category detail
   python3 analyze_blog.py post.md --fix                    Prioritized fix list
   python3 analyze_blog.py post.md --lang es                Force the Spanish profile
+  python3 analyze_blog.py post.md --primary-source-domain bybit.com
+                                                           Count bybit.com as a primary source
 
 Language profiles: en, tr, es, pt, ru, uk (uk readability is approximate)
 
@@ -3192,8 +3278,18 @@ Optional dependencies (graceful degradation):
                         help='Language profile (default: auto = frontmatter '
                              'lang/language/inLanguage, then conservative '
                              'detection, then en)')
+    parser.add_argument('--primary-source-domain', action='append', default=None,
+                        metavar='DOMAIN',
+                        help='Treat links to DOMAIN (and its subdomains) as '
+                             'tier-1 primary sources, e.g. the official docs of '
+                             'the product the article covers. Repeatable. Also '
+                             f'read from ${PRIMARY_SOURCE_ENV} (comma separated).')
 
     args = parser.parse_args()
+    try:
+        resolve_primary_source_domains(args.primary_source_domain)
+    except ValueError as exc:
+        parser.error(str(exc))
 
     try:
         main(args)
