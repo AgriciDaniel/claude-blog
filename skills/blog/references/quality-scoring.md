@@ -7,7 +7,7 @@ Score each blog post against this checklist. Used by `/blog analyze`.
 | Check | Points | Pass Criteria |
 |-------|--------|---------------|
 | Coverage/comprehensiveness | 7 | Covers the reader task with useful subtopics, evidence, and examples; no raw word-count target |
-| Readability | 7 | Match the audience; default Flesch 60-70, 55-75 acceptable; technical/YMYL topics may justify denser prose |
+| Readability | 7 | Match the audience; default Flesch 60-70, 55-75 acceptable; technical/YMYL topics may justify denser prose. Non-English posts use their language formula (Ateşman, Fernández-Huerta, Martins Flesch-PT, Oborneva); see the Language Profiles table in `skills/blog-analyze/SKILL.md` |
 | Originality/unique value | 5 | Original data, case studies, distinctive sourced synthesis, or transparent first-hand evidence; labels alone earn nothing |
 | Sentence & paragraph structure | 4 | Clear, coherent pacing suited to the audience; no fixed sentence, paragraph, or heading quota |
 | Engagement elements | 4 | Summary box near the top, callouts, varied content blocks |

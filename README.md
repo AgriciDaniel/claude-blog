@@ -220,6 +220,19 @@ Auto-selected by topic and intent: how-to guide, listicle, case study, compariso
 
 Scoring bands: Exceptional (90-100), Strong (80-89), Acceptable (70-79), Below Standard (60-69), Rewrite (<60). The delivery contract blocks delivery below 90.
 
+**Analyzer languages.** `scripts/analyze_blog.py` scores English, Turkish, Spanish, Portuguese, Russian, and Ukrainian posts with language-specific summary labels, trust phrases, examples, definitions, sentence splitting, and readability formulas:
+
+| Code | Readability formula | Notes |
+|---|---|---|
+| `en` | Flesch Reading Ease | Historical behavior, unchanged |
+| `tr` | Ateşman | Unchanged |
+| `es` | Fernández-Huerta (scored) plus Szigriszt-Pazos / INFLESZ (reported) | Target band 60-80 |
+| `pt` | Flesch adapted by Martins et al. (1996) | Target band 50-75 |
+| `ru` | Oborneva (2006) | Target band 60-80 |
+| `uk` | Oborneva coefficients as an approximation | Reported with `estimated: true` |
+
+The profile comes from frontmatter `lang`, `language`, or `inLanguage` (any variant such as `es-ES` or `pt-BR`), then a conservative stopword fallback, then English; `--lang <code>` forces it. Official documentation of the entity a post covers can be counted as a tier-1 primary source with `--primary-source-domain <domain>` (repeatable) or `CLAUDE_BLOG_PRIMARY_SOURCE_DOMAINS`; nothing changes unless you opt in. Formula sources and limits: [`skills/blog-analyze/SKILL.md`](skills/blog-analyze/SKILL.md#language-profiles).
+
 ### More Capabilities
 
 - Advisory editorial style diagnostics for sentence-length variation, configured phrase lists, and vocabulary sampling; these never infer authorship or affect scoring.
