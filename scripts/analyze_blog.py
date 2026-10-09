@@ -1491,11 +1491,13 @@ def calculate_score(analysis: dict[str, Any]) -> dict[str, Any]:
     # Originality / differentiated evidence: 5 pts
     orig = analysis['originality']
     orig_score = min(orig.get('evidence_marker_count', 0) * 2, 4)
-    if orig.get('methodology_count', 0) > 0:
-        orig_score = min(5, orig_score + 1)
-    elif citations['unique_sources'] >= 2 and engagement['example_count'] >= 1:
+    if citations['unique_sources'] >= 2 and engagement['example_count'] >= 1:
         # Neutral explainers can demonstrate value through synthesis and examples.
         orig_score = max(orig_score, 3)
+    if orig.get('methodology_count', 0) > 0:
+        # A transparent method (e.g. a "sources consulted" section) is a bonus on
+        # top of the synthesis floor; it must never replace it and lower the score.
+        orig_score = min(5, orig_score + 1)
     if orig_score == 0:
         issues.append({'category': 'content', 'severity': 'medium',
                        'issue': 'No differentiated evidence or analysis found - add original data, a sourced synthesis, a case example, or a clearly labeled unique insight'})

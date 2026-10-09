@@ -744,6 +744,25 @@ The review explains the tradeoff with a concrete example and a clear next step.
         assert "in our experience" not in issue_text
         assert "word count" not in issue_text
 
+    def test_methodology_section_never_lowers_originality(self, tmp_path, sample_blog_post):
+        post_file = tmp_path / "post.md"
+        post_file.write_text(sample_blog_post, encoding="utf-8")
+        analysis = analyze_blog.analyze_file(str(post_file))
+        # A sourced explainer with an example and no evidence tags earns the synthesis floor.
+        analysis["originality"]["evidence_marker_count"] = 0
+        analysis["citations"]["unique_sources"] = 2
+        analysis["engagement"]["example_count"] = 1
+        without_method = copy.deepcopy(analysis)
+        without_method["originality"]["methodology_count"] = 0
+        with_method = copy.deepcopy(analysis)
+        with_method["originality"]["methodology_count"] = 1
+
+        def originality(metrics):
+            score = analyze_blog.calculate_score(metrics)
+            return score["category_details"]["content_quality"]["breakdown"]["originality"]
+
+        assert originality(with_method) == min(5, originality(without_method) + 1)
+
     def test_paragraph_padding_metric_does_not_change_score(self, tmp_path, sample_blog_post):
         post_file = tmp_path / "post.md"
         post_file.write_text(sample_blog_post, encoding="utf-8")
