@@ -10,21 +10,27 @@ on:
 permissions:
   contents: read
 
-# Cancel superseded runs on the same ref to save runner minutes.
+# Cancel superseded pull-request runs to save runner minutes. Pushes (main and
+# master included) are never cancelled, so every release commit keeps a
+# complete result.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.11", "3.12"]
+        # Every pinned dependency publishes wheels for 3.13 and 3.14 (checked
+        # with `pip install --dry-run --only-binary=:all:` for the dev extra and
+        # for all four hash locks), so the pure test job covers all four.
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1, SHA-pinned, closes VULN-503
         with:
+          persist-credentials: false
           fetch-depth: 0
 
       - name: Set up Python ${{ matrix.python-version }}
@@ -40,7 +46,17 @@ jobs:
           python3 -m pip install --upgrade pip
           pip install -e ".[dev]"
 
+      - name: Install the matching Chromium
+        # Gate 3 (hidden-author, WebSocket and service-worker checks) drives a
+        # real browser. The installed patchright is exact-pinned, so this
+        # downloads the build that exact version expects. --with-deps adds the
+        # shared libraries Chromium needs on a bare Ubuntu runner.
+        run: python3 -m patchright install --with-deps chromium
+
       - name: Run tests
+        env:
+          # Browser-gated tests fail instead of skipping (see tests/conftest.py).
+          CLAUDE_BLOG_REQUIRE_BROWSER: "1"
         run: python3 -m pytest tests/ -v -rs
 
       - name: Run adjudicated secret scan
@@ -53,6 +69,8 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1, SHA-pinned
+        with:
+          persist-credentials: false
 
       - name: Set up Python 3.11
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0, SHA-pinned
@@ -77,6 +95,66 @@ jobs:
           .ci-browser-smoke/bin/python scripts/dependency_smoke.py \
             --component browser --component preflight
 
+  locked-installs:
+    # Install every hash lock exactly as users do (--require-hashes) on all
+    # three operating systems, then confirm the resolved set is consistent.
+    # The locks are universal (platform markers), so Windows and macOS must
+    # resolve the same files that Linux does.
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ["3.11"]
+        lock:
+          - requirements.lock
+          - skills/blog-audio/scripts/requirements.lock
+          - skills/blog-google/scripts/requirements.lock
+          - skills/blog-notebooklm/scripts/requirements.lock
+        include:
+          - {os: ubuntu-latest, python-version: "3.14", lock: requirements.lock}
+          - {os: ubuntu-latest, python-version: "3.14", lock: skills/blog-audio/scripts/requirements.lock}
+          - {os: ubuntu-latest, python-version: "3.14", lock: skills/blog-google/scripts/requirements.lock}
+          - {os: ubuntu-latest, python-version: "3.14", lock: skills/blog-notebooklm/scripts/requirements.lock}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1, SHA-pinned
+        with:
+          persist-credentials: false
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0, SHA-pinned
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install ${{ matrix.lock }} with hash verification
+        shell: bash
+        run: |
+          python -m pip install --disable-pip-version-check \
+            --require-hashes -r "${{ matrix.lock }}"
+          python -m pip check
+
+  uv-lock-check:
+    # uv.lock is a derived project artifact (installs use the hash locks), but
+    # it must still agree with pyproject.toml. uv is pinned to a reviewed release.
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1, SHA-pinned
+        with:
+          persist-credentials: false
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0, SHA-pinned
+        with:
+          python-version: "3.12"
+
+      - name: Install pinned uv
+        run: python3 -m pip install --disable-pip-version-check "uv==0.11.31"
+
+      - name: Verify uv.lock matches pyproject.toml
+        run: uv lock --check
+
   validate-skills:
     runs-on: ubuntu-latest
     strategy:
@@ -85,6 +163,8 @@ jobs:
         claude-version: ["2.1.218", "2.1.292"]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1, SHA-pinned, closes VULN-503
+        with:
+          persist-credentials: false
 
       - name: Set up Node.js 22
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020  # v7.0.0, SHA-pinned
@@ -115,12 +195,19 @@ jobs:
           "
 
       - name: Run `claude plugin validate`
-        run: claude plugin validate .
+        # Claude Code 2.1.292 and later reserve the name `claude-blog` (also
+        # true of the v2.2.0 baseline; 2.1.218 passes). The wrapper tolerates
+        # exactly that finding in the marketplace manifest and plugin.json
+        # (plus the plugin-root CLAUDE.md notice) and fails on any other error
+        # or warning. See .github/scripts/validate_plugin_tolerate_reserved_name.py.
+        run: python3 .github/scripts/validate_plugin_tolerate_reserved_name.py --root .
 
   lint-markdown:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1, SHA-pinned, closes VULN-503
+        with:
+          persist-credentials: false
 
       - name: Check for broken internal references
         run: |
@@ -154,6 +241,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1, SHA-pinned
+        with:
+          persist-credentials: false
       - name: Set up Python 3.12
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0, SHA-pinned
         with:
@@ -169,6 +258,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1, SHA-pinned
+        with:
+          persist-credentials: false
       - name: Set up Python 3.12
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0, SHA-pinned
         with:
@@ -190,6 +281,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1, SHA-pinned
         with:
+          persist-credentials: false
           fetch-depth: 0
 
       - name: Check whether brain changed
@@ -224,6 +316,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1, SHA-pinned
+        with:
+          persist-credentials: false
 
       - name: Set up Python 3.12
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0, SHA-pinned
@@ -257,6 +351,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1, SHA-pinned
         with:
+          persist-credentials: false
           fetch-depth: 0
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0, SHA-pinned
         with:
@@ -279,6 +374,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1, SHA-pinned
         with:
+          persist-credentials: false
           fetch-depth: 0
       - name: Exercise Windows PowerShell 5.1 installer profiles
         if: matrix.shell == 'powershell'

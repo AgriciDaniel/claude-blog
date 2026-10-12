@@ -17,6 +17,7 @@ import shutil
 import stat
 import sys
 import tempfile
+import time
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 
@@ -24,6 +25,8 @@ from pathlib import Path, PurePosixPath
 OWNER = "claude-blog-unix-installer"
 LEGACY_OWNER = "claude-blog-reviewed-legacy-payload"
 HEX64 = re.compile(r"[0-9a-f]{64}")
+BACKUP_DIRECTORY = "claude-blog-backups"
+MODIFIED_LIST_LIMIT = 10
 
 
 class DuplicateJSONKey(ValueError):
@@ -54,6 +57,26 @@ def allowed_relative(relative: PurePosixPath) -> bool:
     return len(parts) == 2 and parts[0] == "scripts" and parts[1].endswith(".py")
 
 
+def _lstat_component(dir_fd: int, name: str) -> os.stat_result | None:
+    """lstat one directory entry relative to an open directory, or None."""
+    try:
+        return os.stat(name, dir_fd=dir_fd, follow_symlinks=False)
+    except OSError:
+        return None
+
+
+def is_trusted_system_symlink(path: Path, link_stat: os.stat_result) -> bool:
+    """True for an OS-level alias such as /home -> var/home.
+
+    Same rule as scripts/blog_render.py (_is_trusted_system_symlink): only a
+    root-owned link sitting directly under the filesystem root qualifies, and
+    a user cannot create one there.
+    """
+    if os.name != "posix" or not hasattr(link_stat, "st_uid"):
+        return False
+    return link_stat.st_uid == 0 and path.parent == Path(path.anchor)
+
+
 @dataclass(frozen=True)
 class Incoming:
     source: Path
@@ -70,8 +93,9 @@ class ProfileFS:
             current_path,
             os.O_RDONLY | os.O_DIRECTORY | getattr(os, "O_NOFOLLOW", 0),
         )
+        last = len(self.root.parts) - 2
         try:
-            for part in self.root.parts[1:]:
+            for index, part in enumerate(self.root.parts[1:]):
                 current_path /= part
                 try:
                     following = os.open(
@@ -87,7 +111,19 @@ class ProfileFS:
                         dir_fd=current,
                     )
                 except OSError as exc:
-                    fail(f"Claude profile path has an unsafe ancestor at {current_path}: {exc.strerror}")
+                    link_stat = _lstat_component(current, part)
+                    if link_stat is None or not stat.S_ISLNK(link_stat.st_mode):
+                        fail(f"Claude profile path has an unsafe ancestor at {current_path}: {exc.strerror}")
+                    # A root-owned alias directly under the filesystem root
+                    # (Aurora and Silverblue: /home -> var/home) is honoured for
+                    # ancestors. The profile directory itself, and any link a
+                    # user could have created, is refused.
+                    if index == last or not is_trusted_system_symlink(current_path, link_stat):
+                        fail(f"refusing symlinked path component {current_path}")
+                    try:
+                        following = os.open(part, os.O_RDONLY | os.O_DIRECTORY, dir_fd=current)
+                    except OSError as inner:
+                        fail(f"Claude profile path has an unsafe ancestor at {current_path}: {inner.strerror}")
                 os.close(current)
                 current = following
         finally:
@@ -200,6 +236,9 @@ class ProfileFS:
                         dir_fd=current,
                     )
                 except OSError as exc:
+                    link_stat = _lstat_component(current, part)
+                    if link_stat is not None and stat.S_ISLNK(link_stat.st_mode):
+                        fail(f"refusing symlinked path component {self.root.joinpath(*relative.parts[: relative.parts.index(part) + 1])}")
                     fail(f"installation path has an unsafe parent at {part}: {exc.strerror}")
                 os.close(current)
                 current = following
@@ -270,6 +309,56 @@ class ProfileFS:
             except FileNotFoundError:
                 pass
             os.close(parent)
+
+    def backup(self, relative: PurePosixPath, label: str) -> Path:
+        """Copy one regular file to <profile>/claude-blog-backups/<label>/<relative>.
+
+        Every directory is opened without following symlinks and the copy is
+        created exclusively, so a backup can never write through a link.
+        """
+        parent = self.parent_fd(relative)
+        try:
+            source_fd = os.open(relative.name, os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0), dir_fd=parent)
+        finally:
+            os.close(parent)
+        try:
+            if not stat.S_ISREG(os.fstat(source_fd).st_mode):
+                fail(f"cannot back up a path that is not a regular file: {self.absolute(relative)}")
+            current = self._root_fd()
+            try:
+                for part in (BACKUP_DIRECTORY, label, *relative.parts[:-1]):
+                    try:
+                        os.mkdir(part, 0o700, dir_fd=current)
+                    except FileExistsError:
+                        pass
+                    following = os.open(
+                        part,
+                        os.O_RDONLY | os.O_DIRECTORY | getattr(os, "O_NOFOLLOW", 0),
+                        dir_fd=current,
+                    )
+                    os.close(current)
+                    current = following
+                target_fd = os.open(
+                    relative.name,
+                    os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0),
+                    0o600,
+                    dir_fd=current,
+                )
+                try:
+                    while chunk := os.read(source_fd, 1024 * 1024):
+                        remaining = memoryview(chunk)
+                        while remaining:
+                            written = os.write(target_fd, remaining)
+                            remaining = remaining[written:]
+                finally:
+                    os.close(target_fd)
+            except OSError as exc:
+                fail(f"could not back up {self.absolute(relative)}: {exc.strerror}")
+            finally:
+                os.close(current)
+        finally:
+            os.close(source_fd)
+        return self.root.joinpath(BACKUP_DIRECTORY, label, *relative.parts)
 
     def unlink(self, relative: PurePosixPath) -> None:
         parent = self.parent_fd(relative)
@@ -525,17 +614,52 @@ def covered(path: PurePosixPath, scopes: list[PurePosixPath]) -> bool:
     return any(path == scope or (len(scope.parts) == 2 and scope.parts[0] == "skills" and path.parts[:2] == scope.parts) for scope in scopes)
 
 
-def preflight_v2(fs: ProfileFS, managed: dict[PurePosixPath, str]) -> None:
+def modified_files_error(fs: ProfileFS, modified: list[PurePosixPath], operation: str, headline: str) -> None:
+    shown = modified[:MODIFIED_LIST_LIMIT]
+    lines = [f"{headline}: {fs.absolute(relative)}" for relative in shown]
+    if len(modified) > len(shown):
+        lines.append(f"... and {len(modified) - len(shown)} more modified file(s)")
+    script = "install.sh" if operation == "install" else "uninstall.sh"
+    action = "replaced with the packaged version" if operation == "install" else "removed"
+    lines += [
+        "",
+        f"Nothing was changed. {len(modified)} installed file(s) differ from what the installer wrote,",
+        "so the installer will not overwrite or delete them without your say-so.",
+        "Safe steps:",
+        "  1. Copy any edit you want to keep to a location outside ~/.claude/skills, ~/.claude/agents",
+        "     and ~/.claude/scripts.",
+        f"  2. Run: bash {script} --force-adopt",
+        f"     Each modified file is first copied to {fs.root / BACKUP_DIRECTORY}/<timestamp>/ and then {action}.",
+        "  3. Re-apply your edits from the backup if you still want them.",
+        "Alternatively restore the original file contents and run the same command again.",
+    ]
+    fail("\n".join(lines))
+
+
+def preflight_v2(
+    fs: ProfileFS, managed: dict[PurePosixPath, str], force: bool = False,
+) -> tuple[list[PurePosixPath], set[PurePosixPath]]:
+    """Return (modified, missing). Missing files are only tolerated when forced."""
+    modified: list[PurePosixPath] = []
+    missing: set[PurePosixPath] = set()
     for relative, expected in managed.items():
         status = fs.status(relative)
+        if status is None and force:
+            missing.add(relative)
+            continue
         if status is None or not stat.S_ISREG(status.st_mode):
             fail(f"managed installation file is missing or replaced: {fs.absolute(relative)}")
         if fs.hash(relative) != expected:
-            fail(f"managed installation file was modified: {fs.absolute(relative)}")
+            modified.append(relative)
+    return sorted(modified, key=str), missing
 
 
-def preflight_legacy(fs: ProfileFS, known: dict[PurePosixPath, set[str]], scopes: list[PurePosixPath]) -> set[PurePosixPath]:
+def preflight_legacy(
+    fs: ProfileFS, known: dict[PurePosixPath, set[str]], scopes: list[PurePosixPath],
+) -> tuple[set[PurePosixPath], list[PurePosixPath]]:
+    """Return (owned, modified). Modified files are in the owned set only for forced runs."""
     owned: set[PurePosixPath] = set()
+    modified: list[PurePosixPath] = []
     for relative, hashes in known.items():
         if not covered(relative, scopes):
             continue
@@ -545,9 +669,43 @@ def preflight_legacy(fs: ProfileFS, known: dict[PurePosixPath, set[str]], scopes
         if not stat.S_ISREG(status.st_mode):
             fail(f"reviewed legacy path is missing or replaced: {fs.absolute(relative)}")
         if fs.hash(relative) not in hashes:
-            fail(f"reviewed legacy file was modified or is unknown: {fs.absolute(relative)}")
+            modified.append(relative)
         owned.add(relative)
-    return owned
+    return owned, sorted(modified, key=str)
+
+
+def resolve_ownership(
+    fs: ProfileFS,
+    managed: dict[PurePosixPath, str] | None,
+    raw_manifest: bytes,
+    legacy_inventory: str | None,
+    operation: str,
+    force: bool,
+) -> tuple[set[PurePosixPath], list[PurePosixPath]]:
+    """Return (owned, modified) after refusing unsafe or unauthorized states."""
+    if managed is not None:
+        modified, missing = preflight_v2(fs, managed, force)
+        owned = set(managed) - missing
+        headline = "managed installation file was modified"
+    else:
+        if not legacy_inventory:
+            fail("legacy uninstall requires the complete reviewed repository and ownership inventory")
+        known = load_legacy_inventory(Path(legacy_inventory))
+        scopes = legacy_scopes(fs, raw_manifest, known)
+        owned, modified = preflight_legacy(fs, known, scopes)
+        headline = "reviewed legacy file was modified or is unknown"
+    if modified and not force:
+        modified_files_error(fs, modified, operation, headline)
+    return owned, modified
+
+
+def back_up_modified(fs: ProfileFS, modified: list[PurePosixPath]) -> None:
+    if not modified:
+        return
+    label = time.strftime("%Y%m%dT%H%M%SZ", time.gmtime()) + f"-{os.getpid()}"
+    for relative in modified:
+        copy = fs.backup(relative, label)
+        print(f"  Backed up modified file: {fs.absolute(relative)} -> {copy}")
 
 
 def validate_manifest_path(fs: ProfileFS, manifest: Path) -> None:
@@ -608,20 +766,23 @@ def install(args: argparse.Namespace) -> None:
     validate_manifest_path(fs, manifest)
     incoming, skill_names, agent_names, script_names = build_inventory(source)
     managed, raw_manifest = load_v2(fs, manifest)
-    if managed is not None:
-        preflight_v2(fs, managed)
-        owned = set(managed)
-    elif raw_manifest:
-        known = load_legacy_inventory(Path(args.legacy_inventory))
-        scopes = legacy_scopes(fs, raw_manifest, known)
-        owned = preflight_legacy(fs, known, scopes)
+    modified: list[PurePosixPath] = []
+    if managed is not None or raw_manifest:
+        owned, modified = resolve_ownership(
+            fs, managed, raw_manifest, args.legacy_inventory, "install", getattr(args, "force_adopt", False),
+        )
     else:
         owned = set()
     for relative in incoming:
         status = fs.status(relative)
         if status is not None and relative not in owned:
-            fail(f"refusing to overwrite an unowned existing file: {fs.absolute(relative)}")
+            fail(
+                f"refusing to overwrite an unowned existing file: {fs.absolute(relative)}\n"
+                "It is not recorded in the installation manifest. Move or rename it (or delete it if it "
+                "is disposable) and run the installer again."
+            )
 
+    back_up_modified(fs, modified)
     transaction = Transaction(fs)
     staged_manifest: Path | None = None
     try:
@@ -672,15 +833,10 @@ def uninstall(args: argparse.Namespace) -> None:
     if fs.root_status(manifest.name) is None:
         return
     managed, raw_manifest = load_v2(fs, manifest)
-    if managed is not None:
-        preflight_v2(fs, managed)
-        owned = set(managed)
-    else:
-        if not args.legacy_inventory:
-            fail("legacy uninstall requires the complete reviewed repository and ownership inventory")
-        known = load_legacy_inventory(Path(args.legacy_inventory))
-        scopes = legacy_scopes(fs, raw_manifest, known)
-        owned = preflight_legacy(fs, known, scopes)
+    owned, modified = resolve_ownership(
+        fs, managed, raw_manifest, args.legacy_inventory, "uninstall", getattr(args, "force_adopt", False),
+    )
+    back_up_modified(fs, modified)
     transaction = Transaction(fs)
     staged_manifest: Path | None = None
     try:
@@ -709,11 +865,13 @@ def parser() -> argparse.ArgumentParser:
     install_parser.add_argument("--stats", required=True)
     install_parser.add_argument("--version", required=True)
     install_parser.add_argument("--legacy-inventory", required=True)
+    install_parser.add_argument("--force-adopt", action="store_true")
     install_parser.set_defaults(action=install)
     uninstall_parser = subparsers.add_parser("uninstall")
     uninstall_parser.add_argument("--profile", required=True)
     uninstall_parser.add_argument("--manifest", required=True)
     uninstall_parser.add_argument("--legacy-inventory")
+    uninstall_parser.add_argument("--force-adopt", action="store_true")
     uninstall_parser.set_defaults(action=uninstall)
     return result
 

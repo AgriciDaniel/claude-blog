@@ -9,7 +9,12 @@ from __future__ import annotations
 
 import json
 import re
+import shutil
+import subprocess
+import textwrap
 from pathlib import Path
+
+import pytest
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -104,7 +109,7 @@ def test_clone_bootstrap_uses_exclusive_owned_full_guid_root_and_child_checkout(
     assert "FileMode]::CreateNew" in creator
     assert ".claude-blog-bootstrap-owner" in creator
     assert '$CheckoutDir = Join-Path $BootstrapRoot "checkout"' in main
-    assert '@("clone", "--depth", "1", "--branch", $Ref, $Url, $CheckoutDir)' in main
+    assert '@("clone", "--depth", "1", "--branch", $Ref, "--", $Url, $CheckoutDir)' in main
     assert main.index("$BootstrapOwned = $true") > main.index("$bootstrap = New-ClaudeBlogOwnedTempRoot")
     assert "Substring(0,8)" not in install
     assert "if ($BootstrapOwned)" in main
@@ -302,3 +307,246 @@ def test_native_windows_smoke_is_executable_contract_not_claimed_linux_runtime()
     assert "2500d4c765034864cede2bf215d00ccd4d7d6fb8" in source
     assert "Invoke-ClaudeBlogInstall" in source
     assert "Invoke-ClaudeBlogUninstall" in source
+
+
+# Force-adopt, deleted managed files, the pip step and git input validation.
+# Static contracts first (always run). The executed tests below run the real
+# PowerShell engine when pwsh exists (GitHub ubuntu runners ship it). Neither
+# replaces the Windows PowerShell 5.1 and junction coverage of the native smoke.
+
+UNIX_ENGINE = ROOT / "scripts/installer_ownership.py"
+
+
+def test_automatic_variables_are_never_assigned() -> None:
+    forbidden = re.compile(r"^\s*\$(input|matches|args|error|pid|home|profile|pwd|host|true|false|null)\s*=", re.IGNORECASE | re.MULTILINE)
+    for path in (INSTALL, UNINSTALL, HELPER):
+        text = _read(path)
+        # $profile pre-dates this change in the engine's two entry points and is
+        # a plain local there; every other automatic name is rejected outright.
+        hits = [m.group(0).strip() for m in forbidden.finditer(text) if m.group(1).lower() != "profile"]
+        assert not hits, f"{path.name} assigns an automatic variable: {hits}"
+    def code(name: str) -> str:
+        return "\n".join(line for line in _function(_read(HELPER), name).splitlines() if not line.strip().startswith("#"))
+
+    assert not re.search(r"\$(input|output)\b", code("Copy-CBFileExclusive"))
+    assert not re.search(r"\$matches\b", code("Get-CBCompleteLegacyRevision"), re.IGNORECASE)
+
+
+def test_force_adopt_is_declared_validated_and_forwarded() -> None:
+    install = _read(INSTALL)
+    uninstall = _read(UNINSTALL)
+    for source in (install, uninstall):
+        assert "[switch]$ForceAdopt" in source
+        assert "ValueFromRemainingArguments" in source
+        assert '"--force-adopt" { $script:ForceAdoptRequested = $true }' in source
+        assert "unknown option: $Argument (supported: -ForceAdopt, --force-adopt, --help)" in source
+        assert "exit 2" in source
+    assert "$script:ForceAdoptRequested" in _function(install, "Main")
+    assert "$ForceAdoptRequested" not in install.split("function Main")[0].replace("$script:ForceAdoptRequested", "")
+    handoff = install[install.index("$childArguments"):install.index("$child.ExitCode")]
+    assert 'if ($script:ForceAdoptRequested) { $childArguments += "-ForceAdopt" }' in handoff
+    assert "Invoke-ClaudeBlogInstall $ScriptDir $ClaudeDir $Manifest $LegacyInventory $ClaudeBlogVersion $script:ForceAdoptRequested" in install
+    assert "Invoke-ClaudeBlogUninstall $ClaudeDir $Manifest $LegacyInventory $script:ForceAdoptRequested" in _function(uninstall, "Main")
+
+
+def test_force_adopt_engine_mirrors_unix_semantics_and_messages() -> None:
+    helper = _read(HELPER)
+    unix = _read(UNIX_ENGINE)
+    install = _function(helper, "Invoke-ClaudeBlogInstall")
+    uninstall = _function(helper, "Invoke-ClaudeBlogUninstall")
+    state = _function(helper, "Assert-CBOwnedFilesCurrent")
+    backup = _function(helper, "Backup-CBModifiedFiles")
+    message = _function(helper, "New-CBModifiedFilesMessage")
+    assert "$ForceAdopt = $false" in install.split("{", 1)[0]
+    assert "$ForceAdopt = $false" in uninstall.split("{", 1)[0]
+    # A deleted managed file is tolerated only when forced; a replaced one never.
+    assert "if ($Force) { $missing += $relative; continue }" in state
+    assert 'throw "managed installation file is missing or replaced: $target"' in state
+    assert "Test-CBReparsePoint $item" in state
+    assert "if ($modified.Count -gt 0 -and -not $Force)" in state
+    # Backup happens after every refusal and before the transaction mutates anything.
+    for body in (install, uninstall):
+        assert body.index("Backup-CBModifiedFiles $profile $modifiedOwned") < body.index("New-CBTempDirectory")
+    assert install.index("refusing to overwrite an unowned existing file") < install.index("Backup-CBModifiedFiles")
+    assert "Copy-CBFileExclusive $source $destination" in backup
+    assert backup.count("Assert-CBProfilePath $claudeProfile $destination") == 2
+    assert "Remove-Item" not in backup
+    assert '"yyyyMMdd\'T\'HHmmss\'Z\'"' in backup and "InvariantCulture" in backup
+    assert "Backed up modified file: " in backup
+    # Same sentences as modified_files_error in the Unix engine.
+    for sentence in (
+        "Nothing was changed.",
+        "installed file(s) differ from what the installer wrote,",
+        "so the installer will not overwrite or delete them without your say-so.",
+        "Safe steps:",
+        "1. Copy any edit you want to keep to a location outside ~/.claude/skills, ~/.claude/agents",
+        "and ~/.claude/scripts.",
+        "Each modified file is first copied to",
+        "3. Re-apply your edits from the backup if you still want them.",
+        "Alternatively restore the original file contents and run the same command again.",
+        "more modified file(s)",
+    ):
+        assert sentence in unix, sentence
+        assert sentence in message, sentence
+    assert "claude-blog-backups" in unix and '"claude-blog-backups"' in helper
+    assert "$script:CBModifiedListLimit = 10" in helper and "MODIFIED_LIST_LIMIT = 10" in unix
+    assert "reviewed legacy file was modified or is unknown" in install and "reviewed legacy file was modified or is unknown" in uninstall
+
+
+def test_install_ps1_validates_git_inputs_and_guards_arguments() -> None:
+    install = _read(INSTALL)
+    main = _function(install, "Main")
+    validator = _function(install, "Assert-ClaudeBlogGitInputs")
+    assert main.index("Assert-ClaudeBlogGitInputs") < main.index("Invoke-ClaudeBlogGit $GitCommand")
+    assert "^[A-Za-z0-9][A-Za-z0-9._/+@-]*$" in validator
+    assert "'^-'" in validator and "ext|fd" in validator
+    git_calls = re.findall(r'Invoke-ClaudeBlogGit \$GitCommand @\(([^)]*)\)', main)
+    clone_calls = [call for call in git_calls if '"clone"' in call]
+    assert len(clone_calls) == 2
+    for call in clone_calls:
+        assert call.index('"--"') < call.index("$Url"), call
+    checkout = next(call for call in git_calls if '"checkout"' in call)
+    assert checkout.rstrip().endswith('"--"') and "$Ref" in checkout
+
+
+def test_install_ps1_dependency_step_mirrors_install_sh_and_reports_failure() -> None:
+    install = _read(INSTALL)
+    main = _function(install, "Main")
+    shell = _read(ROOT / "install.sh")
+    assert 'CLAUDE_BLOG_SKIP_PIP' in main and 'CLAUDE_BLOG_SKIP_PIP' in shell
+    assert '$pipArguments += "--user"' in main and "pip_args=(--user" in shell
+    assert "Test-PythonInVirtualEnvironment" in main and "sys.prefix != sys.base_prefix" in install
+    assert '"-r", (\'"\' + $reqFile + \'"\')' in main
+    assert '"-r",$reqFile' not in install
+    failed = main.index('$DependencyStatus = "failed"')
+    assert failed < main.index("Skills installed. Python dependencies FAILED") < main.index("Python deps:  FAILED")
+    assert main.index("Skills installed. Python dependencies FAILED") < main.index("Installation Complete!")
+    assert "The skills are installed; only the optional Python extras are missing." in main
+    assert main.count('$DependencyStatus = "failed"') == 2  # pip exit code and pip could not start
+
+
+def _pwsh() -> str:
+    exe = shutil.which("pwsh")
+    if not exe:
+        pytest.skip("pwsh is not installed; the native Windows smoke remains the executable gate")
+    return exe
+
+
+def test_powershell_sources_parse(tmp_path: Path) -> None:
+    exe = _pwsh()
+    script = tmp_path / "parse.ps1"
+    script.write_text(
+        "$bad = 0\n"
+        "foreach ($p in $args) {\n"
+        "    $e = $null; $t = $null\n"
+        "    [System.Management.Automation.Language.Parser]::ParseFile($p, [ref]$t, [ref]$e) | Out-Null\n"
+        "    if ($e.Count) { $bad++; foreach ($err in $e) { \"$p`:$($err.Extent.StartLineNumber): $($err.Message)\" } }\n"
+        "}\n"
+        "exit $bad\n",
+        encoding="utf-8",
+    )
+    result = subprocess.run(
+        [exe, "-NoProfile", "-NonInteractive", "-File", str(script), str(INSTALL), str(UNINSTALL), str(HELPER), str(SMOKE)],
+        capture_output=True, text=True, check=False,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+ENGINE_SCENARIOS = textwrap.dedent(
+    r"""
+    param($Helper, $Source, $Profile, $Legacy)
+    $ErrorActionPreference = 'Stop'
+    . $Helper
+    $log = @()
+    function Step($label, [scriptblock]$block) {
+        try { & $block | Out-Null; $script:log += [ordered]@{ step = $label; ok = $true; message = '' } }
+        catch { $script:log += [ordered]@{ step = $label; ok = $false; message = $_.Exception.Message } }
+    }
+    $manifest = Join-Path $Profile 'claude-blog-manifest.txt'
+    $skill = Join-Path $Profile 'skills/blog/SKILL.md'
+    $agent = Join-Path $Profile 'agents/blog-writer.md'
+    $backups = Join-Path $Profile 'claude-blog-backups'
+    function Install([bool]$force = $false) { Invoke-ClaudeBlogInstall $Source $Profile $manifest $Legacy '2.2.0' $force | Out-Null }
+    function Uninstall([bool]$force = $false) { Invoke-ClaudeBlogUninstall $Profile $manifest $Legacy $force | Out-Null }
+    Step 'fresh install' { Install }
+    Add-Content -LiteralPath $skill -Value 'user edit'
+    Step 'install refuses modified' { Install }
+    Step 'uninstall refuses modified' { Uninstall }
+    $edited = (Get-Content -LiteralPath $skill -Raw).Contains('user edit')
+    Step 'install adopts modified' { Install $true }
+    $backupFiles = @(Get-ChildItem -LiteralPath $backups -Recurse -File)
+    $backupHoldsEdit = (Get-Content -LiteralPath $backupFiles[0].FullName -Raw).Contains('user edit')
+    $replaced = -not (Get-Content -LiteralPath $skill -Raw).Contains('user edit')
+    Remove-Item -LiteralPath $agent
+    Step 'install refuses deleted' { Install }
+    Step 'uninstall refuses deleted' { Uninstall }
+    Step 'install tolerates deleted when forced' { Install $true }
+    $restored = Test-Path -LiteralPath $agent
+    Add-Content -LiteralPath $skill -Value 'second edit'
+    Remove-Item -LiteralPath $agent
+    Step 'uninstall tolerates modified and deleted when forced' { Uninstall $true }
+    $gone = -not (Test-Path -LiteralPath $skill) -and -not (Test-Path -LiteralPath $manifest)
+    Step 'reinstall' { Install }
+    Add-Content -LiteralPath $skill -Value 'third edit'
+    $elsewhere = Join-Path (Split-Path -Parent $Profile) 'elsewhere'
+    New-Item -ItemType Directory -Force -Path $elsewhere | Out-Null
+    Remove-Item -LiteralPath $backups -Recurse -Force
+    New-Item -ItemType SymbolicLink -Path $backups -Target $elsewhere | Out-Null
+    Step 'forced backup refuses a linked backup directory' { Install $true }
+    $leaked = @(Get-ChildItem -LiteralPath $elsewhere -Force -Recurse).Count
+    $kept = (Get-Content -LiteralPath $skill -Raw).Contains('third edit')
+    [ordered]@{
+        steps = $log; edited_after_refusals = $edited; backup_holds_edit = $backupHoldsEdit; replaced = $replaced
+        restored = $restored; gone = $gone; leaked = $leaked; kept_after_link_refusal = $kept
+    } | ConvertTo-Json -Depth 4
+    """
+)
+
+
+def _mini_source(root: Path) -> Path:
+    source = root / "source"
+    files = {
+        "skills/blog/SKILL.md": "# blog\n",
+        "skills/blog/references/a.md": "reference\n",
+        "skills/blog-write/SKILL.md": "# write\n",
+        "agents/blog-writer.md": "agent\n",
+        "scripts/example.py": "print('x')\n",
+    }
+    for relative, content in files.items():
+        target = source / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(content, encoding="utf-8", newline="\n")
+    shutil.copy2(HELPER, source / "scripts/windows_installer_ownership.ps1")
+    return source
+
+
+def test_force_adopt_engine_executes_under_powershell(tmp_path: Path) -> None:
+    exe = _pwsh()
+    source = _mini_source(tmp_path)
+    profile = tmp_path / "home" / ".claude"
+    script = tmp_path / "scenarios.ps1"
+    script.write_text(ENGINE_SCENARIOS, encoding="utf-8")
+    result = subprocess.run(
+        [exe, "-NoProfile", "-NonInteractive", "-File", str(script), str(HELPER), str(source), str(profile), str(LEGACY)],
+        capture_output=True, text=True, check=False,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    report = json.loads(result.stdout[result.stdout.index("{"):])
+    steps = {item["step"]: item for item in report["steps"]}
+    for label in ("fresh install", "install adopts modified", "install tolerates deleted when forced",
+                  "uninstall tolerates modified and deleted when forced", "reinstall"):
+        assert steps[label]["ok"], steps[label]
+    modified = steps["install refuses modified"]["message"]
+    assert not steps["install refuses modified"]["ok"] and not steps["uninstall refuses modified"]["ok"]
+    assert modified.startswith("managed installation file was modified: ")
+    assert "pwsh -File ./install.ps1 -ForceAdopt" in modified
+    assert "pwsh -File ./uninstall.ps1 -ForceAdopt" in steps["uninstall refuses modified"]["message"]
+    assert "claude-blog-backups" in modified and "Nothing was changed." in modified
+    assert report["edited_after_refusals"] is True
+    assert report["backup_holds_edit"] and report["replaced"]
+    for label in ("install refuses deleted", "uninstall refuses deleted"):
+        assert not steps[label]["ok"] and "managed installation file is missing or replaced" in steps[label]["message"]
+    assert report["restored"] and report["gone"]
+    assert not steps["forced backup refuses a linked backup directory"]["ok"]
+    assert "reparse point" in steps["forced backup refuses a linked backup directory"]["message"]
+    assert report["leaked"] == 0 and report["kept_after_link_refusal"]

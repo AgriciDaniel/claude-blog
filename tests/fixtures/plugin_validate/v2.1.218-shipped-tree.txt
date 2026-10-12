@@ -1,0 +1,3 @@
+Validating marketplace manifest: /home/runner/work/claude-blog/claude-blog/.claude-plugin/marketplace.json
+
+✔ Validation passed

@@ -15,7 +15,7 @@
   <img src="https://img.shields.io/badge/Skill%20Dirs-32-orange" alt="Skill directories: 32">
   <img src="https://img.shields.io/badge/Sub--Skills-31-orange" alt="Sub-skills: 31">
   <img src="https://img.shields.io/badge/Commands-30-blueviolet" alt="User-facing commands: 30">
-  <img src="https://img.shields.io/badge/Tests-250%2B%20passing-brightgreen" alt="Tests: more than 250 passing">
+  <img src="https://img.shields.io/badge/Tests-pytest%20suite-brightgreen" alt="Tests: pytest suite, run it for the current count">
 </p>
 
 **claude-blog is a Claude Code skill suite that writes, optimizes, audits, localizes, and refreshes blog content at scale.** Every article is evaluated for Google-aligned usefulness and internal AI citation readiness heuristics. Version 2.2.0 was prepared on 2026-08-26.
@@ -49,7 +49,7 @@ The publishing workflow is documented in
 
 claude-blog is a full-lifecycle blog engine for strategy, briefs, outlines, writing, rewriting, analysis, schema, AI citation readiness, site audits, topic clusters, multilingual publishing, audio narration, and content decay detection.
 
-Current v2.2.0 shape: **32 skill directories = 1 orchestrator + 31 sub-skills; 30 user-facing /blog commands (`blog-chart` is internal, not a command).** It also includes 5 specialized agents, repository consistency and public-release validators, 22 core references, 12 templates, a 250+ test suite, and the bundled Claude Blog Brain at `./brain`.
+Current v2.2.0 shape: **32 skill directories = 1 orchestrator + 31 sub-skills; 30 user-facing /blog commands (`blog-chart` is internal, not a command).** It also includes 5 specialized agents, repository consistency and public-release validators, 22 core references, 12 templates, a pytest suite (run `python3 -m pytest --collect-only -q | tail -1` for the current count), and the bundled Claude Blog Brain at `./brain`.
 
 Every draft ships as an artifact folder with the markdown source, rendered HTML, PDF, real `hero.<ext>`, 3 viewport screenshots, `review.md`, and `preflight-report.json`. The renderer uses XSS-safe JSON-LD handling, dark-mode-aware CSS, and the same source for every output format.
 
@@ -59,7 +59,7 @@ Every draft ships as an artifact folder with the markdown source, rendered HTML,
 
 **Marketing teams and agencies** can run consistent multi-post workflows across brands, languages, authors, and platforms with `/blog cluster`, `/blog multilingual`, `/blog persona`, `/blog brand`, and `/blog discourse`.
 
-**Claude Code skill builders** can study a Tier 4 Agent Skills reference architecture with orchestrator routing, sub-skill dispatch, agent handoffs, code-enforced delivery gates, installer hardening, and CI coherence checks.
+**Claude Code skill builders** can study a layered Agent Skills architecture (a directive layer of SKILL.md files, an orchestration layer of one routing skill plus agents, and an execution layer of scripts) with orchestrator routing, sub-skill dispatch, agent handoffs, code-enforced delivery gates, installer hardening, and CI coherence checks.
 
 ## Where Should a Claude Code Skill Plugin Install Itself?
 
@@ -108,10 +108,10 @@ The orchestrator in `skills/blog/SKILL.md` parses `/blog` input, detects the tar
 | User-facing `/blog` commands | 30 | `skills/blog/SKILL.md` routing table |
 | Internal-only sub-skill | 1 | `skills/blog-chart/SKILL.md` |
 | Specialized agents | 5 | `agents/blog-*.md` |
-| Root scripts | 14 | `scripts/*.py` |
+| Root scripts | 22 | `scripts/*.py` |
 | References | 22 | `skills/blog/references/*.md` |
 | Templates | 12 | `skills/blog/templates/*.md` |
-| Tests | 252 | `tests/` |
+| Tests | pytest suite | `tests/` (`python3 -m pytest --collect-only -q \| tail -1` for the count) |
 
 More architecture detail lives in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
@@ -126,17 +126,19 @@ Every `/blog write` and `/blog rewrite` result must pass the delivery contract b
 | Gate | Enforces | Implementation |
 |---|---|---|
 | 1. Capability Discovery | Required tools, agents, env vars, and optional dependencies are known before writing | `scripts/blog_preflight.py --gate 1` |
-| 2. Format Completeness | `.md`, `.html`, `.pdf`, and a real hero image exist | `scripts/blog_render.py`, `scripts/generate_hero.py` |
-| 3. Visual Verification | Screenshots render at 375, 768, and 1280 widths, JSON-LD is valid, dark mode holds, SVGs do not overflow | `patchright` or `playwright` |
-| 4. Content Review | `blog-reviewer` score is 90+ with zero P0 issues | `agents/blog-reviewer.md` |
+| 2. Format Completeness | `.md`, `.html`, `.pdf`, and a real hero image exist and are valid: no leftover `[IMAGE]`, `[CHART]` or `[INTERNAL-LINK]` markers, slug-style filenames, hero decodes and is at least 1200x630, PDF opens with at least one page, the HTML's `blog-source-sha256` matches the `.md`, and static HTML checks (lang, title, meta description, one H1, heading order, og tags, no noindex, alt text, no active content) | `scripts/blog_render.py`, `scripts/generate_hero.py`, `scripts/blog_preflight.py` |
+| 3. Visual Verification | Screenshots render at 375, 768, and 1280 widths, JSON-LD is valid, dark mode holds, SVGs do not overflow, no hidden article text | `patchright` or `playwright` |
+| 4. Content Review | `blog-reviewer` score is 90+ with zero P0 issues, a matching nonce, and no change to the draft after the nonce was issued (a stale review is a violation) | `agents/blog-reviewer.md` |
 | 5. Asset and Link Integrity | Images resolve, `og:image` exists, links satisfy the verified URL policy, word count matches schema within 5% | `scripts/blog_preflight.py --gate 5` |
 
-Hero image ladder: Banana MCP, direct Gemini API, premium stock APIs, then Openverse. First working source wins. Full spec: [`skills/blog/references/blog-delivery-contract.md`](skills/blog/references/blog-delivery-contract.md).
+The order is fixed: draft, resolve markers and visuals, render, issue the review nonce, review, run the gates, and re-render, re-issue and re-review after any edit (maximum 3 iterations). The renderer's own footer link is checked for its scheme only, so a fully local article can pass Gate 5 offline; external links need network access, and a failure there may be a network or DNS problem rather than a dead link. The review nonce stops accidents and casual forgery; it does not stop a process running as the same user that can read its state file. The full sequence and every check live in one place: [`skills/blog/references/blog-delivery-contract.md`](skills/blog/references/blog-delivery-contract.md).
+
+Hero image ladder: Banana MCP, direct Gemini API, premium stock APIs, then Openverse. First working source wins. The ladder is specified in the same contract.
 
 ## Sub-Skill Ecosystem
 
 <p align="center">
-  <img src="assets/diagrams/03-sub-skill-map-A.svg" alt="claude-blog sub-skill ecosystem: one orchestrator, 31 sub-skills, 30 user-facing commands, and internal blog-chart support grouped by writing, quality, search, media, multilingual, and distribution workflows" width="100%">
+  <img src="assets/diagrams/03-sub-skill-map-A.svg" alt="claude-blog sub-skill ecosystem: one orchestrator and 31 sub-skills in eight clusters (30 user-facing commands plus the internal blog-chart skill), grouped by writing, strategy, quality, AI and search, multilingual, research, media, and distribution workflows" width="100%">
 </p>
 
 The ecosystem is intentionally modular. Most commands are user-facing sub-skills. `blog-chart` is internal-only, and `blog-image` can be called both by the user and internally by write and rewrite workflows.
@@ -199,7 +201,7 @@ claude-blog integrates the FLOW framework from [`AgriciDaniel/flow`](https://git
 - **AI Citation Readiness Heuristic**: `scripts/ai_citation_score.py` produces non-calibrated 0-100 editorial-readiness views for AI Overview, Perplexity, and ChatGPT and feeds `/blog geo`.
 - **Writing style learning**: `/blog style learn <paths>` builds an author voice profile from 5 to 10 posts.
 - **Content decay detection**: `/blog decay <current-gsc> <previous-gsc>` flags 20%+ quarter-over-quarter GSC traffic drops and suggests refresh, consolidate, or prune actions.
-- **Pre-commit quality gate**: `scripts/quality_gate.py` and `.pre-commit-config.yaml` block blog posts below score 70 before commit.
+- **Pre-commit quality gate**: `scripts/quality_gate.py` and `.pre-commit-config.yaml` block blog posts below score 70 before commit. The hook passes `--select` so non-post Markdown files are skipped; run directly, the gate fails closed on a bad path or a file without blog frontmatter.
 - **Brand and discourse context**: `/blog brand` writes `BRAND.md` and `VOICE.md`; `/blog discourse` writes `DISCOURSE.md`. The orchestrator loads them through fenced, nonce-bound untrusted-data handling.
 - **Multilingual and topic clusters**: `/blog multilingual`, `/blog translate`, `/blog localize`, `/blog locale-audit`, and `/blog cluster` support international hub-and-spoke publishing.
 - **Deterministic blog hygiene**: `scripts/blog_hygiene.py` can add lazy image loading and a table of contents without replacing human review.
@@ -229,9 +231,9 @@ Scoring bands: Exceptional (90-100), Strong (80-89), Acceptable (70-79), Below S
 - CMS taxonomy management for WordPress, Shopify, Ghost, Strapi, and Sanity.
 - Dual Google and AI-citation optimization, including evidence-backed explanations, intent-matched structure, optional visible Q&A, internal links, schema, and substantive maintenance.
 - Visual media through Gemini image generation, verified stock sourcing, SVG charts, YouTube embeds, and alt text requirements.
-- Google API integration across PageSpeed Insights, CrUX, Search Console, GA4, NLP, YouTube, URL Inspection, and Keyword Planner. Indexing API use is scoped to JobPosting or livestream URLs only.
-- NotebookLM research for source-grounded answers from user-uploaded documents.
-- Gemini TTS audio narration in summary, full-article, and two-speaker dialogue modes.
+- Google API integration across PageSpeed Insights, CrUX, Search Console, GA4, NLP, YouTube, URL Inspection, and Keyword Planner. Indexing API use is scoped to JobPosting or livestream URLs only and requires `indexing_notify.py --confirm-eligible`.
+- NotebookLM (now Gemini Notebook, `notebook.google.com`) research for source-grounded answers from user-uploaded documents.
+- Gemini TTS audio narration in summary, full-article, and two-speaker dialogue modes (default model alias `flash38`, with a `--max-chunks` cap on billed calls).
 - Platform support for Next.js MDX, Astro, Hugo, Jekyll, WordPress, Ghost, 11ty, Gatsby, and static HTML.
 
 ### Methodology References
@@ -252,30 +254,34 @@ The Claude Blog Brain is vendored at `./brain` as a self-contained, evidence-gat
 
 ## Install
 
-The plugin identifier is `blog-engine`, distributed through the existing
-`agricidaniel-blog` marketplace:
+Plugin install. Tested on Claude Code 2.1.296. The Claude Code changelog first lists the plugin system in 2.0.12 and the `${CLAUDE_SKILL_DIR}` skill variable that these skills rely on in 2.1.69 ([changelog](https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md), checked 2026-10-12), so 2.1.69 is the oldest version this README can justify and nothing older has been tested:
 
 ```bash
 /plugin marketplace add AgriciDaniel/claude-blog
-/plugin install blog-engine@agricidaniel-blog
+/plugin install claude-blog@agricidaniel-blog
 ```
 
-Plugin commands use `/blog-engine:blog`, for example
-`/blog-engine:blog write <topic>`. Standalone skill installations retain
-`/blog write <topic>` and every existing command and alias.
-The GitHub repository remains `AgriciDaniel/claude-blog`.
+### Standalone installer (Unix, macOS, Windows)
 
-Existing plugin users should follow the
-[identifier migration instructions](docs/INSTALLATION.md#plugin-identifier-migration).
-The published v2.2.0 tag retains its historical plugin identifier; the new
-identifier applies to the updated marketplace when this change is merged.
+Placeholder used below: `<commit-sha-or-release-tag>` is the first release that
+contains the ownership-aware installer (`scripts/installer_ownership.py`), or a
+commit you reviewed. Prefer a full 40-character commit SHA. The release notes
+name the tag once it exists.
 
-Recommended clone, verify, then install flow:
+> Do not install or uninstall from the `v2.2.0` tag. It predates the
+> ownership-aware installer, and its `uninstall.sh` recursively deletes whole
+> `blog` and `blog-*` skill directories, including files you added to them. An
+> existing v2.2.0 standalone install can be migrated or removed safely by the
+> newer installer; it adopts files only when their bytes match the reviewed
+> release inventory.
+
+Recommended clone, review, then install flow:
 
 ```bash
 git clone https://github.com/AgriciDaniel/claude-blog.git
 cd claude-blog
-git checkout v2.2.0
+git checkout <commit-sha-or-release-tag>
+# Review install.sh, uninstall.sh and scripts/installer_ownership.py.
 chmod +x install.sh
 ./install.sh
 ```
@@ -285,26 +291,51 @@ Download, inspect, and run on Unix and macOS:
 ```bash
 curl -fsSLo install.sh https://raw.githubusercontent.com/AgriciDaniel/claude-blog/main/install.sh
 # Inspect install.sh and verify the digest below before execution.
-CLAUDE_BLOG_REF=v2.2.0 bash install.sh
+CLAUDE_BLOG_REF=<commit-sha-or-release-tag> bash install.sh
 ```
 
 One-command install on Windows PowerShell:
 
 ```powershell
-$env:CLAUDE_BLOG_REF = "v2.2.0"
+$env:CLAUDE_BLOG_REF = "<commit-sha-or-release-tag>"
 irm https://raw.githubusercontent.com/AgriciDaniel/claude-blog/main/install.ps1 -OutFile install.ps1
 pwsh -File ./install.ps1
 ```
 
-Verify installer integrity before running:
+Verify the downloaded wrapper before running it:
 
 ```bash
 curl -fsSL -o install.sh https://raw.githubusercontent.com/AgriciDaniel/claude-blog/main/install.sh
-echo "0735d4166f9fd7d4f660cf321328e20270190d51a437799f560808102693187a  install.sh" | sha256sum -c
-CLAUDE_BLOG_REF=v2.2.0 bash install.sh
+echo "865d218d03a205adb6234fd425e28bd9f64cffaee1eac58f399c77d725c3cd06  install.sh" | sha256sum -c
+CLAUDE_BLOG_REF=<commit-sha-or-release-tag> bash install.sh
 ```
 
-The SHA-256 above is for the current `install.sh` at HEAD on `main`; `CLAUDE_BLOG_REF` pins the repository clone performed by the installer. Verify against [the canonical file](https://github.com/AgriciDaniel/claude-blog/blob/main/install.sh) before running. The `install.ps1` companion hash is `3ff767388b8e19bf88cd04f9c625060be2a1a4d7b1f7166a49b8fa534937099c`.
+Integrity is only as pinned as `CLAUDE_BLOG_REF`. What the digests cover:
+each is the SHA-256 of that one file's bytes in this repository with CRLF line
+endings normalized to LF, the form `raw.githubusercontent.com` serves
+(`install.sh`: the digest above; `install.ps1`:
+`d4eef6f3ead95e72ffbc336a588ed154b7fb201789a731f52ac921a9f2d6c445`). A local
+copy with CRLF endings or edits will not match until normalized. They do not
+cover the code that does the work: the wrapper clones the repository at
+`CLAUDE_BLOG_REF` and hands over to that revision's own `install.sh`,
+`scripts/installer_ownership.py` and payload. A branch such as `main` moves, a
+tag can be re-pointed by whoever controls the repository, and a full commit SHA
+cannot. Pin a commit SHA you reviewed, or use the clone, review, install flow
+above. Compare against [the canonical file](https://github.com/AgriciDaniel/claude-blog/blob/main/install.sh).
+The digests are refreshed at release time; if they disagree with `main`, treat
+the commit you reviewed as the authority and report the mismatch.
+
+The Unix installer installs optional Python extras with `pip --user` (or plain
+pip inside a virtual environment), never with `sudo`; on an externally managed
+Python it prints virtual-environment steps instead. If it stops with "managed
+installation file was modified", it names the files and the safe recovery
+(`--force-adopt` on Unix, `-ForceAdopt` on Windows, for both the installer and
+the uninstaller). Each edited file is first copied to
+`~/.claude/claude-blog-backups/<timestamp>/`. `CLAUDE_BLOG_SKIP_PIP=1` skips the
+optional Python dependency step. `install.ps1` rejects a `CLAUDE_BLOG_REPO`,
+`CLAUDE_BLOG_REF` or `CLAUDE_BLOG_URL` that git could read as an option or a
+command transport; details and the exact rules are in
+[`docs/INSTALLATION.md`](docs/INSTALLATION.md).
 
 Restart Claude Code after installation to activate.
 
@@ -323,16 +354,32 @@ Uninstall on Windows PowerShell:
 
 Installation details: [`docs/INSTALLATION.md`](docs/INSTALLATION.md).
 
+## Known Issues
+
+- **`claude plugin validate` rejects the name `claude-blog` on newer Claude Code.**
+  Claude Code 2.1.292 and later (checked on 2.1.292 and 2.1.296) report
+  `Plugin name "claude-blog" is reserved` because third-party plugin names that
+  start with `claude-` are reserved for Anthropic. The v2.2.0 release fails the
+  same way; Claude Code 2.1.218 passes. In maintainer testing the plugin still
+  installs and loads, so this is a validation error rather than an observed
+  install failure, but a future release could enforce it at install time. The
+  repository's own tests and `scripts/validate_public_release.py` do not depend
+  on this check. CI runs `claude plugin validate .` through
+  `.github/scripts/validate_plugin_tolerate_reserved_name.py`, which tolerates
+  exactly that reserved-name finding (once in the marketplace check and once in
+  the `plugin.json` check) plus the root `CLAUDE.md` notice, and fails on any
+  other error or warning. Details: [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md#plugin-validate-reports-claude-blog-as-reserved).
+
 ## Requirements
 
-- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI installed and configured.
+- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI installed and configured (tested on 2.1.296; see the version note under Install).
 - Python 3.11+ for quality scoring, the delivery contract runners, renderers, and lint.
 - Optional: `pip install -r requirements.txt` for advanced analysis, readability scoring, schema detection, and media workflows.
 
 ### Automated CI Quality Gates
 
 1. **pytest**: the complete security, behavioral, regression, installer, and delivery-contract suite.
-2. **Plugin validation**: `claude plugin validate .` plus manifest, marketplace, and frontmatter checks.
+2. **Plugin validation**: `claude plugin validate .` (tolerating only the known reserved-name finding, see Known Issues) plus manifest, marketplace, and frontmatter checks.
 3. **Stale-path lint**: catches drift in `references/`, `templates/`, command docs, and installer payloads.
 4. **Prose hygiene**: `scripts/lint_prose.py` enforces no em dash, no en dash, and no ASCII double-hyphen prose.
 5. **Secret adjudication**: `scripts/check_secrets.py` fails on unapproved detector findings and credential-shaped values without printing raw values.
@@ -353,32 +400,32 @@ claude plugin validate .
 
 ## How Does claude-blog Compare?
 
-claude-blog is a structured pipeline. Direct LLM prompting is a one-shot. Hosted SaaS tools are closed-source. The tradeoffs are:
+This section lists only what this repository ships and how you can check each item yourself. It makes no claims about the capabilities of other products, which change and which this project has not benchmarked.
 
-| Capability | claude-blog | Direct Claude or ChatGPT prompt | Copy.ai or Jasper | Build it yourself |
-|---|:---:|:---:|:---:|:---:|
-| Full article in one command with iteration loop | Yes | One-shot | Yes | No |
-| Sourced statistics with verification | Yes | No | No | Manual |
-| AI citation optimization (GEO / AEO) | Yes | No | No | Partial |
-| Blocking content review with score 90+ | Yes | No | No | No |
-| Multilingual plus hreflang in one command | Yes | Partial | Partial | No |
-| Topic-cluster planning | Yes | No | Partial | No |
-| Audio narration | Yes | No | No | No |
-| Hero image generation ladder | Yes | No | Stock only | Partial |
-| Persistent brand and voice context | Yes | Per-prompt | Limited | No |
-| Open-source, MIT, no SaaS subscription | Yes | No | No | Yes |
+| Capability in this repository | How to verify |
+|---|---|
+| Full article in one command with a 3-iteration repair loop | `skills/blog-write/SKILL.md`, `skills/blog/references/blog-delivery-contract.md` |
+| Source-tier rules and a `/blog factcheck` pass that fetches cited URLs | `skills/blog-factcheck/SKILL.md`, `skills/blog/references/research-quality.md` |
+| AI citation readiness heuristic (non-calibrated) | `scripts/ai_citation_score.py`, `skills/blog-geo/SKILL.md` |
+| Blocking content review: score 90+ and zero P0 issues, bound to a nonce | `agents/blog-reviewer.md`, `scripts/blog_preflight.py` Gate 4 |
+| Multilingual publishing with hreflang in one command | `skills/blog-multilingual/SKILL.md` |
+| Topic-cluster planning and execution | `skills/blog-cluster/SKILL.md` |
+| Audio narration through Gemini TTS | `skills/blog-audio/SKILL.md` |
+| Hero image ladder (Banana MCP, Gemini API, stock APIs, Openverse) | `scripts/generate_hero.py --help` |
+| Persistent brand and voice context files | `skills/blog-brand/SKILL.md` |
+| Open source under the MIT license, no subscription of its own | `LICENSE` |
 
-claude-blog is not better at everything. Direct prompting is faster for a single throwaway draft. Hosted SaaS is easier for non-developers. DIY is more flexible for unique pipelines. claude-blog fits when you want production-grade content at scale without a SaaS subscription.
+Maintainer opinion, written 2026-10-12 and not a benchmark: direct prompting is faster for a single throwaway draft, hosted writing tools are easier for non-developers, and building your own pipeline is more flexible for unusual needs. claude-blog is aimed at people who already use Claude Code and want a repeatable, gated workflow they can read and change.
 
 ## Frequently Asked Questions
 
 ### What is claude-blog?
 
-claude-blog is a Claude Code skill suite for writing, optimizing, and auditing blog content. It runs 32 skill directories through a 5-gate delivery contract so every article meets a 90/100 quality bar before it reaches you.
+claude-blog is a Claude Code skill suite for writing, optimizing, and auditing blog content. Drafts go through a 5-gate delivery contract, including an independent review that must score 90/100 or higher with no P0 issues, before they are presented to you.
 
 ### How is claude-blog different from prompting Claude or ChatGPT directly?
 
-Direct prompting gives you one draft from one prompt. claude-blog gives you a structured pipeline: research with sourced statistics, outline approval, draft generation, multi-pass quality scoring, advisory editorial pattern review, fact verification, schema injection, and a blocking review that iterates up to 3 times before delivery.
+Direct prompting gives you one draft from one prompt. claude-blog gives you a structured pipeline (see the verifiable list above): research with sourced statistics, outline approval, draft generation, multi-pass quality scoring, advisory editorial pattern review, fact verification, schema injection, and a blocking review that iterates up to 3 times before delivery.
 
 ### Is claude-blog free and open source?
 
@@ -391,11 +438,11 @@ Next.js MDX, Astro, Hugo, Jekyll, WordPress, Ghost, 11ty, Gatsby, and static HTM
 
 ### Does claude-blog hallucinate statistics?
 
-The workflow is designed to block invented numbers. `/blog factcheck` fetches cited source URLs and scores each claim as exact match, paraphrase, or not found. `blog-reviewer` blocks publication when citations cannot be verified.
+The workflow is designed to block invented numbers. `/blog factcheck` fetches cited source URLs and scores each claim as exact match, paraphrase, or not found. `blog-reviewer` treats a load-bearing claim without adequate source support as a P0 issue, which blocks delivery.
 
 ### What is the 5-gate Blog Delivery Contract?
 
-It is a pre-presentation pipeline for Capability Discovery, Format Completeness, Visual Verification, Content Review, and Asset and Link Integrity. The orchestrator iterates the writer up to 3 times on any gate failure before escalating to you. Full spec: [`skills/blog/references/blog-delivery-contract.md`](skills/blog/references/blog-delivery-contract.md).
+It is a pre-presentation pipeline for Capability Discovery, Format Completeness, Visual Verification, Content Review, and Asset and Link Integrity. The orchestrator iterates up to 3 times on any gate failure before escalating to you, and any edit after the review means re-rendering and re-reviewing. Full spec: [`skills/blog/references/blog-delivery-contract.md`](skills/blog/references/blog-delivery-contract.md).
 
 ### Can I use claude-blog in multiple languages?
 
@@ -407,7 +454,7 @@ See [How To Cite](#how-to-cite) or [`CITATION.cff`](CITATION.cff). GitHub also s
 
 ### Is claude-blog secure to install?
 
-The recommended flow downloads the installer as a file so you can inspect it before execution. v2.2.0 uses pinned refs, allowlisted recursive payload copies, manifest-backed uninstall, prose lint, version coherence checks, repository consistency checks, and installer regression tests. See [`SECURITY.md`](.github/SECURITY.md).
+The recommended flow downloads the installer as a file so you can inspect it before execution. The installers use ownership-verified payload copies, manifest-backed uninstall, backups before any forced replacement, and regression tests; pin `CLAUDE_BLOG_REF` to a reviewed commit SHA (never the `v2.2.0` tag, whose `uninstall.sh` predates these protections). See [`SECURITY.md`](.github/SECURITY.md).
 
 ## Documentation Index
 

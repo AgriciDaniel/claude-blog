@@ -17,7 +17,7 @@ from pathlib import Path
 
 PUBLIC_REPOSITORY = "https://github.com/AgriciDaniel/claude-blog"
 PUBLIC_VERSION = "2.2.0"
-PUBLIC_PLUGIN_IDENTIFIER = "blog-engine"
+PUBLIC_PLUGIN_IDENTIFIER = "claude-blog"
 PUBLIC_SLUG = f"{PUBLIC_PLUGIN_IDENTIFIER}@agricidaniel-blog"
 PUBLIC_OWNER = "AgriciDaniel"
 PUBLIC_OWNER_URL = "https://github.com/AgriciDaniel"
@@ -35,8 +35,9 @@ PUBLIC_PINNED_INSTALL_SH = (
 PUBLIC_DISCUSSIONS = f"{PUBLIC_REPOSITORY}/discussions"
 PUBLIC_SECURITY_ADVISORY = f"{PUBLIC_REPOSITORY}/security/advisories/new"
 PUBLIC_DOCUMENTATION = f"{PUBLIC_REPOSITORY}/tree/main/docs"
-SECURITY_CHECKOUT_RE = re.compile(
-    r"\bgit checkout v([0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?)\b"
+SECURITY_CHECKOUT_GUIDANCE = "git checkout <commit-sha-or-release-tag>"
+PREOWNERSHIP_INSTALLER_PIN_RE = re.compile(
+    r"(?:git checkout\s+|CLAUDE_BLOG_REF\s*=\s*[\"']?|/claude-blog/)v2\.2\.0(?:/install\.(?:sh|ps1))?\b"
 )
 SURFACES = (
     "README.md",
@@ -171,13 +172,10 @@ def validate(root: Path) -> dict:
 
     version_fragments = {
         "README.md": (
-            f"git checkout v{PUBLIC_VERSION}",
-            f"CLAUDE_BLOG_REF=v{PUBLIC_VERSION}",
+            "git checkout <commit-sha-or-release-tag>",
+            "CLAUDE_BLOG_REF=<commit-sha-or-release-tag>",
         ),
-        "CLAUDE.md": (
-            f"CLAUDE_BLOG_REF=v{PUBLIC_VERSION}",
-            PUBLIC_PINNED_INSTALL_SH,
-        ),
+        "CLAUDE.md": ("CLAUDE_BLOG_REF=<commit-sha-or-release-tag>",),
         "CITATION.cff": (f"version: {PUBLIC_VERSION}",),
         "pyproject.toml": (f'version = "{PUBLIC_VERSION}"',),
         ".claude-plugin/plugin.json": (f'"version": "{PUBLIC_VERSION}"',),
@@ -197,16 +195,28 @@ def validate(root: Path) -> dict:
                     }
                 )
 
+    # v2.2.0 predates the ownership-aware installer, and its uninstall.sh runs
+    # an unguarded recursive delete. Install documentation must not pin to it.
+    for relative in ("README.md", "CLAUDE.md", "docs/INSTALLATION.md", ".github/SECURITY.md"):
+        for match in PREOWNERSHIP_INSTALLER_PIN_RE.finditer(contents.get(relative, "")):
+            errors.append(
+                {
+                    "kind": "unsafe_preownership_installer_pin",
+                    "file": relative,
+                    "actual": match.group(0),
+                }
+            )
+
     citation = contents.get("CITATION.cff", "")
+    # SECURITY.md must give the same pin-a-reviewed-ref guidance as the README
+    # and must never tell users to run the v2.2.0 installer (checked above).
     security = contents.get(".github/SECURITY.md", "")
-    security_versions = sorted(set(SECURITY_CHECKOUT_RE.findall(security)))
-    if security_versions != [PUBLIC_VERSION]:
+    if SECURITY_CHECKOUT_GUIDANCE not in security:
         errors.append(
             {
-                "kind": "invalid_public_security_version",
+                "kind": "invalid_public_security_guidance",
                 "file": ".github/SECURITY.md",
-                "expected": PUBLIC_VERSION,
-                "actual": security_versions,
+                "expected": SECURITY_CHECKOUT_GUIDANCE,
             }
         )
 

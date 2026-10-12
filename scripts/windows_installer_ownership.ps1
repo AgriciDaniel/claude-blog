@@ -5,6 +5,8 @@
 $script:CBReceiptOwner = "claude-blog-windows-installer"
 $script:CBLegacyOwner = "claude-blog-reviewed-legacy-payload"
 $script:CBHex64 = '^[0-9a-f]{64}$'
+$script:CBBackupDirectory = "claude-blog-backups"
+$script:CBModifiedListLimit = 10
 
 function Get-CBFullPath($Path) {
     return [System.IO.Path]::GetFullPath([string]$Path).TrimEnd(
@@ -293,7 +295,11 @@ function Test-CBLegacyCovered($Relative, $Scopes) {
 }
 
 function Get-CBLegacyOwnedFromScopes($ProfileRoot, $Inventory, $Scopes) {
+    # Returns Owned (relative path -> sha256 on disk) and Modified (the owned
+    # paths whose bytes match no reviewed revision). The caller refuses unless
+    # --force-adopt was given, exactly like the Unix engine.
     $owned = @{}
+    $modified = @()
     foreach ($relative in @($Inventory.Records.Keys | Sort-Object)) {
         if (-not (Test-CBLegacyCovered $relative $Scopes)) { continue }
         $target = Get-CBTargetPath $ProfileRoot $relative
@@ -303,16 +309,17 @@ function Get-CBLegacyOwnedFromScopes($ProfileRoot, $Inventory, $Scopes) {
         if ($item.PSIsContainer -or (Test-CBReparsePoint $item)) { throw "reviewed legacy path is missing or replaced: $target" }
         $actual = Get-CBSha256 $target
         if (@($Inventory.Records[$relative] | Where-Object { $_.Sha256 -eq $actual }).Count -eq 0) {
-            throw "reviewed legacy file was modified or is unknown: $target"
+            $modified += $relative
         }
         $owned[$relative] = $actual
     }
     if ($owned.Count -eq 0) { throw "legacy manifest does not prove ownership of any installed file" }
-    return $owned
+    return [PSCustomObject]@{ Owned = $owned; Modified = @($modified) }
 }
 
 function Get-CBCompleteLegacyRevision($ProfileRoot, $Inventory) {
-    $matches = @()
+    # Not named $matches: that is the automatic variable set by -match.
+    $completeRevisions = @()
     foreach ($revision in @($Inventory.Revisions)) {
         $candidate = @{}
         $valid = $true
@@ -325,20 +332,99 @@ function Get-CBCompleteLegacyRevision($ProfileRoot, $Inventory) {
             if ((Get-CBSha256 $target) -ne $record[0].Sha256) { $valid = $false; break }
             $candidate[$relative] = $record[0].Sha256
         }
-        if ($valid) { $matches += [PSCustomObject]@{ Revision = $revision; Files = $candidate } }
+        if ($valid) { $completeRevisions += [PSCustomObject]@{ Revision = $revision; Files = $candidate } }
     }
-    if ($matches.Count -eq 0) {
+    if ($completeRevisions.Count -eq 0) {
         throw "no complete reviewed legacy installation was found; refusing without ownership proof"
     }
-    return $matches[0].Files
+    return $completeRevisions[0].Files
 }
 
-function Assert-CBOwnedFilesCurrent($ProfileRoot, $Files) {
+function New-CBModifiedFilesMessage($ProfileRoot, $Modified, $Operation, $Headline) {
+    # Same wording as modified_files_error in scripts/installer_ownership.py.
+    $paths = @($Modified)
+    $shown = @($paths | Select-Object -First $script:CBModifiedListLimit)
+    $lines = @()
+    foreach ($relative in $shown) {
+        $lines += ($Headline + ": " + (Get-CBTargetPath $ProfileRoot $relative))
+    }
+    if ($paths.Count -gt $shown.Count) {
+        $lines += ("... and " + ($paths.Count - $shown.Count) + " more modified file(s)")
+    }
+    $scriptName = if ($Operation -eq 'install') { 'install.ps1' } else { 'uninstall.ps1' }
+    $action = if ($Operation -eq 'install') { 'replaced with the packaged version' } else { 'removed' }
+    $backupRoot = Join-Path (Get-CBFullPath $ProfileRoot) $script:CBBackupDirectory
+    $lines += @(
+        "",
+        "Nothing was changed. $($paths.Count) installed file(s) differ from what the installer wrote,",
+        "so the installer will not overwrite or delete them without your say-so.",
+        "Safe steps:",
+        "  1. Copy any edit you want to keep to a location outside ~/.claude/skills, ~/.claude/agents",
+        "     and ~/.claude/scripts.",
+        "  2. Run: pwsh -File ./$scriptName -ForceAdopt",
+        "     Each modified file is first copied to $backupRoot/<timestamp>/ and then $action.",
+        "  3. Re-apply your edits from the backup if you still want them.",
+        "Alternatively restore the original file contents and run the same command again."
+    )
+    return ($lines -join "`n")
+}
+
+function Assert-CBOwnedFilesCurrent($ProfileRoot, $Files, $Force = $false, $Operation = 'install') {
+    # Returns Modified (receipt files whose bytes changed) and Missing (receipt
+    # files that were deleted). Without -ForceAdopt either one refuses: a
+    # modified file with the full recovery message, a missing one outright.
+    # With it, modified files are reported for backup and missing files are
+    # tolerated, exactly like preflight_v2 in scripts/installer_ownership.py.
+    $modified = @()
+    $missing = @()
     foreach ($relative in @($Files.Keys | Sort-Object)) {
         $target = Get-CBTargetPath $ProfileRoot $relative
         Assert-CBProfilePath $ProfileRoot $target
-        if (-not (Test-Path -LiteralPath $target -PathType Leaf)) { throw "managed installation file is missing or replaced: $target" }
-        if ((Get-CBSha256 $target) -ne $Files[$relative]) { throw "managed installation file was modified: $target" }
+        $item = Get-Item -LiteralPath $target -Force -ErrorAction SilentlyContinue
+        if ($null -eq $item) {
+            if ($Force) { $missing += $relative; continue }
+            throw "managed installation file is missing or replaced: $target"
+        }
+        if ($item.PSIsContainer -or (Test-CBReparsePoint $item)) {
+            throw "managed installation file is missing or replaced: $target"
+        }
+        if ((Get-CBSha256 $target) -ne $Files[$relative]) { $modified += $relative }
+    }
+    if ($modified.Count -gt 0 -and -not $Force) {
+        throw (New-CBModifiedFilesMessage $ProfileRoot $modified $Operation "managed installation file was modified")
+    }
+    return [PSCustomObject]@{ Modified = @($modified); Missing = @($missing) }
+}
+
+function Get-CBPresentOwnedFiles($Files, $Missing) {
+    $present = @{}
+    foreach ($relative in @($Files.Keys)) {
+        if (@($Missing) -notcontains $relative) { $present[$relative] = $Files[$relative] }
+    }
+    return $present
+}
+
+function Backup-CBModifiedFiles($ProfileRoot, $RelativePaths) {
+    # Copy each modified file to <profile>/claude-blog-backups/<timestamp>-<pid>/<relative>
+    # before it is replaced or removed. Every destination is checked for
+    # reparse points before and after its directories are created, and the
+    # copy is created exclusively, so a backup cannot write through a link.
+    $paths = @($RelativePaths | Sort-Object -Unique)
+    if ($paths.Count -eq 0) { return }
+    $claudeProfile = Get-CBFullPath $ProfileRoot
+    $stamp = [System.DateTime]::UtcNow.ToString("yyyyMMdd'T'HHmmss'Z'", [System.Globalization.CultureInfo]::InvariantCulture)
+    $label = $stamp + "-" + $PID
+    $backupBase = Join-Path (Join-Path $claudeProfile $script:CBBackupDirectory) $label
+    foreach ($relative in $paths) {
+        $source = Get-CBTargetPath $claudeProfile $relative
+        Assert-CBProfilePath $claudeProfile $source
+        $destination = Join-Path $backupBase ($relative.Replace('/', [System.IO.Path]::DirectorySeparatorChar))
+        Assert-CBProfilePath $claudeProfile $destination
+        New-Item -ItemType Directory -Force -Path (Split-Path -Parent $destination) | Out-Null
+        Assert-CBProfilePath $claudeProfile $destination
+        Copy-CBFileExclusive $source $destination
+        if ((Get-CBSha256 $destination) -ne (Get-CBSha256 $source)) { throw "backup verification failed: $source" }
+        Write-Host ("  Backed up modified file: " + $source + " -> " + $destination)
     }
 }
 
@@ -352,15 +438,16 @@ function New-CBTempDirectory($Prefix) {
 }
 
 function Copy-CBFileExclusive($Source, $Destination) {
-    $input = [System.IO.File]::Open($Source, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::Read)
-    $output = $null
+    # Do not name these $input or $output: $input is an automatic variable.
+    $sourceStream = [System.IO.File]::Open($Source, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::Read)
+    $targetStream = $null
     try {
-        $output = [System.IO.File]::Open($Destination, [System.IO.FileMode]::CreateNew, [System.IO.FileAccess]::Write, [System.IO.FileShare]::None)
-        $input.CopyTo($output)
-        $output.Flush()
+        $targetStream = [System.IO.File]::Open($Destination, [System.IO.FileMode]::CreateNew, [System.IO.FileAccess]::Write, [System.IO.FileShare]::None)
+        $sourceStream.CopyTo($targetStream)
+        $targetStream.Flush()
     } finally {
-        if ($output) { $output.Dispose() }
-        $input.Dispose()
+        if ($targetStream) { $targetStream.Dispose() }
+        $sourceStream.Dispose()
     }
 }
 
@@ -423,7 +510,7 @@ function Restore-CBTransaction($ProfileRoot, $AllRelative, $Backed, $ManifestPat
     }
 }
 
-function Invoke-ClaudeBlogInstall($SourceRoot, $ProfileRoot, $ManifestPath, $LegacyInventoryPath, $Version) {
+function Invoke-ClaudeBlogInstall($SourceRoot, $ProfileRoot, $ManifestPath, $LegacyInventoryPath, $Version, $ForceAdopt = $false) {
     $profile = Get-CBFullPath $ProfileRoot
     $manifest = Get-CBFullPath $ManifestPath
     if ((Split-Path -Parent $manifest) -ne $profile -or (Split-Path -Leaf $manifest) -ne 'claude-blog-manifest.txt') {
@@ -435,16 +522,23 @@ function Invoke-ClaudeBlogInstall($SourceRoot, $ProfileRoot, $ManifestPath, $Leg
     $plan = $sourcePlan.Files
     $inventory = Read-CBLegacyInventory $LegacyInventoryPath
     $owned = @{}
+    $modifiedOwned = @()
     $receiptRaw = $null
     if (Test-Path -LiteralPath $manifest) {
         $receipt = Read-CBReceipt $manifest $profile
         $receiptRaw = $receipt.Raw
         if ($receipt.Kind -eq 'v2') {
-            Assert-CBOwnedFilesCurrent $profile $receipt.Files
-            $owned = $receipt.Files
+            $state = Assert-CBOwnedFilesCurrent $profile $receipt.Files $ForceAdopt 'install'
+            $owned = Get-CBPresentOwnedFiles $receipt.Files $state.Missing
+            $modifiedOwned = @($state.Modified)
         } else {
             $scopes = Get-CBLegacyScopes $receipt.Raw $profile $inventory
-            $owned = Get-CBLegacyOwnedFromScopes $profile $inventory $scopes
+            $legacy = Get-CBLegacyOwnedFromScopes $profile $inventory $scopes
+            if (@($legacy.Modified).Count -gt 0 -and -not $ForceAdopt) {
+                throw (New-CBModifiedFilesMessage $profile $legacy.Modified 'install' "reviewed legacy file was modified or is unknown")
+            }
+            $owned = $legacy.Owned
+            $modifiedOwned = @($legacy.Modified)
         }
     }
 
@@ -456,7 +550,8 @@ function Invoke-ClaudeBlogInstall($SourceRoot, $ProfileRoot, $ManifestPath, $Leg
         if ($item.PSIsContainer -or (Test-CBReparsePoint $item)) { throw "installation collision is not a regular file: $target" }
         $actual = Get-CBSha256 $target
         if ($owned.ContainsKey($relative)) {
-            if ($actual -ne $owned[$relative]) { throw "managed installation file was modified: $target" }
+            # A modified owned file reaches here only after -ForceAdopt, and is backed up first.
+            if ($actual -ne $owned[$relative] -and $modifiedOwned -notcontains $relative) { throw "managed installation file was modified: $target" }
         } elseif ($actual -eq $plan[$relative].Sha256) {
             continue
         } elseif ($inventory.Records.ContainsKey($relative) -and @($inventory.Records[$relative] | Where-Object { $_.Sha256 -eq $actual }).Count -gt 0) {
@@ -465,6 +560,8 @@ function Invoke-ClaudeBlogInstall($SourceRoot, $ProfileRoot, $ManifestPath, $Leg
             throw "refusing to overwrite an unowned existing file: $target"
         }
     }
+
+    Backup-CBModifiedFiles $profile $modifiedOwned
 
     $transactionRoot = New-CBTempDirectory '.claude-blog-windows-install-'
     $stageRoot = Join-Path $transactionRoot 'stage'
@@ -535,7 +632,7 @@ function Invoke-ClaudeBlogInstall($SourceRoot, $ProfileRoot, $ManifestPath, $Leg
     }
 }
 
-function Invoke-ClaudeBlogUninstall($ProfileRoot, $ManifestPath, $LegacyInventoryPath) {
+function Invoke-ClaudeBlogUninstall($ProfileRoot, $ManifestPath, $LegacyInventoryPath, $ForceAdopt = $false) {
     $profile = Get-CBFullPath $ProfileRoot
     $manifest = Get-CBFullPath $ManifestPath
     if ((Split-Path -Parent $manifest) -ne $profile -or (Split-Path -Leaf $manifest) -ne 'claude-blog-manifest.txt') {
@@ -545,16 +642,23 @@ function Invoke-ClaudeBlogUninstall($ProfileRoot, $ManifestPath, $LegacyInventor
     if (-not (Test-Path -LiteralPath $profile -PathType Container)) { throw "Claude profile does not exist: $profile" }
     Assert-CBNoReparseAbsolutePath $profile
     $hasManifest = Test-Path -LiteralPath $manifest
+    $modifiedOwned = @()
     if ($hasManifest) {
         $receipt = Read-CBReceipt $manifest $profile
         if ($receipt.Kind -eq 'v2') {
-            $owned = $receipt.Files
-            Assert-CBOwnedFilesCurrent $profile $owned
+            $state = Assert-CBOwnedFilesCurrent $profile $receipt.Files $ForceAdopt 'uninstall'
+            $owned = Get-CBPresentOwnedFiles $receipt.Files $state.Missing
+            $modifiedOwned = @($state.Modified)
         } else {
             if (-not $LegacyInventoryPath) { throw "legacy uninstall requires the complete reviewed repository and ownership inventory" }
             $inventory = Read-CBLegacyInventory $LegacyInventoryPath
             $scopes = Get-CBLegacyScopes $receipt.Raw $profile $inventory
-            $owned = Get-CBLegacyOwnedFromScopes $profile $inventory $scopes
+            $legacy = Get-CBLegacyOwnedFromScopes $profile $inventory $scopes
+            if (@($legacy.Modified).Count -gt 0 -and -not $ForceAdopt) {
+                throw (New-CBModifiedFilesMessage $profile $legacy.Modified 'uninstall' "reviewed legacy file was modified or is unknown")
+            }
+            $owned = $legacy.Owned
+            $modifiedOwned = @($legacy.Modified)
         }
     } else {
         if (-not $LegacyInventoryPath) { throw "no receipt exists; legacy uninstall requires the complete reviewed repository and ownership inventory" }
@@ -567,6 +671,8 @@ function Invoke-ClaudeBlogUninstall($ProfileRoot, $ManifestPath, $LegacyInventor
         Assert-CBProfilePath $profile $target
     }
     if ($hasManifest) { Assert-CBProfilePath $profile $manifest }
+
+    Backup-CBModifiedFiles $profile $modifiedOwned
 
     $transactionRoot = New-CBTempDirectory '.claude-blog-windows-uninstall-'
     $backed = @{}

@@ -1,4 +1,17 @@
 version: 2
+# Dependency update policy
+#
+# * Installs use the hash-locked requirements.lock files, which are compiled
+#   with `uv pip compile --universal --generate-hashes --python-version 3.11`
+#   (the exact command is the header of each lock). Dependabot cannot recompile
+#   a hash lock, so a pip PR bumps the declared ranges only. tests/
+#   test_dependency_coherence.py then fails until a maintainer runs the
+#   compile command named in its message and pushes the lock to the PR branch.
+#   That failure is the intended gate, not noise.
+# * There is deliberately no `uv` ecosystem entry. uv.lock is a derived
+#   artifact: nothing installs from it, CI only verifies it with
+#   `uv lock --check`, and the pip locks above are the source of truth. A uv
+#   entry would open a second, competing update PR for the same packages.
 updates:
   # Python dependencies (root pyproject.toml + requirements.txt)
   - package-ecosystem: "pip"

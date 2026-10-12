@@ -1,0 +1,19 @@
+Validating marketplace manifest: /home/runner/work/claude-blog/claude-blog/.claude-plugin/marketplace.json
+
+✘ Found 1 error:
+
+  ❯ plugins[0].name: Plugin name "claude-blog" is reserved: it passes as one of Anthropic's own. A third party's plugin name cannot start with "claude-", "anthropic-", "anthropics-", or "cc-plugin-", be "claude", "anthropic", "anthropics", "claude-code", or "claude-mods", or put "official" beside "claude" or "anthropic". Name it for what it does.
+
+Validating plugin: /home/runner/work/claude-blog/claude-blog/.claude-plugin/plugin.json
+
+✘ Found 1 error:
+
+  ❯ name: Plugin name "claude-blog" is reserved: it passes as one of Anthropic's own. A third party's plugin name cannot start with "claude-", "anthropic-", "anthropics-", or "cc-plugin-", be "claude", "anthropic", "anthropics", "claude-code", or "claude-mods", or put "official" beside "claude" or "anthropic". Name it for what it does. If this is one of Anthropic's own plugins, validate the marketplace that lists it.
+
+Validating plugin: /home/runner/work/claude-blog/claude-blog/CLAUDE.md
+
+⚠ Found 1 warning:
+
+  ❯ root: CLAUDE.md at the plugin root is not loaded as project context. To ship context with your plugin, use a skill (skills/<name>/SKILL.md) instead.
+
+✘ Validation failed

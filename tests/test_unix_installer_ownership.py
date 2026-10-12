@@ -35,13 +35,14 @@ def environment(tmp_path: Path) -> tuple[Path, dict[str, str]]:
         **os.environ,
         "HOME": str(home),
         "PATH": f"{fake_bin}:{os.environ['PATH']}",
+        "CLAUDE_BLOG_SKIP_PIP": "1",
     }
     return home, env
 
 
-def run(script: str, env: dict[str, str]) -> subprocess.CompletedProcess[str]:
+def run(script: str, env: dict[str, str], *args: str) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
-        ["bash", script],
+        ["bash", script, *args],
         cwd=ROOT,
         env=env,
         text=True,
@@ -305,7 +306,7 @@ def test_install_rejects_symlinked_home_before_profile_mutation(tmp_path: Path) 
     installed = run("install.sh", env)
 
     assert installed.returncode != 0
-    assert "unsafe ancestor" in installed.stderr
+    assert "refusing symlinked path component" in installed.stderr
     assert not (external / ".claude").exists()
     assert "Installation Complete" not in installed.stdout
 
@@ -397,7 +398,7 @@ def test_legacy_symlinked_skill_never_deletes_external_target(tmp_path: Path) ->
 
     removed = run("uninstall.sh", env)
     assert removed.returncode != 0
-    assert "unsafe parent" in removed.stderr
+    assert "refusing symlinked path component" in removed.stderr
     assert linked.is_symlink()
     assert victim.exists()
     assert external.exists()
@@ -421,7 +422,7 @@ def test_legacy_symlinked_scope_preserves_external_empty_directory(tmp_path: Pat
     removed = run("uninstall.sh", env)
 
     assert removed.returncode != 0
-    assert "unsafe parent" in removed.stderr
+    assert "refusing symlinked path component" in removed.stderr
     assert linked.is_symlink()
     assert external.is_dir()
     assert not any(external.iterdir())
@@ -479,7 +480,7 @@ def test_v2_symlink_ancestor_is_rejected_without_touching_external_directory(
     result = run(operation, env)
 
     assert result.returncode != 0
-    assert "unsafe parent" in result.stderr
+    assert "refusing symlinked path component" in result.stderr
     assert skill_dir.is_symlink()
     assert external.is_dir()
     assert external_skill.exists()
@@ -580,3 +581,240 @@ def test_legacy_traversal_is_rejected_before_mutation(tmp_path: Path) -> None:
     assert victim.read_text(encoding="utf-8") == "outside profile\n"
     assert sha256(skill) == skill_before
     assert manifest.read_bytes() == manifest_before
+
+
+# --- recovery from edited managed files (--force-adopt) ---------------------
+
+
+def edited_install(tmp_path: Path) -> tuple[Path, dict[str, str], Path]:
+    home, env = install(tmp_path)
+    skill = home / ".claude/skills/blog-write/SKILL.md"
+    skill.write_text(skill.read_text(encoding="utf-8") + "\nuser edit\n", encoding="utf-8")
+    return home, env, skill
+
+
+def backups(home: Path) -> list[Path]:
+    return sorted((home / ".claude/claude-blog-backups").glob("*/skills/blog-write/SKILL.md"))
+
+
+@pytest.mark.parametrize("operation", ["install.sh", "uninstall.sh"])
+def test_modified_file_error_names_file_and_safe_recovery(tmp_path: Path, operation: str) -> None:
+    home, env, skill = edited_install(tmp_path)
+    before = skill.read_bytes()
+
+    result = run(operation, env)
+
+    assert result.returncode != 0
+    assert f"managed installation file was modified: {skill}" in result.stderr
+    assert "Nothing was changed" in result.stderr
+    assert f"bash {operation} --force-adopt" in result.stderr
+    assert "claude-blog-backups" in result.stderr
+    assert skill.read_bytes() == before
+    assert not (home / ".claude/claude-blog-backups").exists()
+
+
+def test_force_adopt_install_backs_up_edit_then_restores_package(tmp_path: Path) -> None:
+    home, env, skill = edited_install(tmp_path)
+    edited = skill.read_bytes()
+
+    result = run("install.sh", env, "--force-adopt")
+
+    assert_ok(result)
+    assert "Backed up modified file" in result.stdout
+    saved = backups(home)
+    assert len(saved) == 1 and saved[0].read_bytes() == edited
+    assert sha256(skill) != hashlib.sha256(edited).hexdigest()
+    assert not skill.read_text(encoding="utf-8").endswith("user edit\n")
+    assert_ok(run("uninstall.sh", env))
+    assert saved[0].read_bytes() == edited
+
+
+def test_force_adopt_uninstall_backs_up_edit_then_removes(tmp_path: Path) -> None:
+    home, env, skill = edited_install(tmp_path)
+    edited = skill.read_bytes()
+    user_note = home / ".claude/skills/blog-write/user-notes.md"
+    user_note.write_text("keep\n", encoding="utf-8")
+
+    result = run("uninstall.sh", env, "--force-adopt")
+
+    assert_ok(result)
+    assert not skill.exists()
+    assert not (home / MANIFEST_REL).exists()
+    assert user_note.read_text(encoding="utf-8") == "keep\n"
+    saved = backups(home)
+    assert len(saved) == 1 and saved[0].read_bytes() == edited
+
+
+def test_force_adopt_tolerates_a_deleted_managed_file(tmp_path: Path) -> None:
+    home, env = install(tmp_path)
+    (home / ".claude/skills/blog-write/SKILL.md").unlink()
+
+    assert run("uninstall.sh", env).returncode != 0
+    assert_ok(run("uninstall.sh", env, "--force-adopt"))
+    assert not (home / MANIFEST_REL).exists()
+
+
+def test_force_adopt_still_refuses_replaced_path_and_unsafe_backup_dir(tmp_path: Path) -> None:
+    home, env, skill = edited_install(tmp_path)
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    (home / ".claude/claude-blog-backups").symlink_to(outside)
+
+    result = run("install.sh", env, "--force-adopt")
+
+    assert result.returncode != 0
+    assert list(outside.iterdir()) == []
+    assert skill.read_text(encoding="utf-8").endswith("user edit\n")
+
+    (home / ".claude/claude-blog-backups").unlink()
+    other = home / ".claude/skills/blog-audio/SKILL.md"
+    target = tmp_path / "target.md"
+    target.write_text("external\n", encoding="utf-8")
+    other.unlink()
+    other.symlink_to(target)
+    replaced = run("uninstall.sh", env, "--force-adopt")
+    assert replaced.returncode != 0
+    assert "missing or replaced" in replaced.stderr
+    assert target.read_text(encoding="utf-8") == "external\n"
+
+
+def test_force_adopt_handles_legacy_modified_file(tmp_path: Path) -> None:
+    home, env = environment(tmp_path)
+    skill_dir = home / ".claude/skills/blog-write"
+    skill_dir.mkdir(parents=True)
+    modified = skill_dir / "SKILL.md"
+    modified.write_text("locally modified\n", encoding="utf-8")
+    manifest = home / MANIFEST_REL
+    manifest.write_text(f"{skill_dir}\n", encoding="utf-8")
+
+    assert run("install.sh", env).returncode != 0
+    assert_ok(run("install.sh", env, "--force-adopt"))
+    assert backups(home)[0].read_text(encoding="utf-8") == "locally modified\n"
+    assert modified.read_bytes() != b"locally modified\n"
+
+
+def test_unknown_option_is_rejected(tmp_path: Path) -> None:
+    home, env = environment(tmp_path)
+    for script in ("install.sh", "uninstall.sh"):
+        result = run(script, env, "--force-everything")
+        assert result.returncode == 2
+        assert "unknown option" in result.stderr
+    assert not (home / ".claude").exists()
+
+
+# --- honest messages ---------------------------------------------------------
+
+
+def test_uninstall_without_manifest_does_not_claim_success(tmp_path: Path) -> None:
+    home, env = environment(tmp_path)
+    stray = home / ".claude/skills/blog-write/SKILL.md"
+    stray.parent.mkdir(parents=True)
+    stray.write_text("not ours to delete\n", encoding="utf-8")
+
+    result = run("uninstall.sh", env)
+
+    assert_ok(result)
+    assert "No installation manifest found" in result.stdout
+    assert "Nothing was removed" in result.stdout
+    assert "uninstalled" not in result.stdout
+    assert stray.read_text(encoding="utf-8") == "not ours to delete\n"
+
+
+def test_command_listing_keeps_pipe_alternatives_intact(tmp_path: Path) -> None:
+    _, env = environment(tmp_path)
+    result = run("install.sh", env)
+    assert_ok(result)
+    listing = result.stdout.split("Commands available:")[1].split("Optional:")[0]
+    assert "\\" not in listing
+    assert "/blog image [generate|edit|setup]" in listing
+    assert "/blog calendar [monthly|quarterly]" in listing
+    assert "Generate a detailed content brief" in listing
+
+
+def shim_python(tmp_path: Path, env: dict[str, str], body: str) -> Path:
+    fake_bin = tmp_path / "shim-bin"
+    fake_bin.mkdir()
+    shim = fake_bin / "python3"
+    shim.write_text(body.replace("@REAL@", sys.executable), encoding="utf-8")
+    shim.chmod(0o755)
+    env["PATH"] = f"{fake_bin}:{env['PATH']}"
+    return shim
+
+
+def test_old_python_error_is_actionable_for_stock_macos(tmp_path: Path) -> None:
+    home, env = environment(tmp_path)
+    shim_python(tmp_path, env, """#!/bin/sh
+case "$*" in
+  *'>= (3, 11)'*) exit 1 ;;
+  *'%d.%d.%d'*) echo 3.9.6 ;;
+  *) exec "@REAL@" "$@" ;;
+esac
+""")
+
+    result = run("install.sh", env)
+
+    assert result.returncode == 1
+    assert "python3 3.9.6" in result.stderr
+    assert "brew install python@3.12" in result.stderr
+    assert "NEW terminal" in result.stderr
+    assert not (home / ".claude").exists()
+
+
+PIP_SHIM = """#!/bin/sh
+case "$*" in
+  *'sys.prefix != sys.base_prefix'*) exit "${FAKE_IN_VENV:-1}" ;;
+esac
+if [ "$1" = "-m" ] && [ "$2" = "pip" ]; then
+  echo "$*" >> "$PIP_LOG"
+  [ "$3" = "--version" ] && { echo "pip 99"; exit 0; }
+  if [ -n "$FAKE_PIP_EXTERNAL" ]; then
+    echo "error: externally-managed-environment" >&2
+    exit 1
+  fi
+  exit 0
+fi
+exec "@REAL@" "$@"
+"""
+
+
+def test_dependencies_install_with_user_flag_never_system_wide(tmp_path: Path) -> None:
+    _, env = environment(tmp_path)
+    env.pop("CLAUDE_BLOG_SKIP_PIP")
+    env["PIP_LOG"] = str(tmp_path / "pip.log")
+    shim_python(tmp_path, env, PIP_SHIM)
+
+    result = run("install.sh", env)
+
+    assert_ok(result)
+    call = (tmp_path / "pip.log").read_text(encoding="utf-8").splitlines()[-1]
+    assert call.startswith("-m pip install --user")
+    assert "break-system-packages" not in call
+    assert "not system-wide" in result.stdout
+
+
+def test_dependencies_in_a_venv_skip_user_flag(tmp_path: Path) -> None:
+    _, env = environment(tmp_path)
+    env.pop("CLAUDE_BLOG_SKIP_PIP")
+    env.update(PIP_LOG=str(tmp_path / "pip.log"), FAKE_IN_VENV="0")
+    shim_python(tmp_path, env, PIP_SHIM)
+
+    assert_ok(run("install.sh", env))
+
+    call = (tmp_path / "pip.log").read_text(encoding="utf-8").splitlines()[-1]
+    assert "--user" not in call
+
+
+def test_externally_managed_python_gets_actionable_warning(tmp_path: Path) -> None:
+    home, env = environment(tmp_path)
+    env.pop("CLAUDE_BLOG_SKIP_PIP")
+    env.update(PIP_LOG=str(tmp_path / "pip.log"), FAKE_PIP_EXTERNAL="1")
+    shim_python(tmp_path, env, PIP_SHIM)
+
+    result = run("install.sh", env)
+
+    assert_ok(result)
+    assert "Installation Complete" in result.stdout
+    assert "PEP 668" in result.stdout
+    assert "python3 -m venv" in result.stdout
+    assert "sudo" in result.stdout and "never with sudo" in result.stdout
+    assert (home / MANIFEST_REL).is_file()

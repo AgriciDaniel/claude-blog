@@ -62,7 +62,7 @@ def test_uninstall_sh_removes_all_root_scripts(tmp_path: Path) -> None:
     fake_pip.chmod(0o755)
     home = tmp_path / "home"
     home.mkdir()
-    env = dict(os.environ, HOME=str(home))
+    env = dict(os.environ, HOME=str(home), CLAUDE_BLOG_SKIP_PIP="1")
     env["PATH"] = os.pathsep.join((str(fake_bin), str(Path(sys.executable).parent), env.get("PATH", "")))
     for script in ("install.sh", "uninstall.sh"):
         process = subprocess.run(["bash", str(ROOT / script)], cwd=ROOT, env=env, capture_output=True, text=True)
@@ -82,7 +82,9 @@ def test_uninstall_ps1_removes_all_root_scripts() -> None:
     assert "scripts/windows_installer_ownership.ps1" in wrapper
     uninstall = helper[helper.index("function Invoke-ClaudeBlogUninstall"):]
     assert "Read-CBReceipt $manifest $profile" in uninstall
-    assert "$owned = $receipt.Files" in uninstall
-    assert "Assert-CBOwnedFilesCurrent $profile $owned" in uninstall
+    # The v2 receipt still defines ownership; -ForceAdopt only changes how a
+    # modified or deleted receipt file is treated, never which files are owned.
+    assert "Assert-CBOwnedFilesCurrent $profile $receipt.Files $ForceAdopt 'uninstall'" in uninstall
+    assert "$owned = Get-CBPresentOwnedFiles $receipt.Files $state.Missing" in uninstall
     assert "foreach ($relative in @($owned.Keys | Sort-Object))" in uninstall
     assert "Remove-Item -LiteralPath $target" in uninstall

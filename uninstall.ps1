@@ -1,6 +1,19 @@
 #!/usr/bin/env pwsh
 # claude-blog uninstaller for Windows
 # Removes only files proven to be owned by this package.
+#
+#   pwsh -File ./uninstall.ps1 [-ForceAdopt]
+#
+#   -ForceAdopt (or --force-adopt)
+#                  Also remove installed files that were edited after install
+#                  and tolerate a deleted managed file. Each edited file is
+#                  first copied to ~/.claude/claude-blog-backups/<timestamp>/.
+
+param(
+    [switch]$ForceAdopt,
+    [Parameter(ValueFromRemainingArguments = $true)]
+    [string[]]$RemainingArguments
+)
 
 $ErrorActionPreference = "Stop"
 
@@ -64,16 +77,40 @@ function Main {
     Write-Color Cyan "=== Uninstalling claude-blog ==="
     Write-Host ""
 
+    if (-not (Test-Path -LiteralPath $Manifest)) {
+        Write-Color Yellow "  No installation manifest found at $Manifest."
+        Write-Color Yellow "  Nothing was removed: this uninstaller only deletes files that a manifest proves it installed."
+        Write-Color Yellow "  Installed as a Claude Code plugin? Remove it with: /plugin uninstall claude-blog@agricidaniel-blog"
+        Write-Color Yellow "  Installed by an older release? Files under ~/.claude are left untouched; review them yourself first."
+        return
+    }
+
     $OwnershipHelper = Resolve-OwnershipHelper $ClaudeDir $Manifest
     $LegacyInventory = Resolve-LegacyInventory
     . $OwnershipHelper
-    Invoke-ClaudeBlogUninstall $ClaudeDir $Manifest $LegacyInventory
+    Invoke-ClaudeBlogUninstall $ClaudeDir $Manifest $LegacyInventory $script:ForceAdoptRequested
 
     Write-Color Yellow "  Shared Google credentials under ~/.config/claude-seo were left intact."
     Write-Host ""
     Write-Color Cyan "=== claude-blog uninstalled ==="
     Write-Host ""
     Write-Color Yellow "Restart Claude Code to complete removal."
+}
+
+$script:ForceAdoptRequested = [bool]$ForceAdopt
+foreach ($Argument in @($RemainingArguments | Where-Object { $null -ne $_ })) {
+    switch ($Argument) {
+        "--force-adopt" { $script:ForceAdoptRequested = $true }
+        { $_ -in @("-h", "--help", "-?") } {
+            Write-Host "Usage: pwsh -File ./uninstall.ps1 [-ForceAdopt | --force-adopt] [--help]"
+            Write-Host "  -ForceAdopt  Also remove installed files edited after install (each is backed up to ~/.claude/claude-blog-backups/<timestamp>/ first)."
+            exit 0
+        }
+        default {
+            [Console]::Error.WriteLine("ERROR: unknown option: $Argument (supported: -ForceAdopt, --force-adopt, --help)")
+            exit 2
+        }
+    }
 }
 
 try { Main }

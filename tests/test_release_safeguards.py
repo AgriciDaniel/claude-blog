@@ -333,7 +333,7 @@ def test_rendering_guidance_accepts_valid_google_rendered_dom() -> None:
 
 def test_public_marketplace_slug_is_current() -> None:
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
-    assert "blog-engine@agricidaniel-blog" in readme
+    assert "claude-blog@agricidaniel-blog" in readme
     assert "claude-blog@agricidaniel-claude-blog" not in readme
 
 
@@ -402,6 +402,7 @@ def test_shell_installer_is_locale_safe_and_complete(tmp_path: Path) -> None:
     env = os.environ.copy()
     env.update({
         "HOME": str(tmp_path / "home"),
+        "CLAUDE_BLOG_SKIP_PIP": "1",
         "LANG": "tr_TR.UTF-8",
         "LC_ALL": "tr_TR.UTF-8",
         "PATH": f"{fake_bin}:{env['PATH']}",
@@ -588,13 +589,13 @@ def _public_fixture(root: Path) -> None:
     (root / ".github" / "ISSUE_TEMPLATE").mkdir(parents=True)
     (root / "skills" / "blog").mkdir(parents=True)
     (root / "README.md").write_text(
-        f"{public}\nblog-engine@agricidaniel-blog\n{raw_sh}\n{raw_ps1}\n"
-        f"git checkout v{version}\nCLAUDE_BLOG_REF=v{version}\n",
+        f"{public}\nclaude-blog@agricidaniel-blog\n{raw_sh}\n{raw_ps1}\n"
+        "git checkout <commit-sha-or-release-tag>\n"
+        "CLAUDE_BLOG_REF=<commit-sha-or-release-tag>\n",
         encoding="utf-8",
     )
     (root / "CLAUDE.md").write_text(
-        f"https://raw.githubusercontent.com/AgriciDaniel/claude-blog/"
-        f"v{version}/install.sh\nCLAUDE_BLOG_REF=v{version}\n",
+        "CLAUDE_BLOG_REF=<commit-sha-or-release-tag>\n",
         encoding="utf-8",
     )
     (root / "CITATION.cff").write_text(
@@ -620,7 +621,7 @@ def _public_fixture(root: Path) -> None:
     (root / ".claude-plugin" / "plugin.json").write_text(
         json.dumps(
             {
-                "name": "blog-engine",
+                "name": "claude-blog",
                 "version": version,
                 "homepage": public,
                 "repository": public,
@@ -637,7 +638,7 @@ def _public_fixture(root: Path) -> None:
             {
                 "name": "agricidaniel-blog",
                 "owner": {"name": "AgriciDaniel"},
-                "plugins": [{"name": "blog-engine", "source": "./"}],
+                "plugins": [{"name": "claude-blog", "source": "./"}],
             }
         ),
         encoding="utf-8",
@@ -654,7 +655,7 @@ def _public_fixture(root: Path) -> None:
     )
     (root / ".github" / "SECURITY.md").write_text(
         "Only the latest version is supported.\n"
-        f"Use `git checkout v{version}` before installation.\n",
+        "Use `git checkout <commit-sha-or-release-tag>` before installation.\n",
         encoding="utf-8",
     )
     (root / "install.sh").write_text(
@@ -693,15 +694,63 @@ def test_public_release_validator_rejects_desynchronized_plugin_identity(
     path = tmp_path / ".claude-plugin" / surface
     data = json.loads(path.read_text(encoding="utf-8"))
     if surface == "plugin.json":
-        data["name"] = "claude-blog"
+        data["name"] = "blog-engine"
         expected_kind = "invalid_public_plugin_ownership"
     else:
-        data["plugins"][0]["name"] = "claude-blog"
+        data["plugins"][0]["name"] = "blog-engine"
         expected_kind = "invalid_public_marketplace_plugin"
     path.write_text(json.dumps(data), encoding="utf-8")
     result = module.validate(tmp_path)
     assert result["status"] == "fail"
     assert any(error["kind"] == expected_kind for error in result["errors"])
+
+
+@pytest.mark.parametrize(
+    ("surface", "unsafe"),
+    [
+        ("README.md", "git checkout v2.2.0\n"),
+        ("README.md", "CLAUDE_BLOG_REF=v2.2.0 bash install.sh\n"),
+        ("CLAUDE.md", 'CLAUDE_BLOG_REF="v2.2.0"\n'),
+        ("CLAUDE.md", "https://raw.githubusercontent.com/AgriciDaniel/claude-blog/v2.2.0/install.sh\n"),
+        (".github/SECURITY.md", "cd claude-blog && git checkout v2.2.0\n"),
+        (".github/SECURITY.md", "CLAUDE_BLOG_REF=v2.2.0 ./install.sh\n"),
+    ],
+)
+def test_public_release_validator_rejects_pinning_install_docs_to_preownership_tag(
+    tmp_path: Path, surface: str, unsafe: str,
+) -> None:
+    """v2.2.0 ships an uninstall.sh with an unguarded recursive delete."""
+    module = _load_module("release_preownership_validator", ROOT / "scripts/validate_public_release.py")
+    _public_fixture(tmp_path)
+    path = tmp_path / surface
+    path.write_text(path.read_text(encoding="utf-8") + unsafe, encoding="utf-8")
+    result = module.validate(tmp_path)
+    assert result["status"] == "fail"
+    assert any(error["kind"] == "unsafe_preownership_installer_pin" for error in result["errors"])
+
+
+def test_validator_does_not_depend_on_the_host_plugin_validator() -> None:
+    """The reserved-name check in newer Claude Code is not part of release logic."""
+    source = (ROOT / "scripts/validate_public_release.py").read_text(encoding="utf-8")
+    assert "subprocess" not in source and "plugin validate" not in source
+    assert 'PUBLIC_PLUGIN_IDENTIFIER = "claude-blog"' in source
+    manifest = json.loads((ROOT / ".claude-plugin/plugin.json").read_text(encoding="utf-8"))
+    marketplace = json.loads((ROOT / ".claude-plugin/marketplace.json").read_text(encoding="utf-8"))
+    assert manifest["name"] == "claude-blog"
+    assert marketplace["name"] == "agricidaniel-blog"
+    assert [entry["name"] for entry in marketplace["plugins"]] == ["claude-blog"]
+    assert "blog-engine" not in json.dumps([manifest, marketplace])
+
+
+def test_documented_install_flow_never_runs_the_preownership_release() -> None:
+    for relative in ("README.md", "CLAUDE.md", "docs/INSTALLATION.md"):
+        text = (ROOT / relative).read_text(encoding="utf-8")
+        assert "v2.2.0/install.sh" not in text, relative
+        assert "git checkout v2.2.0" not in text, relative
+        assert "CLAUDE_BLOG_REF=v2.2.0" not in text, relative
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    assert "Integrity is only as pinned as `CLAUDE_BLOG_REF`" in readme
+    assert "full commit SHA" in readme
 
 
 @pytest.mark.parametrize("relative", ["skills/blog-write/SKILL.md", "scripts/unlisted.py", "scripts/unlisted.ps1", "data/unlisted.json"])
@@ -726,9 +775,10 @@ def test_current_public_release_surfaces_pass_validator() -> None:
     assert module.validate(ROOT)["status"] == "pass"
 
 
-def test_public_release_validator_rejects_stale_security_tag(
+def test_public_release_validator_requires_corrected_security_guidance(
     tmp_path: Path,
 ) -> None:
+    """SECURITY.md must tell users to pin a reviewed ref, not the v2.2.0 tag."""
     module = _load_module(
         "release_public_validator_security_version",
         ROOT / "scripts" / "validate_public_release.py",
@@ -736,16 +786,25 @@ def test_public_release_validator_rejects_stale_security_tag(
     _public_fixture(tmp_path)
     security = tmp_path / ".github" / "SECURITY.md"
     security.write_text(
-        security.read_text(encoding="utf-8").replace("v2.2.0", "v1.7.0"),
+        security.read_text(encoding="utf-8").replace(
+            "git checkout <commit-sha-or-release-tag>", "git checkout v1.7.0"
+        ),
         encoding="utf-8",
     )
     report = module.validate(tmp_path)
     assert report["status"] == "fail"
     assert any(
-        error["kind"] == "invalid_public_security_version"
+        error["kind"] == "invalid_public_security_guidance"
         and error["file"] == ".github/SECURITY.md"
         for error in report["errors"]
     )
+
+
+def test_security_policy_never_tells_users_to_run_the_preownership_installer() -> None:
+    text = (ROOT / ".github" / "SECURITY.md").read_text(encoding="utf-8")
+    assert "git checkout <commit-sha-or-release-tag>" in text
+    assert "git checkout v2.2.0" not in text
+    assert "CLAUDE_BLOG_REF=v2.2.0" not in text
 
 
 def test_public_release_validator_rejects_private_raw_url(tmp_path: Path) -> None:

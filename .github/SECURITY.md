@@ -26,9 +26,13 @@ your report.
 
 ## Supported Versions
 
-Only the latest version receives security updates. Pin to a published
-release tag (`git checkout v2.2.0`) for reproducible installs; do not
-track `main` for production usage.
+Only the latest version receives security updates. Pin to a commit SHA you
+reviewed (or the first release tag that contains
+`scripts/installer_ownership.py`) with `git checkout <commit-sha-or-release-tag>`
+for reproducible installs; do not track `main` for production usage. Do not
+install or uninstall from the `v2.2.0` tag: it predates the ownership-aware
+installer and its `uninstall.sh` runs an unguarded recursive delete of whole
+skill directories.
 
 ## In Scope
 
@@ -115,6 +119,19 @@ The same indirect prompt-injection risk that applies to WebFetch results (T9) ap
 **Honest scope**: nonce, sanitize, and provenance are independent of each other only at the helper level (the helper performs all three in one invocation). If the orchestrator skips the helper, all three skip together. Treat tool-boundary as the load-bearing layer; the helper-enforced layers are defense-in-depth.
 
 Recommended user hygiene: add `BRAND.md`, `VOICE.md`, `DISCOURSE.md` to `.gitignore` in repos where the brand context or research is confidential.
+
+### Delivery review nonce: what it does and does not stop
+
+The delivery contract binds the `blog-reviewer` report to the exact draft files
+with a random nonce plus sha256 digests of the markdown, HTML, PDF and hero,
+recorded outside the draft folder when the nonce is issued
+(`blog_preflight.py --init-review-nonce`). Gate 4 fails when a digest changed
+afterwards. This stops accidents (editing a file after the review) and casual
+forgery (a hand-written `review.md`). It does not stop a process running as
+the same user that can read the verifier state file and rewrite both the files
+and the state. It is a workflow integrity check, not a security boundary
+against a hostile local process. Sequence and checks:
+[`blog-delivery-contract.md`](../skills/blog/references/blog-delivery-contract.md).
 
 ## Dual-use Technology Notes
 
@@ -277,13 +294,15 @@ The repo's `CHANGELOG.md` references the security commits.
 4. **Export credentials in your shell, do not commit them**:
    `export GOOGLE_AI_API_KEY=...` in `~/.bashrc` (or your shell rc).
    Project-mode setup writes only `${GOOGLE_AI_API_KEY}` env-expansion.
-5. **Prefer git clone + checkout-tag over curl-pipe-bash**:
+5. **Prefer git clone + checkout-reviewed-ref over curl-pipe-bash**:
    ```
    git clone https://github.com/AgriciDaniel/claude-blog.git
-   cd claude-blog && git checkout v2.2.0
+   cd claude-blog && git checkout <commit-sha-or-release-tag>
    ./install.sh
    ```
-   This lets you inspect the install script before it runs.
+   Prefer a full 40-character commit SHA: a branch moves and a tag can be
+   re-pointed, a commit SHA cannot. This lets you inspect the install script
+   before it runs.
 6. **Review `sync_flow.py` lockfile drift** before passing
    `--allow-drift`. The blocking gate is the integrity check.
 7. **OAuth scope minimization**: pass `--scopes gsc_readonly,ga4` to

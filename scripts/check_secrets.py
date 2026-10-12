@@ -38,14 +38,26 @@ LEGACY_COMMIT_PATHS = frozenset({
 LEGACY_COMMIT_LINE_RE = re.compile(
     r"""\s*(?:(?:"(?:commit|revision)"|\$Baseline)\s*(?::|=)\s*|assert\s+)?["'](?P<commit>[0-9a-f]{40})["'](?:\s+in\s+source)?\s*,?\s*"""
 )
-PLACEHOLDER_MARKERS = (
+# A Secret Keyword finding is a false positive only when the assigned VALUE is
+# a placeholder. A marker elsewhere on the line (a comment, another field) does
+# not clear a real secret that shares the line.
+PLACEHOLDER_PREFIXES = (
     "YOUR_",
     "your-",
     "/path/to/",
-    '"..."',
     "AIzaSy...",
 )
+PLACEHOLDER_EXACT = frozenset({"..."})
+AUTH_SCHEME_RE = re.compile(r"^(?:Bearer|Basic|Token)\s+", re.IGNORECASE)
+# Every secret-looking assignment on the line (name, then value) is examined.
+SECRET_ASSIGNMENT_RE = re.compile(
+    r"""(?P<name>[A-Za-z0-9_.-]*(?:key|token|secret|pass|pwd|auth|credential)[A-Za-z0-9_.-]*)["']?\s*(?:=|:)\s*"""
+    r"""(?P<value>"[^"]*"|'[^']*'|[^\s,;)}\]]+)""",
+    re.IGNORECASE,
+)
 FORBIDDEN_VALUE_PATTERNS = {
+    "Stripe key": re.compile(r"\b(?:sk|rk|pk)_(?:live|test)_[A-Za-z0-9]{16,}\b"),
+    "Slack token": re.compile(r"\bxox[abprs]-[A-Za-z0-9-]{10,}\b"),
     "private key": re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----"),
     "OpenAI key": re.compile(r"\bsk-[A-Za-z0-9_-]{20,}\b"),
     "Anthropic key": re.compile(r"\bsk-ant-[A-Za-z0-9_-]{20,}\b"),
@@ -120,8 +132,27 @@ def is_adjudicated(path: str, finding: dict[str, object], line: str) -> bool:
             or reviewed_commit
         )
     if finding_type == "Secret Keyword":
-        return any(marker in line for marker in PLACEHOLDER_MARKERS)
+        return is_placeholder_value(line)
     return False
+
+
+def is_placeholder_value(line: str) -> bool:
+    """True when every secret-looking value assigned on this line is a placeholder.
+
+    A placeholder marker elsewhere on the line (a comment, an unrelated field)
+    never clears a real value, and a line with no recognizable assignment is
+    not adjudicated.
+    """
+    matches = list(SECRET_ASSIGNMENT_RE.finditer(line))
+    if not matches:
+        return False
+    for match in matches:
+        value = AUTH_SCHEME_RE.sub("", match["value"].strip("\"'").strip())
+        if value in PLACEHOLDER_EXACT:
+            continue
+        if not any(value.startswith(prefix) for prefix in PLACEHOLDER_PREFIXES):
+            return False
+    return True
 
 
 def scan_forbidden_values() -> list[dict[str, object]]:
