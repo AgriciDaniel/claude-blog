@@ -383,7 +383,8 @@ def check_source_ledger(*, requires_fresh: bool) -> tuple[bool, int, list[str], 
                 critical.append(f"{source_id} refresh_due is stale")
 
     try:
-        critical.extend(citation_errors(['g-helpful-content', 'g-intro-sd', 'g-faqpage-sd', 'g-block-indexing', 'g-canonical', 'g-mobile-first', 'g-ai-features', 'g-gsc-api', 'g-nlp', 'schema-org-type', 'dfs-labs', 'blog-aimode', 'g-qrg-full', 'g-genai-reports', 'g-ai-opt-guide', 'g-search-gallery', 'g-update-2026-06-05-guidance-on-third-party-seo-tools-services-and-advice', 'seer-aio-impact-ctr-2026', 'semrush-ai-mode-comparison', 'ziptie-aio-source-selection'], ledger_index(data)))
+        index = ledger_index(data)
+        critical.extend(citation_errors(sorted(REQUIRED_CITATION_IDS | cited_source_ids(REPO)), index))
     except ValueError:
         pass  # ledger_errors already reports malformed or duplicate IDs
     minimum_official = 2 if requires_fresh else 1
@@ -654,6 +655,49 @@ def load_source_index(repo_root: Path) -> tuple[set[str], dict[str, tuple[str, .
         if url and source_id not in url_to_source_ids[url]:
             url_to_source_ids[url].append(source_id)
     return source_ids, {url: tuple(ids) for url, ids in url_to_source_ids.items()}
+
+
+# Floor kept from the original audit: these must stay active and valid even if
+# no note cites them. The cited set below adds every active ID the notes use.
+REQUIRED_CITATION_IDS = frozenset({
+    "g-helpful-content", "g-intro-sd", "g-faqpage-sd", "g-block-indexing", "g-canonical",
+    "g-mobile-first", "g-ai-features", "g-gsc-api", "g-nlp", "schema-org-type", "dfs-labs",
+    "blog-aimode", "g-qrg-full", "g-genai-reports", "g-ai-opt-guide", "g-search-gallery",
+    "g-update-2026-06-05-guidance-on-third-party-seo-tools-services-and-advice",
+    "seer-aio-impact-ctr-2026", "semrush-ai-mode-comparison", "ziptie-aio-source-selection",
+})
+CITATION_SCAN_FILES = ("SKILL.md", "references/claim-ledger.md", "references/current-requirements.md")
+
+
+def citation_scan_paths(repo_root: Path) -> list[Path]:
+    """Files whose source citations must pass the evidence checks, sorted.
+
+    Non-archived wiki notes, the canon references, the claim ledger, the
+    current-requirements note and SKILL.md. Archived notes (status: archived
+    or an archive directory) are history and are not held to current evidence.
+    """
+    paths = [repo_root / rel for rel in CITATION_SCAN_FILES]
+    paths += sorted((repo_root / "references" / "canon").glob("*.md"))
+    wiki = repo_root / "wiki"
+    for path in sorted(wiki.rglob("*.md")) if wiki.is_dir() else []:
+        if any(part.lower() in {"archive", "archived"} for part in path.relative_to(repo_root).parts):
+            continue
+        frontmatter, _body = split_frontmatter(path.read_text(encoding="utf-8", errors="replace"))
+        if re.search(r"(?m)^status:\s*[\"']?archived[\"']?\s*$", frontmatter):
+            continue
+        paths.append(path)
+    return [path for path in paths if path.is_file()]
+
+
+def cited_source_ids(repo_root: Path) -> set[str]:
+    """Active ledger IDs cited by ID or by canonical URL in the scanned files."""
+    source_ids, url_to_source_ids = load_source_index(repo_root)
+    pattern = compile_source_id_pattern(source_ids)
+    cited: set[str] = set()
+    for path in citation_scan_paths(repo_root):
+        text = path.read_text(encoding="utf-8", errors="replace")
+        cited |= extract_source_ids(text, pattern, url_to_source_ids)
+    return cited
 
 
 def compile_source_id_pattern(source_ids: set[str]) -> re.Pattern[str] | None:

@@ -5,7 +5,11 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from safe_write import UnsafeWriteError, write_text_safely  # noqa: E402
 
 
 def svg_template(note_count: int, link_count: int, source_count: int, deliverable_count: int) -> str:
@@ -37,8 +41,11 @@ def main(argv: list[str] | None = None) -> int:
     counts = graph_counts(vault)
     out = vault / "_attachments" / "brain-relationship-map.svg"
     if not args.dry_run:
-        out.parent.mkdir(parents=True, exist_ok=True)
-        out.write_text(svg_template(**counts), encoding="utf-8")
+        try:
+            write_text_safely(out, svg_template(**counts), root=vault)
+        except (UnsafeWriteError, OSError) as exc:
+            print(f"ERROR: cannot write visual: {exc}", file=sys.stderr)
+            return 2
     payload = {"ok": True, "out": out.relative_to(vault).as_posix(), "dry_run": args.dry_run, **counts}
     if args.json:
         print(json.dumps(payload, indent=2, sort_keys=True))

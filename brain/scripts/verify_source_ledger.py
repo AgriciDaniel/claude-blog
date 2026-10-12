@@ -16,6 +16,7 @@ import ssl
 import subprocess
 import tempfile
 import time
+import zlib
 from datetime import date, timedelta
 from pathlib import Path
 from typing import Any
@@ -161,6 +162,9 @@ def fetch_source(url: str) -> dict[str, Any]:
             connection.request("GET", target, headers={
                 "User-Agent": "Mozilla/5.0 ClaudeBlogSourceAudit/1.0",
                 "Accept": "text/html,application/pdf,application/json,text/plain,*/*;q=0.5",
+                # Ask for the raw bytes. Some hosts (schema.org) compress anyway,
+                # which decode_body handles below.
+                "Accept-Encoding": "identity",
             })
             response = connection.getresponse()
             if response.status in {301, 302, 303, 307, 308}:
@@ -185,17 +189,50 @@ def fetch_source(url: str) -> dict[str, Any]:
                 if len(body) > MAX_BYTES:
                     raise ValueError(f"source exceeds {MAX_BYTES} bytes")
             content_type = response.getheader("content-type", "").split(";", 1)[0].lower()
+            wire_bytes = len(body)
+            body = decode_body(bytes(body), response.getheader("content-encoding", ""))
             text = extract_text(bytes(body), content_type, current)
             normalized = normalize_text(text)
             return {
                 "http_status": response.status, "final_url": current,
-                "content_type": content_type, "bytes": len(body),
+                "content_type": content_type, "bytes": wire_bytes,
                 "normalized_content_sha256": hashlib.sha256(normalized.encode("utf-8")).hexdigest(),
                 "text": normalized, "reviewable_text_bytes": len(normalized.encode("utf-8")),
             }
         finally:
             connection.close()
     raise ValueError("too many redirects")
+
+
+def decode_body(body: bytes, content_encoding: str) -> bytes:
+    """Undo Content-Encoding (gzip, deflate) with the same size cap as the fetch.
+
+    Servers may compress even when Accept-Encoding says identity. Hashing the
+    compressed bytes would record garbage, so decode or fail loudly.
+    """
+    encodings = [item.strip().lower() for item in (content_encoding or "").split(",") if item.strip()]
+    for encoding in reversed(encodings):
+        if encoding == "identity":
+            continue
+        if encoding not in {"gzip", "x-gzip", "deflate"}:
+            raise ValueError(f"unsupported Content-Encoding: {encoding}")
+        wbits = zlib.MAX_WBITS | 16 if encoding in {"gzip", "x-gzip"} else zlib.MAX_WBITS
+        decoder = zlib.decompressobj(wbits)
+        try:
+            out = decoder.decompress(body, MAX_BYTES + 1)
+        except zlib.error:
+            if encoding != "deflate":
+                raise ValueError(f"invalid {encoding} body") from None
+            # Some servers send raw deflate without the zlib header.
+            decoder = zlib.decompressobj(-zlib.MAX_WBITS)
+            try:
+                out = decoder.decompress(body, MAX_BYTES + 1)
+            except zlib.error:
+                raise ValueError("invalid deflate body") from None
+        if len(out) > MAX_BYTES or decoder.unconsumed_tail:
+            raise ValueError(f"source exceeds {MAX_BYTES} bytes after decompression")
+        body = out
+    return body
 
 
 def extract_text(body: bytes, content_type: str, final_url: str) -> str:
@@ -428,7 +465,9 @@ def main(argv: list[str] | None = None) -> int:
                 "reviewed_on": as_of.isoformat(), "decision": decision,
                 "method": "public-source content check plus explicit claim review",
                 **{key: evidence[key] for key in ("http_status", "final_url", "content_type", "reviewable_text_bytes", "normalized_content_sha256")},
-                **claim_check,
+                # Token coverage and numeric literals describe automated content
+                # matching, so they are noise on a manually reviewed record.
+                **({} if decision == "confirmed_by_manual_review" else claim_check),
                 "review_note": reviewed.get("review_note", ""),
                 "evidence_excerpt": excerpt,
                 "evidence_path": reviewed.get("evidence_path", ""),
@@ -451,7 +490,7 @@ def main(argv: list[str] | None = None) -> int:
     all_reviewed_today = all(source.get("verification", {}).get("reviewed_on") == as_of.isoformat() for source in source_by_id.values() if lifecycle(source) == "active")
     if complete and all_reviewed_today:
         ledger["last_verified"] = as_of.isoformat()
-    ledger["status"] = "reviewed-research" if complete else "partial-review"
+    ledger["status"] = "research-reviewed" if complete else "partial-review"
     if args.apply:
         LEDGER_PATH.write_text(json.dumps(ledger, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(json.dumps({

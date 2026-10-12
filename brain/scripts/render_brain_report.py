@@ -5,9 +5,13 @@ from __future__ import annotations
 import argparse
 import html
 import json
+import os
 import re
 import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from safe_write import UnsafeWriteError, write_text_safely  # noqa: E402
 
 
 REPO = Path(__file__).resolve().parent.parent
@@ -26,12 +30,16 @@ def main(argv: list[str] | None = None) -> int:
     report = vault / "wiki" / "reports" / "Weekly Report.md"
     if not report.exists():
         return error("report not found; run synthesize first", args.json)
-    out = Path(args.out).expanduser().resolve() if args.out else vault / "weekly-report.html"
-    if not args.unsafe_write and not is_safe_output(out, vault):
+    # Keep a symlinked leaf visible (resolve() would follow it to its target).
+    out = Path(os.path.abspath(Path(args.out).expanduser())) if args.out else vault / "weekly-report.html"
+    if not args.unsafe_write and not is_safe_output(out.parent.resolve() / out.name, vault):
         return error(f"--out must stay inside the vault or repo: {out}", args.json)
     html_text = markdown_to_html(report.read_text(encoding="utf-8"))
     html_text = LOCAL_PATH.sub("[local-path-redacted]", html_text)
-    out.write_text(html_text, encoding="utf-8")
+    try:
+        write_text_safely(out, html_text, root=vault if out.parent.resolve().is_relative_to(vault) else None)
+    except (UnsafeWriteError, OSError) as exc:
+        return error(f"cannot write report: {exc}", args.json)
     if args.json:
         print(json.dumps({"ok": True, "out": str(out)}, indent=2, sort_keys=True))
     else:

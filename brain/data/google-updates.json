@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "last_verified": "2026-10-07",
+  "last_verified": "2026-10-11",
   "policy": "Only Google-supported facts in verified[] may inform guidance. Event timing never proves site impact. Product announcements never become ranking factors. Source conflicts remain explicit. Unverified entries are research leads and must never change scoring, gates, or recommendations.",
   "source_watch": [
     {
@@ -42,6 +42,22 @@
   ],
   "verified": [
     {
+      "id": "search-docs-helpful-content-2026-10-05",
+      "event_date": "2026-10-05",
+      "title": "Creating helpful content page updated (page-level date)",
+      "source_url": "https://developers.google.com/search/docs/fundamentals/creating-helpful-content",
+      "category": "content-guidance",
+      "applicability": "all-sites",
+      "affected_components": [
+        "blog",
+        "blog-write",
+        "blog-rewrite",
+        "blog-audit"
+      ],
+      "evidence_status": "confirmed",
+      "summary": "The page shows Last updated 2026-10-05 UTC; no matching entry was found in the Search Central updates log on 2026-10-11, so the date comes from the page itself. It says to evaluate content by Who, How, and Why, and strongly encourages accurate authorship information such as bylines where readers expect it. It calls fabricating creator profiles (AI-generated headshots, made-up names, false credentials) a form of deception, and lists changing page dates to look fresh without substantial change as a warning sign. It asks whether the use of automation, including AI generation, is self-evident to visitors through disclosures or other ways. E-E-A-T is not a specific ranking factor."
+    },
+    {
       "id": "search-docs-gen-ai-guidance-2026-10-01",
       "event_date": "2026-10-01",
       "title": "Generative AI content guidance updated",
@@ -62,7 +78,7 @@
       "id": "ranking-september-2026-spam",
       "event_date": "2026-09-24",
       "title": "September 2026 spam update",
-      "source_url": "https://status.search.google.com/incidents.json",
+      "source_url": "https://status.search.google.com/products/rGHU1u87FJnkP6W2GwMi/history",
       "category": "ranking-update",
       "applicability": "all-sites",
       "affected_components": [
@@ -70,7 +86,10 @@
         "blog-google"
       ],
       "evidence_status": "confirmed-event-pending-impact",
-      "summary": "Google began a global, all-language spam update on September 24 and said rollout could take up to two weeks. The event does not identify targets or establish site-level impact. Wait for completion and one full post-rollout week before comparison."
+      "summary": "Google began a global, all-language spam update on September 24 and said rollout could take up to two weeks. Google's status dashboard marked the rollout complete as of October 8. The event does not identify targets or establish site-level impact. Collect one full post-rollout week, so October 15 or later, before comparison.",
+      "additional_source_urls": [
+        "https://status.search.google.com/incidents.json"
+      ]
     },
     {
       "id": "videoobject-creator-interactions-2026-09-24",
@@ -85,6 +104,20 @@
       ],
       "evidence_status": "confirmed",
       "summary": "Google documented VideoObject creator support and clarified supported interactionStatistic interaction types. Markup still has to match visible video content and Google's current property requirements."
+    },
+    {
+      "id": "search-profile-badge-2026-09-16",
+      "event_date": "2026-09-16",
+      "title": "Search profile badge guide added",
+      "source_url": "https://developers.google.com/search/docs/appearance/search-profiles",
+      "category": "audience-development",
+      "applicability": "sites-and-creators-with-a-claimed-search-profile",
+      "affected_components": [
+        "blog",
+        "blog-strategy"
+      ],
+      "evidence_status": "confirmed",
+      "summary": "Google documented a badge (graphic or text link) that points a site's audience to its Search profile; the profile must be claimed first. The page does not state a ranking effect for the badge. It says a profile can make linked content more likely to appear for the audience on Google Discover."
     },
     {
       "id": "regional-search-experiences-2026-09-08",

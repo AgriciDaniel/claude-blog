@@ -1,9 +1,10 @@
 # Current Requirements
 
 Status: research-reviewed. Evidence is captured in `references/source-ledger.json`.
-Claim review: 2026-10-07. Historical study and event dates remain explicit;
-source review does not establish market-ready release status.
-Refresh due: 2026-11-07 for living Google documentation.
+Claim review: 2026-10-07, with 83 records (the living Google documentation set)
+re-read against their live pages on 2026-10-12. Historical study and event dates
+remain explicit; source review does not establish market-ready release status.
+Refresh due: 2026-11-12 for living Google documentation.
 
 ## Source Standard
 

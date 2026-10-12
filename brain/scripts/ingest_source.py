@@ -17,10 +17,10 @@ MAX_BYTES = 10 * 1024 * 1024
 FORBIDDEN_SOURCE_NAMES = {".env", ".env.local", ".env.production", "id_rsa", "id_dsa", "id_ecdsa", "id_ed25519"}
 SECRET_PATTERNS = {
     "private key": re.compile(rb"-----BEGIN [A-Z ]*PRIVATE KEY-----"),
-    "openai api key": re.compile(rb"sk-[A-Za-z0-9_-]{20,}"),
-    "anthropic api key": re.compile(rb"sk-ant-[A-Za-z0-9_-]{20,}"),
-    "github token": re.compile(rb"(ghp|github_pat)_[A-Za-z0-9_]{20,}"),
-    "aws key": re.compile(rb"AKIA[0-9A-Z]{16}"),
+    "openai api key": re.compile(rb"(?<![A-Za-z0-9_])sk-[A-Za-z0-9_-]{20,}"),
+    "anthropic api key": re.compile(rb"(?<![A-Za-z0-9_])sk-ant-[A-Za-z0-9_-]{20,}"),
+    "github token": re.compile(rb"(?<![A-Za-z0-9_])(ghp|github_pat)_[A-Za-z0-9_]{20,}"),
+    "aws key": re.compile(rb"(?<![A-Za-z0-9])AKIA[0-9A-Z]{16}"),
     "google api key": re.compile(rb"AIza[0-9A-Za-z_-]{20,}"),
     "bearer literal": re.compile(rb"Bearer\s+[A-Za-z0-9._-]{24,}"),
 }

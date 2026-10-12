@@ -1,0 +1,786 @@
+{
+  "schema_version": 1,
+  "reviewed_on": "2026-10-12",
+  "methodology": "Each record's live URL was fetched on the review date (one request per second, identified as a normal client) and the passage supporting the claim was read against the ledger claim. Outcomes are recorded per record: confirmed_by_manual_review, qualified (existing limitation kept) or corrected (claim text changed to what the page supports). review_note states what was read; evidence_excerpt is a short quote under the per-document 25-word cap. Availability and token overlap were not treated as review. Records whose pages could not be read were left out of this file and keep their previous dates.",
+  "confirmed_by_content": [],
+  "confirmed_by_manual_review": [
+    "g-ranking-history",
+    "g-status-dashboard",
+    "g-update-2024-06-20-june-2024-spam-update",
+    "g-update-2024-11-11-november-2024-core-update",
+    "g-update-2024-12-12-december-2024-core-update",
+    "g-update-2024-12-19-december-2024-spam-update",
+    "g-update-2025-03-13-march-2025-core-update",
+    "g-update-2025-06-30-june-2025-core-update",
+    "g-update-2025-12-11-december-2025-core-update",
+    "g-update-2026-02-05-february-2026-discover-update",
+    "g-update-2026-03-24-march-2026-spam-update",
+    "g-update-2026-03-27-march-2026-core-update",
+    "g-update-2026-05-21-may-2026-core-update",
+    "g-update-2026-06-02-may-2026-core-update-complete",
+    "g-helpful-content",
+    "g-intro-sd",
+    "g-product-sd",
+    "g-merchant-listing-sd",
+    "g-update-2026-05-20-hasadultconsideration-property-added",
+    "g-update-2026-05-07-faq-rich-results-retired",
+    "g-search-docs-updates-2026-07-07-product-structured-data",
+    "g-block-indexing",
+    "g-robots-intro",
+    "g-canonical",
+    "g-sitemaps",
+    "g-js-seo",
+    "g-mobile-first",
+    "g-ai-features",
+    "g-google-images",
+    "g-video",
+    "g-localized",
+    "g-multiregional",
+    "g-search-essentials",
+    "g-using-gen-ai-content",
+    "g-update-2026-06-05-guidance-on-third-party-seo-tools-services-and-advice",
+    "g-qualify-links",
+    "g-googlebot",
+    "g-common-crawlers",
+    "g-spam-policies",
+    "g-update-2026-05-15-spam-policies-update-gen-ai-scaled-content",
+    "g-ai-opt-guide",
+    "g-update-2026-06-15-llms-txt-clarified-as-unused-by-google-search",
+    "g-search-gallery",
+    "g-genai-reports",
+    "g-update-2026-06-03-search-console-search-generative-ai-performance-reports",
+    "g-urlinspect",
+    "g-gsc-api",
+    "g-psi",
+    "g-ga4-data",
+    "g-nlp",
+    "g-ads-kw",
+    "google-ads-api-v25-1-2026-08-19",
+    "chrome-crux",
+    "chrome-crux-notes",
+    "wd-inp",
+    "wd-lcp",
+    "wd-cls",
+    "wd-vitals",
+    "wd-opt-inp",
+    "g-update-2024-03-05-inp-replaces-fid",
+    "wd-inp-mar12",
+    "schema-full",
+    "schema-product",
+    "schema-org-type",
+    "sitemaps-org",
+    "rfc9309",
+    "dfs-labs",
+    "bing-submit",
+    "firecrawl",
+    "statcounter",
+    "gsc-reporting-anomalies-2026-08-13",
+    "review-snippet-integrity-2026-07-24",
+    "preferred-sources-custom-button-2026-08-20"
+  ],
+  "qualified": {
+    "g-crawl-budget": {},
+    "chrome-crux-history": {},
+    "chrome-soft-nav": {},
+    "llmstxt": {},
+    "dfs-api": {},
+    "nng-editorial-heuristics": {},
+    "search-console-platform-help-2026-08-25": {}
+  },
+  "corrected": {
+    "g-faqpage-sd": {
+      "claims": [
+        "FAQ rich results no longer appear in Google Search, and Google removed the old FAQ rich result documentation, so FAQPage markup is not a current Google rich-result tactic."
+      ],
+      "supports_claims": [
+        "FAQ rich results no longer appear in Google Search, and Google removed the old FAQ rich result documentation, so FAQPage markup is not a current Google rich-result tactic."
+      ],
+      "limitations": "This page covers rich-result retirement only. It says nothing about AI Overviews, AI Mode or other machine citation; see g-ai-opt-guide (no special markup is required) for that scope. Visible Q and A content helping readers is an editorial judgment, not a sourced claim."
+    },
+    "wd-ttfb": {
+      "claims": [
+        "web.dev defines TTFB as the time from starting navigation to when the first byte of the response arrives; it precedes FCP and LCP so slow server response can delay them, but it is not itself a Core Web Vital."
+      ],
+      "supports_claims": [
+        "web.dev defines TTFB as the time from starting navigation to when the first byte of the response arrives; it precedes FCP and LCP so slow server response can delay them, but it is not itself a Core Web Vital."
+      ]
+    },
+    "ahrefs-api": {
+      "claims": [
+        "Ahrefs' developer documentation describes a REST API for keyword research, backlink analysis, rank tracking and brand-visibility monitoring, plus MCP, Data Studio connector and bot-analytics products; endpoint availability and plan limits require its API reference."
+      ],
+      "supports_claims": [
+        "Ahrefs' developer documentation describes a REST API for keyword research, backlink analysis, rank tracking and brand-visibility monitoring, plus MCP, Data Studio connector and bot-analytics products; endpoint availability and plan limits require its API reference."
+      ]
+    }
+  },
+  "retired": [],
+  "unverified": [],
+  "evidence": {
+    "g-ranking-history": {
+      "normalized_content_sha256": "e57305b9de1a77d795071fb68710edf563de5a73bb385867319fad6c44109551",
+      "evidence_excerpt": "all incidents reported for ranking",
+      "review_note": "Fetched the ranking history today. The 2026 table starts with the September 2026 spam update (24 Sep 2026, 13 days 16 hours), then August, June and May 2026 rows, so it is a start-and-duration table with no site-level impact data.",
+      "evidence_path": "outputs/source-review-2026-10-12/9882393c2c7361e9.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/9882393c2c7361e9.json",
+      "captured_excerpt_sha256": "bfa110b2dd1f2053ff883dbe7aa6f319e94f78172936a2349b99f6779d6fb863"
+    },
+    "g-status-dashboard": {
+      "normalized_content_sha256": "e57305b9de1a77d795071fb68710edf563de5a73bb385867319fad6c44109551",
+      "evidence_excerpt": "all incidents reported for ranking",
+      "review_note": "Same ranking-history page re-read today. Rows list confirmed update names, start dates and durations only, which matches the claim that it is rollout evidence and not impact evidence.",
+      "evidence_path": "outputs/source-review-2026-10-12/9882393c2c7361e9.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/9882393c2c7361e9.json",
+      "captured_excerpt_sha256": "bfa110b2dd1f2053ff883dbe7aa6f319e94f78172936a2349b99f6779d6fb863"
+    },
+    "g-update-2024-06-20-june-2024-spam-update": {
+      "normalized_content_sha256": "e57305b9de1a77d795071fb68710edf563de5a73bb385867319fad6c44109551",
+      "evidence_excerpt": "all incidents reported for ranking",
+      "review_note": "2024 table row: June 2024 spam update, 20 Jun 2024, 7 days 1 hour. Matches the claim; no impact inference.",
+      "evidence_path": "outputs/source-review-2026-10-12/9882393c2c7361e9.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/9882393c2c7361e9.json",
+      "captured_excerpt_sha256": "bfa110b2dd1f2053ff883dbe7aa6f319e94f78172936a2349b99f6779d6fb863"
+    },
+    "g-update-2024-11-11-november-2024-core-update": {
+      "normalized_content_sha256": "e57305b9de1a77d795071fb68710edf563de5a73bb385867319fad6c44109551",
+      "evidence_excerpt": "all incidents reported for ranking",
+      "review_note": "2024 table row: November 2024 core update, 11 Nov 2024, 23 days 13 hours. That duration ends on 5 Dec 2024, so the claimed range holds.",
+      "evidence_path": "outputs/source-review-2026-10-12/9882393c2c7361e9.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/9882393c2c7361e9.json",
+      "captured_excerpt_sha256": "bfa110b2dd1f2053ff883dbe7aa6f319e94f78172936a2349b99f6779d6fb863"
+    },
+    "g-update-2024-12-12-december-2024-core-update": {
+      "normalized_content_sha256": "e57305b9de1a77d795071fb68710edf563de5a73bb385867319fad6c44109551",
+      "evidence_excerpt": "all incidents reported for ranking",
+      "review_note": "2024 table row: December 2024 core update, 12 Dec 2024, 6 days 4 hours. That ends 18 Dec 2024, as claimed.",
+      "evidence_path": "outputs/source-review-2026-10-12/9882393c2c7361e9.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/9882393c2c7361e9.json",
+      "captured_excerpt_sha256": "bfa110b2dd1f2053ff883dbe7aa6f319e94f78172936a2349b99f6779d6fb863"
+    },
+    "g-update-2024-12-19-december-2024-spam-update": {
+      "normalized_content_sha256": "e57305b9de1a77d795071fb68710edf563de5a73bb385867319fad6c44109551",
+      "evidence_excerpt": "all incidents reported for ranking",
+      "review_note": "2024 table row: December 2024 spam update, 19 Dec 2024, 7 days 2 hours. That ends 26 Dec 2024, as claimed.",
+      "evidence_path": "outputs/source-review-2026-10-12/9882393c2c7361e9.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/9882393c2c7361e9.json",
+      "captured_excerpt_sha256": "bfa110b2dd1f2053ff883dbe7aa6f319e94f78172936a2349b99f6779d6fb863"
+    },
+    "g-update-2025-03-13-march-2025-core-update": {
+      "normalized_content_sha256": "e57305b9de1a77d795071fb68710edf563de5a73bb385867319fad6c44109551",
+      "evidence_excerpt": "all incidents reported for ranking",
+      "review_note": "2025 table row: March 2025 core update, 13 Mar 2025, 13 days 21 hours. That ends 27 Mar 2025, as claimed.",
+      "evidence_path": "outputs/source-review-2026-10-12/9882393c2c7361e9.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/9882393c2c7361e9.json",
+      "captured_excerpt_sha256": "bfa110b2dd1f2053ff883dbe7aa6f319e94f78172936a2349b99f6779d6fb863"
+    },
+    "g-update-2025-06-30-june-2025-core-update": {
+      "normalized_content_sha256": "e57305b9de1a77d795071fb68710edf563de5a73bb385867319fad6c44109551",
+      "evidence_excerpt": "all incidents reported for ranking",
+      "review_note": "2025 table row: June 2025 core update, 30 Jun 2025, 16 days 18 hours. Matches. The page has no recovery or impact data, which the existing limitation already states.",
+      "evidence_path": "outputs/source-review-2026-10-12/9882393c2c7361e9.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/9882393c2c7361e9.json",
+      "captured_excerpt_sha256": "bfa110b2dd1f2053ff883dbe7aa6f319e94f78172936a2349b99f6779d6fb863"
+    },
+    "g-update-2025-12-11-december-2025-core-update": {
+      "normalized_content_sha256": "e57305b9de1a77d795071fb68710edf563de5a73bb385867319fad6c44109551",
+      "evidence_excerpt": "all incidents reported for ranking",
+      "review_note": "2025 table row: December 2025 core update, 11 Dec 2025, 18 days 2 hours. The 2025 table holds exactly three core updates (March, June, December), as claimed. No sector data on the page.",
+      "evidence_path": "outputs/source-review-2026-10-12/9882393c2c7361e9.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/9882393c2c7361e9.json",
+      "captured_excerpt_sha256": "bfa110b2dd1f2053ff883dbe7aa6f319e94f78172936a2349b99f6779d6fb863"
+    },
+    "g-update-2026-02-05-february-2026-discover-update": {
+      "normalized_content_sha256": "e57305b9de1a77d795071fb68710edf563de5a73bb385867319fad6c44109551",
+      "evidence_excerpt": "all incidents reported for ranking",
+      "review_note": "2026 table row: February 2026 Discover update, 5 Feb 2026, 21 days 17 hours. The dashboard names it a Discover update, not a Discover core update.",
+      "evidence_path": "outputs/source-review-2026-10-12/9882393c2c7361e9.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/9882393c2c7361e9.json",
+      "captured_excerpt_sha256": "bfa110b2dd1f2053ff883dbe7aa6f319e94f78172936a2349b99f6779d6fb863"
+    },
+    "g-update-2026-03-24-march-2026-spam-update": {
+      "normalized_content_sha256": "e57305b9de1a77d795071fb68710edf563de5a73bb385867319fad6c44109551",
+      "evidence_excerpt": "all incidents reported for ranking",
+      "review_note": "2026 table row: March 2026 spam update, 24 Mar 2026, 19 hours 30 minutes. Matches the claim.",
+      "evidence_path": "outputs/source-review-2026-10-12/9882393c2c7361e9.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/9882393c2c7361e9.json",
+      "captured_excerpt_sha256": "bfa110b2dd1f2053ff883dbe7aa6f319e94f78172936a2349b99f6779d6fb863"
+    },
+    "g-update-2026-03-27-march-2026-core-update": {
+      "normalized_content_sha256": "e57305b9de1a77d795071fb68710edf563de5a73bb385867319fad6c44109551",
+      "evidence_excerpt": "all incidents reported for ranking",
+      "review_note": "2026 table row: March 2026 core update, 27 Mar 2026, 12 days 4 hours. That ends 8 Apr 2026, as claimed.",
+      "evidence_path": "outputs/source-review-2026-10-12/9882393c2c7361e9.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/9882393c2c7361e9.json",
+      "captured_excerpt_sha256": "bfa110b2dd1f2053ff883dbe7aa6f319e94f78172936a2349b99f6779d6fb863"
+    },
+    "g-update-2026-05-21-may-2026-core-update": {
+      "normalized_content_sha256": "e57305b9de1a77d795071fb68710edf563de5a73bb385867319fad6c44109551",
+      "evidence_excerpt": "all incidents reported for ranking",
+      "review_note": "2026 table row: May 2026 core update, 21 May 2026, 11 days 21 hours. That ends 2 Jun 2026, as claimed.",
+      "evidence_path": "outputs/source-review-2026-10-12/9882393c2c7361e9.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/9882393c2c7361e9.json",
+      "captured_excerpt_sha256": "bfa110b2dd1f2053ff883dbe7aa6f319e94f78172936a2349b99f6779d6fb863"
+    },
+    "g-update-2026-06-02-may-2026-core-update-complete": {
+      "normalized_content_sha256": "e57305b9de1a77d795071fb68710edf563de5a73bb385867319fad6c44109551",
+      "evidence_excerpt": "all incidents reported for ranking",
+      "review_note": "Same May 2026 core update row (21 May 2026, 11 days 21 hours), which implies completion on 2 Jun 2026. The dashboard shows no separate completion incident, so this stays a duration-derived date.",
+      "evidence_path": "outputs/source-review-2026-10-12/9882393c2c7361e9.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/9882393c2c7361e9.json",
+      "captured_excerpt_sha256": "bfa110b2dd1f2053ff883dbe7aa6f319e94f78172936a2349b99f6779d6fb863"
+    },
+    "g-helpful-content": {
+      "normalized_content_sha256": "544e13ea75d00edc00fd60a190d1c3900e0df8dd4b50e42676719251daf7767a",
+      "evidence_excerpt": "self-assess your content",
+      "review_note": "Read the self-assess section, the E-E-A-T paragraph (trust named as most important, content need not show every aspect) and the who, how and why section. It is guidance, not a score or ranking guarantee.",
+      "evidence_path": "outputs/source-review-2026-10-12/8d7d5b412c8148a2.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/8d7d5b412c8148a2.json",
+      "captured_excerpt_sha256": "4bc91923603bd8fc42da5748c6fc56547695270dc017a52c5254bb84894a12e3"
+    },
+    "g-intro-sd": {
+      "normalized_content_sha256": "18e480e50dbfeac7fa4de5667f770f0b221c612c467ce47a03e801bac85ade42",
+      "evidence_excerpt": "google recommends using json-ld for structured data if your site's setup allows it",
+      "review_note": "The format section still recommends JSON-LD when the site setup allows it, and says all required properties are needed for enhanced display. Matches the claim.",
+      "evidence_path": "outputs/source-review-2026-10-12/287c6057c69214e1.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/287c6057c69214e1.json",
+      "captured_excerpt_sha256": "6b5171ebdbe6303473724fcde90ebd555463d5e176f750a87bd46210b1dda426"
+    },
+    "g-product-sd": {
+      "normalized_content_sha256": "4e3ec0576d77fef0ebe2bb36eba9b0d568f457e2b8d913189c09d5357c699680",
+      "evidence_excerpt": "both features have their own enhancements",
+      "review_note": "The page still describes two product feature classes (product snippets and merchant listings) and tells implementers to review both because each has its own enhancements. It is an overview, not the property spec.",
+      "evidence_path": "outputs/source-review-2026-10-12/beebf84eb40f9466.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/beebf84eb40f9466.json",
+      "captured_excerpt_sha256": "acf62fa8b5131cea763241a09af0f22aeff3b13768f5c2db4b2a6200f57aae9f"
+    },
+    "g-merchant-listing-sd": {
+      "normalized_content_sha256": "18125053e6de9e279e27d811a0565af0288c4ab5a090e752a3f975556a5c60c8",
+      "evidence_excerpt": "to specify the period when a sale price is active",
+      "review_note": "Product.category is documented as text or CategoryCode (array allowed), and the sale duration section names validFrom, validThrough and priceValidUntil. Both claims hold on today's page.",
+      "evidence_path": "outputs/source-review-2026-10-12/5beb8e3bc04c1f71.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/5beb8e3bc04c1f71.json",
+      "captured_excerpt_sha256": "96f6e1080a5adae2fc1de30957c0a2706037dda0af4f368d14eee6185f3a83e3"
+    },
+    "g-update-2026-05-20-hasadultconsideration-property-added": {
+      "normalized_content_sha256": "18125053e6de9e279e27d811a0565af0288c4ab5a090e752a3f975556a5c60c8",
+      "evidence_excerpt": "google search only supports the value https://schema.org/sexualcontentconsideration for this property",
+      "review_note": "The hasAdultConsideration definition says adult-oriented products must be labelled, and that Google Search only supports the SexualContentConsideration value. The page does not date the addition, which the claim does not assert.",
+      "evidence_path": "outputs/source-review-2026-10-12/5beb8e3bc04c1f71.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/5beb8e3bc04c1f71.json",
+      "captured_excerpt_sha256": "96f6e1080a5adae2fc1de30957c0a2706037dda0af4f368d14eee6185f3a83e3"
+    },
+    "g-faqpage-sd": {
+      "normalized_content_sha256": "7c9edabbcc0a0b07e2600c57571e46c527f1fbe7837e96fd10264b5b04deb7f4",
+      "evidence_excerpt": "the faq rich result feature is no longer shown in google search results",
+      "review_note": "Updates page: the 15 June 2026 entry removes the FAQ rich result documentation because the feature is no longer shown, and the May entry says it ends 7 May 2026. The earlier claim also asserted that FAQPage is not a documented machine-citation signal, which this page does not address, so the claim is narrowed to what the page supports and the AI-citation scope is left to g-ai-opt-guide.",
+      "evidence_path": "outputs/source-review-2026-10-12/758f52008b4fea50.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/758f52008b4fea50.json",
+      "captured_excerpt_sha256": "d6734a6c4a5916dcb678212fb551dad4e0e14cd0adfb3f9f03f6a9e1a9aeeeb5"
+    },
+    "g-update-2026-05-07-faq-rich-results-retired": {
+      "normalized_content_sha256": "7c9edabbcc0a0b07e2600c57571e46c527f1fbe7837e96fd10264b5b04deb7f4",
+      "evidence_excerpt": "the faq rich result feature is no longer shown in google search results",
+      "review_note": "May 8 entry: deprecation notice added because the feature stops appearing in Search starting 7 May 2026. June 15 entry: FAQ rich result documentation removed. Both dates match the claim.",
+      "evidence_path": "outputs/source-review-2026-10-12/758f52008b4fea50.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/758f52008b4fea50.json",
+      "captured_excerpt_sha256": "d6734a6c4a5916dcb678212fb551dad4e0e14cd0adfb3f9f03f6a9e1a9aeeeb5"
+    },
+    "g-search-docs-updates-2026-07-07-product-structured-data": {
+      "normalized_content_sha256": "7c9edabbcc0a0b07e2600c57571e46c527f1fbe7837e96fd10264b5b04deb7f4",
+      "evidence_excerpt": "product.category property can be used with both text and categorycode types",
+      "review_note": "The July 7 entry covers both items: product.category usable with text and CategoryCode types, and a new sale duration section with validFrom, validThrough and priceValidUntil. The earlier excerpt (the FAQ line) did not support this claim and is replaced.",
+      "evidence_path": "outputs/source-review-2026-10-12/758f52008b4fea50.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/758f52008b4fea50.json",
+      "captured_excerpt_sha256": "d6734a6c4a5916dcb678212fb551dad4e0e14cd0adfb3f9f03f6a9e1a9aeeeb5"
+    },
+    "g-block-indexing": {
+      "normalized_content_sha256": "497f22f1564cbacdba9bbb7d4ec8ae8ec9c2f838a33cf918e39ce815fd1cf294",
+      "evidence_excerpt": "the robots.txt file is blocking the url from google web crawlers, so they can't see the tag",
+      "review_note": "Page documents noindex via meta tag and X-Robots-Tag header, and says a robots.txt block hides the tag from crawlers. Matches the claim that the page must be crawlable for noindex to work.",
+      "evidence_path": "outputs/source-review-2026-10-12/e480d718fa54963f.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/e480d718fa54963f.json",
+      "captured_excerpt_sha256": "8c924fba0e19bde41925c3e6c0d61d66990c3b63c3073d392d54e4024b99056c"
+    },
+    "g-robots-intro": {
+      "normalized_content_sha256": "c2d9b29cfd54ac0303c6719d301145dbab05caf6de91191f730a7b6c6bca83e0",
+      "evidence_excerpt": "a page that's disallowed in robots.txt can still be indexed if linked to from other sites",
+      "review_note": "The page says a page disallowed in robots.txt can still be indexed if linked from elsewhere, and that Google may index the URL without the content. Matches the claim.",
+      "evidence_path": "outputs/source-review-2026-10-12/8a0eca0ac189a4f6.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/8a0eca0ac189a4f6.json",
+      "captured_excerpt_sha256": "d48746cee77881685b5da360b6c429f6d372446e664c3b662539c27f8a72b4d8"
+    },
+    "g-canonical": {
+      "normalized_content_sha256": "4d6ca5834f9c5df787715b0b798e9fa05724613977a9ecf2cb8f29f91f91fa64",
+      "evidence_excerpt": "add a rel=\"canonical\" link from the http page to the https page",
+      "review_note": "Canonicalization methods listed: redirects (strong), rel=canonical (strong), sitemap inclusion (weak), and they can stack. The http-to-https rel=canonical advice is present. Signals only, not a guarantee.",
+      "evidence_path": "outputs/source-review-2026-10-12/3a700e9016e022e3.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/3a700e9016e022e3.json",
+      "captured_excerpt_sha256": "15ba2dd653abc965024e1c55cbf179bead943c9b06e5f468a0c46bad94a6657d"
+    },
+    "g-sitemaps": {
+      "normalized_content_sha256": "07a54f611a0a06b3327bebce04a2f131350902c4fb255913d2f23f10f16bea82",
+      "evidence_excerpt": "all formats limit a single sitemap to 50mb (uncompressed) or 50,000 urls",
+      "review_note": "Build-sitemap guide states the 50MB uncompressed or 50,000 URL limit per sitemap, sitemap index splitting, and submission. Matches the claim.",
+      "evidence_path": "outputs/source-review-2026-10-12/03ad78c585b6f686.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/03ad78c585b6f686.json",
+      "captured_excerpt_sha256": "20edc5dbcda0e963e063a0400ad0e175790ba8b64d2a7052f746b0ff7abc1c40"
+    },
+    "g-crawl-budget": {
+      "normalized_content_sha256": "a229d244c16bc66ffd23a138c77c741c9553415208e652d07364f975054334db",
+      "evidence_excerpt": "the numbers given here are a rough estimate to help you classify your site",
+      "review_note": "The guide targets sites with 1M+ pages changing weekly, 10,000+ pages changing daily, or many discovered-not-indexed URLs, and says the numbers are rough estimates, not exact thresholds. Qualification kept.",
+      "evidence_path": "outputs/source-review-2026-10-12/9c29030be3d5b2ae.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/9c29030be3d5b2ae.json",
+      "captured_excerpt_sha256": "25f53a982e09aa97a3f1adf2b831cbdd878307199a2a957708ba94b7e8658043"
+    },
+    "g-js-seo": {
+      "normalized_content_sha256": "53b498eff362851b02562f2280d814745bf0be33a7537428037b5e47d1e0c483",
+      "evidence_excerpt": "google processes javascript web apps in three main phases",
+      "review_note": "Page says Google processes JavaScript apps in three phases (crawling, rendering, indexing) and that Googlebot queues pages for crawling and rendering. Matches the claim.",
+      "evidence_path": "outputs/source-review-2026-10-12/c46137f410318251.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/c46137f410318251.json",
+      "captured_excerpt_sha256": "0a5f13b9fcabf12e6c7f21a7083e79cfedb41aa1f23e3e3b100706f2f5f66b18"
+    },
+    "g-mobile-first": {
+      "normalized_content_sha256": "9069b4cf65e0c43896ac13db2f7c9628c62712936e1c874cdc4acae6edc01a9a",
+      "evidence_excerpt": "only the content shown on the mobile site is used for indexing",
+      "review_note": "Page says only content shown on the mobile site is used for indexing and asks for equivalent primary content and matching structured data on both versions. Matches the claim.",
+      "evidence_path": "outputs/source-review-2026-10-12/a67519a2a3bd5924.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/a67519a2a3bd5924.json",
+      "captured_excerpt_sha256": "c6027ff76c2f7f1d8071c3cf06c7d37748f8fb827a4dea23ba2be84aa9306897"
+    },
+    "g-ai-features": {
+      "normalized_content_sha256": "9bfa869f3bec84e6ff9d4d7edaf0616783e9237f25d9771eaa1af961e46d8f0a",
+      "evidence_excerpt": "there are no additional technical requirements",
+      "review_note": "The page says supporting links in AI Overviews and AI Mode need only normal indexing and snippet eligibility, with no additional technical requirements, and lists nosnippet, data-nosnippet, max-snippet and noindex as controls. Matches the claim.",
+      "evidence_path": "outputs/source-review-2026-10-12/455005f14f8c6bbe.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/455005f14f8c6bbe.json",
+      "captured_excerpt_sha256": "e311d311f3d8f63c8a20ce6ac6d2c268d99e563eb46c3c7eec19e686af35ba13"
+    },
+    "g-google-images": {
+      "normalized_content_sha256": "7156ab7546356dc4f9bbef91e2b1d9dafaa6aace6f7b73ecf7b5e7c828e9cdd1",
+      "evidence_excerpt": "also consider the accessibility of your alt text",
+      "review_note": "Read the sections on descriptive filenames, titles and alt text, structured data for image rich results, and image sitemaps. Matches the claim.",
+      "evidence_path": "outputs/source-review-2026-10-12/47aa306229a89962.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/47aa306229a89962.json",
+      "captured_excerpt_sha256": "926c9c6d66d32812982cbabb1684de92f488a263bbaf03da4cdd390e9b790b75"
+    },
+    "g-video": {
+      "normalized_content_sha256": "0a6ac7413c47f75b81666bd44caf5ab69c1efd0935bdb9a05f2bb46400af1d72",
+      "evidence_excerpt": "video rich result report : review and fix issues with your videoobject structured data implementation",
+      "review_note": "Page requires a valid thumbnail at a stable URL, supports structured data, video sitemaps and Open Graph for metadata, and uses VideoObject.embedUrl for the player URL. Matches the claim.",
+      "evidence_path": "outputs/source-review-2026-10-12/c88012d86ed188dd.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/c88012d86ed188dd.json",
+      "captured_excerpt_sha256": "8e74e7b4b43b8a57368aa1290b7349598930692d588c05a1fb4dafe50723ebc4"
+    },
+    "g-localized": {
+      "normalized_content_sha256": "9ad94431576812250389a30caf3f6f332813080aea2e54c7d348e5547052f1bf",
+      "evidence_excerpt": "if page x links to page y, page y must link back to page x",
+      "review_note": "Page says hreflang annotations must be reciprocal (page X links to page Y, Y must link back) and documents the x-default value for unmatched languages. Matches the claim.",
+      "evidence_path": "outputs/source-review-2026-10-12/dcd5730c013cb3cf.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/dcd5730c013cb3cf.json",
+      "captured_excerpt_sha256": "f386ac7481873569805c1e23c67b524768a199f2bc42b1f8d07444845454a231"
+    },
+    "g-multiregional": {
+      "normalized_content_sha256": "0a275b958ae8c30c376ea0f232b4ec203f9be1f3d2d2b896532b19937c02d307",
+      "evidence_excerpt": "subdirectories with gtld example.com/de/",
+      "review_note": "The URL structure table compares country-specific domains, subdomains with gTLD and subdirectories with gTLD (example.com/de/) with pros and cons. Matches the claim.",
+      "evidence_path": "outputs/source-review-2026-10-12/ae04f14132bce52f.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/ae04f14132bce52f.json",
+      "captured_excerpt_sha256": "7b4022e1fbc4500178b5bf407bb76bb26033b3f13d41ca55941eb17c159ceef6"
+    },
+    "g-search-essentials": {
+      "normalized_content_sha256": "cd30c5a392993cf721db9ac5158d52a3c106fe247132a8859161fbf543d9f56d",
+      "evidence_excerpt": "doesn't mean that google will crawl, index, or serve its content",
+      "review_note": "Page groups technical requirements, spam policies and key best practices, and says meeting them does not mean Google will crawl, index or serve content. Matches the claim.",
+      "evidence_path": "outputs/source-review-2026-10-12/cc224bed75fe5151.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/cc224bed75fe5151.json",
+      "captured_excerpt_sha256": "12384a835c3168bfd8dfb9c356eb496bd67f6657ec4e396972e1c9906af830ee"
+    },
+    "g-using-gen-ai-content": {
+      "normalized_content_sha256": "12751d8f8140f7452a03a81484b04d80a855506d65b6146de205e0ccac2cc1fb",
+      "evidence_excerpt": "manually factcheck and review all ai-generated content for accuracy and trustworthiness before publishing",
+      "review_note": "Page (last updated 2026-10-01) says generative AI can help research and structure, many pages without added value may violate the scaled content abuse policy, all AI output must be manually factchecked including metadata and structured data, and creation context can help readers. Matches the claim.",
+      "evidence_path": "outputs/source-review-2026-10-12/85232b73c9be1b19.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/85232b73c9be1b19.json",
+      "captured_excerpt_sha256": "9f8fdc396706d864f54dd00f7c757ba65cdabf617a46dfd4cca2769a43dc2bee"
+    },
+    "g-update-2026-06-05-guidance-on-third-party-seo-tools-services-and-advice": {
+      "normalized_content_sha256": "e23bf0d7d5748cc7642cdb612d792d25b61a826981b2a659e5dec60d94817de6",
+      "evidence_excerpt": "third-party tools don't have access to our internal ranking data",
+      "review_note": "Page says Google does not evaluate third-party services, tools do not guarantee rankings or have internal ranking data, advice on AEO and GEO should be checked against official guidance, and Search Console is the first-party tool. Matches the claim.",
+      "evidence_path": "outputs/source-review-2026-10-12/129d3d7b2f61df33.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/129d3d7b2f61df33.json",
+      "captured_excerpt_sha256": "915490fa7a67fd4ed2c30eccceb5911f632fdc80700cf04930efa2d120f82c20"
+    },
+    "g-qualify-links": {
+      "normalized_content_sha256": "637c2131bbff4b8800ef34ee6a38fdc09fc085cf70c7d408b0d7a9f18d3ff00c",
+      "evidence_excerpt": "nofollow attribute was previously recommended for these types of links and is still an acceptable way",
+      "review_note": "Page: ordinary links need no rel attribute; sponsored is preferred for paid links (nofollow still acceptable); ugc is recommended for user-generated links; nofollow is for cases where other values do not apply. Matches the claim.",
+      "evidence_path": "outputs/source-review-2026-10-12/baee2055d7b57ec3.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/baee2055d7b57ec3.json",
+      "captured_excerpt_sha256": "724f311c0c48fc2c558e2ea8b5f2ab0cc28efa6be672397425ff267e20f31f28"
+    },
+    "g-googlebot": {
+      "normalized_content_sha256": "f54b23a5f010d3b760b864565f09af2eefec59fd92e3815d13677154c84bc912",
+      "evidence_excerpt": "googlebot crawls the first 2mb of a supported file type , and the first 64mb of a pdf file",
+      "review_note": "Page says Googlebot crawls the first 2MB of a supported file type and the first 64MB of a PDF, each referenced resource is fetched separately with the same limit, and the limit applies to uncompressed data. Matches the claim.",
+      "evidence_path": "outputs/source-review-2026-10-12/5d982c78890cefa6.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/5d982c78890cefa6.json",
+      "captured_excerpt_sha256": "3f5be30c82b6dea0966ea475db1fe090f81b4892599287ac1921b92aa394a782"
+    },
+    "g-common-crawlers": {
+      "normalized_content_sha256": "14cf539dffd438814031bd08a62b998ca6313b00d18d24d2f08ec85a3cb3c915",
+      "evidence_excerpt": "google-extended does not impact a site's inclusion in google search",
+      "review_note": "Google-Extended is described as a standalone token controlling use of crawled content for future Gemini training and for grounding in Gemini apps and Vertex AI, and it does not affect Search inclusion or ranking. Matches the claim.",
+      "evidence_path": "outputs/source-review-2026-10-12/aa7b38d3a4f549ab.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/aa7b38d3a4f549ab.json",
+      "captured_excerpt_sha256": "ddfb2721ad04cc603e90a61785201c90fb10325e6fbd5ff15487f34415698072"
+    },
+    "g-spam-policies": {
+      "normalized_content_sha256": "0e12c19c6d5742a6355a96c31b3c98ac5bbf9e32bf5d8181cd9a6e31c9448d28",
+      "evidence_excerpt": "changes applicable to the policy in the european economic area",
+      "review_note": "Policy sections for cloaking, link spam, scaled content abuse, expired domain abuse and the site reputation policy are present. The site reputation section says changes apply in the EEA and links to the 2026/08 site reputation update post. Matches the claim.",
+      "evidence_path": "outputs/source-review-2026-10-12/0a1c82c044ac2ebf.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/0a1c82c044ac2ebf.json",
+      "captured_excerpt_sha256": "1779b4800e4e08f03f2275e08fb55f522ac5dc7c38be76026d17892da88cd1f6"
+    },
+    "g-update-2026-05-15-spam-policies-update-gen-ai-scaled-content": {
+      "normalized_content_sha256": "0e12c19c6d5742a6355a96c31b3c98ac5bbf9e32bf5d8181cd9a6e31c9448d28",
+      "evidence_excerpt": "using generative ai tools or other similar tools to generate many pages",
+      "review_note": "Scaled content abuse examples include using generative AI tools to generate many pages without adding value and automated transformations such as synonymizing or translating; expired domain and site reputation policies remain. Matches the claim.",
+      "evidence_path": "outputs/source-review-2026-10-12/0a1c82c044ac2ebf.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/0a1c82c044ac2ebf.json",
+      "captured_excerpt_sha256": "1779b4800e4e08f03f2275e08fb55f522ac5dc7c38be76026d17892da88cd1f6"
+    },
+    "g-ai-opt-guide": {
+      "normalized_content_sha256": "59d8c6886ae40a880009b1dae738f4706dbe0f93a70f8fa465e94ffa3263fba8",
+      "evidence_excerpt": "google search itself doesn't use them",
+      "review_note": "The page lists llms.txt and other special markup among things to ignore for Google Search, says Search itself does not use them, and says structured data is not required with no special schema.org markup needed. Matches the claim.",
+      "evidence_path": "outputs/source-review-2026-10-12/6fe2317039f5942b.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/6fe2317039f5942b.json",
+      "captured_excerpt_sha256": "857920afbd666e10b5be945103d8675bc4c6f557303770ac1138267a7a660dc6"
+    },
+    "g-update-2026-06-15-llms-txt-clarified-as-unused-by-google-search": {
+      "normalized_content_sha256": "59d8c6886ae40a880009b1dae738f4706dbe0f93a70f8fa465e94ffa3263fba8",
+      "evidence_excerpt": "will neither harm nor help your site's visibility or rankings in google search",
+      "review_note": "Same guide: maintaining llms.txt for other systems is fine, and doing so neither harms nor helps Search visibility or rankings because Search ignores the files. The updates page dates this clarification 15 June 2026.",
+      "evidence_path": "outputs/source-review-2026-10-12/6fe2317039f5942b.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/6fe2317039f5942b.json",
+      "captured_excerpt_sha256": "857920afbd666e10b5be945103d8675bc4c6f557303770ac1138267a7a660dc6"
+    },
+    "g-search-gallery": {
+      "normalized_content_sha256": "347cfe31e8f708ddf2a9d64f10b14bf700bb9bdc3bfc32c379396d0862981353",
+      "evidence_excerpt": "a news, sports, or blog article displayed in various rich result features",
+      "review_note": "Read the gallery's feature table (Article, Breadcrumb and others). Reservation, OrderAction and FAQ do not appear as features. Absence of a type from the list is the evidence for that part of the claim.",
+      "evidence_path": "outputs/source-review-2026-10-12/eedd1ab0bcc06063.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/eedd1ab0bcc06063.json",
+      "captured_excerpt_sha256": "55eca324ff05565880310364240a6e55293ef82eb7a1d90387c4c5a46a53b74b"
+    },
+    "g-genai-reports": {
+      "normalized_content_sha256": "e2b5cae3f2307f4b02cf22a36cfc1666a54090f1643264f1d4ca46517e5c0010",
+      "evidence_excerpt": "as of august 31, 2026, we've rolled out these insights to all websites worldwide",
+      "review_note": "Blog post dated Wednesday, 3 June 2026, announces dedicated generative AI reports for Search and Discover rolling out to a subset of sites, with a note that as of 31 August 2026 they are available to all websites worldwide. Matches the claim.",
+      "evidence_path": "outputs/source-review-2026-10-12/b71333e9b0577eb3.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/b71333e9b0577eb3.json",
+      "captured_excerpt_sha256": "3d21539c4744f2d195120b9e28c95f21233a04a819c113793de1970adc692141"
+    },
+    "g-update-2026-06-03-search-console-search-generative-ai-performance-reports": {
+      "normalized_content_sha256": "e2b5cae3f2307f4b02cf22a36cfc1666a54090f1643264f1d4ca46517e5c0010",
+      "evidence_excerpt": "as of august 31, 2026, we've rolled out these insights to all websites worldwide",
+      "review_note": "Same post: 3 June 2026 launch to a subset, then the 31 August 2026 note that all websites worldwide have the insights. Matches the claim.",
+      "evidence_path": "outputs/source-review-2026-10-12/b71333e9b0577eb3.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/b71333e9b0577eb3.json",
+      "captured_excerpt_sha256": "3d21539c4744f2d195120b9e28c95f21233a04a819c113793de1970adc692141"
+    },
+    "g-urlinspect": {
+      "normalized_content_sha256": "281ff560d10f1e269604c2349055f82cf95fc54a49f1430b0a8c7f0226d9ab13",
+      "evidence_excerpt": "richresultsresult object ( richresultsinspectionresult ) result of the rich results analysis",
+      "review_note": "UrlInspectionResult lists indexStatusResult (with coverageState, verdict, robotsTxtState, indexingState), ampResult, mobileUsabilityResult and richResultsResult. Matches the claim.",
+      "evidence_path": "outputs/source-review-2026-10-12/bad164a9475c3f62.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/bad164a9475c3f62.json",
+      "captured_excerpt_sha256": "a4628c1440dc8dadf4635f4a9a595f7643bdd462beddd57a9857686450bc6834"
+    },
+    "g-gsc-api": {
+      "normalized_content_sha256": "6fe2415fac69a6bfdee93d2d327f7c341d8aa9b6dcc7e1f75364b1a62bd1f907",
+      "evidence_excerpt": "rows[]. ctr double click through rate (ctr) for the row",
+      "review_note": "Response fields clicks, impressions, ctr (0 to 1) and position are defined, results are grouped by requested dimensions, and the page warns the API returns top rows, not all rows. Matches the claim.",
+      "evidence_path": "outputs/source-review-2026-10-12/98bd9bb79aa70eb3.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/98bd9bb79aa70eb3.json",
+      "captured_excerpt_sha256": "c29767ff59b0eff42e91a2c95e3077e58dbbb7a42624781df8c60020c4422436"
+    },
+    "g-psi": {
+      "normalized_content_sha256": "2f08fb630e1ee09532cf51b49aef3a2896b7a5192ee473388a49f309ec27ee3f",
+      "evidence_excerpt": "we plan to discontinue including real-world data from the chrome user experience report in this api",
+      "review_note": "Page says the API returns CrUX real-world data and Lighthouse lab data, that Google plans to discontinue the CrUX data in this API, and recommends the CrUX API or CrUX History API instead. Matches the claim.",
+      "evidence_path": "outputs/source-review-2026-10-12/5bea86da45f8d2b2.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/5bea86da45f8d2b2.json",
+      "captured_excerpt_sha256": "2d5b5687d72d00298aaf3feb7240d84338cf5a712881b0156c6cb1589b745578"
+    },
+    "g-ga4-data": {
+      "normalized_content_sha256": "809cef6e050e2ba6e75cd988008ea41f32552caef2d528eb86ded242801f7ac5",
+      "evidence_excerpt": "for a list of all the dimensions and metrics supported by the data api",
+      "review_note": "Data API overview says it programmatically accesses GA4 report data, is not compatible with legacy Universal Analytics, and points to the API schema for supported dimensions and metrics. Matches the narrowed claim.",
+      "evidence_path": "outputs/source-review-2026-10-12/0169f1b73873cf60.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/0169f1b73873cf60.json",
+      "captured_excerpt_sha256": "64b788a37d7986a45400d5072c4f7257c0b73ee91e997485b8baa5760775f2f7"
+    },
+    "g-nlp": {
+      "normalized_content_sha256": "cf9c34175294c3859ff3baa842d33a9ace073a3f8488b4be42555ed5a573c0d9",
+      "evidence_excerpt": "knowledge graph mid ( mid ), if they are available",
+      "review_note": "Entity reference (now at docs.cloud.google.com) lists name, type, metadata (Wikipedia URL and Knowledge Graph MID when available), salience and mentions. Matches the claim.",
+      "evidence_path": "outputs/source-review-2026-10-12/8b6d03d96e75b197.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/8b6d03d96e75b197.json",
+      "captured_excerpt_sha256": "f352da8408000aed26f5fc98bd634a9f47063047c4dec1887d9cc768018035e8"
+    },
+    "g-ads-kw": {
+      "normalized_content_sha256": "351a5c36f1d4f3fbc50a5f61ee69da958d01b1b15907385cb2fc5f6926ac5591",
+      "evidence_excerpt": "filter keywords by search volume, competition, and cost-per-click (cpc)",
+      "review_note": "Keyword planning overview describes generating keyword ideas and historical metrics (search volume, competition, top-of-page bid). Matches the claim. No authenticated calls made.",
+      "evidence_path": "outputs/source-review-2026-10-12/d92c8ce4e0d1724b.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/d92c8ce4e0d1724b.json",
+      "captured_excerpt_sha256": "57fde7e628b1cc64cab1056f891eb2530c4bf2a73b7e63ca11dc6f7706aced96"
+    },
+    "google-ads-api-v25-1-2026-08-19": {
+      "normalized_content_sha256": "cf2e542f6273e1553b01f4e3363ab303927fff73136e1a28cc47462c16291bf8",
+      "evidence_excerpt": "v25.1 (2026-08-19)",
+      "review_note": "Release notes list v25.1 (2026-08-19) and v25.2 (2026-09-23) as minor versions without breaking changes. The page does not give language-client minimums, which the claim only points elsewhere for.",
+      "evidence_path": "outputs/source-review-2026-10-12/e321f8922316bcd0.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/e321f8922316bcd0.json",
+      "captured_excerpt_sha256": "cb91260b54d6f3f012e4c6d765962443c36344ade1d888c8241d4789f639d7ab"
+    },
+    "chrome-crux": {
+      "normalized_content_sha256": "44dc3edfd22a83c92d07f64936af07b5302c53d1a68ab914c482bcf8bd1e0d14",
+      "evidence_excerpt": "75% of page loads experienced the given metric at or less than this value",
+      "review_note": "Page describes page and origin level real-user data and p75 percentiles ('at least 75% of page loads were measured with a metric value less than or equal to'). Matches the claim.",
+      "evidence_path": "outputs/source-review-2026-10-12/c4356c56a04d1692.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/c4356c56a04d1692.json",
+      "captured_excerpt_sha256": "6f7433edd4ae9e870d8907e9f5a4eed6f40b7c58737b98995b0d0745dafe7a85"
+    },
+    "chrome-crux-history": {
+      "normalized_content_sha256": "2d1e918874d197037f17deb080a10c93f9927ac186217e115c1347c8f4ed7492",
+      "evidence_excerpt": "it contains the previous 40 weeks (approximately 10 months) worth of data",
+      "review_note": "Weekly section states the previous 40 weeks of data, one collection period per week, 25 returned by default and collectionPeriodCount from 1 to 40, with overlapping 28-day windows. The intro still says six months, so the qualification stays. No authenticated call made.",
+      "evidence_path": "outputs/source-review-2026-10-12/ad4709d3a74983af.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/ad4709d3a74983af.json",
+      "captured_excerpt_sha256": "44738efd34b3ac774d6976acb41887d63d16743807c99470b0af9a8a73347874"
+    },
+    "chrome-crux-notes": {
+      "normalized_content_sha256": "031af6a12a6d1411b5ed73724e30028094aa1807513a3e621e628482640b186c",
+      "evidence_excerpt": "55.9% of origins ( ↓ 0.8% ) have good core web vitals",
+      "review_note": "May 2026 release notes (published June 09, 2026) report 55.9% of origins with good Core Web Vitals (down 0.8%) and a pass-rate regression mostly on Android. Matches the claim.",
+      "evidence_path": "outputs/source-review-2026-10-12/0b32a62e7c50179d.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/0b32a62e7c50179d.json",
+      "captured_excerpt_sha256": "1f0efd1d4410850a9ef5df784722abb79b20a45139fc0b9e7b67c389539ad2b1"
+    },
+    "chrome-soft-nav": {
+      "normalized_content_sha256": "7a5a80ca7388bae1cfe63863288ee62d7bdf63fb8340a347c487546e1b322e7c",
+      "evidence_excerpt": "the soft navigations feature is enabled by default from chrome 151",
+      "review_note": "Guide (last updated September 02, 2026) says the soft navigations feature is enabled by default from Chrome 151 and shows feature detection code; the browser-support banner lists only Chrome. Qualification kept.",
+      "evidence_path": "outputs/source-review-2026-10-12/285eeba2c7994b79.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/285eeba2c7994b79.json",
+      "captured_excerpt_sha256": "429a5f67ae6a5030daa21bcf6e6e9085a686a7b7b9d9bc35ceb48c28ee0b660e"
+    },
+    "wd-inp": {
+      "normalized_content_sha256": "dc5ae15549e95ea17283fd2b48fd661aa384ce8a110b5ed177161fb487ce9217",
+      "evidence_excerpt": "an inp below or at 200 milliseconds means a page has good responsiveness",
+      "review_note": "Page: good INP is 200 ms or less, needs improvement up to 500 ms, poor above 500 ms, measured at the 75th percentile; INP is the successor to FID. Matches the claim.",
+      "evidence_path": "outputs/source-review-2026-10-12/594b275d01935111.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/594b275d01935111.json",
+      "captured_excerpt_sha256": "29690e901a2cfb6531adddb554a7f1237ad20e94fb5d5b3266057e8f4903aac1"
+    },
+    "wd-lcp": {
+      "normalized_content_sha256": "5d755e6fbf01368499702fa79a6526673002ef3732be06d2918a87d6d810673f",
+      "evidence_excerpt": "sites should strive to have largest contentful paint of 2.5 seconds or less",
+      "review_note": "Page says good LCP is 2.5 seconds or less at the 75th percentile, segmented across mobile and desktop. Matches the claim.",
+      "evidence_path": "outputs/source-review-2026-10-12/d7b1f947c947cb76.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/d7b1f947c947cb76.json",
+      "captured_excerpt_sha256": "b2769c9a4413ec102dacb6445807119dce5fcd6e29d3e22b338e450476d3a04b"
+    },
+    "wd-cls": {
+      "normalized_content_sha256": "10ba96ce720383b4bce0771bf9f6022b501ba9a001a1276cb01d5e1b307bd256",
+      "evidence_excerpt": "sites should strive to have a cls score of 0.1 or less",
+      "review_note": "Page says good CLS is 0.1 or less at the 75th percentile and poor is above 0.25. Matches the claim.",
+      "evidence_path": "outputs/source-review-2026-10-12/7c03fedcd28e7f34.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/7c03fedcd28e7f34.json",
+      "captured_excerpt_sha256": "9d64c9bb157b9846ea4908856b798b4ecbb4a0d22045cc792054a7d9ff9d9ba1"
+    },
+    "wd-vitals": {
+      "normalized_content_sha256": "22c8512ba8fb15ce5915962606df6ad76482ed4a0d3b9b5340614ceb84a7d4ed",
+      "evidence_excerpt": "if it meets the recommended targets at the 75th percentile for all three",
+      "review_note": "Page lists LCP within 2.5 s, INP 200 ms or less, CLS 0.1 or less, and says a page passes only if it meets the targets at the 75th percentile for all three. Matches the claim.",
+      "evidence_path": "outputs/source-review-2026-10-12/1f2734e7294c86f2.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/1f2734e7294c86f2.json",
+      "captured_excerpt_sha256": "2866a06e4e2df93fa39f2b5d46bd44290fbc3ee88e39534cc09abc9d5b79df33"
+    },
+    "wd-opt-inp": {
+      "normalized_content_sha256": "c7f4bd59f915980bc23d32c0f41b302db8fba05aa7167a2d403bd5160df80e9a",
+      "evidence_excerpt": "interactions can be broken down into three subparts: the input delay",
+      "review_note": "Page breaks an interaction into input delay, processing duration and presentation delay and gives optimization advice for each. The claim says 'processing time' where the page says 'processing duration', which is the same subpart.",
+      "evidence_path": "outputs/source-review-2026-10-12/1d7aea0ca982d48b.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/1d7aea0ca982d48b.json",
+      "captured_excerpt_sha256": "17fdaead2423b05f1ed9e2dff0b652bf64600559b2120c636ec38b6e09d4db47"
+    },
+    "wd-ttfb": {
+      "normalized_content_sha256": "9072725ce7b70af4aeb3ea4db60d1398c1857fe468c181f4778c5caae22d76c3",
+      "evidence_excerpt": "ttfb is a metric that measures the time between starting navigating to a page",
+      "review_note": "The TTFB article defines the metric as time from starting navigation to the first byte, says it precedes FCP and LCP, and states TTFB is not a Core Web Vitals metric. It does not itself say TTFB is a component of LCP (the LCP article says LCP includes TTFB delays), so the claim is reworded to the supported scope.",
+      "evidence_path": "outputs/source-review-2026-10-12/2ace5f5decf2a9f4.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/2ace5f5decf2a9f4.json",
+      "captured_excerpt_sha256": "2d65e134266add64329a31e1b9bb8953f9f3de88564a8727dfb985757e6b7ef8"
+    },
+    "g-update-2024-03-05-inp-replaces-fid": {
+      "normalized_content_sha256": "062183ec5a64c1993f08e5fd9aa79762acb5b1b6f14b2520e07992399ef73a90",
+      "evidence_excerpt": "will offer a six-month deprecation period",
+      "review_note": "Announcement says INP replaces FID as a Core Web Vital on March 12, FID is removed from Search Console as soon as that happens, and other tools such as PageSpeed Insights and CrUX offer a six-month deprecation period. Matches the claim.",
+      "evidence_path": "outputs/source-review-2026-10-12/323be3a933630ce1.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/323be3a933630ce1.json",
+      "captured_excerpt_sha256": "c81e968e45c9da70001a41fd32a641b911c08edd0cdf334b83a4a7b25cab7f2c"
+    },
+    "wd-inp-mar12": {
+      "normalized_content_sha256": "062183ec5a64c1993f08e5fd9aa79762acb5b1b6f14b2520e07992399ef73a90",
+      "evidence_excerpt": "will officially become a core web vital and will replace first input delay on march 12",
+      "review_note": "Same announcement re-read: INP becomes a Core Web Vital and replaces FID on March 12 (2024), with Search Console switching immediately and other tools getting six months. No September date appears, consistent with the earlier correction. This record duplicates g-update-2024-03-05-inp-replaces-fid in claim and URL.",
+      "evidence_path": "outputs/source-review-2026-10-12/323be3a933630ce1.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/323be3a933630ce1.json",
+      "captured_excerpt_sha256": "c81e968e45c9da70001a41fd32a641b911c08edd0cdf334b83a4a7b25cab7f2c"
+    },
+    "schema-full": {
+      "normalized_content_sha256": "1f9610803650b1bad50275ddaaa958db2bd4ab074337591e741e846d46f7296b",
+      "evidence_excerpt": "schema.org is defined as two hierarchies: one for textual property values, and one for the things that they describe",
+      "review_note": "Page title is 'Full schema hierarchy' and it explains schema.org is defined as two hierarchies (textual property values and things). It is the type hierarchy, not a per-property reference. Matches the narrowed claim. The page banner says it is the development version of schema.org.",
+      "evidence_path": "outputs/source-review-2026-10-12/c46b26fd7e0de5f0.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/c46b26fd7e0de5f0.json",
+      "captured_excerpt_sha256": "982925c0abd42c9ed72762f30cb763377af83d2126746bcc0d65d3f93deadeb3"
+    },
+    "schema-product": {
+      "normalized_content_sha256": "82d59276d702a6f35664d4049865e8335b9a40ecc55e34aa0c8a3aabffee3839",
+      "evidence_excerpt": "the overall rating, based on a collection of reviews or ratings, of the item",
+      "review_note": "Product type page (fetched gzip-decoded) lists the aggregateRating property ('the overall rating, based on a collection of reviews or ratings, of the item') and the offers property, with microdata examples. Vocabulary only, not Google eligibility.",
+      "evidence_path": "outputs/source-review-2026-10-12/dd62b9c029aec257.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/dd62b9c029aec257.json",
+      "captured_excerpt_sha256": "2dab1e81c7d6a5cb784f5d786915321a8b0200db847e4adb9331579f2883c387"
+    },
+    "schema-org-type": {
+      "normalized_content_sha256": "19c2fd935ed18e663bdc995a63bb51171640224ead95ec8de881bc69d4f24d93",
+      "evidence_excerpt": "disambiguate your organization in search results",
+      "review_note": "Organization guide says the markup helps Google understand administrative details and disambiguate the organization, and that logo and some properties can affect visuals such as the logo shown in results and the knowledge panel. Example JSON-LD includes name, logo, sameAs. Matches the claim; no ranking promise.",
+      "evidence_path": "outputs/source-review-2026-10-12/9da93cfb5aa747c8.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/9da93cfb5aa747c8.json",
+      "captured_excerpt_sha256": "54b8528ca3daf53fdf2e5aa3af42b1d1aa9d853d4e1cc17f75e0ce743af758a8"
+    },
+    "llmstxt": {
+      "normalized_content_sha256": "4754cd733303307e7fbe5a838f7dcbfe3118c166bc6e7f87bcaae989d144836f",
+      "evidence_excerpt": "the llms.txt specification is open for community input",
+      "review_note": "llmstxt.org (modified August 10, 2026) calls the spec a proposal by Jeremy Howard, open for community input, with an informal GitHub overview. It says nothing about Google Search support. Qualification kept.",
+      "evidence_path": "outputs/source-review-2026-10-12/6e6f293d07aa413e.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/6e6f293d07aa413e.json",
+      "captured_excerpt_sha256": "328e8b27cf4e0d347eda99f0d67478898caf649f469a3446b6b8cba7e2602b02"
+    },
+    "sitemaps-org": {
+      "normalized_content_sha256": "365e7a0ea3fa4b3a8e429cefbd90e3f9dfafafe5f610473ac788a9d140bd48b1",
+      "evidence_excerpt": "each sitemap file that you provide must have no more than 50,000 urls",
+      "review_note": "Protocol page: each sitemap file has at most 50,000 URLs and 50MB uncompressed, with sitemap index files for more. Matches the claim.",
+      "evidence_path": "outputs/source-review-2026-10-12/48ee6aae68a01173.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/48ee6aae68a01173.json",
+      "captured_excerpt_sha256": "56ab441276a071316b77c8dc34c397ec874c72e2889ee720d1e09e013f416804"
+    },
+    "rfc9309": {
+      "normalized_content_sha256": "27dd2281501c9ec14c77bae637a5d2101bf0fc3833d20a820ac12ca900a69c13",
+      "evidence_excerpt": "crawlers must use the parseable rules",
+      "review_note": "RFC 9309 (Internet Standards Track) says crawlers must follow the parseable rules when robots.txt is fetched, covers redirects, caching (do not use cache beyond 24 hours unless unreachable) and states the rules are not a form of access authorization. Matches the claim.",
+      "evidence_path": "outputs/source-review-2026-10-12/71069b292ce99ef0.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/71069b292ce99ef0.json",
+      "captured_excerpt_sha256": "a22ab256a7925a8035511683acf35977f3f7d5d6de4db9f19b6a5084df07c5c6"
+    },
+    "dfs-api": {
+      "normalized_content_sha256": "41d15fea19cadb50db77c023ecfdbcfd6cdb1134f366af92ff257ed562942e89",
+      "evidence_excerpt": "live method: results are not stored",
+      "review_note": "Docs navigation shows SERP, keywords data, DataForSEO Labs, Backlinks, On-Page and Business Data APIs. Results storage section: standard method stored 30 days, live method results not stored. Qualification kept; no paid calls made.",
+      "evidence_path": "outputs/source-review-2026-10-12/15ba1fc4806624c8.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/15ba1fc4806624c8.json",
+      "captured_excerpt_sha256": "e7d6883e4e75d6017af062a57f8d5612d09eb8da4bca6c53f9053e7db9b21933"
+    },
+    "dfs-labs": {
+      "normalized_content_sha256": "05abf9a9a8209c9866f6b4d53c7a4327e0364a2ea9707c3560967edbff421afa",
+      "evidence_excerpt": "dataforseo labs api provides data on keywords, serps, and domains based on our in-house databases",
+      "review_note": "Labs overview says the API provides data on keywords, SERPs and domains from DataForSEO's in-house databases; navigation lists ranked keywords, competitors domain, domain intersection and SERP competitors endpoints. Matches the claim.",
+      "evidence_path": "outputs/source-review-2026-10-12/05194f5ed0fbc60a.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/05194f5ed0fbc60a.json",
+      "captured_excerpt_sha256": "393c6527f5bb4ed84dc01c4e4c97904c03581578b80b7ea4e7049a2bf70370af"
+    },
+    "bing-submit": {
+      "normalized_content_sha256": "264109b855e89ca277eebe90c64e3895f739da5cc5befbbdfb4c2e6897d2697d",
+      "evidence_excerpt": "indexnow notifies multiple search engines of your content changes as soon as they happen",
+      "review_note": "Bing IndexNow page says IndexNow notifies multiple search engines of content changes (adds, updates, deletes) as they happen. It does not mention Copilot citation behavior, as the claim already notes.",
+      "evidence_path": "outputs/source-review-2026-10-12/4dea98e47dc55b08.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/4dea98e47dc55b08.json",
+      "captured_excerpt_sha256": "4b718eb9817dee019527f81de7568b5b58a3e73dce366f17be605edcbb581555"
+    },
+    "ahrefs-api": {
+      "normalized_content_sha256": "0963f19de21959a6d6dac64ae86141cfd39bcfcc56f7860f2a97ad1205aa796f",
+      "evidence_excerpt": "research keywords, analyze backlinks, track rankings, and monitor brand visibility",
+      "review_note": "Home page: the REST API section says 'research keywords, analyze backlinks, track rankings, and monitor brand visibility', and separate MCP, Data Studio, bot analytics and Ahrefs Connect sections exist. The 'backlinks, organic traffic, and domain metrics' wording belongs to the Data Studio Site Explorer connector, not the API, so the claim is reattributed.",
+      "evidence_path": "outputs/source-review-2026-10-12/201b49408fe7f7df.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/201b49408fe7f7df.json",
+      "captured_excerpt_sha256": "7915f942957c2f3c41e3a009b953470055c4f1472db3ef2bcebc1454ba3a3684"
+    },
+    "firecrawl": {
+      "normalized_content_sha256": "23d7c7bd3c81feab0af4e62c10fd79921e7f3c8190f9c2cde71ff70e755d470a",
+      "evidence_excerpt": "javascript rendering, and dynamic content",
+      "review_note": "Introduction lists map (discover all URLs), crawl (recursively gather content from entire sites), scrape, and says it handles proxies, anti-bot, JavaScript rendering and dynamic content. Vendor capability statement, not a coverage guarantee.",
+      "evidence_path": "outputs/source-review-2026-10-12/1af541f4198686a9.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/1af541f4198686a9.json",
+      "captured_excerpt_sha256": "fd9a1cf550ce43759fc36888cfe5efe7b2ce3fb6ebf9aeb1f42b0ee17ea21936"
+    },
+    "statcounter": {
+      "normalized_content_sha256": "17ecd004d1dc2895442a8210df6960467d93363e6225b6fa9f295f44bc5eb3e6",
+      "evidence_excerpt": "search engine market share worldwide - september 2026",
+      "review_note": "Page title is 'Search Engine Market Share Worldwide - September 2026' with selectable platform (all, desktop, tablet, mobile) and region controls, so the dataset month, geography and platform must be quoted. No frozen share figure is asserted.",
+      "evidence_path": "outputs/source-review-2026-10-12/d60793f8928409f6.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/d60793f8928409f6.json",
+      "captured_excerpt_sha256": "b4dc1904452c99c5c6c6626f426099f2e2e8aa8d9e503f2fab40b70dbcc6d102"
+    },
+    "nng-editorial-heuristics": {
+      "normalized_content_sha256": "a1f36ac18b4b85e22bb72b5aa75d3e3103e589bc104b444cb773d5cb83d52edf",
+      "evidence_excerpt": "jakob nielsen's 10 general principles for interaction design",
+      "review_note": "NN/g article (originally 1994, last reviewed Jan. 30, 2024) summarizes Nielsen's 10 general principles for interaction design as broad rules of thumb. It says nothing about editorial or SEO use, so the qualification stays.",
+      "evidence_path": "outputs/source-review-2026-10-12/e17bbd2642072821.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/e17bbd2642072821.json",
+      "captured_excerpt_sha256": "0a94e5ab27db9e24fc38088cf6c855862de81691763bd4ad45666b6e8b1f2e8b"
+    },
+    "gsc-reporting-anomalies-2026-08-13": {
+      "normalized_content_sha256": "67cca2a0102af8cb59f2f1d0c77c9e5a183590a6dd807482fbf61680b806a718",
+      "evidence_excerpt": "missing data for this period has been restored",
+      "review_note": "Anomalies log: 13 Aug 2026 Discover logging error; 13 to 17 Aug 2026 generative AI in Search impressions logging error with 'update (august 21): missing data for this period has been restored'. Both marked data logging only. Matches the claim.",
+      "evidence_path": "outputs/source-review-2026-10-12/3311e1f7f7a32d57.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/3311e1f7f7a32d57.json",
+      "captured_excerpt_sha256": "d691f620714f34d1d4d744b2fe1b164e60bfd11af9d3f4bee60c42ab955191a3"
+    },
+    "search-console-platform-help-2026-08-25": {
+      "normalized_content_sha256": "b629ac50cfb9395894578a28f808a234226a0e0556e6b01d63c745092fe0711f",
+      "evidence_excerpt": "we’re rolling out this feature gradually, so it might not be available to everyone yet",
+      "review_note": "Help page still says the platform properties feature is rolling out gradually and might not be available to everyone yet; supported platforms are Instagram, TikTok, X and YouTube. Conflict with the July 29 announcement remains documented.",
+      "evidence_path": "outputs/source-review-2026-10-12/05f9f9c1f57bb707.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/05f9f9c1f57bb707.json",
+      "captured_excerpt_sha256": "0979196bec7716b0a8f9ed33daa1867e38bf1e4e7ddb964a6d4860dc9ebe2927"
+    },
+    "review-snippet-integrity-2026-07-24": {
+      "normalized_content_sha256": "ed2e7d6bd4f2f3bbb12bfc0ea1c6adff9ba889f4f2f84fc63be5665f255a9884",
+      "evidence_excerpt": "don't include fake or undisclosed incentivized reviews on your page or in your structured data markup",
+      "review_note": "Review snippet guidelines say not to include fake or undisclosed incentivized reviews on the page or in structured data, with examples of reviews not based on genuine experience and reviews written for a benefit without clear and prominent disclosure. Matches the claim.",
+      "evidence_path": "outputs/source-review-2026-10-12/b059042d67e8cd7c.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/b059042d67e8cd7c.json",
+      "captured_excerpt_sha256": "a970161335eba4a0aad9b6851baa01954cc67367f6176d2635354f6941c458a9"
+    },
+    "preferred-sources-custom-button-2026-08-20": {
+      "normalized_content_sha256": "5cf1f391034ab0a326389d8f72797c0d078f2a3371acca664fc0a4cab61e1d18",
+      "evidence_excerpt": "only domain-level and subdomain-level sites are eligible to appear in the source preferences tool",
+      "review_note": "Page documents a standard JavaScript button, an advanced JavaScript button with custom assets and a deeplink option, and says only domain-level and subdomain-level sites are eligible (a subdirectory such as /blog is not). Matches the claim.",
+      "evidence_path": "outputs/source-review-2026-10-12/89d8cd0b33ae5df5.txt",
+      "captured_excerpt_path": "references/evidence/2026-10-12/89d8cd0b33ae5df5.json",
+      "captured_excerpt_sha256": "1135fc43c1361785db2bd3cca47d5c832bfd8ce51bf6e74da84817bd1b8001dc"
+    }
+  },
+  "dispositions": {}
+}
