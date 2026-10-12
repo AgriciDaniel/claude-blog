@@ -2,6 +2,19 @@
 
 Claude Blog is built by [@AgriciDaniel](https://github.com/AgriciDaniel) with contributions from the AI Marketing Hub community.
 
+## Upstream pull requests re-implemented in PR #86 (2026-10-11)
+
+These contributors opened pull requests against `AgriciDaniel/claude-blog` that were still open on 2026-10-11. Their changes were re-implemented in the PR #86 integration instead of being merged as submitted. The credit below states only what each pull request describes.
+
+| Contributor | Upstream PR | What the pull request addressed | Area in this repo |
+|---|---|---|---|
+| **andrewtpham** | [#83](https://github.com/AgriciDaniel/claude-blog/pull/83) | `--batch` discovery now recurses into nested blog layouts (such as `<slug>/page.mdx`), skipping vendor and generated directories | `scripts/analyze_blog.py` |
+| **joachimBrindeau** | [#82](https://github.com/AgriciDaniel/claude-blog/pull/82) | Hero image ladder repair: Openverse host and progressively broader query, Gemini image MIME type, and hero file extension detection in the renderer | `scripts/generate_hero.py`, `scripts/blog_render.py` |
+| **imong8** | [#73](https://github.com/AgriciDaniel/claude-blog/pull/73) | Declared Indonesian (`id`) language profile for the analyzer | `scripts/analyze_blog.py` |
+| **Hi-2025-Be** | [#90](https://github.com/AgriciDaniel/claude-blog/pull/90) | Methodology bonus no longer replaces the originality synthesis floor | `scripts/analyze_blog.py` |
+
+Credit these contributors by linking to their pull requests above.
+
 ## v1.8.1 through v1.8.6: Hostile-audit hardening (2026-05-17)
 
 Seven rounds of hostile re-audit (cybersecurity + GitHub + documentation + code-quality + test-coverage tracks) caught defects each round that prior rounds missed. Each round was executed by parallel review passes with file:line evidence requirements. The audit pattern itself is documented across `CHANGELOG.md` v1.8.1 through v1.8.6 entries.
@@ -55,8 +68,8 @@ In March 2026, the AI Marketing Hub Pro community ran the first Pro Hub Challeng
 
 | Contributor | Original submission | Integrated as | Score |
 |---|---|---|---|
-| **Lutfiya Miller** (winner) | [semantic-cluster-engine](https://github.com/Drfiya/semantic-cluster-engine) | `blog-cluster` (semantic topic-cluster planning + execution engine) | 95 / 100 Exemplary |
-| **Chris Mueller** | [claude-blog-multilingual](https://github.com/Chriss54/multilingual-int) | `blog-multilingual`, `blog-translate`, `blog-localize`, `blog-locale-audit` + `blog-translator` agent | 85 / 100 Proficient |
+| **Lutfiya Miller** (winner) | semantic-cluster-engine (repository no longer available as of 2026-10-12) | `blog-cluster` (semantic topic-cluster planning + execution engine) | 95 / 100 Exemplary |
+| **Chris Mueller** | claude-blog-multilingual (repository no longer available as of 2026-10-12) | `blog-multilingual`, `blog-translate`, `blog-localize`, `blog-locale-audit` + `blog-translator` agent | 85 / 100 Proficient |
 
 The cluster engine was the highest-scoring submission of the entire challenge. Lutfiya's design (Plan + Execute architecture with cluster-context injection into per-post writes) is preserved verbatim; we removed brand-specific styling and image prompts, hardened the HTML output against XSS, and routed through claude-blog's existing sub-skills.
 

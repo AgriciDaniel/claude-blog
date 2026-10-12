@@ -1,6 +1,7 @@
 # Blog Quality Scoring Checklist
 
-Score each blog post against this checklist. Used by `/blog analyze`.
+Score each blog post against this checklist. Used by `/blog analyze` and by the
+`blog-reviewer` agent. Thresholds live in one table below; other files link here.
 
 ## Content Quality (30 points)
 
@@ -62,15 +63,57 @@ itself. Reference: `flow-alignment.md`.
 
 ## Total: 100 points
 
-### Scoring Bands
+### Thresholds (single source of truth)
 
-| Score | Rating | Action |
-|-------|--------|--------|
-| 90-100 | Exceptional | Publish as-is, flagship content |
-| 80-89 | Strong | Minor polish, ready for publication |
-| 70-79 | Acceptable | Targeted improvements needed before publish |
-| 60-69 | Below Standard | Significant rework required |
-| < 60 | Rewrite | Fundamental issues, start from outline |
+Every other file in this package refers to this table instead of restating a
+number. Two different scorers exist and they are not interchangeable: the
+**reviewer** (`blog-reviewer` agent, judgment-based, drives delivery) and the
+**analyzer** (`scripts/analyze_blog.py`, mechanical heuristic, drives audits and
+the pre-commit hook). Both use the same 30/25/15/15/15 category maxima.
+
+| Threshold | Value | Scorer | Where it applies |
+|---|---|---|---|
+| Delivery gate | Overall 90 or higher AND zero P0 issues | Reviewer | Gate 4 in `blog_preflight.py`; the draft is not shown to the user below it |
+| Rating bands | 90-100 Exceptional, 80-89 Strong, 70-79 Acceptable, 60-69 Below Standard, under 60 Rewrite | Either | Labels only. 80-89 means "minor polish still needed"; it does not clear the delivery gate |
+| Strategy target | 80 or higher on existing posts | Analyzer | `blog-strategy` planning goal for a back catalog, not a delivery rule |
+| Pre-commit gate | 70 | Analyzer | `scripts/quality_gate.py` (`DEFAULT_THRESHOLD`); a hook floor, not a delivery gate |
+| Audit buckets | 90+ Excellent, 70-89 Good, 50-69 Needs Work, under 50 Poor | Analyzer | `blog-audit` summary dashboard |
+| Rewrite regression | New score no lower than the original | Reviewer | `blog-rewrite`; a drop sets `BLOCKING: true` |
+
+### Draft-stage scoring (how the 90 applies to an unpublished draft)
+
+The reviewer scores a draft folder before the post is live, so some rubric items
+describe the site or a measurement rather than the draft. Do not hand out those
+points by default and do not silently drop them. Use this rule:
+
+1. **Score from draft evidence where the draft carries it.** URL structure comes
+   from the slug and canonical URL. Trust indicators come from the byline, author
+   page, editorial-policy and contact links present in the HTML. Internal
+   linking comes from the resolved links in the draft (anchor text, count,
+   placement). AI crawler accessibility comes from the rendered HTML (primary
+   content present, no `noindex`, nothing gated behind script). Page speed and
+   mobile items are scored from static signals only (image dimensions, lazy
+   loading, no render-blocking script, viewport meta, responsive CSS).
+2. **Mark an item N/A only when the draft has no evidence for it.** Typical
+   cases: `robots.txt` policy for an unpublished URL, a measured LCP value, link
+   targets that exist only on the live site, a first post with nothing to link
+   to. State the evidence gap for each N/A item in the Notes column.
+3. **Scale each category to its fixed maximum.** For a category with N/A items,
+   `category score = round(points earned / points applicable * category maximum)`.
+   Report it as `N/MAX` with the fixed maxima 30, 25, 15, 15, 15, plus one line
+   `N/A items: <item> (<pts>), ...; category scaled from <earned>/<applicable>`.
+4. **The overall is the sum of the five reported category scores**, an integer.
+   The 90 threshold applies to that overall. This is exactly what Gate 4 reads:
+   the stated maxima must match the rubric, the overall must equal the sum of the
+   category scores, and the overall must be 90 or higher.
+5. **Cap on N/A.** If more than 20 of the 100 points would be N/A, the draft
+   cannot be scored fairly. Return `BLOCKING: true` with the reason "too little
+   draft evidence to score", and name what to add (for example author and policy
+   links).
+
+Gate 4 does not verify the N/A arithmetic; it checks the reported numbers for
+consistency. Gate 3 (visual checks) and Gate 5 (links and assets) run
+independently and are never replaced by an N/A.
 
 ## Priority Classification
 
@@ -156,7 +199,7 @@ These can be detected programmatically:
 25. Schema presence (search for structured data markers)
 26. OG meta tags (frontmatter `ogImage`, `coverImage`)
 27. `loading="lazy"` on first image (flag as LCP issue)
-28. dateModified/lastUpdated truthfulness when substantive changes are documented
+28. dateModified/lastUpdated truthfulness when substantive changes are documented (Google lists date changes without substantial content change as a warning sign, helpful-content page updated 2026-10-05); also check that bylines, headshots, and credentials are real and that AI assistance is disclosed where readers would expect it
 
 ### AI Citation Readiness
 29. Evidence-backed, self-contained treatment of important claims without a fixed length

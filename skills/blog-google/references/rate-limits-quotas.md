@@ -4,17 +4,19 @@
 
 | API | Per-Minute | Per-Day | Cost | Auth Type | Scope |
 |-----|-----------|---------|------|-----------|-------|
-| GSC Search Analytics | 1,200 QPM/user, 1,200 QPM/site | 30M QPD/project | Free | Service Account | Per user + per site |
-| GSC URL Inspection | 600 QPM/site | 2,000 QPD/site | Free | Service Account | Per site |
+| GSC Search Analytics | 1,200 QPM per user, 1,200 QPM per site, 40,000 QPM per project | 30M QPD per project | Free | Service Account | Per user + per site + per project |
+| GSC URL Inspection | 600 QPM per site, 15,000 QPM per project | 2,000 QPD per site, 10M QPD per project | Free | Service Account | Per site + per project |
 | GSC Sitemaps | Standard | Standard | Free | Service Account | Per site |
 | PageSpeed Insights v5 | 240 QPM | 25,000 QPD | Free | API Key | Per project |
 | CrUX API | 150 QPM (shared) | Unlimited | Free | API Key | Per project |
 | CrUX History API | 150 QPM (shared with CrUX) | Unlimited | Free | API Key | Per project |
 | Indexing API | 380 RPM total, 180 read/min | 200 publish/day | Free | Service Account | Per project |
 | GA4 Data API | 10 concurrent (50 for 360) | 200,000 Core Tokens/day (std); 2M (360) | Free | Service Account | Per property/project |
-| YouTube Data API v3 |: | 10,000 units/day | Free | API Key | Per project |
+| YouTube Data API v3 |: | `search.list`: 100 calls/day at 1 unit per call (own bucket); other endpoints 10,000 units/day combined | Free | API Key | Per project |
 | Cloud Natural Language API |: | 5,000 units/month free tier | Paid after free tier | API Key | Per project |
 | Google Ads API | Account dependent | Account dependent | Free API access | OAuth + developer token | Per developer token and account |
+
+Sources: https://developers.google.com/webmaster-tools/limits and https://developers.google.com/youtube/v3/determine_quota_cost (read 2026-10-12). The Search Analytics minute and day limits sit at different scopes: 1,200 QPM applies per site and per user, while 30M QPD (and 40,000 QPM) applies per project. Do not read them as one per-site figure.
 
 **Key distinction:** "Per site" quotas are scoped to a specific GSC property. "Per project" quotas are shared across all properties in a GCP project. "Per user" quotas are per authenticated user (service account).
 
@@ -68,10 +70,10 @@ The CrUX API and CrUX History API share the same 150 QPM quota per project. Plan
 
 **Most APIs used by blog-google are free** at normal usage levels. No billing is required for:
 - PSI, CrUX, CrUX History (API key, unlimited free)
-- GSC (service account, 30M QPD)
+- GSC (service account, 30M QPD per project)
 - Indexing API (service account, 200 publish/day)
 - GA4 Data API (service account, 200K tokens/day standard)
-- YouTube Data API (API key, 10,000 units/day)
+- YouTube Data API (API key; `search.list` is capped at 100 calls/day in its own bucket)
 
 Cloud Natural Language requires billing enabled, with a free monthly tier. Google Ads API access is free, but Keyword Planner data quality depends on the Google Ads account.
 

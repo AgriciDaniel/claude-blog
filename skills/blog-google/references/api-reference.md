@@ -204,11 +204,11 @@ establish a Google ranking or citation requirement.
 
 | Method | Quota Cost | Description |
 |--------|-----------|-------------|
-| `search.list` | 100 units | Search videos matching a query |
+| `search.list` | 1 unit per call, own bucket (default 100 calls/day) | Search videos matching a query |
 | `videos.list` | 1 unit | Video details, statistics, tags |
 | `channels.list` | 1 unit | Channel info, subscriber count |
 
-Default quota: **10,000 units/day** (free). API key only, no OAuth needed.
+Default quota: `search.list` has its own bucket of **100 calls/day** (1 unit per call); other endpoints share **10,000 units/day** (free). Source: https://developers.google.com/youtube/v3/determine_quota_cost (read 2026-10-12). API key only, no OAuth needed.
 
 ---
 

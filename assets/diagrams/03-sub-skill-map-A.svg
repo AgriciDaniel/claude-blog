@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 820" width="100%"
      preserveAspectRatio="xMidYMid meet" role="img"
-     aria-label="claude-blog sub-skill ecosystem: 30 sub-skills across 8 clusters — writing, strategy, quality, AI and search, multilingual, research, media, distribution">
-<title>claude-blog — sub-skill ecosystem</title>
+     aria-label="claude-blog sub-skill ecosystem: 31 sub-skills across 8 clusters (30 user-invocable plus the internal blog-chart): writing, strategy, quality, AI and search, multilingual, research, media, distribution">
+<title>claude-blog: sub-skill ecosystem</title>
 <desc>A grid of eight cluster cards, each with a color, a skill count, and sample skills. An orchestrator chip sits above the grid.</desc>
 <defs>
   <style type="text/css"><![CDATA[
@@ -23,7 +23,8 @@
 
 <!-- header -->
 <text x="96" y="92" class="t" font-size="15" letter-spacing="4" fill="#8A93A0">SUB-SKILL ECOSYSTEM</text>
-<text x="94" y="140" class="b" font-size="34" fill="#1E242B">30 sub-skills, 8 clusters, one orchestrator.</text>
+<text x="94" y="140" class="b" font-size="34" fill="#1E242B">31 sub-skills, 8 clusters, one orchestrator.</text>
+<text x="96" y="168" class="t" font-size="14" fill="#6B7480">30 user-invocable commands plus the internal blog-chart skill</text>
 
 <!-- orchestrator chip -->
 <g filter="url(#sh)"><rect x="96" y="188" width="330" height="58" rx="16" fill="#FFFFFF"/></g>
@@ -42,7 +43,7 @@
 <rect x="101" y="328" width="44" height="44" rx="12" fill="#4C86EF"/>
 <g fill="#FFFFFF"><circle cx="117" cy="344" r="3"/><circle cx="129" cy="344" r="3"/><circle cx="117" cy="356" r="3"/><circle cx="129" cy="356" r="3"/></g>
 <text x="159" y="348" class="b" font-size="19" fill="#1E242B">Writing</text>
-<circle cx="381" cy="350" r="17" fill="#EAF0FE"/><text x="381" y="356" text-anchor="middle" class="b" font-size="15" fill="#4C86EF">4</text>
+<circle cx="381" cy="350" r="17" fill="#EAF0FE"/><text x="381" y="356" text-anchor="middle" class="b" font-size="15" fill="#4C86EF">5</text>
 <text x="101" y="410" class="t" font-size="14" fill="#6B7480">blog-write · blog-rewrite</text>
 <text x="101" y="436" class="t" font-size="14" fill="#6B7480">blog-outline · blog-brief</text>
 
@@ -58,7 +59,7 @@
 <rect x="841" y="328" width="44" height="44" rx="12" fill="#33A457"/>
 <path d="M853 348 l5 6 l10 -11" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
 <text x="899" y="348" class="b" font-size="19" fill="#1E242B">Quality</text>
-<circle cx="1121" cy="350" r="17" fill="#E7F6EC"/><text x="1121" y="356" text-anchor="middle" class="b" font-size="15" fill="#33A457">5</text>
+<circle cx="1121" cy="350" r="17" fill="#E7F6EC"/><text x="1121" y="356" text-anchor="middle" class="b" font-size="15" fill="#33A457">6</text>
 <text x="841" y="410" class="t" font-size="14" fill="#6B7480">blog-audit · blog-factcheck</text>
 <text x="841" y="436" class="t" font-size="14" fill="#6B7480">blog-seo-check · blog-analyze</text>
 
@@ -75,7 +76,7 @@
 <rect x="101" y="533" width="44" height="44" rx="12" fill="#4C86EF"/>
 <g fill="none" stroke="#FFFFFF" stroke-width="2"><circle cx="123" cy="555" r="12"/><ellipse cx="123" cy="555" rx="5" ry="12"/><line x1="111" y1="555" x2="135" y2="555"/></g>
 <text x="159" y="553" class="b" font-size="19" fill="#1E242B">Multilingual</text>
-<circle cx="381" cy="555" r="17" fill="#EAF0FE"/><text x="381" y="561" text-anchor="middle" class="b" font-size="15" fill="#4C86EF">4</text>
+<circle cx="381" cy="555" r="17" fill="#EAF0FE"/><text x="381" y="561" text-anchor="middle" class="b" font-size="15" fill="#4C86EF">5</text>
 <text x="101" y="615" class="t" font-size="14" fill="#6B7480">blog-translate · blog-localize</text>
 <text x="101" y="641" class="t" font-size="14" fill="#6B7480">blog-multilingual · locale-audit</text>
 

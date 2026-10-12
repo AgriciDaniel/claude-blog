@@ -12,29 +12,43 @@ SKILL.md are not automatically expanded in reference files or agent prompts.
 | `blog-researcher` | Finds current statistics, sources, images, competitive data, and research packets with source tiers. |
 | `blog-writer` | Drafts from the selected template, applies answer-first formatting, citations, and summary boxes. |
 | `blog-seo` | Validates title, meta description, headings, links, image alt text, Open Graph tags, and on-page SEO. |
-| `blog-reviewer` | Runs the 5-category 100-point rubric, P0 checks, AI-pattern checks, and blocking review. |
+| `blog-reviewer` | Runs the 5-category 100-point rubric, P0 checks, AI-pattern checks, and blocking review. Returns text only; the orchestrator saves `review.md`. |
 | `blog-translator` | Preserves markdown, MDX, HTML, frontmatter, and schema during multilingual work. |
 
 ## Execution Flow
 
-For `/blog write`, run:
+For `/blog write`, prepare, then run the canonical delivery sequence from
+`<blog_reference_root>/blog-delivery-contract.md` (that file is the single source
+of truth; the numbers below match it):
 
-1. Parse topic, platform, and template.
-2. Research with `blog-researcher`.
-3. Build outline from template and research gaps.
-4. Draft with `blog-writer`.
-5. Optimize with `blog-seo`.
-6. Score with `blog-reviewer`.
-7. Enforce the delivery contract in `<blog_reference_root>/blog-delivery-contract.md`.
-8. Deliver only after all gates pass.
+Preparation: parse topic, platform and template; research with
+`blog-researcher`; build the outline from the template and research gaps.
 
-For `/blog analyze`, read and score only. For `/blog audit`, score posts in
-parallel across the target directory.
+1. Draft with `blog-writer` into `D/S.md` (markers allowed).
+2. Resolve visuals in the orchestrator: hero via `generate_hero.py`, charts via
+   `blog-chart`, internal links and images resolved or removed; optional
+   `blog-seo` on the resolved draft. No marker may remain.
+3. Render with `blog_render.py`.
+4. Issue the review nonce with `blog_preflight.py --init-review-nonce`.
+5. Review with `blog-reviewer` (it returns text; the orchestrator saves it
+   verbatim as `D/review.md`).
+6. Run `blog_preflight.py --draft D --strict` (`--repair-attempt` in the loop).
+7. Loop at most 3 times; after any change to `S.md`, `S.html`, `S.pdf` or the
+   hero, re-render, re-init the nonce and re-review. Deliver only after all
+   gates pass.
+
+Agents cannot call skills or run helpers. Everything that needs `blog-chart`,
+`blog-image`, a helper script or a skill is done by the orchestrator, which then
+hands the result back to an agent as text or a file path.
+
+For `/blog analyze`, run `analyze_blog.py` first and add judgment on top. For
+`/blog audit`, the analyzer scores the whole folder and `blog-audit` adds the
+site-wide checks.
 
 ## Internal Workflows
 
-- `blog-chart` is internal-only and is invoked by write/rewrite when chart-worthy
-  data exists.
+- `blog-chart` is internal-only and is invoked by the orchestrator while it
+  runs write/rewrite (never by an agent) when chart-worthy data exists.
 - `blog-image` is user-invocable and may be called by write/rewrite for generated
   assets when configured.
 - `blog-notebooklm` is user-invocable and may be called for source-grounded user

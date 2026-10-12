@@ -12,7 +12,7 @@ intents and require separate posts.
 
 Example:
 
-- "best CRM software" and "top CRM tools 2026" share commercial-comparison
+- "best CRM software" and "top CRM tools this year" share commercial-comparison
   intent. They belong in the same post.
 - "CRM definition" is informational and educational. It belongs in a separate
   post (or a separate FAQ entry inside the pillar).
@@ -27,7 +27,7 @@ Use WebSearch to expand the seed keyword into 30 to 50 candidate phrases:
 2. Long-tail expansion: append `guide`, `tips`, `tools`, `examples`, `vs`, `best`, `how to`.
 3. Question mining: prepend `what is`, `how does`, `why`, append `for beginners`.
 4. Intent variants: add commercial (best, top, review, comparison, pricing), informational (guide, tutorial, explained, examples), and transactional (buy, download, tool, software, service) modifiers.
-5. Year freshness: append `2026`.
+5. Year freshness: append the current year (from the system date; never a hard-coded year).
 
 Drop near-duplicates (variants that differ by only a stop word or plural).
 

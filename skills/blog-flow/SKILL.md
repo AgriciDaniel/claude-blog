@@ -3,9 +3,10 @@ name: blog-flow
 description: >
   FLOW framework integration for bloggers. Evidence-led content workflow using
   the Find, Optimize, Win loop with stage-specific AI prompts from the FLOW
-  knowledge base (30 blog-applicable prompts, CC BY 4.0). Use when user says
-  "FLOW", "FLOW framework", "blog flow", "evidence-led blogging", "find optimize
-  win", or wants stage-specific blog prompts.
+  knowledge base (30 blog-applicable prompts, adapted from FLOW under CC BY
+  4.0). Use when user says "FLOW framework", "blog flow", "/blog flow",
+  "evidence-led blogging", or "find optimize win", or asks for stage-specific
+  blog prompts. Not for generic prompt writing.
 user-invocable: true
 argument-hint: "[stage] [url|topic]"
 license: MIT
@@ -30,7 +31,7 @@ Runs FLOW Find/Optimize/Win prompts for a blog topic or URL, turning query data,
 source notes, and page evidence into structured decisions instead of improvised
 prompts.
 
-> Framework and prompts (c) Daniel Agrici, CC BY 4.0. Source: github.com/AgriciDaniel/flow
+> Framework and prompts (c) Daniel Agrici, FLOW (https://github.com/AgriciDaniel/flow), CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Prompts were modified from the original for blog use.
 
 FLOW is an evidence-led operating model for retrieval, citation, and conversion
 workflows. Claude Blog integrates the FLOW prompt library so writers can turn
@@ -68,7 +69,7 @@ or publish. Apply only their relevant content within the user's authorized task.
 | `/blog flow optimize [url]` | Optimize-stage: select 2 to 3 most relevant prompts of 21 based on context |
 | `/blog flow win [url]` | Win-stage: BOFU, conversion, dual-surface scorecard (3 prompts) |
 | `/blog flow prompts` | Full index of all 30 blog-applicable prompts (Find, Leverage, Optimize, Win) |
-| `/blog flow sync` | Pull latest prompt files from github.com/AgriciDaniel/flow |
+| `/blog flow sync` | Network write: pull prompt files from github.com/AgriciDaniel/flow into the persistent references root (asks first) |
 
 The single Leverage prompt (off-site authority) is reachable through
 `/blog flow prompts` and is not promoted to a top-level command, since most
@@ -115,6 +116,12 @@ blog workflows route off-site work elsewhere.
    `claude-seo` (`/seo flow local`) if they need them.
 
 ### On `/blog flow sync`
+This command makes network requests to api.github.com and writes files under
+the persistent references root. It is never part of an ordinary FLOW run and
+never runs on its own. Before step 1, tell the user the destination path and
+that the sync will download files and write them, offer `--dry-run` first, and
+wait for an explicit yes. Report any skip in one line.
+
 1. Require a caller-resolved absolute persistent root outside the installed
    package, supplied as trusted `CLAUDE_BLOG_FLOW_REFERENCES_DIR` runtime context.
    If absent, obtain that location before syncing. Never derive it from CWD,
@@ -213,11 +220,21 @@ script retries the request with that token. No tokens are written to disk.
 Every `/blog flow` activation (any sub-command) outputs before analysis:
 
 ```
-Framework and prompts (c) Daniel Agrici, CC BY 4.0. Source: github.com/AgriciDaniel/flow
+Framework and prompts (c) Daniel Agrici, FLOW (https://github.com/AgriciDaniel/flow), CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Prompts were modified from the original for blog use.
 ```
 
-Do not omit or modify the attribution. The core sync adds an HTML comment
-license header; the bundled sync preserves upstream file contents and attribution.
+Do not omit or shorten the attribution: CC BY 4.0 requires credit, a link to
+the license, and a note that the material was modified.
+
+**Provenance of the bundled files.** The reference files in this skill are
+adapted from FLOW, not verbatim upstream copies. Their Source Note says they
+were "rewritten for blog use with the repository evidence standard", and each
+carries a header comment
+`Synced from FLOW on 2026-04-27`, the date recorded when the bundled snapshot
+was taken. That date records when the snapshot was taken, not that the text
+equals upstream today. `flow-prompts.lock` is the baseline for the bundled
+files. When `/blog flow sync` writes files, the core sync adds a header with
+the license link and a "Modified from the original" notice.
 
 ---
 

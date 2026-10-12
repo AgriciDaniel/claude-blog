@@ -152,7 +152,12 @@ requirements.
 - Keep server responses reliable and reasonably fast for users and crawlers.
 - Some crawlers and retrieval systems use practical timeouts; verify per crawler.
 - Core Web Vitals are a constraint, not a growth lever - good CWV doesn't reliably
-  outperform, but severe LCP failure creates disadvantage (Search Engine Land, 107,352 pages)
+  outperform, but severe LCP failure creates disadvantage. Source: a January 2026
+  Search Engine Land analysis of 107,352 pages that appear in Google AI Overviews
+  and AI Mode. It is correlational, covers Google's AI surfaces only, and does
+  not measure classic rankings or other AI assistants
+  (https://searchengineland.com/core-web-vitals-ai-search-visibility-analysis-467456,
+  excerpt checked 2026-10-11)
 - Slow pages may miss crawl, fetch, or extraction opportunities
 - Vercel analysis of 500+ million GPTBot fetches found zero evidence of JS execution
 

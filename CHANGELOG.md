@@ -50,8 +50,146 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   startup-cache file while protecting the rest of the disposable profile,
   avoid binary pipelines in legacy Windows fixtures, and preserve Bash 3.2
   standalone uninstall.
+- Ignore identity elements that are off-page, clipped, zero-area or zero-font
+  size in Gate 3, so a hidden decoy author, date or headline can no longer
+  satisfy the JSON-LD match. Block WebSocket connections and service workers in
+  the Gate 3 browser contexts.
+- Catch plural P0 mentions in Gate 4 and check reviewer category scores against
+  the rubric maximums and the overall score. Warn when the draft changed after
+  the review nonce was issued.
+- Scan Gate 5 HTML byte limits in linear time. Fail cleanly on malformed URLs
+  and non-object target files, and write a blocked placeholder report at the
+  start of every run so a crashed or capped run cannot leave a stale passing
+  report. Check wordCount against `<main>` when there is no `<article>`, accept
+  `mailto:` links, parse JSON-LD blocks one by one, and warn that the retired
+  `preflight-allowlist.json` is ignored.
+- Allow render and hero output paths under a root-owned system symlink such as
+  `/home` or macOS `/tmp`, while still refusing symlinks inside the output
+  tree, at the leaf, or created by the user in an ancestor.
+- Block CGNAT, site-local IPv6 and wrapped IPv4 addresses (mapped, 6to4,
+  NAT64) in the hero fetcher, using `is_global` semantics.
+- Stop `analyze_blog.py` from crashing on non-string JSON-LD `@type` values or
+  deeply nested JSON-LD, and let `--batch` report a bad file without aborting.
+- Count a disclosed methodology as a bonus on top of the originality synthesis
+  floor instead of replacing it (upstream PR #90).
+- Report the real Google error reason and redact credentials in
+  `youtube_search.py` (issue #65).
+- Add `--force-adopt` (Unix) with backups and clearer recovery text for modified
+  managed files, make `uninstall.sh` report honestly when no manifest exists,
+  fix the installer command listing for escaped pipes, install dependencies
+  with `pip --user` or in a virtual environment instead of system-wide, and
+  give clearer Python 3.11 guidance for macOS.
+- Correct stale or unsupported guidance: the September 2026 spam update
+  baseline (Sep 24 to Oct 8), the QAPage status, and statistics without a
+  verifiable source. Mark the case-study template's example figures as
+  illustrative.
+- Document one delivery sequence for write and rewrite: render, issue the
+  review nonce, review, then gates. The orchestrator saves `review.md`
+  verbatim, resolves every draft placeholder before render, and re-renders,
+  re-issues the nonce and re-reviews after any later edit. The delivery
+  contract holds the sequence once and the hub, `blog-write`, `blog-rewrite`
+  and `delivery.md` link to it.
+- Block a review issued for a draft that has since changed: the nonce state
+  records sha256 digests of the markdown, HTML, PDF and hero, and any change
+  or removal afterwards is a Gate 4 violation. Older state keeps a warning.
+- Gate 2 now rejects leftover `[INTERNAL-LINK`, `[IMAGE` and `[CHART`
+  placeholders, non-slug filenames, a hero that fails to decode, has the wrong
+  format or is under 1200x630, a PDF with no pages, an HTML render whose
+  `blog-source-sha256` does not match its markdown, active content (scripts,
+  event handlers, `javascript:` URLs, iframes, objects, embeds), and static
+  structure defects: missing `lang`, title, meta description or Open Graph
+  tags, more than one H1, skipped heading levels, `noindex`, and missing image
+  alt text.
+- Name rendered outputs from the `slug` frontmatter key, else from the markdown
+  file stem, so the documented minimal frontmatter passes Gate 2. Gate 2 lists
+  the stems it found and the missing-canonical message names the frontmatter
+  keys the renderer reads. The delivery contract has a required-frontmatter
+  table, and the `blog-write` template carries the keys the gates need.
+- Warn when frontmatter `slug` differs from the markdown file name (Gate 2 needs
+  one shared name, so rename the file to `<slug>.md`), and accept a UTF-8 byte
+  order mark before the frontmatter.
+- Render an optional `lastUpdated` (alias `dateModified`) as JSON-LD
+  `dateModified`, `article:modified_time` and a visible "Updated" line, and
+  refuse invalid values or a date earlier than `date`.
+- Keep the last gate diagnostics (`previous_gates`) when the repair iteration
+  cap is reached, accept valid JPEG heroes that carry trailing metadata, and
+  name the failing resource in Gate 3 console errors.
+- Give the reviewer output template the affirmative `zero P0 issues found`
+  line, tell the rewrite pipeline to copy locally referenced images, and tell
+  the orchestrator to credit CC BY and BY-SA heroes from `hero-credit.txt`.
+- Detect a rendered HTML body that was hand-edited after render (the renderer
+  wraps the body in `bs-body` markers and adds a `blog-body-sha256` meta that
+  Gate 2 recomputes), and flag article text that is in the page but not
+  rendered (`display:none`, font-size 0, off-screen, clipped): a violation at
+  100 characters or 3 elements, a warning below.
+- Embed `blog-source-sha256` in rendered HTML, mark the generated footer link
+  so Gate 5 does not fetch it (a fully local article can pass offline), name
+  the overflowing SVG element and the schema versus visible values in gate
+  messages, make inline SVG and tables responsive, refuse `.html` as markdown
+  input, and name leftover placeholders on stderr.
+- Lock `quality_gate.py` closed (missing paths, missing frontmatter and
+  nonsensical thresholds fail; `--select` keeps the pre-commit filtering),
+  compare FLOW sync drift on upstream bodies instead of the daily sync date,
+  make the `blog-flow` script a wrapper around the core one, and add the CC BY
+  modification notice to synced headers.
+- Send Google API keys in the `x-goog-api-key` header and redact keys and
+  tokens on every Google script error path, including URL-encoded, JSON and
+  header forms. Stop indexing batches on quota, require `--confirm-eligible`
+  (the Indexing API supports only JobPosting and BroadcastEvent in
+  VideoObject pages), stop URL Inspection batches on quota, fix the
+  `gsc_query` window and `--limit 0` loop, surface YouTube comment errors, and
+  block NAT64-wrapped private addresses with a fetch deadline in
+  `nlp_analyze.py`.
+- Default hero generation to `gemini-nano-banana-2.1`, accept
+  `GEMINI_API_KEY`, and stop the model fallback ladder on key, billing or
+  quota errors. Default audio to `gemini-3.8-flash-tts`, warn that the legacy
+  aliases shut down on 2026-11-17, and cap runs with `--max-chunks`.
+- Accept both `notebook.google.com` and `notebooklm.google.com` by exact
+  hostname, store NotebookLM state with 0700/0600 permissions, refuse symlinked
+  state, disable downloads, and return notebook answers as labelled untrusted
+  content.
+- Make paid and credentialed skills (image, audio, NotebookLM, Google) open
+  with a cost and consent gate and explicit-intent descriptions, require a
+  dry-run plan and explicit approval before any `blog-taxonomy` CMS write, and
+  stop `blog-cluster` from editing posts that already passed delivery.
+- Run the delivery contract once per locale in the multilingual chain; translate
+  and localize skip their own run when orchestrated.
+- Bound quadratic analyzer regexes, fail `lint_prose.py` on undecodable files,
+  normalize URLs in `content_decay.py`, keep the hero eager in
+  `blog_hygiene.py`, refuse to overwrite a profile in `style_learn.py` on zero
+  posts, and follow a root-owned OS alias such as `/home` in the installer
+  ownership check.
+- Protect Brain tooling: demo vaults need a marker before deletion, report
+  writers refuse symlinks, roadmap edits are preserved, `lint_vault.py`
+  separates unreadable input from lint failures, and `verify_source_ledger.py`
+  decodes gzip and writes `research-reviewed`.
+- CI installs the pinned Chromium and fails, instead of skipping, browser-gated
+  tests when `CLAUDE_BLOG_REQUIRE_BROWSER=1`; tolerates exactly the reserved
+  plugin-name finding from `claude plugin validate`; installs all four hash
+  locks on Linux, Windows and macOS; adds Python 3.13 and 3.14 and
+  `uv lock --check`. The hash locks are now universal.
+- Give the PowerShell installers `-ForceAdopt` with timestamped backups,
+  user-level dependency installs that report failure, and validated git inputs.
 
 ### Changed
+
+- Re-review 83 Brain source records against their live pages on 2026-10-12:
+  73 confirmed, 7 qualified, 3 corrected (Ahrefs API scope, TTFB, FAQ rich
+  result record) and one mismatched excerpt replaced. Refresh dates advance to
+  2026-11-12; the audit needs the same monthly review to stay current.
+- Draft-stage scoring now defines how site-level items are scored or marked
+  N/A, and every score threshold sits in one table in `quality-scoring.md`.
+  The researcher agent no longer scrapes stock sites or builds CDN URLs, and
+  the `blog-seo` agent matches the `blog-seo-check` skill.
+- Add Google's 2026-10-05 helpful-content guidance on authorship integrity,
+  date changes and AI disclosure, and subject-led sentence pattern descriptions
+  for the writer and reviewer (issue #72, unproven as a fix). List sub-skill
+  fallbacks and skips in the blog-write final summary (org issue #60).
+- Credit the contributors of upstream PRs #83, #82, #73 and #90 in
+  `docs/CONTRIBUTORS.md`.
+- Shorten the plugin description to under 400 characters, add `displayName`, and
+  declare `blog-chart` as `user-invocable: false`, replacing the misspelled
+  `user-invokable`. The skill no longer appears in the command menu.
 
 - Resolve skill helpers from trusted installed paths, focus article prose on
   the subject, and select evidence and media according to the reader's task.
@@ -70,9 +208,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   processing from local artifact storage, and remove unsupported fixed quotas.
 - Expand routing and recovery evaluations, public distribution checks, and
   source-date workflow diagnostics.
-- Rename the Claude plugin identifier to `blog-engine` for current host
-  compatibility, with migration instructions. Keep the repository, marketplace,
-  standalone `/blog` commands, aliases and Python package identity unchanged.
+- Keep the Claude plugin identifier `claude-blog`, the repository,
+  marketplace, standalone `/blog` commands, aliases and Python package
+  identity unchanged. Claude Code 2.1.292 and later report the `claude-`
+  prefix as reserved when validating the plugin, as they do for v2.2.0; the
+  prior validator 2.1.218 passes. See the README known issues.
 - Add opt-in persistent runtime directories for audio, Google and NotebookLM,
   and a persistent FLOW snapshot selector shared by sync and downstream reads.
   Existing standalone defaults remain available; no installed state is moved.
@@ -93,6 +233,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   samples require factual review and correction before delivery.
 - Native Windows and macOS acceptance depends on the exact PR revision.
   No release, installed-profile migration or merge is included.
+- The PowerShell changes (`-ForceAdopt`, user-level dependency install, git
+  input validation) were run with PowerShell 7 on Linux only. Windows
+  PowerShell 5.1 and real junctions were not exercised.
+- The review nonce stops accidents and casual forgery. A process running as
+  the same user can still read the verifier state. Redirect targets are
+  validated but not followed, so a redirect to a dead page passes Gate 5.
+- Notebook answers, selectors and login flow were not exercised against a live
+  browser, and the `x-goog-api-key` header is documented generally by Google
+  Cloud but not shown on the PSI and CrUX pages.
+- Brain review fields are attested by the reviewer, and 127 active records map
+  to 97 distinct URLs. Records marked as living documents need a monthly
+  review.
+- `claude plugin validate` on Claude Code 2.1.292 and later reports the
+  `claude-` prefix of the plugin name as reserved. CI runs both validators and
+  that job is expected to fail until the project decides how to handle it.
 
 ## [2.2.0] - 2026-08-26
 

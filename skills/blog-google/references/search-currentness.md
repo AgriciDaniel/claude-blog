@@ -1,6 +1,6 @@
 # Google Search Currentness Playbook
 
-Verified against Google-owned sources on 2026-10-07. Treat product
+Verified against Google-owned sources on 2026-10-11. Treat product
 announcements as product context, not evidence of a ranking factor. Use
 `data/google-updates.json` for the machine-readable source ledger.
 
@@ -30,8 +30,9 @@ The ledger separates four evidence states:
 - `confirmed-with-source-conflict`: current Google-owned pages disagree. Keep
   both citations and verify the capability in the affected account.
 
-Run `python3 scripts/check_google_currentness.py --root . --json` for the
-read-only official-feed and review-age check. A `refresh_required` result means
+Run `python3 "${CLAUDE_BLOG_SCRIPTS_DIR:-${CLAUDE_SKILL_DIR}/../../scripts}/check_google_currentness.py" --root "${CLAUDE_SKILL_DIR}/../.." --json`
+(resolve the directory first and reject it unless absolute; never run a
+relative scripts path) for the read-only official-feed and review-age check. A `refresh_required` result means
 the ledger needs human review. The checker never writes summaries or promotes
 events automatically.
 
@@ -39,10 +40,10 @@ events automatically.
 
 The latest confirmed ranking event is the September 2026 spam update. Google
 says it began on September 24, applies globally and to all languages, and may
-take up to two weeks to complete. Google did not publish a target profile.
-Wait for Google to mark the rollout complete and then collect one full
-post-rollout week before comparison. Until then, record impact as
-`PENDING_OBSERVATION`.
+take up to two weeks to complete, and its status dashboard marked the rollout
+complete as of October 8. Google did not publish a target profile. Collect one
+full post-rollout week (October 15 or later) before comparison. Until then,
+record impact as `PENDING_OBSERVATION`.
 
 1. Confirm the named update's start and end on the Search Status Dashboard.
 2. Wait at least one full week after completion.

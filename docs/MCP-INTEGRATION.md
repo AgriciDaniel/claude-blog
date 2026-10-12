@@ -63,10 +63,10 @@ tracked file).
 
 ```bash
 # Recommended: writes ~/.claude/settings.json (user-private, mode 0600)
-python3 skills/blog-image/scripts/setup_image_mcp.py --key YOUR_KEY
+python3 skills/blog-image/scripts/setup_image_mcp.py --key-file /path/to/key.txt   # or omit for an interactive prompt
 
 # Project-local (env-expansion only, NEVER stores literal key)
-python3 skills/blog-image/scripts/setup_image_mcp.py --key YOUR_KEY --project
+python3 skills/blog-image/scripts/setup_image_mcp.py --key-file /path/to/key.txt --project
 # Then export the key in your shell so the env-expansion resolves:
 export GOOGLE_AI_API_KEY="your-key-from-aistudio.google.com"
 ```

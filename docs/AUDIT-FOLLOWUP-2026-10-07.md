@@ -3,8 +3,10 @@
 This pass follows the [first audit](AUDIT-2026-10-07.md) and draft PR 86.
 Public main remains `2500d4c765034864cede2bf215d00ccd4d7d6fb8`. Work stays
 under Unreleased, with no merge, release or installed-profile migration.
-The plugin identifier change to `blog-engine` was explicitly selected by the
-repository owner. The GitHub repository and marketplace retain their names.
+The native runs below used the temporary plugin identifier `blog-engine`, which
+existed only for testing. The repository owner decided it must not ship: the
+released plugin identifier remains `claude-blog` in marketplace
+`agricidaniel-blog`, so shipped commands are `claude-blog:blog` and so on.
 
 ## Host and runtime repairs
 
@@ -61,7 +63,7 @@ skill metadata, current plugin validation, lock agreement, projection,
 actionlint and diff checks pass. The live Google check reports current against
 the official October 1 documentation feed and September 24 ranking incident.
 
-Native Claude Sonnet 5.5 high loads `blog-engine:blog` from the isolated
+Native Claude Sonnet 5.5 high loads `blog-engine:blog` (the test-only identifier) from the isolated
 checkout and selects all 63 expected routes: 30 advertised commands,
 26 aliases, four natural-language requests and three unrelated requests.
 This proves route selection, not execution of every routed workflow.
@@ -79,7 +81,7 @@ Publication still requires the independent
 reviewer's score of at least 90, no uncleared P0 issues, the matching nonce
 and a valid nonblocking decision.
 
-Three actual native `blog-engine:blog-reviewer` cases verify blocked handling
+Three actual native `blog-engine:blog-reviewer` (test-only identifier) cases verify blocked handling
 of fabricated claims, missing trusted paths and absent browser evidence.
 Matching nonces reach the review decision; separate mismatched-nonce probes
 fail provenance validation. The native agent exposes only Read, Grep and Glob,

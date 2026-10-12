@@ -154,8 +154,10 @@ def test_orchestrator_references_contract() -> None:
     text = ORCHESTRATOR.read_text(encoding="utf-8")
     assert "blog-delivery-contract.md" in text, \
         "skills/blog/SKILL.md must reference the delivery contract"
-    assert re.search(r"\b6\.5\b|Step 6\.5", text), \
-        "skills/blog/SKILL.md must declare Step 6.5 (Delivery Contract Enforcement)"
+    assert "canonical delivery sequence" in text.lower(), \
+        "skills/blog/SKILL.md must carry the canonical delivery sequence"
+    assert "--init-review-nonce" in text, \
+        "skills/blog/SKILL.md must issue the review nonce before the reviewer runs"
 
 
 def test_reviewer_emits_blocking_line() -> None:
@@ -515,7 +517,7 @@ def test_render_wordcount_matches_gate5_semantics(tmp_path: Path) -> None:
         capture_output=True, text=True, check=False,
     )
     assert result.returncode == 0, f"render failed: {result.stderr}"
-    html_path = out / "wordcount-coherence-fixture.html"
+    html_path = out / "with-code.html"
     assert html_path.exists(), f"render did not produce expected HTML: {list(out.iterdir())}"
     html = html_path.read_text(encoding="utf-8")
     m = re.search(r'"wordCount":\s*(\d+)', html)

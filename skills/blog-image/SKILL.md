@@ -1,20 +1,19 @@
 ---
 name: blog-image
 description: >
-  AI image generation and editing for blog content powered by Gemini via MCP.
-  Generates hero images, inline illustrations, social preview cards, and OG
-  images, and edits existing ones. Supports 6 domain modes (Editorial, Product,
-  Landscape, UI/Web, Infographic, Abstract). Works standalone or internally from
-  blog-write and blog-rewrite; falls back gracefully when MCP is unavailable.
-  Use when user says "blog image", "generate hero image", "blog illustration",
-  "edit blog image", "OG image".
+  Paid Gemini image generation for blog heroes, inline illustrations, and OG
+  cards (direct API by default, optional MCP for edits). Asks for explicit
+  consent before the first paid call. Runs only on an explicit request:
+  /blog image, "generate a blog hero image", "blog illustration", "edit this
+  blog image", "OG image", or when blog-write or blog-rewrite needs a hero.
+  Not for charts (blog-chart) or stock-photo search.
 user-invocable: true
 argument-hint: "[generate|edit|setup] [description-or-path]"
 license: MIT
 metadata:
   author: AgriciDaniel
   version: "2.2.0"
-  mcp-package: "@ycse/nanobanana-mcp"
+  optional-mcp-package: "@ycse/nanobanana-mcp"
 ---
 
 # Blog Image - AI Image Generation for Blog Content
@@ -27,6 +26,33 @@ from `${CLAUDE_SKILL_DIR}/../blog/references`, `blog_template_root` from
 Read the main reference `orchestration-details.md` before loading project
 context; pass only its helper-fenced output to downstream agents.
 
+## Cost and consent gate (mandatory, read first)
+
+This skill spends the user's Google AI credit and writes image files.
+
+- **What it spends:** one paid Gemini image call per generated or edited
+  image. `generate_hero.py` can try up to four model IDs in turn when the
+  first fails, so budget for that worst case. The stock-photo and Openverse
+  rungs are free but may need their own keys.
+- **Cost basis:** per-image prices at
+  https://ai.google.dev/gemini-api/docs/pricing. On 2026-10-12 that page listed
+  `gemini-nano-banana-2.1` at $0.0336 (1K), $0.0504 (2K), $0.113 (4K) and
+  `gemini-3.1-flash-image` at $0.067 (1K). Re-read it before quoting a number.
+- **What it writes:** `hero.<ext>` and `hero-credit.txt` in the draft folder
+  (direct API), `~/Documents/nanobanana_generated/` (optional MCP), and
+  `~/.claude/settings.json` (setup only).
+- **Consent:** before the FIRST paid call or file write in a session, tell
+  the user the model, size, image count, and estimated cost (count times price)
+  and wait for an explicit yes. The yes covers only that count. Asking for a
+  blog post does not by itself consent to a paid image call.
+- **No uncapped spend:** never loop on paid calls. Safety rephrases stop at 3
+  attempts per image. Bulk work (for example a cluster) needs a stated total
+  count and a cap, confirmed once before the first call.
+- **Declined or unavailable:** skip the Gemini call (run the script with the
+  key unset, `env -u GOOGLE_AI_API_KEY`, to use the free stock rungs) and
+  return ONE line for the orchestrator's "Fallbacks and skips" summary, such as
+  "Hero image: user declined paid generation, used a stock photo".
+
 You are a **Creative Director** that orchestrates Gemini's image generation
 specifically for blog content. Never pass raw user text directly to the API.
 Always interpret, enhance, and construct an optimized prompt using the
@@ -38,7 +64,7 @@ Always interpret, enhance, and construct an optimized prompt using the
 |---------|-------------|
 | `/blog image generate <idea>` | Generate a blog image with full prompt engineering |
 | `/blog image edit <path> <instructions>` | Edit an existing blog image intelligently |
-| `/blog image setup` | Configure MCP server and API key |
+| `/blog image setup` | Check the API key and, optionally, install the MCP server |
 
 ## Blog Image Types
 
@@ -57,15 +83,23 @@ Match the image type to blog use case:
 - Open Graph (OG): 1200x630 (required for social sharing)
 - Inline images: 1200px+ wide
 
-## MCP Availability Check
+## Generation Routes
 
-Before generating, check if nanobanana-mcp tools are available:
+1. **Direct API (default).** The repo's `generate_hero.py` calls the Gemini
+   API with `GOOGLE_AI_API_KEY` (the `google-genai` SDK must be installed),
+   then falls back to premium stock and Openverse. It needs no MCP server.
+2. **Optional MCP (at your own risk).** `@ycse/nanobanana-mcp@1.1.1` is the
+   only package the setup script pins, and it only supports image model IDs
+   that Google shut down on 2026-06-25 (see Step 5). Use it only if the user
+   already has a working server; never present it as the default.
 
-1. Try calling `get_image_history` with `conversation_id: "default"` (lightweight, no side effects)
-2. If it succeeds: MCP is available, proceed with generation
-3. If it fails: MCP not configured - inform the user:
-   - "Image generation requires the nanobanana-mcp server. Run `/blog image setup` to configure it."
-   - When called internally (from blog-write/blog-rewrite): return silently, no error. The calling workflow continues with stock photos.
+Before using the MCP route, check availability: call `get_image_history` with
+`conversation_id: "default"` (no side effects). If it fails, use the direct
+API route instead of asking the user to install the MCP.
+
+When called internally (from blog-write/blog-rewrite) and no route works:
+no error, but return a one-line fallback note (what was skipped, why) for the
+caller's final summary. The calling workflow continues with stock photos.
 
 ## Generation Workflow
 
@@ -126,7 +160,9 @@ A [art style] [format] of [subject with character detail], featuring
 
 ### Step 4: Set Aspect Ratio
 
-Call `set_aspect_ratio` BEFORE generating. Use `conversation_id: "default"`.
+Direct API: the script requests `16:9` and fits the result to `--width` by
+`--height` (default 1200x630). MCP route: call `set_aspect_ratio` BEFORE
+generating, with `conversation_id: "default"`.
 
 | Blog Use Case | Ratio |
 |---------------|-------|
@@ -135,7 +171,37 @@ Call `set_aspect_ratio` BEFORE generating. Use `conversation_id: "default"`.
 | Section divider | `21:9`, then crop wider in post-processing if needed |
 | Vertical (stories) | `9:16` |
 
-### Step 5: Generate via MCP
+### Step 5: Generate
+
+**Default: direct API.** After the consent gate, resolve
+`BLOG_SCRIPT_DIR="${CLAUDE_BLOG_SCRIPTS_DIR:-${CLAUDE_SKILL_DIR}/../../scripts}"`,
+reject it unless absolute, and never run a relative `scripts/generate_hero.py`:
+
+```bash
+python3 "$BLOG_SCRIPT_DIR/generate_hero.py" --topic "<post title>" \
+  --tags "tag1,tag2" --out "<draft-folder>" [--width 1200] [--height 630] \
+  [--model <image-model-id>] --json
+```
+
+Flags: `--topic` (required), `--tags`, `--out` (required, receives
+`hero.<ext>` and `hero-credit.txt`), `--width`, `--height`, `--model`,
+`--json`. Exit 0 means a hero was written (the JSON `source` field says
+`gemini`, a stock provider, or `openverse`: report any non-Gemini source as a
+fallback). Exit 1 means every rung failed. The script builds one fixed
+editorial prompt from the topic and tags; it has no `--prompt` flag, so
+custom briefs and edits need the optional MCP route or a direct `google-genai`
+call written from the current docs.
+
+**Model IDs** (Google deprecations page, 2026-10-12): use
+`gemini-nano-banana-2.1` for new work. `gemini-3.1-flash-image` is the
+previous generation (no shutdown announced; replacement
+`gemini-nano-banana-2.1`). `gemini-2.5-flash-image` has an earliest shutdown
+of 2027-03-15. See `${CLAUDE_SKILL_DIR}/references/gemini-models.md`.
+
+**Optional MCP route (at your own risk).** Pinned `@ycse/nanobanana-mcp@1.1.1`
+exposes `set_model` aliases `flash` and `pro` that map to preview IDs shut
+down on 2026-06-25, so generation through it is expected to fail. Prefer the
+direct API unless a newer package explicitly supports stable IDs.
 
 | MCP Tool | When |
 |----------|------|
@@ -146,12 +212,7 @@ Call `set_aspect_ratio` BEFORE generating. Use `conversation_id: "default"`.
 | `get_image_history` | Review generated images with `conversation_id: "default"` |
 | `clear_conversation` | Reset session context |
 
-**Model selection**:
-- Stable Google API IDs: `gemini-3.1-flash-image` and `gemini-3-pro-image`
-- Pinned `@ycse/nanobanana-mcp@1.1.1`: `set_model` accepts `flash` and `pro`, but maps them to preview IDs that shut down on 2026-06-25
-- Use direct API or a newer MCP package that explicitly supports stable image IDs before promising working MCP image generation
-
-Load `${CLAUDE_SKILL_DIR}/references/mcp-tools.md` for parameter details.
+Load `${CLAUDE_SKILL_DIR}/references/mcp-tools.md` for MCP parameter details.
 Load `${CLAUDE_SKILL_DIR}/references/gemini-models.md` for model specs, pricing, and rate limits.
 
 ### Step 6: Post-Processing (when needed)
@@ -177,7 +238,7 @@ Check if `magick` (ImageMagick 7) is available. Fall back to `convert` if not.
 ### Step 7: Deliver
 
 Provide:
-1. **Image path** - where it was saved (`~/Documents/nanobanana_generated/`)
+1. **Image path** - where it was saved (the draft folder for the direct API, `~/Documents/nanobanana_generated/` for the MCP)
 2. **Crafted prompt** - show the full Reasoning Brief (educational)
 3. **Settings** - model, aspect ratio, domain mode
 4. **Alt text** - descriptive sentence, 10-125 chars, topic keywords naturally
@@ -202,7 +263,7 @@ For `/blog image edit <path> <instructions>`:
    | "add text" | Font style, size, placement, contrast, readability notes |
    | "make it brighter" | Increase exposure, lift shadows, maintain highlights |
    | "crop for social" | Resize to 1200x630 with center-gravity crop |
-3. Call `gemini_edit_image` with enhanced instruction
+3. Editing needs the optional MCP (`gemini_edit_image`), which is a paid call under the consent gate. Without a working MCP, say so and offer to regenerate through the direct API instead
 4. Return modified image path and description
 
 ## Internal API (for blog-write / blog-rewrite)
@@ -219,7 +280,7 @@ When invoked as a Task subagent from blog-write or blog-rewrite:
 **Output** (returned to calling skill):
 ```markdown
 ### Generated Image
-- **Path:** ~/Documents/nanobanana_generated/image_timestamp.png
+- **Path:** <draft-folder>/hero.png
 - **Alt Text:** Descriptive sentence about the image
 - **Type:** hero / inline / og
 - **Domain Mode:** Editorial
@@ -229,9 +290,13 @@ When invoked as a Task subagent from blog-write or blog-rewrite:
   coverImageAlt: "Alt text here"
 ```
 
-**Graceful fallback**: If MCP is unavailable, return immediately with no error.
-The calling workflow continues with stock photos. Never block blog-write or
-blog-rewrite because image generation is unavailable.
+**Graceful fallback**: If no generation route works or the user declines the
+cost gate, return immediately with no error and a one-line fallback note
+(what, why) for the caller's final summary. The calling workflow continues
+with stock photos. The delivery contract still requires a hero file, so the
+orchestrator must supply one (stock or manual) before rendering. Do not call
+this skill a second time for the same post's hero: blog-write already
+requests it once.
 
 ## Alt Text Generation
 
@@ -250,9 +315,18 @@ Bad: `SEO AI marketing blog optimization image`
 For `/blog image setup`:
 
 Resolve `BLOG_SKILLS_DIR="${CLAUDE_BLOG_SKILLS_DIR:-${CLAUDE_SKILL_DIR}/..}"`
-and reject it unless it is absolute. Setup is the only action allowed to change
-image capability configuration.
+and reject it unless absolute. Setup is the only action allowed to change
+image capability configuration, and it needs the user's explicit yes first.
 
+**Default path (no MCP):** the direct API only needs a key and the SDK.
+1. Export `GOOGLE_AI_API_KEY` (free to create at
+   https://aistudio.google.com/apikey; a billing-enabled project may be
+   required for image models). `generate_hero.py` reads only this variable.
+2. Install the SDK with the project's explicit setup (`google-genai` is
+   declared in the repo `pyproject.toml` dependencies); never
+   install implicitly during a run.
+
+**Optional MCP path (at your own risk):**
 1. Run `python3 "$BLOG_SKILLS_DIR/blog-image/scripts/setup_image_mcp.py"` (interactive)
    - Prefer exporting `GOOGLE_AI_API_KEY` before invoking the setup script so a
      literal key does not enter shell history
@@ -262,12 +336,11 @@ image capability configuration.
    - `--project` flag opts into project `.mcp.json` (env-expansion only,
      refuses to write a literal key into a tracked file)
 2. Verify: `python3 "$BLOG_SKILLS_DIR/blog-image/scripts/validate_image_setup.py"`
-3. Requires:
-   - Node.js 18+ (npx)
-   - Google AI API key, free to create at https://aistudio.google.com/apikey
-   - A billing-enabled project may be required for image models
-4. The script pins the package to `@ycse/nanobanana-mcp@1.1.1`. That npm
-   release hard-codes preview image model IDs that shut down on 2026-06-25.
+3. Requires Node.js 18+ (npx).
+4. **Caveat:** the script pins `@ycse/nanobanana-mcp@1.1.1`. That npm
+   release hard-codes preview image model IDs that Google shut down on
+   2026-06-25 (deprecations page, checked 2026-10-12), so image calls
+   through it are expected to fail. Tell the user this before installing.
    Update setup, validation, and this documentation together when a package
    release with stable ID support is available.
 
@@ -300,7 +373,7 @@ preserve what works while fixing what doesn't.
 
 | Error | Resolution |
 |-------|-----------|
-| MCP not configured | Run `/blog image setup` |
+| No generation route | Export `GOOGLE_AI_API_KEY` (see Setup); the MCP is optional |
 | API key invalid | New key at https://aistudio.google.com/apikey |
 | Rate limited (429) | Wait 60s, retry. Check live limits at https://ai.google.dev/gemini-api/docs/rate-limits |
 | `IMAGE_SAFETY` | Auto-rephrase (see above) - Layer 2 filter, non-configurable |
@@ -308,7 +381,7 @@ preserve what works while fixing what doesn't.
 | `SAFETY` | Rephrase prompt - Layer 1 filter |
 | Vague request | Ask one clarifying question before generating |
 | Poor quality | Review Reasoning Brief - likely missing lighting (biggest quality differentiator) |
-| MCP unavailable (internal call) | Return silently - calling workflow uses stock photos |
+| No route or consent declined (internal call) | Return a one-line fallback note; calling workflow uses stock photos and reports it |
 
 ## Reference Documentation
 

@@ -1,15 +1,15 @@
 ---
 name: blog-google
 description: >
-  Google API integration for blog performance: PageSpeed Insights, CrUX Core Web
-  Vitals history with 25 weeks by default and up to 40, Search Console
-  performance, URL Inspection, Indexing API, GA4 organic traffic, NLP entity analysis for E-E-A-T, YouTube video search
-  for embedding, and Google Ads Keyword Planner. Progressive feature availability
-  based on credential tier (API key, OAuth/service account, GA4, Ads). Shares
-  config with claude-seo at ~/.config/claude-seo/google-api.json. Use when user
-  says "google data", "page speed", "core web vitals", "search console",
-  "indexation", "GA4", "keyword research", "nlp entities", "blog performance",
-  "youtube search", "google api setup".
+  Credentialed Google API calls for a blog: PageSpeed Insights, CrUX history,
+  Search Console performance and URL Inspection, GA4 organic traffic, Cloud NLP
+  entities, YouTube video search, Google Ads Keyword Planner, and the Indexing
+  API (job and livestream pages only). Uses the user's Google credentials,
+  quotas, and sometimes billing, and asks for consent before the first call.
+  Runs only on an explicit request: /blog google, "run PageSpeed on this blog
+  URL", "pull my Search Console data", "inspect this URL's index status",
+  "set up Google API credentials". Shares config with claude-seo at
+  ~/.config/claude-seo/google-api.json.
 user-invocable: true
 argument-hint: "[setup|pagespeed|crux|crux-history|gsc|inspect|index|ga4|nlp|youtube|keywords|report|quotas] [url|property|query]"
 license: MIT
@@ -37,6 +37,30 @@ Most integrations have no usage fee within their documented quotas. Cloud
 Natural Language requires billing and can incur charges after its free monthly
 tier. Google Ads requires an eligible account and developer token. Never enable
 billing or make a paid request without explicit user approval.
+
+## Cost and consent gate (mandatory, read first)
+
+This skill uses the user's Google credentials, quotas, and sometimes billing.
+
+- **What it spends:** API quota on the user's Google Cloud project (small
+  buckets: YouTube `search.list` has its own bucket of 100 calls per day, URL
+  Inspection allows 2,000 per day per site, the Indexing API 200 publish
+  requests per day); Cloud Natural Language bills after 5,000 free units a
+  month; Keyword Planner needs a Google Ads account.
+- **What it writes externally:** `index` sends a notification to Google and
+  `setup` writes credential config under `~/.config/claude-seo/`. Everything
+  else is read-only.
+- **Consent:** before the FIRST call in a session that reads account data
+  (`gsc`, `inspect`, `ga4`, `keywords`), spends a small bucket (`youtube`,
+  batch `inspect`), can bill (`nlp`), or writes (`index`, `setup`), name the
+  command, the property or URL, the expected call count, and the quota or cost
+  basis, then wait for an explicit yes. Free keyless-style reads such as
+  `pagespeed` and `crux` on a public URL only need the call named.
+- **No uncapped loops:** batch files are limited to what the user approved;
+  stop on the first quota error instead of retrying through it.
+- **Skips:** report each skipped or unavailable command in ONE line for the
+  orchestrator's "Fallbacks and skips" summary, such as "Google: no
+  credentials, skipped CrUX".
 
 ## Persistent runtime directory
 
@@ -122,7 +146,7 @@ a separately reviewed compatibility change.
 | `/blog google nlp <url-or-text>` | NLP entity extraction + sentiment | 0 |
 | `/blog google gsc <property>` | Search Console: clicks, impressions, CTR, position | 1 |
 | `/blog google inspect <url>` | URL Inspection: index status, canonical | 1 |
-| `/blog google index <url>` | Submit URL to Indexing API | 1 |
+| `/blog google index <url>` | Notify the Indexing API (job or livestream pages only; blog posts are ineligible) | 1 |
 | `/blog google ga4 [property-id]` | GA4 organic traffic report | 2 |
 | `/blog google keywords <seed>` | Keyword ideas from Google Ads Keyword Planner | 3 |
 | `/blog google report <type>` | PDF/HTML performance report |: |
@@ -205,15 +229,27 @@ For batch inspection: `python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" gsc
 
 Notify Google of a URL update through the Indexing API.
 
-**Script:** `python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" indexing_notify <url> --json`
+**Eligibility:** Google's Indexing API documentation says it "can only be used
+to crawl pages with either `JobPosting` or `BroadcastEvent` embedded in a
+`VideoObject`" (https://developers.google.com/search/apis/indexing-api/v3/quickstart,
+read 2026-10-12). Ordinary blog posts are NOT eligible. Do not run this
+command for a blog post, and do not offer it as a way to speed up indexing of
+articles. For a blog post, use `/blog google inspect <url>` and, if needed,
+Search Console's Request Indexing in the UI (quota-limited).
+
+If the user names a URL anyway, first ask whether it is a JobPosting page or
+a livestream (BroadcastEvent in VideoObject) page. Only if the user confirms
+that explicitly, say what will be sent and get a second explicit yes, then run:
+
+**Script:** `python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" indexing_notify <url> --confirm-eligible --json`
 **Reference:** `${CLAUDE_SKILL_DIR}/references/api-reference.md`
 
-The Indexing API is officially for JobPosting and BroadcastEvent/VideoObject pages.
-Always inform the user of this restriction. Daily quota: 200 publish requests.
-Do not present it as a general-purpose replacement for URL Inspection's Request
-Indexing feature.
+The script refuses to submit without `--confirm-eligible`; never add that flag
+on your own. Daily quota: 200 publish requests. Do not present this as a
+replacement for URL Inspection's Request Indexing feature.
 
-For batch: `python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" indexing_notify --batch <file> --json`
+For batch (same eligibility confirmation, applies to every URL in the file):
+`python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" indexing_notify --batch <file> --confirm-eligible --json`
 
 ---
 
@@ -242,7 +278,7 @@ for video embedding.
 Search YouTube for videos relevant to a blog topic.
 
 **Script:** `python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" youtube_search search "<query>" --json`
-**Quota:** 100 units per search (10,000 units/day free).
+**Quota:** `search.list` has its own quota bucket: by default 100 calls per day at 1 unit per call (Google's quota-cost page, read 2026-10-12). Other YouTube endpoints share a separate 10,000 units per day. Run one search per distinct need and stop at the first quota error.
 
 Returns: title, channel, views, likes, duration, description, tags.
 
@@ -296,8 +332,10 @@ Generate a PDF/HTML report with charts and tables.
 | `indexation` | Batch inspection data | Indexation status with coverage donut |
 | `full` | All data combined | Comprehensive Google SEO report |
 
-**Note:** PDF generation requires system libraries: `sudo apt install libpango1.0-dev libcairo2-dev`.
-Falls back to HTML if WeasyPrint is unavailable or PDF rendering fails.
+**Note:** PDF generation needs WeasyPrint and its system libraries (Pango and
+Cairo). The explicit setup script installs only the Python packages, and no
+run installs system packages. If they are missing, the report falls back to
+HTML; tell the user and let them decide whether to install the libraries.
 
 ---
 
@@ -307,11 +345,11 @@ Falls back to HTML if WeasyPrint is unavailable or PDF rendering fails.
 |-----|-----------|---------|------|
 | PSI v5 | 240 QPM | 25,000 QPD | API Key |
 | CrUX + History | 150 QPM (shared) | Unlimited | API Key |
-| GSC Search Analytics | 1,200 QPM/site | 30M QPD | Service Account |
-| GSC URL Inspection | 600 QPM | 2,000 QPD/site | Service Account |
+| GSC Search Analytics | 1,200 QPM per site and per user; 40,000 QPM per project | 30M QPD per project | Service Account |
+| GSC URL Inspection | 600 QPM per site | 2,000 QPD per site (10M per project) | Service Account |
 | Indexing API | 380 RPM | 200 publish/day | Service Account |
 | GA4 Data API | 10 concurrent (50 for 360) | 200K Core Tokens/day (2M for 360) | Service Account |
-| YouTube Data |: | 10,000 units/day | API Key |
+| YouTube Data |: | `search.list`: 100 calls/day (own bucket); other endpoints 10,000 units/day | API Key |
 | NLP API |: | 5,000 units/month | API Key (billing) |
 
 Read `${CLAUDE_SKILL_DIR}/references/rate-limits-quotas.md` for detailed quota management.
@@ -345,7 +383,7 @@ section with estimated metrics.
 - CLS values from CrUX are string-encoded (e.g., "0.05"). Scripts handle parsing.
 - CrUX 404 = insufficient Chrome traffic, not an auth error.
 - Search Analytics data has 2-3 day lag.
-- Indexing API is officially for JobPosting/BroadcastEvent pages only.
+- Indexing API is officially for JobPosting and BroadcastEvent-in-VideoObject pages only; blog posts are ineligible.
 - Most integrations have no usage fee within quota. Cloud Natural Language
   requires billing and can incur charges; Google Ads requires account and
   developer-token access.
@@ -363,8 +401,8 @@ section with estimated metrics.
 | Scenario | Action |
 |----------|--------|
 | No credentials configured | Run `/blog google setup`. List Tier 0 commands (API key only). |
-| Service account lacks GSC access | Add `client_email` to GSC > Settings > Users > Add. |
+| Service account lacks GSC access | Add `client_email` in GSC > Settings > Users and permissions > Add user, at the minimum level that works (Restricted for Performance data, Full for URL Inspection); do not grant Owner. See `references/auth-setup.md`. |
 | CrUX data unavailable (404) | Insufficient Chrome traffic. Use PSI lab data as fallback. |
 | GA4 property not found | Find property ID in GA4 Admin > Property Details. |
-| Indexing API quota exceeded | 200/day limit. Prioritize most important URLs. |
+| Indexing API quota exceeded | 200/day limit. Stop; only eligible job or livestream URLs belong here. |
 | Rate limit (429) | Wait and retry with exponential backoff. |

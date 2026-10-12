@@ -134,9 +134,14 @@ readiness scoring. Do not enforce a fixed distribution.
 
 ### Key Principle
 Start each paragraph with the most important sentence. This enables both
-readers and AI to grasp concepts by scanning. 79% of users scan rather than
-read (NNGroup). Concise, scannable formatting improves usability 124-159%
-(NNGroup).
+readers and AI to grasp concepts by scanning. In Nielsen's 1997 web-reading
+study, 79% of test users always scanned a new page and 16% read word by word
+(NN/g, https://www.nngroup.com/articles/how-users-read-on-the-web/, checked
+2026-10-11). In the NN/g 1997 writing test on one test site (Travel Nebraska,
+51 participants), a version that was concise, scannable, and objective together
+scored 124% higher on measured usability than the promotional-style control.
+That is one dated study on one site, so treat it as support for scannable
+structure, not a guaranteed uplift.
 
 ### Paragraph Review
 Single-sentence and multi-sentence paragraphs can both be appropriate. Split a
@@ -300,11 +305,11 @@ Google's Information Gain patent (US11354342B2, 2022) suggests a retrieval
 concept for valuing novel information, but patents do not prove current ranking
 use. Treat information gain as an editorial differentiation principle:
 
-1. **Original research**: Surveys, proprietary data, experiments (+25.1% top-10, Stratabeat)
+1. **Original research**: Surveys, proprietary data, experiments
 2. **Personal perspective**: Opinions AI cannot replicate
 3. **Expert interviews**: Practitioners with first-hand knowledge
 4. **Case studies**: Real metrics and results
-5. **Industry-segmented analysis**: Break down by vertical (+43.4% top-10, Animalz)
+5. **Industry-segmented analysis**: Break down by vertical
 
 ## Meta Description Formula
 

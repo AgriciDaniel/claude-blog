@@ -45,8 +45,9 @@ For custom, topic-specific covers when stock photos don't match:
 1. Requires nanobanana-mcp configured (see `/blog image setup`)
 2. Uses 6-component Reasoning Brief for optimized Gemini prompts
 3. Supports 14 aspect ratios (16:9 for hero, 1.91:1 for OG)
-4. Use current Gemini image models: `gemini-3.1-flash-image`,
-   `gemini-3.1-flash-lite-image`, or `gemini-3-pro-image`
+4. Use the default image model that the `blog-image` skill currently documents
+   (its Gemini model reference); do not hard-code a model ID
+   here, and record the model ID the tool reports
 5. Post-processing: auto-resize to 1200x630, convert to WebP/AVIF
 
 Best for: Abstract topics, branded imagery, niche subjects with poor stock results.
@@ -112,7 +113,7 @@ date: "YYYY-MM-DD"
 ### Pexels (Fallback)
 - **License**: Pexels License - free for commercial use, no attribution required
 - **URL**: https://pexels.com
-- **Finding**: WebSearch `site:pexels.com [topic keywords]`
+- **Finding**: use the official Pexels API when `PEXELS_API_KEY` is present; do not scrape pages or build CDN URLs
 
 ### Image Usage Rules
 
@@ -143,9 +144,7 @@ reduce decorative media before cutting proof screenshots or charts.
 
 ### SVG Impact on Engagement
 
-D.C. Thomson case study results after replacing raster images with contextual SVGs:
-- Session duration doubled
-- 317% increase in read-to-completion rate
+SVG benefits (a previously listed D.C. Thomson engagement case study was removed on 2026-10-11 because no primary source could be found):
 - SVGs are resolution-independent, lightweight, and dark-mode compatible
 
 ### Alt Text Guidelines
@@ -199,9 +198,8 @@ const hero = "/images/blog/topic-hero.jpg"
 ### AVIF as Primary Format
 
 AVIF is the recommended image format for 2026:
-- ~50% smaller than JPEG at equivalent quality
-- ~20-30% smaller than WebP
-- 93.8% global browser support (caniuse, Jan 2026)
+- Often noticeably smaller than JPEG or WebP at similar quality; savings vary by image and encoder, so measure your own files
+- 96.35% global browser usage support (caniuse.com/avif, September 2026 StatCounter data, checked 2026-10-11)
 - Supports HDR, wide color gamut, and transparency
 
 ### `<picture>` Element with Progressive Fallback
@@ -286,8 +284,10 @@ data during the writing process and delegates chart generation internally.
 | Distribution / range | Area chart |
 | Multi-dimensional scoring | Radar chart |
 
-**Diversity is mandatory** - never use the same chart type twice in one post.
-Target 2-4 charts per 2,000-word post.
+**Variety is a preference, comparability wins** - vary chart types when the data
+differ, and repeat a type when the charts compare like with like. There is no
+chart quota: use as many charts as the evidence needs, including none. Give every
+chart on a page a unique `id` (see `skills/blog-chart/references/chart-input-schema.md`).
 
 ### Dark-Mode Compatible Styling
 
@@ -298,8 +298,8 @@ Text elements:     fill="currentColor"
 Grid lines:        stroke="currentColor" opacity="0.08"
 Axis lines:        stroke="currentColor" opacity="0.3"
 Background:        transparent (no fill on root SVG)
-Subtitle text:     fill="currentColor" opacity="0.45"
-Source text:        fill="currentColor" opacity="0.35"
+Subtitle text:     fill="var(--chart-muted, currentColor)"
+Source text:        fill="var(--chart-muted, currentColor)"
 Label text:         fill="currentColor" opacity="0.8"
 ```
 
@@ -388,7 +388,7 @@ For text inside colored elements: `fill="white"` with `fontWeight="800"`.
 ### Invoking blog-chart
 
 When generating charts, pass to the `blog-chart` sub-skill:
-1. **Chart type** (ensure diversity - never repeat within a post)
+1. **Chart type** (prefer variety; repeat a type when comparability needs it)
 2. **Title** for the chart
 3. **Exact data values** with sources
 4. **Source attribution** (name and year)
@@ -408,7 +408,7 @@ The sub-skill returns complete SVG wrapped in a `<figure>`. Verify before embedd
 | `rect fill="white"` background | Bright flash on dark mode | Remove or use transparent |
 | `stroke-width` in MDX | Compilation error | Use `strokeWidth` |
 | `class` in MDX | Compilation error | Use `className` |
-| Same chart type twice | Visual monotony | Enforce chart diversity |
+| Duplicate chart `id` values on one page | Screen readers read the wrong title | Give each chart a unique `id` |
 | No `role="img"` | Accessibility failure | Always include |
 | No source attribution | Trust issue | Always cite data source |
 

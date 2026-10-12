@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-This repository contains **Claude Blog**, a Tier 4 Claude Code skill for blog content
+This repository contains **Claude Blog**, a Claude Code skill suite for blog content
 creation, optimization, and management. It follows the Agent Skills open standard and the
 3-layer architecture (directive, orchestration, execution). 32 skill directories
 (1 orchestrator + 31 sub-skills), 30 user-facing `/blog` commands, 5 specialized
@@ -44,11 +44,16 @@ claude-blog/
   scripts/consistency_check.py       # Local reference + FLOW lock validation
   scripts/dependency_smoke.py        # Offline optional-runtime initialization checks
   scripts/validate_public_release.py # Read-only public worktree validation
+  scripts/validate_skills.py         # Real-YAML skill and agent frontmatter validation
+  scripts/check_secrets.py           # Fails on unadjudicated detect-secrets findings (no raw values)
+  scripts/check_google_currentness.py # Google update ledger vs official feeds
+  scripts/sync_google_updates.py     # Google update ledger sync into the Blog Brain
+  scripts/installer_ownership.py     # Shared Unix installer ownership engine
+  # 22 scripts/*.py in total: `ls scripts/*.py | wc -l`
   skills/                            # 32 skill directories (1 orchestrator + 31 sub-skills)
     blog/SKILL.md                   # Main orchestrator, routing, scoring
       references/                   # 22 on-demand knowledge files (5 in v1.8.0, 1 in v1.9.0)
       templates/                    # 12 content templates
-      scripts/                     # Python analysis scripts
     blog-write/SKILL.md            # Write new articles from scratch
     blog-rewrite/SKILL.md         # Optimize existing blog posts
     blog-analyze/SKILL.md         # 5-category 100-point scoring
@@ -73,14 +78,14 @@ claude-blog/
     blog-notebooklm/               # NotebookLM source-grounded research
       SKILL.md                    # NotebookLM query sub-skill
       references/                 # 2 reference docs (commands, troubleshooting)
-      scripts/                    # 10 Python scripts + requirements.txt
+      scripts/                    # 11 Python modules + requirements.txt/lock
     blog-audio/                    # Audio narration via Gemini TTS
       SKILL.md                    # Audio generation sub-skill
       references/                 # 1 reference doc (30 voice catalog)
       scripts/                    # 5 Python scripts + requirements.txt
     blog-google/                   # Google API integration
       SKILL.md                    # Google API sub-skill (13 commands, 4 tiers)
-      references/                 # 3 reference docs (auth, API, quotas)
+      references/                 # 4 reference docs (auth, API, quotas, search currentness)
       scripts/                    # 11 Google API scripts + venv wrapper
       assets/templates/           # 3 report templates
     blog-cluster/                  # Semantic topic-cluster planning + execution (v1.7.0)
@@ -108,7 +113,7 @@ claude-blog/
     blog-seo.md                     # SEO validation
     blog-reviewer.md                # Quality scoring (no Bash, post v1.7.0 hardening)
     blog-translator.md              # Multilingual translation (no Bash, v1.7.0)
-  tests/                             # 250+ pytest checks incl. delivery-contract + security suites
+  tests/                             # pytest suite incl. delivery-contract + security suites (count: `python3 -m pytest --collect-only -q | tail -1`)
 ```
 
 ## Commands
@@ -159,7 +164,9 @@ and `/blog rewrite`; it is not a top-level user command.
 - Agents invoked via Task tool, never via Bash
 - Python 3.11+ required; dependencies in pyproject.toml
 - Test with `python3 -m pytest tests/` after changes
-- Run `claude plugin validate .` before pushing plugin changes
+- The delivery order (draft, resolve markers and visuals, render, `--init-review-nonce`, review saved verbatim to `review.md`, gates, re-render and re-review after any edit) is defined once in `skills/blog/references/blog-delivery-contract.md`; skills and docs link to it instead of restating it
+- The pre-commit hook runs `scripts/quality_gate.py --select`, which skips Markdown files that are not blog posts; without `--select` the gate fails closed on any named file that lacks blog frontmatter
+- Run `claude plugin validate .` before pushing plugin changes. Known: Claude Code 2.1.292 and later reject the plugin name `claude-blog` as reserved (v2.2.0 too; 2.1.218 passes). Treat that single error as expected, and see `docs/TROUBLESHOOTING.md`
 - Run `python3 scripts/lint_prose.py` locally to catch forbidden prose chars before CI does (v1.8.4+)
 - Consumer runtime guidance belongs in the owning skills and agents: plugin-root CLAUDE.md is developer context. Resolve bundled resources from host Markdown substitution `${CLAUDE_SKILL_DIR}`, not an assumed shell export or CWD. Preserve absolute CLAUDE_BLOG_* overrides. Project-root context loading uses the resolved installed `load_untrusted_root.py`; never hand-roll a fence.
 - Plugin skills auto-discovered from `skills/` directory (do not list in plugin.json)
@@ -172,15 +179,17 @@ Submit at: claude.ai/settings/plugins/submit or platform.claude.com/plugins/subm
 ### Self-Hosted Marketplace
 ```
 /plugin marketplace add AgriciDaniel/claude-blog
-/plugin install blog-engine@agricidaniel-blog
+/plugin install claude-blog@agricidaniel-blog
 ```
 
 ### Standalone Install (no marketplace)
 ```bash
 curl -fsSLo install.sh \
-  https://raw.githubusercontent.com/AgriciDaniel/claude-blog/v2.2.0/install.sh
-# Compare the SHA-256 digest with the value published in README.md.
-CLAUDE_BLOG_REF=v2.2.0 bash ./install.sh
+  https://raw.githubusercontent.com/AgriciDaniel/claude-blog/main/install.sh
+# Compare the SHA-256 digest with the value published in README.md, and read the file.
+# CLAUDE_BLOG_REF selects the revision whose installer actually runs: use a full commit SHA
+# or the first release tag that contains scripts/installer_ownership.py. Never v2.2.0.
+CLAUDE_BLOG_REF=<commit-sha-or-release-tag> bash ./install.sh
 ```
 
 ## Release Blog Post

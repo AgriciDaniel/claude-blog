@@ -9,8 +9,7 @@ description: >
   injection. Fills the strategy-to-execution gap: blog-strategy plans the
   blueprint, blog-cluster builds the house.
   Use when user says "blog cluster", "topic cluster", "content cluster",
-  "cluster plan", "cluster execute", "pillar content", "hub and spoke",
-  "content ecosystem", "cluster map".
+  "cluster plan", "cluster execute", "cluster map".
 license: MIT
 compatibility: Requires Claude Code and claude-blog (provides blog-write, blog-chart, blog-image)
 metadata:
@@ -37,7 +36,7 @@ keyword. Three layers: Semantic Clustering (the brain), Cluster Architecture
 
 > Adapted from the **semantic-cluster-engine** submission by Lutfiya Miller
 > (winner, AI Marketing Hub Pro Challenge, March 2026, 95/100 Exemplary).
-> Original repository: https://github.com/Drfiya/semantic-cluster-engine
+> Original repository: no longer available as of 2026-10-12
 > This port keeps the Plan + Execute architecture and the cluster context
 > innovation, removes brand-specific (ScienceExperts.ai) styling and image
 > prompts, and routes through claude-blog's existing sub-skills.
@@ -64,7 +63,7 @@ keyword. Three layers: Semantic Clustering (the brain), Cluster Architecture
 | `/blog strategy` | Upstream planning. `plan --from strategy` consumes its Cluster Build Plan tables. |
 | `/blog write` | Per-post execution. Each spoke and the pillar are produced by `blog-write` with a prepended cluster-context block. |
 | `/blog chart` | Invoked internally by `blog-write` for inline SVG charts. No direct call from this skill. |
-| `/blog image` | Optional hero image generation per post. Model selection is delegated to `blog-image`; prefer current Gemini image models when available. |
+| `/blog image` | Not called by this skill. Each post's hero is created once by `blog-write`'s delivery contract (via `generate_hero.py`); see Step 4. |
 | `/blog seo-check` | Recommended after execution for per-post on-page validation. |
 | `/blog cannibalization` | Recommended after execution to confirm zero keyword overlap across the cluster. |
 | `/blog schema` | Recommended after execution to add `BreadcrumbList`, `ItemList`, and `Article` schema. |
@@ -94,7 +93,7 @@ Use WebSearch to expand the seed into a keyword universe of 30 to 50 phrases:
 2. Long-tail expansion: `<seed> guide`, `<seed> tips`, `<seed> tools`, `<seed> examples`, `<seed> vs`, `best <seed>`, `how to <seed>`.
 3. Question mining: `what is <seed>`, `how does <seed> work`, `why <seed>`, `<seed> for beginners`.
 4. Intent variants: add commercial modifiers (best, top, review, comparison, pricing), informational modifiers (guide, tutorial, explained, examples), and transactional modifiers (buy, download, tool, software, service).
-5. Year freshness: `<seed> 2026`.
+5. Year freshness: `<seed> <current year>`. Take the current year from the system date; never hard-code a year.
 
 ### Step 2. Semantic clustering
 
@@ -238,6 +237,19 @@ Before reading a user-supplied plan path, canonicalize it relative to the curren
 
 ### Step 3. For each post: build cluster context and call `blog-write`
 
+**One-time cost question (before the first post).** Execution is bulk and
+paid. Ask once, and wait for an explicit yes: "This plan has N posts. Each
+post runs a full `blog-write` pass, one `blog-reviewer` pass (more if a gate
+blocks, up to 3 iterations), and one hero image. A Gemini hero is one paid
+image call per post (about N times the current per-image price on
+https://ai.google.dev/gemini-api/docs/pricing). Proceed with Gemini heroes,
+use free stock heroes only, or stop?" Record the answer in the cluster
+context as `HERO: gemini` or `HERO: stock-only`. For `stock-only`, run
+`generate_hero.py` with the Gemini key unset (`env -u GOOGLE_AI_API_KEY`).
+The yes covers exactly N heroes; never regenerate in a loop. Report each
+fallback or skip (a stock hero, a skipped post) as one line under
+"Fallbacks and skips" in the final report.
+
 Construct the cluster context block (full schema in `${CLAUDE_SKILL_DIR}/references/execution-workflow.md`) and prepend it to the topic prompt passed to the Task tool invoking `blog-write`. The context tells `blog-write` the cluster name, the post's role (pillar or spoke), the primary and secondary keywords, the chosen template, the word count target, the list of already-written posts (link to these), the list of upcoming posts (use `[INTERNAL-LINK]` placeholders), and the linking requirements for this post.
 
 **Evidence provenance propagation.** The cluster context includes this directive
@@ -253,19 +265,53 @@ turning a fixed source-record format into a score or gate. See
 
 The context also instructs `blog-write` to run autonomously: skip topic clarification, skip outline approval, do not auto-detect template, do not pause.
 
+Each post goes through `blog-write`'s full delivery contract (the canonical
+sequence: draft, resolve visuals, render, init nonce, review, gates). Cluster
+`[INTERNAL-LINK: anchor -> filename.md]` markers are draft-only: the
+orchestrator resolves every one at the visuals step, before render. A marker
+whose target is already written becomes a real link. A marker whose target is a
+later post in the plan becomes a real relative link to that post's PLANNED
+filename (the plan fixes every filename), which resolves once the cluster
+finishes; the scorecard's link audit then confirms every target exists. A
+marker with no planned target is removed. No marker may survive into a
+delivered post.
+
 Output format: standard markdown (`.md`) by default, matching `blog-write`'s default. If the user explicitly requests HTML, set the platform target accordingly. Do not impose any brand-specific CSS or wordmark; that is the user's responsibility downstream.
 
-### Step 4. Per-post optional hero image
+### Step 4. Hero images (no separate `blog-image` call)
 
-If `blog-image` is available, call `/blog image generate` via the Task tool to produce a 16:9 hero image for the post and place it in `cluster-<slug>/images/<post-slug>-hero.png`. Delegate provider selection to `blog-image`, prefer current Gemini image models when available, and record the model ID in the scorecard. If image generation is unavailable or fails, log a warning and continue without images. Image generation is non-blocking.
+Do not call `/blog image` from this skill. `blog-write`'s delivery contract
+requires a hero for every post and creates it once through `generate_hero.py`
+into that post's draft folder, so a second call would double the spend and
+produce a competing file. The hero is therefore required, not optional: if no
+hero can be produced for a post, that post fails the contract and the batch
+stops under Step 6. Honor the `HERO:` answer from Step 3 and record the source
+and model (from `hero-credit.txt`) per post in the scorecard.
 
 ### Step 5. Backward link injection
 
-After each post is written:
+Earlier posts need links to later ones, but a post that has passed the
+delivery contract must not be edited in place: any change to its markdown,
+HTML, PDF, or hero invalidates the review nonce and the gates. Handle each
+case explicitly:
 
-1. Scan all previously written posts in the cluster directory for `[INTERNAL-LINK: keyword -> filename.md]` markers that reference the just-written post.
-2. Replace each match with a real markdown link: `[keyword](filename.md)`.
-3. Add a cluster metadata block to the post's frontmatter on first pass (`cluster:`, `cluster_role:`, `cluster_group:`).
+1. **Prevent most edits.** Because forward markers resolve to planned
+   filenames (Step 3), an earlier post already links to every later post the
+   plan says it should. Check `links_to` and `links_from` in the plan.
+2. **Target still in draft** (its contract has not run yet, for example when
+   it is queued behind the post just written): replace the matching
+   `[INTERNAL-LINK: keyword -> filename.md]` marker with `[keyword](filename.md)`
+   in the markdown BEFORE the contract runs. No re-review is needed.
+3. **Target already delivered and a link is still missing:** do not touch the
+   file. Append a proposed edit to `cluster-<slug>/cluster-link-patches.md`
+   (file, anchor text, the sentence to change, target filename) and show the
+   list in the final report. If the user explicitly opts in to apply a patch,
+   edit the markdown and then repeat the canonical sequence for that post:
+   re-render, re-init the review nonce, re-review, re-run preflight `--strict`
+   (max 3 iterations). Tell the user the number of extra reviewer runs first.
+4. Cluster metadata (`cluster:`, `cluster_role:`, `cluster_group:`,
+   `cluster_position:`) is written into each post's frontmatter during its
+   own draft (Step 3), never added afterward.
 
 ### Step 6. Failure handling
 
@@ -284,7 +330,8 @@ After all attempted posts complete, produce a markdown scorecard covering:
 - Cluster cohesion score: a 0 to 100 composite of link reciprocity, intent diversity, template diversity, and keyword coverage (formula in `${CLAUDE_SKILL_DIR}/references/execution-workflow.md`).
 - Internal-link audit: outgoing and incoming counts per post, orphan flags, unresolved `[INTERNAL-LINK]` markers.
 - Cannibalization check: any two posts sharing primary keyword, or any pair with greater than 70% keyword overlap. Recommend running `/blog cannibalization` for a deeper pass.
-- Image generation summary: hero images generated vs. skipped.
+- Hero summary: per-post hero source and model from `hero-credit.txt`, and any stock fallbacks.
+- Link patches: the contents of `cluster-link-patches.md`, if any.
 - Recommended next actions: schema generation (`/blog schema`), per-post SEO validation (`/blog seo-check`), repurposing (`/blog repurpose`).
 
 ### Step 8. Final report
@@ -301,7 +348,7 @@ Return a concise summary to the user with totals, the scorecard path, and the ne
 | `cluster-map.html` | Plan | Static HTML + inline SVG, no JavaScript |
 | `pillar-<slug>.md` | Execute | Markdown (or platform-detected format) |
 | `<spoke-slug>.md` | Execute | Markdown (or platform-detected format) |
-| `images/<post-slug>-hero.png` | Execute (optional) | PNG via `blog-image` |
+| `cluster-link-patches.md` | Execute (only when delivered posts miss a planned link) | Markdown patch list |
 | `cluster-scorecard.md` | Execute | Markdown |
 
 ---
@@ -330,7 +377,7 @@ Return a concise summary to the user with totals, the scorecard path, and the ne
 | `blog-write` not installed | Return: "blog-cluster requires claude-blog. Install it before running this skill." |
 | `cluster-plan.json` malformed | Validate JSON and report parse errors with line numbers. |
 | User cancels execution | Save progress; resume on next invocation with already-written posts auto-detected. |
-| Optional image generation unavailable or failed | Skip hero image generation; warn once at start of execute, not per post. |
+| No hero can be produced for a post | The delivery contract requires one: that post fails and the batch stops (Step 6). Offer stock-only heroes. |
 
 ---
 

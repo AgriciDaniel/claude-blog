@@ -7,7 +7,7 @@ Four credential tiers serve different API combinations:
 | Tier | Credentials | APIs Unlocked |
 |------|------------|---------------|
 | **0** | API Key only | PageSpeed Insights, CrUX, CrUX History, YouTube Data, Cloud Natural Language |
-| **1** | + Service Account | + Search Console, Indexing API |
+| **1** | + Service Account | + Search Console (and the Indexing API for eligible job or livestream pages only) |
 | **2** | + GA4 property ID | + GA4 Data API |
 | **3** | + Google Ads tokens | + Keyword Planner |
 
@@ -27,7 +27,7 @@ Navigate to **APIs & Services > Library** and enable:
 | PageSpeed Insights API | Lighthouse lab data, CWV scores |
 | Chrome UX Report API | CrUX field data + History |
 | Google Search Console API | Search Analytics, URL Inspection, Sitemaps |
-| Web Search Indexing API | Indexing API v3 (new post notifications) |
+| Web Search Indexing API | Indexing API v3 (job and livestream pages only; not blog posts). Leave it disabled for a blog |
 | Google Analytics Data API | GA4 organic traffic analysis |
 | YouTube Data API v3 | Video research for AI-search SEO visibility |
 | Cloud Natural Language API | Entity salience, sentiment, classification |
@@ -51,7 +51,26 @@ Navigate to **APIs & Services > Library** and enable:
 1. Go to [Google Search Console](https://search.google.com/search-console)
 2. Select your property > **Settings > Users and permissions > Add user**
 3. Paste the service account `client_email` from the JSON file
-4. Set permission: **Full** (read-only) or **Owner** (if using Indexing API)
+4. Set the LOWEST permission that works. Do not grant **Owner**.
+   - **Restricted** is enough to read Performance (Search Analytics) data.
+   - **Full** is needed for URL Inspection beyond fetch-only, sitemap
+     submission, and the other tools Google lists for Full users.
+   - Try Restricted first and raise to Full only if the call returns 403.
+
+   Why: Google's Help Center describes Owner as full control (it can add and
+   remove users and change settings), Full as view rights plus some actions,
+   and Restricted as simple view rights
+   (https://support.google.com/webmasters/answer/7687615, read 2026-10-12).
+   Google's Search Analytics and URL Inspection API pages name only OAuth
+   scopes (`webmasters.readonly` is enough to read) and do not state a
+   minimum property role, so the exact minimum for URL Inspection is
+   unverified: confirm it by testing.
+
+   The Owner role is required only by the Indexing API
+   ("Grant owner status to your service account",
+   https://developers.google.com/search/apis/indexing-api/v3/prereqs). That
+   API serves only JobPosting and BroadcastEvent-in-VideoObject pages, so a
+   blog never needs it. Do not grant Owner for blog work.
 
 ## Step 5: Set Up OAuth for Interactive Flows
 
@@ -122,15 +141,28 @@ chmod 600 ~/.config/claude-seo/service_account.json ~/.config/claude-seo/oauth_c
 
 ## Verify Setup
 
+Resolve the installed skill directory first and reject it unless absolute.
+Never run a relative scripts path from the current project:
+
 ```bash
-python3 scripts/google_auth.py --check
+BLOG_SKILLS_DIR="${CLAUDE_BLOG_SKILLS_DIR:-${CLAUDE_SKILL_DIR}/..}"
+case "$BLOG_SKILLS_DIR" in /*) ;; *) echo "ERROR: skills dir must be absolute" >&2; exit 1 ;; esac
+python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" google_auth --check --json
+```
+
+If the managed environment is missing, the runner reports setup required.
+Create it with the explicit setup script (with the user's yes), not with an
+ad hoc package install:
+
+```bash
+python3 "$BLOG_SKILLS_DIR/blog-google/scripts/setup_environment.py"
 ```
 
 ## Quick Troubleshooting
 
 | Error | Fix |
 |-------|-----|
-| `403 Forbidden` on GSC | Service account email not added to property, or wrong permission level |
+| `403 Forbidden` on GSC | Service account email not added to property, or its role is too low (try Full; do not jump to Owner) |
 | `403 Forbidden` on GA4 | Service account not added as Viewer in GA4 property |
 | `404 Not Found` on GSC | Wrong property URL format: use `sc-domain:` or include trailing slash |
 | `404 Not Found` on CrUX | Site has insufficient Chrome traffic (not a credentials issue) |

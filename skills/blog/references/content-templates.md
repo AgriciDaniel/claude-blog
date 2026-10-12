@@ -422,9 +422,9 @@ Conclusion (summary of findings + data access)
 **Visual plan**: 3-4 charts (data visualizations are central to this type).
 Charts ARE the content: they should be the primary focus of each finding section.
 
-**Differentiator**: Original data is the entire value proposition. B2B SaaS
-websites conducting original research saw 25.1% average increase in top-10
-rankings (Stratabeat study). AI cannot create proprietary data.
+**Differentiator**: Original data is the entire value proposition. Proprietary
+data is something a model cannot generate from public text, and it gives other
+writers a primary source to cite. No ranking uplift is claimed here.
 
 ---
 

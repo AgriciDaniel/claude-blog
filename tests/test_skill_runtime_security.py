@@ -18,8 +18,11 @@ ROOT = Path(__file__).resolve().parent.parent
 def load_script(monkeypatch: pytest.MonkeyPatch, name: str, relative: str):
     if relative.endswith("/nlp_analyze.py"):
         google_auth = types.ModuleType("google_auth")
-        google_auth.describe_google_api_error = lambda error, *args: str(error)
+        google_auth.describe_google_api_error = lambda error, *args, **kwargs: str(error)
         google_auth.get_api_key = lambda: "offline-key"
+        google_auth.api_key_headers = lambda key: {"x-goog-api-key": key}
+        google_auth.safe_exception_text = lambda error, *secrets: str(error)
+        google_auth.setup_hint = lambda: "run the setup script"
         google_auth.request_with_retries = lambda *args, **kwargs: None
         monkeypatch.setitem(sys.modules, "google_auth", google_auth)
     path = ROOT / relative
@@ -32,62 +35,83 @@ def load_script(monkeypatch: pytest.MonkeyPatch, name: str, relative: str):
 
 
 def test_skill_discourse_atomic_write_does_not_follow_predictable_temp_symlink(
-    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    tmp_path: Path
 ) -> None:
-    module = load_script(
-        monkeypatch,
-        "skill_discourse",
-        "skills/blog-discourse/scripts/discourse_research.py",
-    )
+    """The bundled wrapper delegates to the core, whose temp file name is random."""
+    import json
+    import subprocess
+
+    results = tmp_path / "results.json"
+    results.write_text(json.dumps([{
+        "platform": "reddit",
+        "url": "https://example.com/post",
+        "title": "A post",
+        "snippet": "A snippet about the topic.",
+        "date": "2026-10-01",
+    }]), encoding="utf-8")
     victim = tmp_path / "victim.txt"
     victim.write_text("preserve", encoding="utf-8")
     target = tmp_path / "report.md"
-    old_predictable_temp = target.with_name(f".{target.name}.tmp-{os.getpid()}")
-    old_predictable_temp.symlink_to(victim)
+    for predictable in (
+        target.with_name(f".{target.name}.tmp-{os.getpid()}"),
+        target.with_name(f"{target.name}.tmp"),
+    ):
+        predictable.symlink_to(victim)
 
-    module._atomic_write(target, "new report")
+    wrapper = ROOT / "skills/blog-discourse/scripts/discourse_research.py"
+    result = subprocess.run(
+        [sys.executable, str(wrapper), "--input", str(results), "--topic", "topic",
+         "--output", str(target)],
+        capture_output=True, text=True, cwd=tmp_path,
+    )
 
+    assert result.returncode == 0, result.stderr
     assert victim.read_text(encoding="utf-8") == "preserve"
-    assert target.read_text(encoding="utf-8") == "new report"
+    assert target.exists() and not target.is_symlink()
 
 
 def configure_flow_fixture(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
-    module = load_script(
+    """Seed a reviewed bundle through the bundled wrapper's core implementation."""
+    import argparse
+
+    wrapper = load_script(
         monkeypatch,
         "skill_sync_flow",
         "skills/blog-flow/scripts/sync_flow.py",
     )
-    references = tmp_path / "references"
-    references.mkdir()
-    lock_file = references / "flow-prompts.lock"
+    module = wrapper.load_core()
+    package = tmp_path / "package"
+    references = package / "skills" / "blog-flow" / "references"
+    state = {"text": "reviewed bytes\n"}
+    monkeypatch.setattr(module, "script_root", lambda: package)
+    monkeypatch.setattr(module, "STATIC_FILES", [("docs/demo.md", "demo.md")])
+    monkeypatch.setattr(module, "PROMPT_STAGES", [])
+    monkeypatch.setattr(module, "_base_headers", lambda: {})
+    monkeypatch.setattr(module, "fetch_file", lambda path, ref, headers: state["text"])
+
+    def sync(**kwargs):
+        options = dict(ref="main", dry_run=False, allow_drift=False, references_dir=None)
+        options.update(kwargs)
+        return module.sync(argparse.Namespace(**options))
+
+    sync()
     target = references / "demo.md"
-    old = b"reviewed bytes"
-    new = b"upstream drift"
-    target.write_bytes(old)
-    lock_file.write_text(
-        f"{hashlib.sha256(old).hexdigest()}  skills/blog-flow/references/demo.md\n",
-        encoding="utf-8",
-    )
-    monkeypatch.setattr(module, "REFERENCES_DIR", references)
-    monkeypatch.setattr(module, "LOCK_FILE", lock_file)
-    monkeypatch.setattr(module, "LOCK_PREFIX", "skills/blog-flow/references")
-    monkeypatch.setattr(module, "SYNC_PATHS", ["references/demo.md"])
-    monkeypatch.setattr(module, "_github_token", lambda: None)
-    monkeypatch.setattr(module, "_fetch_content", lambda path, ref, token: new)
-    return module, target, lock_file, old, new
+    lock_file = references / "flow-prompts.lock"
+    old = target.read_bytes()
+    state["text"] = "upstream drift\n"
+    return module, sync, target, lock_file, old
 
 
 def test_skill_flow_refuses_lock_drift_before_any_write(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
-    module, target, lock_file, old, _ = configure_flow_fixture(monkeypatch, tmp_path)
+    _, sync, target, lock_file, old = configure_flow_fixture(monkeypatch, tmp_path)
     original_lock = lock_file.read_bytes()
 
-    result = module.sync("main", allow_drift=False)
+    with pytest.raises(SystemExit) as exc:
+        sync(allow_drift=False)
 
-    assert result["status"] == "error"
-    assert result["lock_drift"] == ["demo.md"]
-    assert "--allow-drift" in result["errors"][0]["error"]
+    assert exc.value.code == 2
     assert target.read_bytes() == old
     assert lock_file.read_bytes() == original_lock
 
@@ -95,28 +119,31 @@ def test_skill_flow_refuses_lock_drift_before_any_write(
 def test_skill_flow_allow_drift_updates_target_and_lock(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
-    module, target, lock_file, _, new = configure_flow_fixture(monkeypatch, tmp_path)
+    _, sync, target, lock_file, _ = configure_flow_fixture(monkeypatch, tmp_path)
 
-    result = module.sync("main", allow_drift=True)
+    result = sync(allow_drift=True)
 
-    assert result["status"] == "success"
-    assert result["lock_drift"] == ["demo.md"]
-    assert target.read_bytes() == new
-    digest, relative = lock_file.read_text(encoding="utf-8").strip().split("  ", 1)
-    assert digest == hashlib.sha256(new).hexdigest()
-    assert relative == "skills/blog-flow/references/demo.md"
+    assert result["updated"] == ["skills/blog-flow/references/demo.md"]
+    assert b"upstream drift" in target.read_bytes()
+    locked = dict(
+        reversed(line.split("  ", 1))
+        for line in lock_file.read_text(encoding="utf-8").splitlines()
+        if line and not line.startswith("#")
+    )
+    rel = "skills/blog-flow/references/demo.md"
+    assert locked[rel] == hashlib.sha256(target.read_bytes()).hexdigest()
 
 
 def test_skill_flow_existing_empty_lock_requires_explicit_drift_acceptance(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
-    module, target, lock_file, old, _ = configure_flow_fixture(monkeypatch, tmp_path)
+    _, sync, target, lock_file, old = configure_flow_fixture(monkeypatch, tmp_path)
     lock_file.write_text("", encoding="utf-8")
 
-    result = module.sync("main", allow_drift=False)
+    with pytest.raises(SystemExit) as exc:
+        sync(allow_drift=False)
 
-    assert result["status"] == "error"
-    assert result["lock_drift"] == ["demo.md"]
+    assert exc.value.code == 2
     assert target.read_bytes() == old
     assert lock_file.read_text(encoding="utf-8") == ""
 

@@ -2,9 +2,10 @@
 name: blog-researcher
 description: >
   Research specialist for blog content. Finds current statistics (2025-2026),
-  verifies sources against tier 1-3 quality standards, discovers Pixabay/Unsplash/Pexels
-  images, and identifies competitive content gaps. Invoked for statistic research,
-  image discovery, and competitive analysis tasks during blog writing workflows.
+  verifies sources against tier 1-3 quality standards, proposes licensed image
+  candidates for the orchestrator to fetch through official APIs, and
+  identifies competitive content gaps. Invoked for statistic research, image
+  discovery, and competitive analysis tasks during blog writing workflows.
 tools:
   - WebSearch
   - WebFetch
@@ -116,37 +117,33 @@ When multiple retrieved sources cite the same upstream source (e.g. five article
 
 ### When Finding Images
 
-1. Search Pixabay first: `site:pixabay.com [topic keywords]`
-2. Fallback to Unsplash: `site:unsplash.com [topic keywords]`
-3. Fallback to Pexels: `site:pexels.com [topic keywords]`
-4. For each image:
-   - Extract the direct CDN URL
-   - Write a descriptive alt text sentence
-   - Note relevance to the blog topic
+Images are optional: propose one only where it explains, demonstrates or proves
+something prose cannot. There is no image quota. You propose candidates; the
+orchestrator downloads and validates them.
 
-### Image URL Verification (Required, Never Skip)
-
-After finding each candidate image URL:
-
-1. Verify it is a direct image file URL. It must return an image `Content-Type`,
-   have usable dimensions, and must not be an HTML page
-   - Pixabay page URLs (`pixabay.com/photos/...`) are NOT image URLs
-   - Unsplash photo pages (`unsplash.com/photos/...`) are NOT image URLs
-2. If you have a page URL, extract the direct image URL:
-   - WebFetch the page and look for the `og:image` meta tag: this is the most reliable source
-   - Pixabay CDN pattern: `https://cdn.pixabay.com/photo/YYYY/MM/DD/HH/MM/filename.jpg`
-   - Unsplash CDN pattern: `https://images.unsplash.com/photo-<id>?w=1200&h=630&fit=crop&q=80`
-3. Do not run shell commands for URL checks. Mark direct image URLs as
-   candidate URLs, then ask the orchestrator to run `scripts/blog_preflight.py`
-   Gate 5 or another safe URL validator with SSRF protection
-   - Must return HTTP 200 with an image content type
-   - If 403/404 or non-image content: discard and find replacement
-4. Mark each image as Verified (HTTP 200) or Unverified in your output table
-5. Never include more than 1 Unverified image in a research packet
+1. Prefer originals the orchestrator already has: screenshots, product visuals,
+   diagrams, data graphics. Say so when the topic calls for one.
+2. For licensed stock, do not scrape stock sites and do not search with
+   `site:pixabay.com`, `site:unsplash.com` or `site:pexels.com`. Do not build or
+   guess CDN URLs (for example `cdn.pixabay.com/...` or `images.unsplash.com/...`);
+   those patterns are not stable and skip license metadata.
+3. Use the official Openverse API with WebFetch (no key needed), for example
+   `https://api.openverse.org/v1/images/?q=<query>&aspect_ratio=wide&license=cc0,by`.
+   For each candidate record the provider page URL, creator, license and license
+   URL exactly as the API returns them, plus a descriptive alt text sentence and
+   the relevance to the topic.
+4. For Unsplash, Pexels and Pixabay, record only the provider, the search terms
+   and why the image fits. The orchestrator searches them through their official
+   APIs with the user's keys (`generate_hero.py` and the stock-API path in the
+   delivery contract), which captures creator and license metadata.
+5. You have no tool that can download a file or check an HTTP status. Never mark
+   an image "Verified" or "HTTP 200". Mark every candidate **Unchecked**; the
+   orchestrator downloads it into the draft folder and the delivery gates
+   (Gate 5) validate it with SSRF protection.
 
 ### When Stock Photos Are Insufficient
 
-If fewer than 3 suitable stock images are found, or the topic is too niche/abstract:
+If no suitable licensed image is found for a justified visual need, or the topic is too niche/abstract:
 
 1. Note in output: "AI image generation recommended for this topic"
 2. Suggest specific image concepts with domain mode hints:
@@ -198,11 +195,13 @@ Return structured findings:
 |---|-----------|--------|-----|------|----------|
 | 1 | [value] | [source] | [url] | [date] | Yes/No |
 
-### Images Found ([N] total)
+`Verified` means you fetched the source page with WebFetch and saw the figure there. It says nothing about images or links you did not fetch.
 
-| # | Platform | URL | Alt Text | Topic Relevance |
-|---|----------|-----|----------|----------------|
-| 1 | Pixabay | [url] | [alt] | [relevance] |
+### Image Candidates (only if a visual is justified; none is acceptable)
+
+| # | Provider | Provider page URL | Creator | License (as returned) | Alt Text | Topic Relevance | Status |
+|---|----------|-------------------|---------|-----------------------|----------|-----------------|--------|
+| 1 | Openverse | [page url] | [creator] | [license + url] | [alt] | [relevance] | Unchecked |
 
 ### Competitive Analysis
 
@@ -211,7 +210,7 @@ Return structured findings:
 | [url] | ~[N] | [N] | [N] | [date] | [gap] |
 
 ### Recommended Chart Data
-[2-4 data sets suitable for visualization with chart type suggestions]
+[Data sets that genuinely suit visualization, with chart type suggestions; "none" is a valid answer]
 
 ### AI Image Recommendations (if stock insufficient)
 
@@ -222,23 +221,18 @@ Return structured findings:
 
 ## Cover Image Search
 
-When finding cover images:
-1. Search Pixabay first: `site:pixabay.com [topic] [context]`
-2. Search Unsplash: `site:unsplash.com [topic]`
-3. Search Pexels: `site:pexels.com [topic]`
-4. All three platforms are equal quality - Pixabay for no-attribution convenience
-5. Verify image exists and note dimensions (target: 1200x630 or wider)
-6. Write descriptive alt text: full sentence, 10-125 chars, topic keywords naturally
+The orchestrator generates or fetches the hero (`generate_hero.py`: image model,
+then official stock APIs, then Openverse). When asked for cover ideas, return
+concepts and Openverse candidates as described under "When Finding Images",
+note the aspect ratio wanted (at least 1200x630, wide), and write descriptive alt
+text: a full sentence, topic keywords naturally. Do not claim a candidate is
+verified, available or correctly sized; you cannot check.
 
-## Image Density Calculation
+## Visual Quantity
 
-Calculate required images based on content type:
-| Content Type | Image per N Words |
-|-------------|-------------------|
-| Listicle | 1 per 133 words |
-| How-to guide | 1 per 179 words |
-| Long-form/pillar | 1 per 200-250 words |
-| Case study | 1 per 307 words |
+Do not calculate required image counts or densities. The number of images,
+charts and videos follows what the subject needs, which `blog-write` decides; an
+article with none is acceptable. Report what the evidence supports, not a target.
 
 ## Competitor Content Gap Analysis
 
@@ -265,7 +259,7 @@ Verification process:
 
 ## Finding YouTube Videos
 
-When researching for blog posts, find 2-3 relevant YouTube videos for embedding:
+When a demonstration or expert source would materially help the article, find relevant YouTube videos for embedding (none is acceptable):
 
 1. Ask the orchestrator to use blog-google if available.
 2. If blog-google is unavailable, use WebSearch: `site:youtube.com [topic] [year] -shorts`
@@ -274,7 +268,7 @@ When researching for blog posts, find 2-3 relevant YouTube videos for embedding:
    - Title or description contains the topic keyword
    - From a channel with > 1,000 subscribers
    - Prefer videos 5-15 minutes long
-4. Select 2-3 best videos and include in research output:
+4. Select only the videos that add evidence or explanation and include in research output:
    - video_id, title, channel name, view count, duration, publish date
 5. If no suitable videos found, note: "No suitable YouTube videos found for embedding"
 

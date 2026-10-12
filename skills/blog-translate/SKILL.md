@@ -38,7 +38,7 @@ content with localized keywords, meta tags, and culturally correct
 formatting.
 
 > Adapted from `claude-blog-multilingual` by Chris Mueller (Pro Hub Challenge,
-> March 2026). Original: https://github.com/Chriss54/multilingual-int
+> March 2026). Original repository: no longer available as of 2026-10-12
 
 ## Key References
 
@@ -71,8 +71,11 @@ Load on demand:
    ISO 3166-1 Alpha-2 region in uppercase. Reject invalid codes with a
    suggestion (`jp` becomes "Did you mean `ja` for Japanese?"). Require a
    region or explicit neutral mode for ambiguous language-only targets such as
-   `es`, `pt`, and `zh`. If a target equals the normalized source language,
-   skip it with a notice.
+   `es`, `pt`, and `zh`. Google accepts a language code by itself as hreflang
+   (https://developers.google.com/search/docs/specialty/international/localized-versions,
+   read 2026-10-12), but never a region by itself; this stricter rule exists
+   for translation quality, not because Google requires a region. If a target
+   equals the normalized source language, skip it with a notice.
 
 ### Phase 2: Content Analysis
 
@@ -132,6 +135,9 @@ Spawn the `blog-translator` agent (via Task) for each target language with:
 
 Run agents in parallel when translating into multiple languages.
 
+When `blog-multilingual` invokes this skill, its invocation starts with
+`Mode: orchestrated`; see Phase 5 (output root) and Phase 7 (contract).
+
 The agent returns the fully translated post in the same format as the input.
 
 ### Phase 5: Post-Processing
@@ -152,13 +158,13 @@ For each translated version:
      DE +30%, FR +15%, JA -20%, others see `${CLAUDE_SKILL_DIR}/references/translation-rules.md`).
    - FAQ count matches.
    - Evidence-backed explanations from the source remain intact where present.
-3. Save translated files:
-   ```
-   translations/
-     {lang}/{localized-slug}.{ext}
-   ```
-   When invoked from `blog-multilingual`, save into
-   `multilingual/{lang}/{localized-slug}.{ext}` instead.
+3. Save translated files. Exactly one output root applies per run:
+   - Standalone (`/blog translate`): `translations/{lang}/{localized-slug}.{ext}`
+     under the current working directory.
+   - Orchestrated (the invocation starts with `Mode: orchestrated`):
+     `multilingual/{lang}/{localized-slug}.{ext}`, the directory the
+     orchestrator created. Never also write under `translations/`.
+
    Before writing, slugify `{localized-slug}` to lowercase ASCII with only
    `a-z`, `0-9`, and hyphens, rejecting empty or reserved names. Create the
    language directory from the normalized hreflang code only. Resolve the
@@ -182,21 +188,37 @@ translator agent should re-pass any flagged passage before delivery.
 ### Phase 7: Final Artifact Delivery Contract
 
 Translation can change claims, links, metadata, schema, and rendered layout.
-Before calling any translated file complete or publication-ready, run the same
-five-gate contract as `/blog write` against each final locale independently:
+
+**Orchestrated mode.**
+When invoked by blog-multilingual (orchestrated mode), skip the delivery contract; blog-multilingual runs it once per locale on the final text.
+Orchestrated mode is signaled by the literal line `Mode: orchestrated` at the top of the invocation.
+In that mode report each locale's status as `pending (contract deferred to
+blog-multilingual)` and never call a translation complete or publication-ready.
+
+**Standalone runs.** Before calling any translated file complete or
+publication-ready, run the canonical sequence against each final locale
+independently (this skill is the last text change for the locale):
 
 1. Resolve `BLOG_SCRIPT_DIR="${CLAUDE_BLOG_SCRIPTS_DIR:-${CLAUDE_SKILL_DIR}/../../scripts}"`
    and reject it unless absolute. Never resolve a helper from the current
    project's `scripts/` directory.
-2. Create a per-locale delivery staging directory under the intended language
-   output, copy the final locale file there under its localized slug, and
-   generate or reuse a locale-appropriate hero.
-3. Run `python3 "$BLOG_SCRIPT_DIR/blog_render.py" --md <locale-file> --out-dir <locale-delivery-dir>`.
-4. Run `python3 "$BLOG_SCRIPT_DIR/blog_preflight.py" --draft <locale-delivery-dir> --init-review-nonce`, then pass only the printed nonce to a fresh `blog-reviewer` invocation against the rendered locale HTML.
-5. Run `python3 "$BLOG_SCRIPT_DIR/blog_preflight.py" --draft <locale-delivery-dir> --strict --slug <localized-slug>`.
-6. Require 90+/100, zero P0, the matching nonce, final `BLOCKING: false`, and
-   all other gates. A failed locale remains `draft-blocked`; report its
-   diagnostic and do not describe it as complete.
+2. Visuals: create a per-locale delivery staging directory under the intended
+   language output and copy the final locale file there under its lowercase
+   localized slug. Resolve every draft marker (`[INTERNAL-LINK`, `[IMAGE`,
+   `[CHART`): none may remain. Reuse the source hero (copy it as
+   `hero.<ext>`); a new paid hero needs the `blog-image` cost and consent gate.
+3. Render: `python3 "$BLOG_SCRIPT_DIR/blog_render.py" --md <locale-file> --out-dir <locale-delivery-dir>`.
+4. Init nonce: `python3 "$BLOG_SCRIPT_DIR/blog_preflight.py" --draft <locale-delivery-dir> --init-review-nonce`.
+5. Review: pass only the printed nonce to a fresh `blog-reviewer` invocation
+   against the rendered locale HTML. The reviewer returns text; save it
+   verbatim to `<locale-delivery-dir>/review.md`.
+6. Gates: `python3 "$BLOG_SCRIPT_DIR/blog_preflight.py" --draft <locale-delivery-dir> --strict --slug <localized-slug>`.
+7. Loop: after ANY change to the file, hero, HTML, or PDF, re-render, re-init
+   the nonce, and re-review. Maximum 3 iterations.
+
+Require 90+/100, zero P0, the matching nonce, final `BLOCKING: false`, and all
+other gates. A failed locale remains `draft-blocked`; report its diagnostic and
+do not describe it as complete.
 
 ### Phase 8: Delivery
 
@@ -210,8 +232,8 @@ five-gate contract as `/blog write` against each final locale independently:
 ### Translations
 | Language | File | Keywords adapted | Status |
 |----------|------|------------------|--------|
-| de | translations/de/{slug}.md | [N] | passed / draft-blocked |
-| fr | translations/fr/{slug}.md | [N] | passed / draft-blocked |
+| de | translations/de/{slug}.md | [N] | passed / draft-blocked / pending (orchestrated) |
+| fr | translations/fr/{slug}.md | [N] | passed / draft-blocked / pending (orchestrated) |
 
 ### Quality checks
 - Structural integrity: pass / fail per language
@@ -219,7 +241,7 @@ five-gate contract as `/blog write` against each final locale independently:
 - Numbers, dates, currencies formatted per locale: pass / fail
 - Keywords localized: [N] keywords adapted
 - Machine-translation artifacts flagged: [N] (see notes above)
-- Delivery contract: score, P0 status, nonce verification, and preflight report per locale
+- Delivery contract: score, P0 status, nonce verification, and preflight report per locale (standalone only; deferred to blog-multilingual in orchestrated mode)
 
 ### Next steps
 - Run `/blog localize <file> --locale <code>` for cultural deep-adaptation.
