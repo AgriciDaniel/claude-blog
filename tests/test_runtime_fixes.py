@@ -159,15 +159,18 @@ def _write_gate_5_fixture(directory: Path, external_url: str) -> None:
     (directory / "post.pdf").write_bytes(b"%PDF-1.4\n")
     (directory / "hero.png").write_bytes(b"\x89PNG\r\n\x1a\n")
     (directory / "post.html").write_text(
-        '<!doctype html><html><head>'
+        '<!doctype html><html lang="en"><head><title>Fixture</title>'
+        '<meta name="description" content="Fixture">'
         '<link rel="canonical" href="https://example.com/post">'
+        '<meta property="og:title" content="Fixture">'
+        '<meta property="og:description" content="Fixture">'
         '<meta property="og:image" content="hero.png">'
         '<script type="application/ld+json">'
         '{"@type":"BlogPosting","headline":"Fixture","image":"hero.png",'
         '"datePublished":"2026-10-07","author":{"name":"Tester"},"wordCount":2}'
         '</script></head><body><article><header><h1>Fixture</h1>'
         '<p class="byline"><strong>By Tester</strong> · 2026-10-07</p></header>'
-        '<figure class="hero"><img src="hero.png"></figure>'
+        '<figure class="hero"><img src="hero.png" alt="Fixture hero"></figure>'
         f'<a href="{external_url}">source</a> word'
         '</article></body></html>',
         encoding="utf-8",

@@ -39,29 +39,23 @@ class Runtime:
         )
         self.module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(self.module)
+        if kind == "bundled":
+            # The bundled script is a thin wrapper; the implementation under
+            # test is the core module it loads.
+            self.wrapper = self.module
+            self.module = self.wrapper.load_core()
         mod = self.module
-        if kind == "core":
-            monkeypatch.setattr(mod, "script_root", lambda: package)
-            monkeypatch.setattr(mod, "PROMPT_STAGES", ["find"])
-            monkeypatch.setattr(mod, "_base_headers", self.headers)
-            monkeypatch.setattr(mod, "fetch_file", self.fetch_text)
-            monkeypatch.setattr(mod, "list_markdown_files", lambda *args: [
-                ("docs/09-prompts/find/test.md", "test.md")
-            ])
-        else:
-            monkeypatch.setattr(mod, "SKILL_DIR", self.refs.parent)
-            monkeypatch.setattr(mod, "REFERENCES_DIR", self.refs)
-            monkeypatch.setattr(mod, "LOCK_FILE", self.refs / "flow-prompts.lock")
-            monkeypatch.setattr(mod, "SYNC_PATHS", [
-                "references/flow-framework.md", "references/bibliography.md",
-                "references/prompts/find/test.md",
-            ])
-            monkeypatch.setattr(mod, "_github_token", self.headers)
-            monkeypatch.setattr(mod, "_fetch_content", self.fetch_bytes)
+        monkeypatch.setattr(mod, "script_root", lambda: package)
+        monkeypatch.setattr(mod, "PROMPT_STAGES", ["find"])
+        monkeypatch.setattr(mod, "_base_headers", self.headers)
+        monkeypatch.setattr(mod, "fetch_file", self.fetch_text)
+        monkeypatch.setattr(mod, "list_markdown_files", lambda *args: [
+            ("docs/09-prompts/find/test.md", "test.md")
+        ])
 
     def headers(self):
         self.calls.append("credentials")
-        return {} if self.kind == "core" else None
+        return {}
 
     def content(self, path):
         # A fetched instruction remains bytes, with no permission or execution.
@@ -76,16 +70,11 @@ class Runtime:
         self.calls.append(path)
         return self.content(path)
 
-    def fetch_bytes(self, path, *args):
-        return self.fetch_text(path, *args).encode()
-
     def sync(self, root=None, *, dry_run=False, allow_drift=False):
-        if self.kind == "core":
-            return self.module.sync(argparse.Namespace(
-                ref="offline-fixture", dry_run=dry_run, allow_drift=allow_drift,
-                references_dir=root,
-            ))
-        return self.module.sync("offline-fixture", dry_run, allow_drift, root)
+        return self.module.sync(argparse.Namespace(
+            ref="offline-fixture", dry_run=dry_run, allow_drift=allow_drift,
+            references_dir=root,
+        ))
 
     def seed_reviewed_bundle(self):
         result = self.sync()
@@ -94,15 +83,9 @@ class Runtime:
         return inventory(self.refs)
 
     def assert_drift_blocked(self, root=None):
-        if self.kind == "core":
-            with pytest.raises(SystemExit) as exc:
-                self.sync(root)
-            assert exc.value.code == 2
-        else:
-            result = self.sync(root)
-            assert result["status"] == "error"
-            assert result["lock_drift"]
-            assert result["errors"]
+        with pytest.raises(SystemExit) as exc:
+            self.sync(root)
+        assert exc.value.code == 2
 
 
 @pytest.fixture(params=ENTRYPOINTS)
@@ -114,10 +97,7 @@ def runtime(request, tmp_path, monkeypatch):
 def test_default_sync_and_existing_drift_gate(runtime):
     before = runtime.seed_reviewed_bundle()
     result = runtime.sync()
-    expected = {"added", "updated", "unchanged", "hashes"} if runtime.kind == "core" else {
-        "status", "repo", "ref", "dry_run", "added", "updated", "unchanged",
-        "lock_drift", "errors",
-    }
+    expected = {"added", "updated", "unchanged", "hashes"}
     assert set(result) == expected
     assert result["unchanged"] and not result["updated"]
     assert inventory(runtime.refs) == before
@@ -260,7 +240,7 @@ def test_bundled_reference_symlink_cannot_redirect_default_reads_or_writes(runti
 def test_network_failure_stages_nothing(runtime, tmp_path, monkeypatch):
     before = runtime.seed_reviewed_bundle()
     persistent = tmp_path / "new root"
-    original = runtime.fetch_text if runtime.kind == "core" else runtime.fetch_bytes
+    original = runtime.fetch_text
     calls = []
 
     def failing(path, *args):
@@ -269,15 +249,9 @@ def test_network_failure_stages_nothing(runtime, tmp_path, monkeypatch):
             raise OSError("offline simulated failure")
         return original(path, *args)
 
-    name = "fetch_file" if runtime.kind == "core" else "_fetch_content"
-    monkeypatch.setattr(runtime.module, name, failing)
-    if runtime.kind == "core":
-        with pytest.raises(OSError, match="simulated"):
-            runtime.sync(persistent, allow_drift=True)
-    else:
-        result = runtime.sync(persistent, allow_drift=True)
-        assert result["status"] == "error"
-        assert result["errors"]
+    monkeypatch.setattr(runtime.module, "fetch_file", failing)
+    with pytest.raises(OSError, match="simulated"):
+        runtime.sync(persistent, allow_drift=True)
     assert not persistent.exists()
     assert inventory(runtime.refs) == before
 
@@ -285,18 +259,11 @@ def test_network_failure_stages_nothing(runtime, tmp_path, monkeypatch):
 def test_upstream_path_escape_cannot_partially_write(runtime, tmp_path, monkeypatch):
     bundled = runtime.seed_reviewed_bundle()
     persistent = tmp_path / "persistent"
-    if runtime.kind == "core":
-        monkeypatch.setattr(runtime.module, "list_markdown_files", lambda *args: [
-            ("docs/09-prompts/find/escape.md", "../../../../escape.md")
-        ])
-        with pytest.raises(ValueError, match="traversal"):
-            runtime.sync(persistent, allow_drift=True)
-    else:
-        monkeypatch.setattr(runtime.module, "SYNC_PATHS", [
-            "references/flow-framework.md", "references/../../escape.md",
-        ])
-        result = runtime.sync(persistent, allow_drift=True)
-        assert result["status"] == "error"
+    monkeypatch.setattr(runtime.module, "list_markdown_files", lambda *args: [
+        ("docs/09-prompts/find/escape.md", "../../../../escape.md")
+    ])
+    with pytest.raises(ValueError, match="traversal"):
+        runtime.sync(persistent, allow_drift=True)
     assert not persistent.exists()
     assert not (tmp_path / "escape.md").exists()
     assert inventory(runtime.refs) == bundled
@@ -322,10 +289,6 @@ def test_dry_run_preserves_existing_snapshot_and_environment_rejects_relative(ru
 def test_bundled_standalone_layout_keeps_default_sync_location(tmp_path, monkeypatch):
     monkeypatch.delenv("CLAUDE_BLOG_FLOW_REFERENCES_DIR", raising=False)
     runtime = Runtime("bundled", tmp_path / "package", monkeypatch)
-    runtime.refs = tmp_path / "custom skill directory/references"
-    monkeypatch.setattr(runtime.module, "SKILL_DIR", runtime.refs.parent)
-    monkeypatch.setattr(runtime.module, "REFERENCES_DIR", runtime.refs)
-    monkeypatch.setattr(runtime.module, "LOCK_FILE", runtime.refs / "flow-prompts.lock")
     runtime.seed_reviewed_bundle()
     assert runtime.module.resolve_references_dir(require_existing=True) == runtime.refs
 
@@ -343,6 +306,10 @@ def test_cli_reader_selector_survives_version_copies_without_network(kind, tmp_p
         script = package / ENTRYPOINTS[kind]
         script.parent.mkdir(parents=True)
         shutil.copyfile(ROOT / ENTRYPOINTS[kind], script)
+        if kind == "bundled":
+            # The wrapper finds the core script two levels above its skill dir.
+            (package / "scripts").mkdir()
+            shutil.copyfile(ROOT / ENTRYPOINTS["core"], package / "scripts/sync_flow.py")
         bundled = package / "skills/blog-flow/references"
         bundled.mkdir(parents=True, exist_ok=True)
         (bundled / "flow-framework.md").write_text(version)

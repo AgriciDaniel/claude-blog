@@ -5,6 +5,15 @@ Setup script for nanobanana-mcp in claude-blog.
 Configures @ycse/nanobanana-mcp in Claude Code's global settings.json
 (default) or the project's .mcp.json (with --project flag).
 
+Note: the pinned package only calls the preview image models Google shut down
+on 2026-06-25 (https://ai.google.dev/gemini-api/docs/deprecations), so the MCP
+server it installs cannot generate images today. Prefer the direct API path
+(scripts/generate_hero.py). validate_image_setup.py explains the details.
+
+A --key-file may hold a bare key or one NAME=value line, but it must not hold
+more than one secret: the script writes only the one API key it finds, and
+refuses the file when it sees any other credential.
+
 Usage:
     python3 setup_image_mcp.py                    # Interactive (writes global)
     python3 setup_image_mcp.py --key-file key.txt # Non-interactive
@@ -32,6 +41,24 @@ ENV_PLACEHOLDER = "${GOOGLE_AI_API_KEY}"
 PLUGIN_NAME = "claude-blog"
 GLOBAL_SETTINGS_PATH = Path.home() / ".claude" / "settings.json"
 PLACEHOLDER_RE = re.compile(r"^\$\{([A-Za-z_][A-Za-z0-9_]*)\}$")
+# Google API keys start with AIza and are 39 characters long.
+GOOGLE_KEY_RE = re.compile(r"AIza[0-9A-Za-z_\-]{35}")
+# A bare single-line key file may hold a key in a format we do not know yet.
+BARE_KEY_RE = re.compile(r"^[A-Za-z0-9_\-]{20,128}$")
+# Anything that looks like a different credential makes the file ambiguous.
+OTHER_SECRET_RES = (
+    re.compile(r"\bsk-[A-Za-z0-9_\-]{16,}"),
+    re.compile(r"\bsk_(?:live|test)_[A-Za-z0-9]{16,}"),
+    re.compile(r"\bgh[pousr]_[A-Za-z0-9]{20,}"),
+    re.compile(r"\bxox[abprs]-[A-Za-z0-9\-]{10,}"),
+    re.compile(r"\bAKIA[0-9A-Z]{16}\b"),
+    re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----"),
+)
+ASSIGNMENT_RE = re.compile(
+    r"^\s*(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.+?)\s*$"
+)
+SECRET_NAME_RE = re.compile(r"(?i)(KEY|TOKEN|SECRET|PASSW|CREDENTIAL)")
+MAX_KEY_FILE_BYTES = 64 * 1024
 
 
 def find_project_mcp_json() -> Path:
@@ -81,6 +108,72 @@ def load_config(path: Path) -> dict:
             f"Invalid JSON in {path}: line {exc.lineno}, column {exc.colno}. "
             "Repair the file or move it aside before rerunning setup."
         ) from exc
+
+
+def extract_api_key(text: str) -> str:
+    """Return the single API key in text, or raise ValueError.
+
+    Only the first matching key is ever returned and no other value is read
+    into the result. A file holding any second credential is refused, because
+    a whole multi-line env file must never end up in settings.json. Error
+    messages name variables, never values.
+    """
+    lines = [
+        line.strip() for line in text.splitlines()
+        if line.strip() and not line.strip().startswith("#")
+    ]
+    if not lines:
+        raise ValueError("The key file is empty")
+
+    keys: list[str] = []
+    others: list[str] = []
+    for line in lines:
+        found = GOOGLE_KEY_RE.findall(line)
+        for key in found:
+            if key not in keys:
+                keys.append(key)
+        residue = GOOGLE_KEY_RE.sub("", line)
+        assignment = ASSIGNMENT_RE.match(line)
+        if assignment and not found:
+            name, value = assignment.group(1), assignment.group(2).strip("'\"")
+            if SECRET_NAME_RE.search(name) and len(value) >= 8 and not value.startswith("${"):
+                others.append(name)
+                continue
+        if any(rx.search(residue) for rx in OTHER_SECRET_RES):
+            label = assignment.group(1) if assignment else "a line"
+            others.append(label)
+    if len(keys) > 1 or (keys and others) or len(others) > 1:
+        names = sorted(set(others))
+        detail = f" (also found: {', '.join(names)})" if names else ""
+        raise ValueError(
+            "The key file holds more than one secret"
+            f"{detail}. Put only the Google AI API key in a file of its own "
+            "and pass that file with --key-file."
+        )
+    if keys:
+        return keys[0]
+    if len(lines) == 1 and BARE_KEY_RE.match(lines[0]):
+        return lines[0]
+    if len(lines) == 1:
+        assignment = ASSIGNMENT_RE.match(lines[0])
+        if assignment and BARE_KEY_RE.match(assignment.group(2).strip("'\"")):
+            return assignment.group(2).strip("'\"")
+    raise ValueError(
+        "No Google AI API key (AIza...) found in the key file. Use a file that "
+        "holds only the key."
+    )
+
+
+def read_key_file(path: str) -> str:
+    """Read the API key from a local file, refusing symlinks and big files."""
+    candidate = Path(path)
+    if candidate.is_symlink():
+        raise ValueError(f"Refusing to read a key through a symlink: {candidate}")
+    if not candidate.is_file():
+        raise ValueError(f"Key file not found: {candidate}")
+    if candidate.stat().st_size > MAX_KEY_FILE_BYTES:
+        raise ValueError(f"Key file is too large to be a single API key: {candidate}")
+    return extract_api_key(candidate.read_text(encoding="utf-8"))
 
 
 def emit_error(message: str, as_json: bool, exit_code: int = 1) -> None:
@@ -137,6 +230,7 @@ def save_config(path: Path, config: dict, quiet: bool = False) -> None:
             f.flush()
             os.fsync(f.fileno())
         os.replace(tmp_path, path)
+        os.chmod(path, 0o600)
     except Exception:
         try:
             tmp_path.unlink()
@@ -261,6 +355,12 @@ def setup_mcp(api_key: str, use_global: bool, as_json: bool = False) -> None:
     if not api_key or not api_key.strip():
         emit_error("API key cannot be empty.", as_json)
     api_key = api_key.strip()
+    if not BARE_KEY_RE.match(api_key):
+        emit_error(
+            "That does not look like a single API key (one token of letters, "
+            "digits, '-' and '_'). Nothing was written.",
+            as_json,
+        )
     path = get_config_path(use_global, quiet=as_json)
 
     # Safety: project mode must never write a literal key into a tracked file.
@@ -306,8 +406,9 @@ def setup_mcp(api_key: str, use_global: bool, as_json: bool = False) -> None:
         "uses_env_placeholder": not use_global,
         "warning": (
             "Pinned package @ycse/nanobanana-mcp@1.1.1 only accepts preview image model IDs. "
-            "Those preview IDs shut down on 2026-06-25; use direct API or a newer MCP package "
-            "when stable ID support is released."
+            "Those preview IDs shut down on 2026-06-25 (https://ai.google.dev/gemini-api/docs/deprecations), "
+            "so this server cannot generate images. Use the direct API path "
+            "(scripts/generate_hero.py) or a newer MCP package when one supports stable IDs."
         ),
     }
     if as_json:
@@ -372,7 +473,7 @@ def main() -> None:
 
         api_key = None
         if args.key_file:
-            api_key = Path(args.key_file).read_text(encoding="utf-8").strip()
+            api_key = read_key_file(args.key_file)
         elif args.key:
             api_key = args.key
             if not args.json:

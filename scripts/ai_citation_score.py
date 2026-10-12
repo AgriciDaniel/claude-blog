@@ -14,6 +14,16 @@ Scoring model:
     These scores are not calibrated probabilities and do not predict whether
     any answer engine will cite a page. Overall score is a weighted blend:
     ai_overview 40 percent, perplexity 35 percent, and chatgpt 25 percent.
+
+Output fields:
+    overall                 the 0-100 readiness heuristic (use this one).
+    overall_probability     DEPRECATED alias of ``overall``, kept so older
+                            consumers keep working. It is the same readiness
+                            number, never a probability, and will be removed
+                            in a future major version.
+
+An input with no analyzable text (empty, or frontmatter only) is an error, not
+a score: the engine formulas would otherwise award default points to nothing.
 """
 
 from __future__ import annotations
@@ -462,11 +472,27 @@ def _build_recommendations(
     return ranked[:3]
 
 
+def _has_no_text(analysis: dict[str, Any]) -> bool:
+    """True when the analyzer saw zero words and zero sentences."""
+    paragraphs = analysis.get("paragraphs")
+    sentences = analysis.get("sentences")
+    if not isinstance(paragraphs, dict) or not isinstance(sentences, dict):
+        return False
+    return paragraphs.get("total_word_count") == 0 and sentences.get("count") == 0
+
+
 def score_analysis(analysis: dict[str, Any], engine: str = "all") -> dict[str, Any]:
     if "error" in analysis:
         return {"error": analysis["error"]}
     if engine != "all" and engine not in ALL_ENGINES:
         return {"error": f"Unknown engine: {engine}"}
+    if _has_no_text(analysis):
+        return {
+            "error": (
+                f"No analyzable text in {analysis.get('file', 'input')}: "
+                "add body content before scoring."
+            )
+        }
 
     all_results = _engine_results(analysis)
     selected_engines = ALL_ENGINES if engine == "all" else (engine,)

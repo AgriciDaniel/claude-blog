@@ -41,30 +41,34 @@ def ensure_venv():
     current_stamp = stamp_file.read_text().strip() if stamp_file.exists() else None
 
     venv_python = get_venv_python()
+    setup_script = skill_dir / "scripts" / "setup_environment.py"
     if not venv_python.is_file():
-        print(
-            "❌ NotebookLM setup required. Run: "
-            "python3 skills/blog-notebooklm/scripts/setup_environment.py"
-        )
+        print(f'❌ NotebookLM setup required. Run: python3 "{setup_script}"')
         sys.exit(1)
     if expected_stamp and current_stamp != expected_stamp:
-        print(
-            "❌ NotebookLM dependencies are missing or stale. Run: "
-            "python3 skills/blog-notebooklm/scripts/setup_environment.py"
-        )
+        print(f'❌ NotebookLM dependencies are missing or stale. Run: python3 "{setup_script}"')
         sys.exit(1)
     return venv_python
 
 
+USAGE = """Usage: python run.py <script_name> [args...]
+
+Available scripts:
+  ask_question.py    - Query NotebookLM
+  notebook_manager.py - Manage notebook library
+  auth_manager.py     - Handle authentication
+  cleanup_manager.py  - Clean up skill data
+
+Run "python run.py <script_name> --help" for a script's options."""
+
+
 def main():
     """Main runner"""
+    if len(sys.argv) >= 2 and sys.argv[1] in ("-h", "--help", "help"):
+        print(USAGE)
+        sys.exit(0)
     if len(sys.argv) < 2:
-        print("Usage: python run.py <script_name> [args...]")
-        print("\nAvailable scripts:")
-        print("  ask_question.py    - Query NotebookLM")
-        print("  notebook_manager.py - Manage notebook library")
-        print("  auth_manager.py     - Handle authentication")
-        print("  cleanup_manager.py  - Clean up skill data")
+        print(USAGE)
         sys.exit(1)
 
     script_name = sys.argv[1]

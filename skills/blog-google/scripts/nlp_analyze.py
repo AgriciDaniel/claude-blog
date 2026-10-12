@@ -12,32 +12,45 @@ Usage:
 """
 
 import argparse
+import dataclasses
 import http.client
 import ipaddress
 import json
 import socket
 import ssl
 import sys
+import time
 from dataclasses import dataclass
 from typing import Optional
 from urllib.parse import urljoin, urlparse
 
 try:
-    import requests
-except ImportError:
-    print("Error: requests library required. Install with: pip install requests", file=sys.stderr)
-    sys.exit(1)
-
-try:
-    from google_auth import describe_google_api_error, get_api_key, request_with_retries
+    from google_auth import (
+        api_key_headers, describe_google_api_error, get_api_key,
+        request_with_retries, safe_exception_text, setup_hint,
+    )
 except ImportError:
     import os
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-    from google_auth import describe_google_api_error, get_api_key, request_with_retries
+    from google_auth import (
+        api_key_headers, describe_google_api_error, get_api_key,
+        request_with_retries, safe_exception_text, setup_hint,
+    )
+
+try:
+    import requests
+except ImportError:
+    print(f"Error: requests library required. {setup_hint()}", file=sys.stderr)
+    sys.exit(1)
 
 NLP_ENDPOINT = "https://language.googleapis.com/v2/documents:annotateText"
 MAX_TEXT_CHARS = 100000
 MAX_FETCH_BYTES = 1_000_000
+# Wall-clock budget for one URL fetch including redirects. A slow-drip server
+# that sends a byte just inside the socket timeout must not hold the process.
+FETCH_DEADLINE_SECONDS = 30.0
+SOCKET_TIMEOUT_SECONDS = 15.0
+_NAT64_PREFIX = ipaddress.ip_network("64:ff9b::/96")
 
 # Free tier: 5,000 units/month per feature
 # Paid: $0.001 per 1,000-character unit for entity/sentiment
@@ -106,7 +119,8 @@ def analyze_text(
     try:
         resp = request_with_retries(
             "POST",
-            f"{NLP_ENDPOINT}?key={key}",
+            NLP_ENDPOINT,
+            headers=api_key_headers(key),
             json=body,
             timeout=30,
         )
@@ -117,7 +131,8 @@ def analyze_text(
             except ValueError:
                 error_payload = {"error": {"code": 403, "message": "Request denied; invalid JSON response"}}
             result["error"] = describe_google_api_error(
-                error_payload, "Cloud Natural Language", "Check the API key and service access."
+                error_payload, "Cloud Natural Language", "Check the API key and service access.",
+                secrets=[key],
             )
             return result
 
@@ -128,7 +143,7 @@ def analyze_text(
         resp.raise_for_status()
         data = resp.json()
     except requests.exceptions.RequestException as e:
-        result["error"] = describe_google_api_error(e, "Cloud Natural Language")
+        result["error"] = describe_google_api_error(e, "Cloud Natural Language", secrets=[key])
         return result
 
     # Entities
@@ -197,6 +212,33 @@ def analyze_text(
     return result
 
 
+def _is_blocked_address(addr_text: str) -> bool:
+    """Fail closed unless the address is a globally routable unicast one.
+
+    IPv6 forms that wrap an IPv4 address (IPv4-mapped, 6to4 and NAT64
+    64:ff9b::/96) are judged by the IPv4 address they wrap, because Python
+    treats 64:ff9b::/96 itself as globally reachable even when the embedded
+    IPv4 address is loopback, private or link-local.
+    """
+    try:
+        addr = ipaddress.ip_address(addr_text.split("%", 1)[0])
+    except ValueError:
+        return True
+    embedded = getattr(addr, "ipv4_mapped", None) or getattr(addr, "sixtofour", None)
+    if embedded is None and addr.version == 6 and addr in _NAT64_PREFIX:
+        embedded = ipaddress.IPv4Address(int(addr) & 0xFFFFFFFF)
+    if embedded is not None:
+        addr = embedded
+    return (
+        not addr.is_global
+        or addr.is_multicast
+        or addr.is_unspecified
+        or addr.is_loopback
+        or addr.is_link_local
+        or getattr(addr, "is_site_local", False)
+    )
+
+
 @dataclass(frozen=True)
 class _FetchTarget:
     url: str
@@ -205,6 +247,8 @@ class _FetchTarget:
     port: int
     request_target: str
     addresses: tuple[str, ...]
+    # Absolute time.monotonic() deadline shared by the whole fetch, redirects included.
+    deadline: Optional[float] = None
 
 
 def _resolve_fetch_target(url: str) -> _FetchTarget:
@@ -224,10 +268,9 @@ def _resolve_fetch_target(url: str) -> _FetchTarget:
         raise ValueError(f"Could not resolve host: {exc}") from exc
     addresses = []
     for info in infos:
-        ip = ipaddress.ip_address(info[4][0])
-        if not ip.is_global or ip.is_multicast or ip.is_unspecified:
+        if _is_blocked_address(info[4][0]):
             raise ValueError("URL resolves to a blocked network address")
-        value = str(ip)
+        value = str(ipaddress.ip_address(info[4][0].split("%", 1)[0]))
         if value not in addresses:
             addresses.append(value)
     if not addresses:
@@ -287,12 +330,25 @@ def _host_header(target: _FetchTarget) -> str:
     return host if target.port == default_port else f"{host}:{target.port}"
 
 
+def _remaining(deadline: float) -> float:
+    left = deadline - time.monotonic()
+    if left <= 0:
+        raise ValueError("Fetch exceeded the time limit")
+    return left
+
+
 def _request_pinned(target: _FetchTarget) -> tuple[int, dict[str, str], bytes, str]:
     """Fetch once using only validated IPs, with no environment proxy lookup."""
+    deadline = target.deadline
+    if deadline is None:
+        deadline = time.monotonic() + FETCH_DEADLINE_SECONDS
     last_error = None
     for address in target.addresses:
         connection_class = _PinnedHTTPSConnection if target.scheme == "https" else _PinnedHTTPConnection
-        connection = connection_class(target.hostname, target.port, address, timeout=15)
+        connection = connection_class(
+            target.hostname, target.port, address,
+            timeout=min(SOCKET_TIMEOUT_SECONDS, _remaining(deadline)),
+        )
         try:
             connection.request(
                 "GET",
@@ -318,14 +374,29 @@ def _request_pinned(target: _FetchTarget) -> tuple[int, dict[str, str], bytes, s
                     raise ValueError("Fetched response exceeded 1 MB")
             if headers.get("content-encoding", "identity").lower() not in {"", "identity"}:
                 raise ValueError("Fetched response used an unsupported content encoding")
-            body = response.read(MAX_FETCH_BYTES + 1)
-            if len(body) > MAX_FETCH_BYTES:
-                raise ValueError("Fetched response exceeded 1 MB")
+            chunks = []
+            received = 0
+            while True:
+                # Each read is bounded by what is left of the wall-clock budget.
+                if connection.sock is not None:
+                    connection.sock.settimeout(min(SOCKET_TIMEOUT_SECONDS, _remaining(deadline)))
+                else:
+                    _remaining(deadline)
+                chunk = response.read1(8192)
+                if not chunk:
+                    break
+                chunks.append(chunk)
+                received += len(chunk)
+                if received > MAX_FETCH_BYTES:
+                    raise ValueError("Fetched response exceeded 1 MB")
+            body = b"".join(chunks)
             encoding = response.headers.get_content_charset() or "utf-8"
             return response.status, headers, body, encoding
         except ValueError:
             raise
         except (OSError, ssl.SSLError, http.client.HTTPException) as exc:
+            if time.monotonic() >= deadline:
+                raise ValueError("Fetch exceeded the time limit") from exc
             last_error = exc
         finally:
             connection.close()
@@ -334,8 +405,10 @@ def _request_pinned(target: _FetchTarget) -> tuple[int, dict[str, str], bytes, s
 
 def _fetch_url_text(url: str, max_redirects: int = 3) -> str:
     current = url
+    deadline = time.monotonic() + FETCH_DEADLINE_SECONDS
     for _ in range(max_redirects + 1):
-        target = _resolve_fetch_target(current)
+        _remaining(deadline)
+        target = dataclasses.replace(_resolve_fetch_target(current), deadline=deadline)
         status, headers, body, encoding = _request_pinned(target)
         if status in {301, 302, 303, 307, 308}:
             location = headers.get("location")

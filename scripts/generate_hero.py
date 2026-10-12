@@ -8,7 +8,7 @@ in the requested output directory.
 
 Ladder:
   1. (Orchestrator only) Banana MCP via nanobanana-mcp
-  2. Direct Gemini API via google-genai SDK (requires GOOGLE_AI_API_KEY)
+  2. Direct Gemini API via google-genai SDK (requires GOOGLE_AI_API_KEY or GEMINI_API_KEY)
   3. Premium stock APIs: Unsplash, Pexels, Pixabay (any one key suffices)
   4. Openverse public API (CC-licensed; no key required)
   5. Exit nonzero with setup instructions
@@ -52,7 +52,7 @@ def _project_version() -> str:
 OUTPUT_FILE_PREFIX = "hero"
 DEFAULT_WIDTH = 1200
 DEFAULT_HEIGHT = 630
-DEFAULT_GEMINI_MODEL = os.environ.get("NANOBANANA_MODEL") or "gemini-3.1-flash-image"
+DEFAULT_GEMINI_MODEL = os.environ.get("NANOBANANA_MODEL") or "gemini-nano-banana-2.1"
 OPENVERSE_API = "https://api.openverse.org/v1/images/"
 UNSPLASH_API = "https://api.unsplash.com/search/photos"
 PEXELS_API = "https://api.pexels.com/v1/search"
@@ -67,10 +67,29 @@ HTTP_TIMEOUT = 20
 ALLOWED_SCHEMES = frozenset({"http", "https"})
 MAX_IMAGE_BYTES = 25 * 1024 * 1024  # 25 MB; legit heroes are well under this.
 GEMINI_IMAGE_MODELS = (
+    "gemini-nano-banana-2.1",
     "gemini-3.1-flash-image",
     "gemini-3.1-flash-lite-image",
     "gemini-3-pro-image",
 )
+# Errors that no other model can fix: stop instead of trying the next model.
+_GEMINI_STOP_MARKERS = (
+    "api key",
+    "api_key",
+    "permission",
+    "unauthenticated",
+    "unauthorized",
+    "billing",
+    "quota",
+    "resource_exhausted",
+    "429",
+    "401",
+    "403",
+)
+
+
+# NAT64 well-known prefix (RFC 6052): the low 32 bits are the IPv4 destination.
+_NAT64_PREFIX = ipaddress.ip_network("64:ff9b::/96")
 
 
 def _is_private_address(host: str) -> bool:
@@ -92,32 +111,34 @@ def _is_private_address(host: str) -> bool:
     for info in infos:
         sockaddr = info[4]
         addr_str = sockaddr[0]
-        try:
-            addr = ipaddress.ip_address(addr_str)
-        except ValueError:
-            return True
-        if (
-            addr.is_private
-            or addr.is_loopback
-            or addr.is_link_local
-            or addr.is_reserved
-            or addr.is_multicast
-            or addr.is_unspecified
-        ):
+        if _is_blocked_address(addr_str):
             return True
     return False
 
 
 def _is_blocked_address(addr_text: str) -> bool:
+    """Fail-closed address check using ipaddress is_global semantics.
+
+    Only globally routable unicast addresses pass. That also blocks ranges the
+    older private/reserved flags missed: CGNAT 100.64.0.0/10 (Tailscale),
+    deprecated site-local fec0::/10 and other special-purpose blocks. An
+    IPv6 address that wraps an IPv4 one (IPv4-mapped, 6to4, NAT64) is judged
+    by the IPv4 address it wraps. blog_preflight.py applies is_global too.
+    """
     try:
-        addr = ipaddress.ip_address(addr_text)
+        addr = ipaddress.ip_address(addr_text.split("%", 1)[0])
     except ValueError:
         return True
+    embedded = getattr(addr, "ipv4_mapped", None) or getattr(addr, "sixtofour", None)
+    if embedded is None and addr in _NAT64_PREFIX:
+        embedded = ipaddress.IPv4Address(int(addr) & 0xFFFFFFFF)
+    if embedded is not None:
+        addr = embedded
     return (
-        addr.is_private
+        not addr.is_global
+        or getattr(addr, "is_site_local", False)
         or addr.is_loopback
         or addr.is_link_local
-        or addr.is_reserved
         or addr.is_multicast
         or addr.is_unspecified
     )
@@ -238,11 +259,31 @@ def _image_ext(data: bytes, fallback: str = ".jpg") -> str:
     return fallback
 
 
+def _is_trusted_system_symlink(path: Path) -> bool:
+    """True for an OS-level alias such as /home -> var/home or macOS /tmp.
+
+    Only a root-owned link sitting directly under the filesystem root
+    qualifies. An attacker who can plant links inside a working tree cannot
+    create one there, so honouring these keeps the guard focused on
+    redirection inside the output tree and at the leaf.
+    """
+    if os.name != "posix":
+        return False
+    try:
+        return path.lstat().st_uid == 0 and path.parent == Path(path.anchor)
+    except OSError:
+        return False
+
+
 def _symlink_component(path: Path) -> Path | None:
-    """Inspect unresolved components before mkdir/resolve can follow an alias."""
+    """Inspect unresolved components before mkdir/resolve can follow an alias.
+
+    Trusted system-level aliases directly under the filesystem root are
+    skipped; every other symlinked component is returned.
+    """
     candidate = path if path.is_absolute() else Path.cwd() / path
     for component in (candidate, *candidate.parents):
-        if component.is_symlink():
+        if component.is_symlink() and not _is_trusted_system_symlink(component):
             return component
     return None
 
@@ -382,7 +423,7 @@ def _http_get_json(url: str, headers: Optional[dict] = None) -> Optional[dict]:
 
 def _try_gemini(topic: str, tags: list[str], out_dir: Path, width: int, height: int, model: str) -> Optional[dict]:
     """Ladder step 2: direct Gemini API."""
-    api_key = os.environ.get("GOOGLE_AI_API_KEY")
+    api_key = os.environ.get("GOOGLE_AI_API_KEY") or os.environ.get("GEMINI_API_KEY")
     if not api_key:
         return None
     try:
@@ -418,7 +459,10 @@ def _try_gemini(topic: str, tags: list[str], out_dir: Path, width: int, height: 
             if img_bytes:
                 break
         except Exception as e:
-            print(f"[gemini] {try_model} interactions.create failed: {e}", file=sys.stderr)
+            message = str(e).replace(api_key, "[redacted]")
+            print(f"[gemini] {try_model} interactions.create failed: {message}", file=sys.stderr)
+            if any(marker in message.lower() for marker in _GEMINI_STOP_MARKERS):
+                break
 
     if not img_bytes or not _is_supported_image(img_bytes):
         return None

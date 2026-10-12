@@ -9,8 +9,15 @@ import random
 from pathlib import Path
 from typing import Optional, List
 
-from patchright.sync_api import Playwright, BrowserContext, Page
-from config import BROWSER_PROFILE_DIR, STATE_FILE, BROWSER_ARGS, USER_AGENT
+from config import (
+    BROWSER_PROFILE_DIR, STATE_FILE, BROWSER_ARGS, USER_AGENT,
+    ensure_private_dir, fail_missing_dependency,
+)
+
+try:
+    from patchright.sync_api import Playwright, BrowserContext, Page
+except ImportError as _exc:
+    fail_missing_dependency("patchright", _exc)
 
 
 def _harden_perms(path) -> None:
@@ -52,11 +59,17 @@ class BrowserFactory:
         Launch a persistent browser context with anti-detection features
         and cookie workaround.
         """
-        # Launch persistent context
+        # The profile holds the Google session cookies: owner-only from creation
+        ensure_private_dir(user_data_dir)
+
+        # Launch persistent context. accept_downloads=False: this skill never
+        # downloads files, so a page-triggered download must not be saved.
+        # Dialogs are never auto-accepted (Playwright dismisses them by default).
         context = playwright.chromium.launch_persistent_context(
             user_data_dir=user_data_dir,
             channel="chrome",  # Use real Chrome
             headless=headless,
+            accept_downloads=False,
             no_viewport=True,
             ignore_default_args=["--enable-automation"],
             user_agent=USER_AGENT,
@@ -76,7 +89,9 @@ class BrowserFactory:
     @staticmethod
     def _inject_cookies(context: BrowserContext):
         """Inject cookies from state.json if available"""
-        if STATE_FILE.exists():
+        if STATE_FILE.is_symlink():
+            print("  ⚠️  Ignoring state.json: it is a symlink")
+        elif STATE_FILE.exists():
             try:
                 with open(STATE_FILE, 'r') as f:
                     state = json.load(f)
@@ -84,7 +99,8 @@ class BrowserFactory:
                         context.add_cookies(state['cookies'])
                         # print(f"  🔧 Injected {len(state['cookies'])} cookies from state.json")
             except Exception as e:
-                print(f"  ⚠️  Could not load state.json: {e}")
+                # Report the error type only: never echo file contents or cookie values.
+                print(f"  ⚠️  Could not load state.json ({type(e).__name__})")
 
 
 class StealthUtils:

@@ -3,8 +3,19 @@
 Blog Audio Generator - Gemini TTS
 Converts prepared text to speech using Google's Gemini TTS models.
 
-The 3.1 and 2.5 aliases retain the generate_content compatibility path. The
-3.8 aliases use unary WAV responses from the Interactions API.
+The default model is flash38 (gemini-3.8-flash-tts). The 3.1 and 2.5 aliases
+retain the generate_content compatibility path but are deprecated: Google's
+deprecations page (https://ai.google.dev/gemini-api/docs/deprecations, checked
+2026-10-12) lists gemini-3.1-flash-tts-preview, gemini-2.5-flash-preview-tts and
+gemini-2.5-pro-preview-tts with a shutdown date of 2026-11-17 (the earliest
+possible date). Using one prints a deprecation warning on stderr. The 3.8
+aliases use unary WAV responses from the Interactions API.
+
+Cost control: each chunk is one billed API call. A run that needs more than
+--max-chunks chunks (default 12) is refused before any API call is made.
+
+The API key is read only from GOOGLE_AI_API_KEY or GEMINI_API_KEY and is never
+printed; error text passes through redact_secrets().
 
 Usage:
     python3 scripts/run.py generate_audio.py --text "Hello world" --voice Charon --json
@@ -54,6 +65,15 @@ MODELS = {
     "legacy-pro25": "gemini-2.5-pro-preview-tts",
 }
 
+DEFAULT_MODEL = "flash38"
+DEFAULT_MAX_CHUNKS = 12
+# Aliases that resolve to models Google lists for shutdown on 2026-11-17.
+DEPRECATED_MODEL_ALIASES = frozenset(
+    {"flash", "flash31", "pro", "legacy-flash25", "legacy-pro25"}
+)
+DEPRECATED_SHUTDOWN_DATE = datetime(2026, 11, 17, tzinfo=timezone.utc)
+API_KEY_ENV_VARS = ("GOOGLE_AI_API_KEY", "GEMINI_API_KEY")
+
 # Audio constants (Gemini TTS output format)
 SAMPLE_RATE = 24000  # 24kHz
 SAMPLE_WIDTH = 2     # 16-bit (2 bytes per sample)
@@ -100,6 +120,76 @@ TEXT_FILE_EXTENSIONS = {
     ".tsv",
     ".txt",
 }
+
+
+_REDACTIONS = (
+    (re.compile(
+        r"(?i)((?:x-goog-api-key|x-api-key|authorization)[\"']?\s*[:=]\s*[\"']?)"
+        r"(?:bearer\s+)?[^\s,;\"'<>}]+"
+    ), r"\1[redacted]"),
+    (re.compile(
+        r"(?i)((?:\\*[\"'])(?:api[_-]?key|key|access_token|refresh_token|token)"
+        r"(?:\\*[\"'])\s*:\s*\\*[\"'])[^\"'\\]*"
+    ), r"\1[redacted]"),
+    (re.compile(
+        r"(?i)((?:(?<![A-Za-z0-9])|(?<=%26)|(?<=%3F))(?:api[_-]?key|key|access_token|token)%3D)"
+        r"[^%&\s\"'<>]+"
+    ), r"\1[redacted]"),
+    (re.compile(
+        r"(?i)((?<![A-Za-z0-9])(?:api[_-]?key|key|access_token|token)\s*=\s*)[^&\s\"'<>]+"
+    ), r"\1[redacted]"),
+    (re.compile(r"(?i)\bBearer\s+[A-Za-z0-9._~+/=-]+"), "Bearer [redacted]"),
+    (re.compile(r"\bAIza[0-9A-Za-z_-]{35}"), "[redacted]"),
+)
+
+
+def redact_secrets(text, secrets=()) -> str:
+    """Remove API keys and tokens from text before it reaches output.
+
+    Same coverage as blog-google's redactor: key=..., URL-encoded and HTML
+    escaped forms, JSON pairs, x-goog-api-key and Authorization headers, Bearer
+    tokens and bare AIza keys, plus any literal values passed in `secrets`.
+    """
+    out = str(text)
+    for secret in secrets or ():
+        if secret and len(str(secret)) >= 4:
+            out = out.replace(str(secret), "[redacted]")
+    for pattern, replacement in _REDACTIONS:
+        out = pattern.sub(replacement, out)
+    return out
+
+
+def get_api_key() -> str | None:
+    """Return the Gemini API key from the environment only (never from args)."""
+    for name in API_KEY_ENV_VARS:
+        value = os.environ.get(name)
+        if value and value.strip():
+            return value.strip()
+    return None
+
+
+def deprecation_warning(alias: str, now: datetime | None = None) -> str | None:
+    """Warning text for an alias whose model Google lists for shutdown, else None."""
+    if alias not in DEPRECATED_MODEL_ALIASES:
+        return None
+    current = now or datetime.now(timezone.utc)
+    shutdown = DEPRECATED_SHUTDOWN_DATE.date().isoformat()
+    state = (
+        f"was scheduled to shut down on {shutdown} and may no longer work"
+        if current >= DEPRECATED_SHUTDOWN_DATE
+        else f"is scheduled to shut down on {shutdown} (earliest possible date)"
+    )
+    return (
+        f"Warning: model alias '{alias}' ({MODELS[alias]}) is deprecated and {state}. "
+        f"Use --model {DEFAULT_MODEL} ({MODELS[DEFAULT_MODEL]}) or flash-lite38."
+    )
+
+
+def plan_chunks(text: str, voice2: str | None, model: str) -> list[str]:
+    """Return the chunks a run would send, one billed API call each."""
+    if voice2 and model in INTERACTIONS_WAV_MODELS:
+        return split_38_dialogue_for_tts(text)
+    return split_text_for_tts(text)
 
 
 def _path_contains_symlink(path: Path, root: Path) -> bool:
@@ -587,10 +677,7 @@ def generate_audio_chunks(
     client, text: str, voice1: str, voice2: str, model: str
 ) -> tuple[bytes, int]:
     """Generate one or more TTS chunks and stitch the raw PCM bytes."""
-    if voice2 and model in INTERACTIONS_WAV_MODELS:
-        chunks = split_38_dialogue_for_tts(text)
-    else:
-        chunks = split_text_for_tts(text)
+    chunks = plan_chunks(text, voice2, model)
     audio_parts = []
     for chunk in chunks:
         if estimate_input_tokens(chunk) > MAX_INPUT_TOKENS:
@@ -638,12 +725,31 @@ def main():
 
     parser.add_argument("--voice", default="Charon", help="Primary voice (default: Charon)")
     parser.add_argument("--voice2", help="Second voice for dialogue mode")
-    parser.add_argument("--model", choices=sorted(MODELS), default="flash", help="TTS model")
+    parser.add_argument(
+        "--model", choices=sorted(MODELS), default=DEFAULT_MODEL,
+        help=(
+            f"TTS model alias (default: {DEFAULT_MODEL}). flash, flash31, pro, legacy-flash25 and "
+            "legacy-pro25 are deprecated; Google lists their models for shutdown on 2026-11-17."
+        ),
+    )
+    parser.add_argument(
+        "--max-chunks", type=int, default=DEFAULT_MAX_CHUNKS,
+        help=(
+            f"Refuse runs that need more than this many chunks (default: {DEFAULT_MAX_CHUNKS}). "
+            "Each chunk is one billed API call."
+        ),
+    )
     parser.add_argument("--output", help="Output file path (default: auto-generated)")
     parser.add_argument("--json", action="store_true", help="Output structured JSON")
     parser.add_argument("--dry-run", action="store_true", help="Estimate cost without generating")
 
     args = parser.parse_args()
+    if args.max_chunks < 1:
+        parser.error("--max-chunks must be at least 1")
+
+    deprecation = deprecation_warning(args.model)
+    if deprecation:
+        print(deprecation, file=sys.stderr)
 
     # Validate voice names
     for voice_arg in [args.voice, args.voice2]:
@@ -668,11 +774,21 @@ def main():
         output_result(result, args.json)
         return 1
 
+    try:
+        planned_chunks = plan_chunks(text, args.voice2, args.model)
+    except ValueError as e:
+        output_result({"status": "error", "error": str(e)}, args.json)
+        return 1
+    chunk_count_planned = len(planned_chunks)
+
     # Dry run - estimate only
     if args.dry_run:
         est = estimate_cost(text, args.model)
         result = {
             "status": "dry_run",
+            "max_chunks": args.max_chunks,
+            "over_chunk_cap": chunk_count_planned > args.max_chunks,
+            "deprecation_warning": deprecation,
             "model": args.model,
             "voice": args.voice,
             "voice2": args.voice2,
@@ -684,10 +800,25 @@ def main():
         output_result(result, args.json)
         return 0
 
-    # Check API key
-    api_key = os.environ.get("GOOGLE_AI_API_KEY") or os.environ.get("GEMINI_API_KEY")
+    if chunk_count_planned > args.max_chunks:
+        result = {
+            "status": "error",
+            "error": (
+                f"Refusing to run: this text needs {chunk_count_planned} chunks, which is about "
+                f"{chunk_count_planned} billed API calls, above --max-chunks {args.max_chunks}. "
+                "Shorten the text, or raise --max-chunks after checking the estimated cost "
+                "with --dry-run."
+            ),
+            "chunk_count_est": chunk_count_planned,
+            "max_chunks": args.max_chunks,
+        }
+        output_result(result, args.json)
+        return 1
+
+    # Check API key (environment only, never a CLI argument)
+    api_key = get_api_key()
     if not api_key:
-        result = {"status": "error", "error": "GOOGLE_AI_API_KEY not set. Get one at https://aistudio.google.com/apikey"}
+        result = {"status": "error", "error": "No API key. Set GOOGLE_AI_API_KEY or GEMINI_API_KEY in the environment. Get one at https://aistudio.google.com/apikey"}
         output_result(result, args.json)
         return 1
 
@@ -704,7 +835,7 @@ def main():
         )
 
     except Exception as e:
-        result = {"status": "error", "error": f"Gemini TTS API error: {str(e)}"}
+        result = {"status": "error", "error": f"Gemini TTS API error: {redact_secrets(f'{type(e).__name__}: {e}', [api_key])}"}
         output_result(result, args.json)
         return 1
 
@@ -772,6 +903,7 @@ def main():
         "model": args.model,
         "model_id": MODELS[args.model],
         "chunk_count": chunk_count,
+        "deprecation_warning": deprecation,
         "embed_html": embed_html,
         "cost_estimate": est["cost_estimate"],
         "timestamp": datetime.now(timezone.utc).isoformat(),

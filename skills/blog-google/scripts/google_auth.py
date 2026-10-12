@@ -53,7 +53,79 @@ SERVICE_AUTH = {
 OAUTH_REDIRECT_URI = "http://127.0.0.1:8085"
 
 
-def describe_google_api_error(error, service: str, permission_hint: str = "") -> str:
+_SECRET_NAMES = (
+    r"api[_-]?key|key|access_token|refresh_token|id_token|client_secret|"
+    r"private_key|token"
+)
+
+# Order matters: header and JSON shapes run before the generic name=value shape.
+_REDACTIONS = (
+    # x-goog-api-key / authorization style headers, plain or inside a repr
+    (re.compile(
+        r"(?i)((?:x-goog-api-key|x-api-key|authorization|proxy-authorization)"
+        r"[\"']?\s*[:=]\s*[\"']?)(?:bearer\s+|basic\s+)?[^\s,;\"'<>}]+"
+    ), r"\1[redacted]"),
+    # JSON or python-repr pairs such as "key": "AIza...", possibly backslash-escaped
+    (re.compile(
+        r"(?i)((?:\\*[\"'])(?:" + _SECRET_NAMES + r")(?:\\*[\"'])\s*:\s*\\*[\"'])[^\"'\\]*"
+    ), r"\1[redacted]"),
+    # URL-encoded name%3Dvalue (for example ...%26key%3DAIza...)
+    (re.compile(
+        r"(?i)((?:(?<![A-Za-z0-9])|(?<=%26)|(?<=%3F))(?:" + _SECRET_NAMES + r")%3D)[^%&\s\"'<>]+"
+    ), r"\1[redacted]"),
+    # name=value anywhere: start of text, after space, ?, &, or &amp;
+    (re.compile(
+        r"(?i)((?<![A-Za-z0-9])(?:" + _SECRET_NAMES + r")\s*=\s*)[^&\s\"'<>]+"
+    ), r"\1[redacted]"),
+    (re.compile(r"(?i)\bBearer\s+[A-Za-z0-9._~+/=-]+"), "Bearer [redacted]"),
+    (re.compile(r"\bAIza[0-9A-Za-z_-]{35}"), "[redacted]"),
+    (re.compile(r"\bya29\.[0-9A-Za-z_-]+"), "[redacted]"),
+)
+
+
+def redact_secrets(text, secrets=()) -> str:
+    """Return text with API keys, tokens and credential parameters removed.
+
+    Covers key=... in any position (start, after space, ?, &, &amp;), URL-encoded
+    (%26key%3D...), JSON "key": "..." pairs, x-goog-api-key and Authorization
+    headers, Bearer and ya29 tokens, access_token=, and bare AIza... keys. Any
+    literal values in `secrets` (and their URL-quoted forms) are removed too, so
+    a fixture or short key cannot slip past the shape patterns.
+    """
+    import urllib.parse
+
+    out = str(text)
+    for secret in secrets or ():
+        if secret and len(str(secret)) >= 4:
+            for form in {str(secret), urllib.parse.quote(str(secret), safe=""), urllib.parse.quote_plus(str(secret))}:
+                out = out.replace(form, "[redacted]")
+    for pattern, replacement in _REDACTIONS:
+        out = pattern.sub(replacement, out)
+    return out
+
+
+def safe_exception_text(error, *secrets) -> str:
+    """Describe an exception without leaking request URLs or credentials."""
+    return redact_secrets(f"{type(error).__name__}: {error}", secrets)
+
+
+def setup_hint() -> str:
+    """Actionable dependency message pointing at this skill's setup script."""
+    import os as _os
+
+    setup = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "setup_environment.py")
+    return (
+        "Optional Python dependencies are missing. Run the skill setup script "
+        f"(it creates the skill virtual environment): python3 \"{setup}\""
+    )
+
+
+def api_key_headers(api_key) -> dict:
+    """Send the key in a header so it never appears in a URL or an exception."""
+    return {"x-goog-api-key": api_key}
+
+
+def describe_google_api_error(error, service: str, permission_hint: str = "", secrets=()) -> str:
     """Preserve Google error reasons without confusing setup with property access.
 
     Accept discovery-client exceptions, API-core exceptions, or REST JSON.
@@ -70,11 +142,7 @@ def describe_google_api_error(error, service: str, permission_hint: str = "") ->
     detail = payload.get("error", payload) if isinstance(payload, dict) else {}
     detail = detail if isinstance(detail, dict) else {}
     message = str(detail.get("message") or getattr(error, "message", "") or error)
-    message = re.sub(
-        r"(?i)([?&](?:key|api_key|access_token|refresh_token|client_secret)=)[^&\s\"'<>]+",
-        r"\1[redacted]", message,
-    )
-    message = re.sub(r"(?i)\bBearer\s+[^\s\"'<>]+", "Bearer [redacted]", message)
+    message = redact_secrets(message, secrets)
     reasons = []
     nodes = [detail, getattr(error, "errors", ()), getattr(error, "details", ())]
     while nodes:
@@ -182,7 +250,7 @@ def request_with_retries(method: str, url: str, max_attempts: int = 5, **kwargs)
     try:
         import requests
     except ImportError:
-        raise RuntimeError("requests library required")
+        raise RuntimeError(f"requests library required. {setup_hint()}")
 
     retry_statuses = {429, 500, 502, 503, 504}
     last_response = None
@@ -197,9 +265,15 @@ def request_with_retries(method: str, url: str, max_attempts: int = 5, **kwargs)
     return last_response
 
 
-def execute_with_retries(request, max_attempts: int = 5):
-    """Execute a googleapiclient request with Retry-After backoff."""
+def execute_with_retries(request, max_attempts: int = 5, retry_quota: bool = True):
+    """Execute a googleapiclient request with Retry-After backoff.
+
+    Pass retry_quota=False to surface HTTP 429 immediately (batch jobs that
+    must stop on quota exhaustion instead of sleeping per item).
+    """
     retry_statuses = {429, 500, 502, 503, 504}
+    if not retry_quota:
+        retry_statuses.discard(429)
     for attempt in range(max_attempts):
         try:
             return request.execute()
@@ -240,7 +314,7 @@ def load_config() -> dict:
                 file_config = json.load(f)
             config.update({k: v for k, v in file_config.items() if v})
         except (json.JSONDecodeError, IOError) as e:
-            print(f"Warning: Could not read config file: {e}", file=sys.stderr)
+            print(f"Warning: Could not read config file: {safe_exception_text(e)}", file=sys.stderr)
 
     # Environment variable fallbacks
     if not config["service_account_path"]:
@@ -296,11 +370,7 @@ def get_service_account_credentials(scopes: list):
     try:
         from google.oauth2 import service_account
     except ImportError:
-        print(
-            "Error: google-auth library required. "
-            "Install with: pip install google-auth",
-            file=sys.stderr,
-        )
+        print(f"Error: google-auth library required. {setup_hint()}", file=sys.stderr)
         return None
 
     config = load_config()
@@ -323,7 +393,7 @@ def get_service_account_credentials(scopes: list):
         )
         return credentials
     except Exception as e:
-        print(f"Error loading service account: {e}", file=sys.stderr)
+        print(f"Error loading service account: {safe_exception_text(e)}", file=sys.stderr)
         return None
 
 
@@ -334,7 +404,7 @@ def _load_oauth_client(creds_path: str) -> Optional[dict]:
             data = json.load(f)
         return data.get("web", data.get("installed", {}))
     except (json.JSONDecodeError, IOError) as e:
-        print(f"Error reading OAuth client file: {e}", file=sys.stderr)
+        print(f"Error reading OAuth client file: {safe_exception_text(e)}", file=sys.stderr)
         return None
 
 
@@ -383,7 +453,7 @@ def _refresh_oauth_token(client: dict, token_data: dict) -> Optional[dict]:
         _save_oauth_token(token_data)
         return token_data
     except Exception as e:
-        print(f"Error refreshing OAuth token: {e}", file=sys.stderr)
+        print(f"Error refreshing OAuth token: {safe_exception_text(e)}", file=sys.stderr)
         return None
 
 
@@ -441,7 +511,7 @@ def get_oauth_credentials(scopes: list):
                     client_secret=client_secret,
                 )
             except ImportError:
-                print("Error: google-auth required. Install with: pip install google-auth", file=sys.stderr)
+                print(f"Error: google-auth required. {setup_hint()}", file=sys.stderr)
 
     # Fall back to service account
     return get_service_account_credentials(scopes)
@@ -570,7 +640,7 @@ def _exchange_code(client: dict, code: str, creds_path: str | None = None):
             _save_config_value("oauth_client_path", os.path.abspath(os.path.expanduser(creds_path)))
         print(f"\nToken saved to: {TOKEN_PATH}")
     except Exception as e:
-        print(f"Error exchanging authorization code: {e}", file=sys.stderr)
+        print(f"Error exchanging authorization code: {safe_exception_text(e)}", file=sys.stderr)
         sys.exit(1)
 
 
@@ -600,11 +670,7 @@ def build_service(api_name: str, version: str, scopes: list):
     try:
         from googleapiclient.discovery import build
     except ImportError:
-        print(
-            "Error: google-api-python-client required. "
-            "Install with: pip install google-api-python-client",
-            file=sys.stderr,
-        )
+        print(f"Error: google-api-python-client required. {setup_hint()}", file=sys.stderr)
         return None
 
     credentials = get_oauth_credentials(scopes)
@@ -615,7 +681,7 @@ def build_service(api_name: str, version: str, scopes: list):
         service = build(api_name, version, credentials=credentials)
         return service
     except Exception as e:
-        print(f"Error building {api_name} service: {e}", file=sys.stderr)
+        print(f"Error building {api_name} service: {safe_exception_text(e)}", file=sys.stderr)
         return None
 
 
@@ -688,7 +754,7 @@ def check_credentials(service: str) -> dict:
                             result["method"] = "service_account"
                             result["client_email"] = sa_data.get("client_email")
                     except (json.JSONDecodeError, IOError) as e:
-                        result["error"] = f"Invalid service account file: {e}"
+                        result["error"] = f"Invalid service account file: {safe_exception_text(e)}"
 
         # GA4 also needs property ID
         if service == "ga4" and result["available"]:

@@ -21,12 +21,20 @@ Signals measured per H2 section:
     - avg_clause_depth:      Subordinate-clause markers per sentence (avg)
     - load_score:            Composite 0-100; higher = more loaded
 
-Thresholds (per cognitive-load.md):
-    new_entity_density:   1-3 healthy, 4-6 borderline, 7+ overloaded
-    numeric_claim_density: 1-3 healthy, 4-5 borderline, 6+ overloaded
-    jargon_introduction:  0-1 healthy, 2-3 borderline, 4+ overloaded
-    forward_reference:    0 healthy, 1 borderline, 2+ overloaded
-    avg_clause_depth:     <1.5 healthy, 1.5-2.5 borderline, >2.5 overloaded
+Thresholds (these match classify() in score_section; upper bounds inclusive):
+    new_entity_density:    <= 3 healthy, > 3 to 6 borderline, > 6 overloaded
+    numeric_claim_density: <= 3 healthy, > 3 to 5 borderline, > 5 overloaded
+    jargon_introduction:   <= 1 healthy, 2-3 borderline, 4+ overloaded
+    forward_reference:     0 healthy, 1 borderline, 2+ overloaded
+    avg_clause_depth:      <= 1.5 healthy, > 1.5 to 2.5 borderline, > 2.5 overloaded
+Each signal scores 0 (healthy), 10 (borderline) or 25 (overloaded). A section is
+overloaded at a load_score of 50+ or with two overloaded signals, borderline at
+25+. The document verdict is Overloaded at 50+, Moderate at 25+, else Healthy
+(word-weighted mean of section scores).
+
+Exit codes: 0 report printed, 2 input could not be read (missing, symlink,
+oversize, not UTF-8, permission denied); the error is printed to stderr and,
+with --format json, as {"error": ...} on stdout.
 """
 
 from __future__ import annotations
@@ -482,11 +490,16 @@ def main() -> int:
     )
     args = parser.parse_args()
 
+    def fail(message: str) -> int:
+        print(f"Error: {message}", file=sys.stderr)
+        if args.format == "json":
+            print(json.dumps({"error": message}, indent=2))
+        return 2
+
     try:
         path = _validate_input_path(Path(args.file), MAX_INPUT_BYTES, "Input file")
-    except ValueError as e:
-        print(f"Error: {e}", file=sys.stderr)
-        return 2
+    except (ValueError, OSError) as e:
+        return fail(str(e))
 
     jargon = set(DEFAULT_JARGON)
     if args.jargon:
@@ -499,10 +512,15 @@ def main() -> int:
                 for line in jargon_text.splitlines()
                 if line.strip()
             )
-        except ValueError as e:
+        except (ValueError, OSError) as e:
             print(f"Warning: {e}; proceeding with default jargon.", file=sys.stderr)
 
-    report = analyze(path, jargon)
+    try:
+        report = analyze(path, jargon)
+    except UnicodeDecodeError as e:
+        return fail(f"Input file is not valid UTF-8 text: {path} ({e.reason})")
+    except (ValueError, OSError) as e:
+        return fail(str(e))
     if args.format == "markdown":
         print(format_markdown(report))
     else:

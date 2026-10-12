@@ -41,37 +41,41 @@ def ensure_venv():
     current_stamp = stamp_file.read_text().strip() if stamp_file.exists() else None
 
     venv_python = get_venv_python()
+    setup_script = skill_dir / "scripts" / "setup_environment.py"
     if not venv_python.is_file():
-        print(
-            "Google skill setup required. Run: "
-            "python3 skills/blog-google/scripts/setup_environment.py"
-        )
+        print(f'Google skill setup required. Run: python3 "{setup_script}"')
         sys.exit(1)
     if expected_stamp and current_stamp != expected_stamp:
-        print(
-            "Google skill dependencies are missing or stale. Run: "
-            "python3 skills/blog-google/scripts/setup_environment.py"
-        )
+        print(f'Google skill dependencies are missing or stale. Run: python3 "{setup_script}"')
         sys.exit(1)
     return venv_python
 
 
+USAGE = """Usage: python run.py <script_name> [args...]
+
+Available scripts:
+  google_auth.py       - Credential management and auth setup
+  pagespeed_check.py   - PageSpeed Insights + CrUX field data
+  crux_history.py      - CWV history, 25 weeks by default, up to 40
+  youtube_search.py    - YouTube video search and details
+  nlp_analyze.py       - NLP entity extraction and sentiment
+  gsc_query.py         - Search Console performance data
+  gsc_inspect.py       - URL Inspection API
+  indexing_notify.py   - Indexing API notifications
+  ga4_report.py        - GA4 organic traffic reports
+  keyword_planner.py   - Google Ads Keyword Planner
+  google_report.py     - PDF/HTML performance reports
+
+Run "python run.py <script_name> --help" for a script's options."""
+
+
 def main():
     """Main runner"""
+    if len(sys.argv) >= 2 and sys.argv[1] in ("-h", "--help", "help"):
+        print(USAGE)
+        sys.exit(0)
     if len(sys.argv) < 2:
-        print("Usage: python run.py <script_name> [args...]")
-        print("\nAvailable scripts:")
-        print("  google_auth.py       - Credential management and auth setup")
-        print("  pagespeed_check.py   - PageSpeed Insights + CrUX field data")
-        print("  crux_history.py      - CWV history, 25 weeks by default, up to 40")
-        print("  youtube_search.py    - YouTube video search and details")
-        print("  nlp_analyze.py       - NLP entity extraction and sentiment")
-        print("  gsc_query.py         - Search Console performance data")
-        print("  gsc_inspect.py       - URL Inspection API")
-        print("  indexing_notify.py   - Indexing API notifications")
-        print("  ga4_report.py        - GA4 organic traffic reports")
-        print("  keyword_planner.py   - Google Ads Keyword Planner")
-        print("  google_report.py     - PDF/HTML performance reports")
+        print(USAGE)
         sys.exit(1)
 
     script_name = sys.argv[1]

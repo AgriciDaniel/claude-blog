@@ -14,17 +14,24 @@ import json
 import time
 import argparse
 import shutil
-import re
 import sys
 from pathlib import Path
 from typing import Optional, Dict, Any
 
-from patchright.sync_api import sync_playwright, BrowserContext
-
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from config import BROWSER_STATE_DIR, STATE_FILE, AUTH_INFO_FILE, DATA_DIR
+from config import (
+    BROWSER_STATE_DIR, STATE_FILE, AUTH_INFO_FILE, DATA_DIR, NOTEBOOK_HOME_URL,
+    ensure_private_dir, fail_missing_dependency,
+    is_google_login_url, is_notebook_host_url, write_private_file,
+)
+
+try:
+    from patchright.sync_api import sync_playwright, BrowserContext
+except ImportError as _exc:
+    fail_missing_dependency("patchright", _exc)
+
 from browser_utils import BrowserFactory
 
 
@@ -66,9 +73,9 @@ class AuthManager:
 
     def __init__(self):
         """Initialize the authentication manager"""
-        # Ensure directories exist
-        DATA_DIR.mkdir(parents=True, exist_ok=True)
-        BROWSER_STATE_DIR.mkdir(parents=True, exist_ok=True)
+        # Ensure directories exist, private to the owner (cookies live here)
+        ensure_private_dir(DATA_DIR)
+        ensure_private_dir(BROWSER_STATE_DIR)
 
         self.state_file = STATE_FILE
         self.auth_info_file = AUTH_INFO_FILE
@@ -76,8 +83,10 @@ class AuthManager:
 
     def is_authenticated(self) -> bool:
         """Check whether a local browser state file exists."""
-        if not self.state_file.exists():
+        if not self.state_file.exists() or self.state_file.is_symlink():
             return False
+        if self.state_file.stat().st_size == 0:
+            return False  # an interrupted save leaves an empty placeholder
 
         # Check if state file is not too old (7 days)
         age_days = (time.time() - self.state_file.stat().st_mtime) / 86400
@@ -137,10 +146,10 @@ class AuthManager:
 
             # Navigate to NotebookLM
             page = context.new_page()
-            page.goto("https://notebooklm.google.com", wait_until="domcontentloaded")
+            page.goto(NOTEBOOK_HOME_URL, wait_until="domcontentloaded")
 
-            # Check if already authenticated
-            if "notebooklm.google.com" in page.url and "accounts.google.com" not in page.url:
+            # Check if already authenticated (exact host checks, not substring matches)
+            if is_notebook_host_url(page.url) and not is_google_login_url(page.url):
                 print("  ✅ Already authenticated!")
                 self._save_browser_state(context)
                 return True
@@ -150,9 +159,10 @@ class AuthManager:
             print(f"  ⏱️  Waiting up to {timeout_minutes} minutes for login...")
 
             try:
-                # Wait for URL to change to NotebookLM (regex ensures it's the actual domain, not a parameter)
+                # Wait for the URL to land on an allowed notebook host (exact hostname
+                # match; a look-alike host or a query parameter must not satisfy it)
                 timeout_ms = int(timeout_minutes * 60 * 1000)
-                page.wait_for_url(re.compile(r"^https://notebooklm\.google\.com/"), timeout=timeout_ms)
+                page.wait_for_url(is_notebook_host_url, timeout=timeout_ms)
 
                 print(f"  ✅ Login successful!")
 
@@ -186,7 +196,10 @@ class AuthManager:
     def _save_browser_state(self, context: BrowserContext):
         """Save browser state to disk"""
         try:
-            # Save storage state (cookies, localStorage)
+            # Save storage state (cookies, localStorage). Create the file 0600 first so
+            # the cookies are never written to a world-readable file, and refuse a
+            # symlink so the write cannot be redirected elsewhere.
+            write_private_file(self.state_file, "")
             context.storage_state(path=str(self.state_file))
             # Harden permissions on credential file and parent dir (VULN-004 mitigation)
             _harden_perms(self.state_file)
@@ -194,6 +207,11 @@ class AuthManager:
             print(f"  💾 Saved browser state to: {self.state_file}")
         except Exception as e:
             print(f"  ❌ Failed to save browser state: {e}")
+            try:
+                if self.state_file.is_file() and self.state_file.stat().st_size == 0:
+                    self.state_file.unlink()
+            except OSError:
+                pass
             raise
 
     def _save_auth_info(self):
@@ -203,10 +221,7 @@ class AuthManager:
                 'authenticated_at': time.time(),
                 'authenticated_at_iso': time.strftime('%Y-%m-%d %H:%M:%S')
             }
-            with open(self.auth_info_file, 'w') as f:
-                json.dump(info, f, indent=2)
-            # Harden permissions on auth info file (VULN-004 mitigation)
-            _harden_perms(self.auth_info_file)
+            write_private_file(self.auth_info_file, json.dumps(info, indent=2))
         except Exception:
             pass  # Non-critical
 
@@ -288,10 +303,10 @@ class AuthManager:
 
             # Try to access NotebookLM
             page = context.new_page()
-            page.goto("https://notebooklm.google.com", wait_until="domcontentloaded", timeout=30000)
+            page.goto(NOTEBOOK_HOME_URL, wait_until="domcontentloaded", timeout=30000)
 
-            # Check if we can access NotebookLM
-            if "notebooklm.google.com" in page.url and "accounts.google.com" not in page.url:
+            # Check if we can access NotebookLM (exact host checks, not substring matches)
+            if is_notebook_host_url(page.url) and not is_google_login_url(page.url):
                 print("  ✅ Authentication is valid")
                 return True
             else:

@@ -18,27 +18,73 @@ import sys
 from typing import Optional
 
 try:
-    from googleapiclient.discovery import build
-except ImportError:
-    print(
-        "Error: google-api-python-client required. "
-        "Install with: pip install google-api-python-client",
-        file=sys.stderr,
+    from google_auth import (
+        describe_google_api_error, get_api_key, safe_exception_text, setup_hint,
     )
-    sys.exit(1)
-
-try:
-    from google_auth import get_api_key
 except ImportError:
     import os
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-    from google_auth import get_api_key
+    from google_auth import (
+        describe_google_api_error, get_api_key, safe_exception_text, setup_hint,
+    )
 
-# YouTube Data API v3 quota costs:
-# search.list = 100 units, videos.list = 1 unit, channels.list = 1 unit
-# Default quota: 10,000 units/day = ~100 searches or ~10,000 video lookups
+try:
+    from googleapiclient.discovery import build
+except ImportError:
+    print(f"Error: google-api-python-client required. {setup_hint()}", file=sys.stderr)
+    sys.exit(1)
+
+# YouTube Data API v3 quota, per https://developers.google.com/youtube/v3/determine_quota_cost
+# (fetched 2026-10-12): search.list costs 1 unit per call but also has its own
+# default allocation of 100 search.list calls per day per project; videos.list,
+# channels.list and commentThreads.list cost 1 unit each against the shared
+# 10,000 units/day pool. Quotas can differ per project: check the Cloud Console.
+SEARCH_DAILY_CALLS_DEFAULT = 100
+MAX_RESULTS_CAP = 50
 YOUTUBE_API_SERVICE = "youtube"
 YOUTUBE_API_VERSION = "v3"
+
+
+def _describe_youtube_error(error) -> str:
+    """Keep the Google error reason instead of guessing a disabled API."""
+    message = describe_google_api_error(
+        error, "YouTube Data",
+        "Check the API key's API and application restrictions, and that its project may call YouTube Data API v3.",
+    )
+    status = getattr(getattr(error, "resp", None), "status", None)
+    if status == 429 or (status is None and "429" in str(error)):
+        message += (
+            " YouTube quota: search.list has its own default of 100 calls per day"
+            " (1 unit per call) and other methods share 10,000 units per day by default."
+            " Check the project's quota in Google Cloud Console."
+        )
+    return message
+
+
+def _keyed_http(key: str):
+    """httplib2 client that sends the key as an x-goog-api-key header, not a key query parameter.
+
+    Keeps the key out of request URLs, and so out of HttpError text. Returns
+    None when httplib2 is unavailable, and the caller falls back to developerKey.
+    """
+    try:
+        import httplib2
+    except ImportError:
+        return None
+
+    class KeyHeaderHttp(httplib2.Http):
+        def request(self, uri, method="GET", body=None, headers=None, *args, **kwargs):
+            headers = dict(headers or {})
+            headers["x-goog-api-key"] = key
+            return super().request(uri, method, body, headers, *args, **kwargs)
+
+    return KeyHeaderHttp()
+
+
+def _comments_disabled(error) -> bool:
+    """True only for the documented commentsDisabled reason on a 403."""
+    text = describe_google_api_error(error, "YouTube Data")
+    return "commentsDisabled" in text
 
 
 def _build_youtube_service(api_key: Optional[str] = None):
@@ -47,9 +93,12 @@ def _build_youtube_service(api_key: Optional[str] = None):
     if not key:
         return None
     try:
+        http = _keyed_http(key)
+        if http is not None:
+            return build(YOUTUBE_API_SERVICE, YOUTUBE_API_VERSION, http=http)
         return build(YOUTUBE_API_SERVICE, YOUTUBE_API_VERSION, developerKey=key)
     except Exception as e:
-        print(f"Error building YouTube service: {e}", file=sys.stderr)
+        print(f"Error building YouTube service: {safe_exception_text(e, key)}", file=sys.stderr)
         return None
 
 
@@ -64,7 +113,7 @@ def search_videos(
 
     Args:
         query: Search query string.
-        max_results: Max results (1-50, default 10).
+        max_results: Max results, clamped to 1-50 (default 10).
         order: Sort order: relevance, date, rating, viewCount, title.
         api_key: Optional API key override.
 
@@ -83,7 +132,7 @@ def search_videos(
             q=query,
             part="snippet",
             type="video",
-            maxResults=min(max_results, 50),
+            maxResults=max(1, min(int(max_results), MAX_RESULTS_CAP)),
             order=order,
         ).execute()
 
@@ -133,16 +182,7 @@ def search_videos(
                 })
 
     except Exception as e:
-        error_str = str(e)
-        if "403" in error_str:
-            result["error"] = (
-                "YouTube Data API access denied. Ensure the API is enabled "
-                "in your GCP project (APIs & Services > Library > YouTube Data API v3)."
-            )
-        elif "429" in error_str:
-            result["error"] = "YouTube API quota exceeded (10,000 units/day). Search costs 100 units."
-        else:
-            result["error"] = f"YouTube API error: {e}"
+        result["error"] = _describe_youtube_error(e)
 
     return result
 
@@ -223,11 +263,15 @@ def get_video_details(
                     "likes": comment.get("likeCount", 0),
                     "published": comment.get("publishedAt", ""),
                 })
-        except Exception:
-            pass  # Comments may be disabled
+        except Exception as comments_error:
+            # Disabled comments are normal; quota, key and permission errors are not.
+            if _comments_disabled(comments_error):
+                result["comments_note"] = "Comments are disabled for this video."
+            else:
+                result["comments_error"] = _describe_youtube_error(comments_error)
 
     except Exception as e:
-        result["error"] = f"YouTube API error: {e}"
+        result["error"] = _describe_youtube_error(e)
 
     return result
 
@@ -281,7 +325,7 @@ def get_channel_info(
         }
 
     except Exception as e:
-        result["error"] = f"YouTube API error: {e}"
+        result["error"] = _describe_youtube_error(e)
 
     return result
 
@@ -296,7 +340,10 @@ def main():
         help="Command: search, video (details), channel (info)",
     )
     parser.add_argument("query", help="Search query, video ID, or channel ID")
-    parser.add_argument("--limit", type=int, default=10, help="Max results for search (default: 10)")
+    parser.add_argument(
+        "--limit", type=int, default=10,
+        help="Max results for search, 1-50 (default: 10). Values outside the range are clamped.",
+    )
     parser.add_argument(
         "--order",
         choices=["relevance", "date", "rating", "viewCount", "title"],
@@ -319,6 +366,8 @@ def main():
         print(f"Error: {result['error']}", file=sys.stderr)
         if not args.json:
             sys.exit(1)
+    if result.get("comments_error"):
+        print(f"Warning: top comments unavailable: {result['comments_error']}", file=sys.stderr)
 
     if args.json:
         print(json.dumps(result, indent=2))
