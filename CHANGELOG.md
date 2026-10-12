@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Skip local virtualenvs (`.venv`, `venv`, `node_modules`) in the secret scan so a
+  contributor's environment no longer fails it. The pinned-release installer
+  test now reads the expected checkout from the tag instead of a fixed SHA.
 - Reject reviewer scorecards with missing, negated or contradictory P0
   clearance, duplicate scores/nonces/decisions, or missing decision reasons.
 - Enforce the required browser check in strict delivery mode, and preserve

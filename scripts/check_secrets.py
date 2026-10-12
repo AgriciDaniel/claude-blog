@@ -84,6 +84,10 @@ def run_detect_secrets() -> dict[str, object]:
         r"^\.git/",
         "--exclude-files",
         r"^\.pytest_cache/",
+        # Local virtualenvs and dependency trees are not source. A contributor's
+        # .venv would otherwise trip the entropy scan on vendored activate scripts.
+        "--exclude-files",
+        r"^(\.venv|venv|node_modules)/",
     ]
     try:
         result = subprocess.run(
@@ -161,7 +165,7 @@ def scan_forbidden_values() -> list[dict[str, object]]:
         if not path.is_file() or path.is_symlink():
             continue
         rel = path.relative_to(ROOT).as_posix()
-        if any(part in {".git", ".pytest_cache", "outputs"} for part in path.relative_to(ROOT).parts):
+        if any(part in {".git", ".pytest_cache", ".venv", "venv", "node_modules", "outputs"} for part in path.relative_to(ROOT).parts):
             continue
         if path.stat().st_size > 25 * 1024 * 1024:
             continue

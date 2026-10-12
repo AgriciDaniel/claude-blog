@@ -449,3 +449,22 @@ def test_stripe_and_slack_tokens_are_forbidden_patterns(tmp_path, monkeypatch):
     (tmp_path / "b.txt").write_text("tok " + "xox" + "b-1234567890-abcdefghij\n")
     labels = {f["type"] for f in SECRETS.scan_forbidden_values()}
     assert {"Stripe key", "Slack token"} <= labels
+
+
+def test_secret_scan_skips_local_virtualenvs(monkeypatch):
+    """A contributor's .venv is not source and must not trip the entropy scan."""
+    seen = {}
+
+    class Done:
+        returncode = 0
+        stdout = '{"results": {}}'
+        stderr = ""
+
+    def fake_run(command, **kwargs):
+        seen["command"] = command
+        return Done()
+
+    monkeypatch.setattr(SECRETS.subprocess, "run", fake_run)
+    SECRETS.run_detect_secrets()
+    excludes = [seen["command"][i + 1] for i, arg in enumerate(seen["command"]) if arg == "--exclude-files"]
+    assert any(".venv" in pattern and "node_modules" in pattern for pattern in excludes)
