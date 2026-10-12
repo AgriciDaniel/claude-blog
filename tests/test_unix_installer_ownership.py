@@ -157,7 +157,7 @@ def test_downloaded_current_installer_hands_pinned_release_to_its_own_installer(
     assert manifest.is_file()
     assert manifest.read_text(encoding="utf-8").splitlines()
     assert not manifest.read_text(encoding="utf-8").lstrip().startswith("{")
-    assert "checked out 7b6ca10" in installed.stdout
+    assert f"checked out {tag.stdout.strip()[:7]}" in installed.stdout
     assert "installer_ownership.py" not in installed.stderr
 
 
