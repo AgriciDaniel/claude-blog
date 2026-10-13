@@ -19,7 +19,7 @@ set -euo pipefail
 
 TEMP_DIR=""
 INSTALL_STATS_FILE=""
-readonly CLAUDE_BLOG_VERSION="2.2.0"
+readonly CLAUDE_BLOG_VERSION="2.3.0"
 
 count_files() {
     local path="$1"

@@ -578,7 +578,7 @@ def test_consistency_checker_discovers_skill_relative_resources_and_agents(
 
 def _public_fixture(root: Path) -> None:
     public = "https://github.com/AgriciDaniel/claude-blog"
-    version = "2.2.0"
+    version = "2.3.0"
     raw_sh = (
         "https://raw.githubusercontent.com/AgriciDaniel/claude-blog/main/install.sh"
     )
@@ -860,7 +860,7 @@ def test_public_release_validator_rejects_version_collision(
     _public_fixture(tmp_path)
     pyproject = tmp_path / "pyproject.toml"
     pyproject.write_text(
-        pyproject.read_text(encoding="utf-8").replace("2.2.0", "2.1.0"),
+        pyproject.read_text(encoding="utf-8").replace("2.3.0", "2.1.0"),
         encoding="utf-8",
     )
     report = module.validate(tmp_path)

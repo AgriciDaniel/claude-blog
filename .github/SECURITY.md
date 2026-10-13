@@ -28,7 +28,7 @@ your report.
 
 Only the latest version receives security updates. Pin to a commit SHA you
 reviewed (or the first release tag that contains
-`scripts/installer_ownership.py`) with `git checkout <commit-sha-or-release-tag>`
+`scripts/installer_ownership.py`, which is `v2.3.0`) with `git checkout <commit-sha-or-release-tag>`
 for reproducible installs; do not track `main` for production usage. Do not
 install or uninstall from the `v2.2.0` tag: it predates the ownership-aware
 installer and its `uninstall.sh` runs an unguarded recursive delete of whole
