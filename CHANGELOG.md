@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Refresh the Google and audio dependency floors and their hash locks: `google-genai` 2.29.0, `google-auth` 2.61.0, `google-auth-oauthlib` >=1.5.0, `google-auth-httplib2` >=0.4.4. The locks stay on releases at least a week old.
+- Move the reviewed `actions/setup-node` pin to v7.1.0 (`949feb2`).
+
 ## [2.3.1] - 2026-10-13
 
 ### Added
