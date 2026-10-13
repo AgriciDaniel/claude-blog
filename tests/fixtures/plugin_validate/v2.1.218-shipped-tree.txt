@@ -1,3 +1,7 @@
 Validating marketplace manifest: /home/runner/work/claude-blog/claude-blog/.claude-plugin/marketplace.json
 
-✔ Validation passed
+⚠ Found 1 warning:
+
+  ❯ plugins[1] plugin.json → types: Unknown field 'types'. Claude Code ignores it at load time.
+
+✔ Validation passed with warnings

@@ -24,6 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Blog Studio refers to the engine as `claude-blog` in its messages and docs.
 - Version 2.3.1 on every release surface; no change to the delivery gates,
   scripts or skills.
+- CI tolerates one more exact finding from the 2.1.218 validator, which predates
+  mods and reports Blog Studio's `types` manifest key as unknown.
 
 ## [2.3.0] - 2026-10-13
 
