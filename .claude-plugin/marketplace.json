@@ -11,6 +11,12 @@
       "name": "claude-blog",
       "source": "./",
       "description": "AI-powered blog creation, optimization, and management with 32 skill directories (1 orchestrator + 31 sub-skills), 5 agents, FLOW framework integration, semantic topic-cluster execution, multilingual publishing, brand and discourse context auto-load, and 5-category scoring. Optimized for Google rankings and AI citations."
+    },
+    {
+      "name": "blog-studio",
+      "source": "./plugins/blog-studio",
+      "version": "0.2.0",
+      "description": "Optional companion to claude-blog: article status band, live pipeline and five-gate review panel, history of past blogs, and an explicit Run checks control. A Claude Code mod; install it separately."
     }
   ]
 }

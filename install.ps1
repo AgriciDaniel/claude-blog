@@ -20,7 +20,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$ClaudeBlogVersion = "2.3.0"
+$ClaudeBlogVersion = "2.3.1"
 
 function Write-Color($Color, $Text) { Write-Host $Text -ForegroundColor $Color }
 

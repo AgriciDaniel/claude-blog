@@ -1,0 +1,6 @@
+{
+  "description": "Blog Studio status and check controls",
+  "modules": [
+    "./register.ts"
+  ]
+}

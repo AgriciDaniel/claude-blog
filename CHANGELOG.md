@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.1] - 2026-10-13
+
+### Added
+
+- Ship Blog Studio 0.2.0 as an optional second plugin of the same marketplace
+  (`plugins/blog-studio`, install with `/plugin install blog-studio@agricidaniel-blog`).
+  It is a Claude Code mod: a status band, a live pipeline and five-gate review
+  panel, a history of past blogs and a Run checks control that runs the strict
+  preflight. Strict plugin validation passes and its 59 test-kit tests pass.
+  It is not part of the `claude-blog` plugin and the standalone installers do
+  not enable it.
+
+### Changed
+
+- Blog Studio refers to the engine as `claude-blog` in its messages and docs.
+- Version 2.3.1 on every release surface; no change to the delivery gates,
+  scripts or skills.
+
 ## [2.3.0] - 2026-10-13
 
 ### Fixed

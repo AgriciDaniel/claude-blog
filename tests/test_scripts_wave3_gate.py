@@ -468,3 +468,11 @@ def test_secret_scan_skips_local_virtualenvs(monkeypatch):
     SECRETS.run_detect_secrets()
     excludes = [seen["command"][i + 1] for i, arg in enumerate(seen["command"]) if arg == "--exclude-files"]
     assert any(".venv" in pattern and "node_modules" in pattern for pattern in excludes)
+
+
+def test_git_revision_field_is_adjudicated_but_a_bare_hex_secret_is_not():
+    hex_finding = {"type": "Hex High Entropy String"}
+    revision = '  "revision": "' + "ab12" * 10 + '",'
+    assert SECRETS.is_adjudicated("plugins/x/dev/types-source.json", hex_finding, revision)
+    bare = '  "token": "' + "ab12" * 10 + '",'
+    assert not SECRETS.is_adjudicated("plugins/x/dev/types-source.json", hex_finding, bare)
