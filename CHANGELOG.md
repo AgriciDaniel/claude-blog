@@ -205,8 +205,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Refresh bounded dependencies and hash locks for Python 3.11 compatibility.
   Retain the reported, unpatched NLTK model-artifact advisory as an explicit
   limitation; no advisory-free claim is made.
-- Add optional Gemini 3.8 TTS aliases with Interactions schema and WAV checks,
-  retaining every legacy alias and the existing default model.
+- Add Gemini 3.8 TTS with Interactions schema and WAV checks. `flash38` is now
+  the default audio model, `--max-chunks` (default 12) caps the cost of a run,
+  and every legacy alias remains available with a deprecation warning.
 - Correct active Brain readiness and version claims, distinguish model-provider
   processing from local artifact storage, and remove unsupported fixed quotas.
 - Expand routing and recovery evaluations, public distribution checks, and
@@ -234,11 +235,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Authenticated Google, Gemini and NotebookLM operations remain unverified.
   Native route selection does not execute all 30 workflows. Single-pass writing
   samples require factual review and correction before delivery.
-- Native Windows and macOS acceptance depends on the exact PR revision.
-  No release, installed-profile migration or merge is included.
-- The PowerShell changes (`-ForceAdopt`, user-level dependency install, git
-  input validation) were run with PowerShell 7 on Linux only. Windows
-  PowerShell 5.1 and real junctions were not exercised.
+- No release or installed-profile migration is included. The installer smoke
+  test passed on GitHub's Windows runners (Windows PowerShell 5.1 and
+  PowerShell 7) for these changes; real junctions and the macOS runners had not
+  run when this was written, so check the CI result of the merge commit.
 - The review nonce stops accidents and casual forgery. A process running as
   the same user can still read the verifier state. Redirect targets are
   validated but not followed, so a redirect to a dead page passes Gate 5.
@@ -250,7 +250,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   review.
 - `claude plugin validate` on Claude Code 2.1.292 and later reports the
   `claude-` prefix of the plugin name as reserved. CI runs both validators and
-  that job is expected to fail until the project decides how to handle it.
+  tolerates exactly that one finding; any other finding still fails. Whether a
+  real plugin install refuses the name has not been tested.
 
 ## [2.2.0] - 2026-08-26
 
