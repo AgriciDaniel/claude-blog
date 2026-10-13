@@ -27,3 +27,8 @@ def test_marketplace_plugin_description_within_cap() -> None:
             f"marketplace plugin '{plugin.get('name')}' description is {len(desc)} "
             f"chars; keep it at or under 500."
         )
+
+
+def test_plugin_description_keeps_margin_below_registry_cap() -> None:
+    d = json.loads((ROOT / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8"))
+    assert len(d["description"]) < 400, "keep headroom: some organisations cap near 500 (issue #22)"

@@ -10,13 +10,17 @@ import sys
 from typing import Any, Dict, Optional
 from pathlib import Path
 
-from patchright.sync_api import BrowserContext, Page
-
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent))
 
+from config import fail_missing_dependency, is_google_login_url, validate_notebook_url
+
+try:
+    from patchright.sync_api import BrowserContext, Page
+except ImportError as _exc:
+    fail_missing_dependency("patchright", _exc)
+
 from browser_utils import StealthUtils
-from config import validate_notebook_url
 
 
 class BrowserSession:
@@ -62,7 +66,7 @@ class BrowserSession:
             self.page.goto(self.notebook_url, wait_until="domcontentloaded", timeout=30000)
 
             # Check if login is needed
-            if "accounts.google.com" in self.page.url:
+            if is_google_login_url(self.page.url):
                 raise RuntimeError("Authentication required. Please run auth_manager.py setup first.")
 
             # Wait for page to be ready

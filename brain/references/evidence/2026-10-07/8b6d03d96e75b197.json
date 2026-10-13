@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://docs.cloud.google.com/natural-language/docs/reference/rest/v1/Entity",
+  "normalized_full_document_sha256": "cf9c34175294c3859ff3baa842d33a9ace073a3f8488b4be42555ed5a573c0d9",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "knowledge graph mid ( mid ), if they are available"
+  ],
+  "records": [
+    {
+      "source_id": "g-nlp",
+      "source_url": "https://cloud.google.com/natural-language/docs/reference/rest/v1/Entity",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    }
+  ]
+}

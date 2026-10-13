@@ -8,10 +8,13 @@ No API request or browser launch is performed.
 from __future__ import annotations
 
 import argparse
+import base64
 import importlib.util
+import io
 import json
 import sys
 import tempfile
+import wave
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Callable
@@ -22,11 +25,14 @@ ROOT = Path(__file__).resolve().parent.parent
 def smoke_audio() -> dict:
     """Construct the client and exercise the TTS config path offline."""
     from google import genai
+    from google.genai.interactions import CreateModelInteraction
 
     client = genai.Client(api_key="ci-placeholder-not-used")
     try:
         if client.models is None:
             raise RuntimeError("google-genai client did not expose models")
+        if client.interactions is None:
+            raise RuntimeError("google-genai client did not expose interactions")
     finally:
         client.close()
 
@@ -46,12 +52,12 @@ def smoke_audio() -> dict:
     expected_voice = "Kore"
     expected_model_key = "flash31"
     expected_pcm = b"\x00\x01\x02\x03"
-    captured: dict = {}
+    legacy_calls: list[dict] = []
 
     class FakeModels:
         @staticmethod
         def generate_content(*, model, contents, config):
-            captured.update(
+            legacy_calls.append(
                 {
                     "model": model,
                     "contents": contents,
@@ -72,21 +78,53 @@ def smoke_audio() -> dict:
                 ]
             )
 
-    fake_client = SimpleNamespace(models=FakeModels())
-    pcm = generator.generate_single_speaker(
+    wav_buffer = io.BytesIO()
+    with wave.open(wav_buffer, "wb") as wav_file:
+        wav_file.setnchannels(generator.CHANNELS)
+        wav_file.setsampwidth(generator.SAMPLE_WIDTH)
+        wav_file.setframerate(generator.SAMPLE_RATE)
+        wav_file.writeframes(expected_pcm)
+    expected_wav = wav_buffer.getvalue()
+    interaction_calls: list[dict] = []
+
+    class FakeInteractions:
+        @staticmethod
+        def create(**kwargs):
+            interaction_calls.append(kwargs)
+            return SimpleNamespace(
+                output_audio=SimpleNamespace(
+                    data=base64.b64encode(expected_wav).decode("ascii"),
+                    mime_type="audio/wav",
+                )
+            )
+
+    fake_client = SimpleNamespace(
+        models=FakeModels(), interactions=FakeInteractions()
+    )
+    legacy_single_pcm = generator.generate_single_speaker(
         fake_client,
         expected_text,
         expected_voice,
         expected_model_key,
     )
-    if pcm != expected_pcm:
+    legacy_multi_pcm = generator.generate_multi_speaker(
+        fake_client,
+        "Speaker1: Hello\nSpeaker2: Hi",
+        "Puck",
+        "Kore",
+        expected_model_key,
+    )
+    if legacy_single_pcm != expected_pcm or legacy_multi_pcm != expected_pcm:
         raise RuntimeError("TTS compatibility path did not return inline PCM")
-    if captured.get("model") != generator.MODELS[expected_model_key]:
+    if any(
+        call.get("model") != generator.MODELS[expected_model_key]
+        for call in legacy_calls
+    ):
         raise RuntimeError("TTS compatibility path selected the wrong model")
-    if captured.get("contents") != expected_text:
+    if legacy_calls[0].get("contents") != expected_text:
         raise RuntimeError("TTS compatibility path changed the input contents")
 
-    config = captured["config"]
+    config = legacy_calls[0]["config"]
     modalities = [
         str(getattr(item, "value", item)).upper()
         for item in config.response_modalities
@@ -99,14 +137,69 @@ def smoke_audio() -> dict:
     if voice != expected_voice:
         raise RuntimeError(f"TTS compatibility path selected the wrong voice: {voice}")
 
+    legacy_speakers = (
+        legacy_calls[1]["config"]
+        .speech_config.multi_speaker_voice_config.speaker_voice_configs
+    )
+    if [item.speaker for item in legacy_speakers] != ["Speaker1", "Speaker2"]:
+        raise RuntimeError("TTS compatibility path changed speaker labels")
+
+    interactions_single_pcm = generator.generate_single_speaker(
+        fake_client,
+        expected_text,
+        expected_voice,
+        "flash38",
+    )
+    interactions_multi_pcm = generator.generate_multi_speaker(
+        fake_client,
+        "Speaker1: Hello\nSpeaker2: Hi",
+        "Puck",
+        "Kore",
+        "flash-lite38",
+    )
+    if (
+        interactions_single_pcm != expected_pcm
+        or interactions_multi_pcm != expected_pcm
+    ):
+        raise RuntimeError("TTS Interactions path did not normalize WAV to PCM")
+    if interaction_calls[0]["input"] != [
+        {
+            "type": "user_input",
+            "content": [{"type": "text", "text": expected_text}],
+        }
+    ]:
+        raise RuntimeError("TTS Interactions single-speaker input shape drifted")
+    multi_content = interaction_calls[1]["input"][0]["content"]
+    if [
+        item["annotations"][0].get("speaker") for item in multi_content
+    ] != ["Speaker1", "Speaker2"]:
+        raise RuntimeError("TTS Interactions speech metadata did not preserve labels")
+    if interaction_calls[1]["generation_config"] != {
+        "speech_config": {
+            "speakers": [
+                {"speaker": "Speaker1", "voice": "Puck"},
+                {"speaker": "Speaker2", "voice": "Kore"},
+            ]
+        }
+    }:
+        raise RuntimeError("TTS Interactions multi-speaker config shape drifted")
+    for call in interaction_calls:
+        CreateModelInteraction.model_validate(call)
+
     return {
         "component": "audio",
         "client_constructed": True,
         "tts_path_exercised": True,
-        "model": captured["model"],
+        "model": legacy_calls[0]["model"],
         "voice": voice,
         "response_modalities": modalities,
         "inline_pcm_verified": True,
+        "compatibility_single_verified": True,
+        "compatibility_multi_verified": True,
+        "interactions_single_verified": True,
+        "interactions_multi_verified": True,
+        "interactions_sdk_schema_parsed": True,
+        "unary_wav_pcm_verified": True,
         "network_used": False,
     }
 

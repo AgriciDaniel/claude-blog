@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://developer.chrome.com/docs/web-platform/soft-navigations",
+  "normalized_full_document_sha256": "7a5a80ca7388bae1cfe63863288ee62d7bdf63fb8340a347c487546e1b322e7c",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "the soft navigations feature is enabled by default from chrome 151"
+  ],
+  "records": [
+    {
+      "source_id": "chrome-soft-nav",
+      "source_url": "https://developer.chrome.com/docs/web-platform/soft-navigations",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "qualified",
+      "excerpt_index": 0
+    }
+  ]
+}

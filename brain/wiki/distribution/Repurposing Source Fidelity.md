@@ -4,7 +4,7 @@ title: "Repurposing Source Fidelity"
 domain: "Blog Distribution"
 status: active
 created: 2026-07-06
-updated: 2026-07-09
+updated: 2026-10-07
 tags:
   - distribution
   - source-fidelity
@@ -48,8 +48,8 @@ Do not validate ranking effects, AI citation probability, or traffic forecasts f
 
 | Source ID | URL owner | Date context | Claim coverage | Limitation | Refresh cadence |
 |---|---|---|---|---|---|
-| `g-helpful-content` | Google Search Central | Last updated 2025-12-10, retrieved 2026-07-09 | People-first and self-assessment framing | Does not score a specific asset | Monthly source-ledger check |
-| `g-ai-opt-guide` | Google Search Central | Updated 2026-06-15, retrieved 2026-07-08 | No special Google AI files or schema requirement | Applies to Google Search features, not every assistant | Refresh with AI guidance changes |
+| `g-helpful-content` | Google Search Central | Last updated 2025-12-10, retrieved 2026-10-07 | People-first and self-assessment framing | Does not score a specific asset | Monthly source-ledger check |
+| `g-ai-opt-guide` | Google Search Central | Updated 2026-06-15, retrieved 2026-10-07 | No special Google AI files or schema requirement | Applies to Google Search features, not every assistant | Refresh with AI guidance changes |
 | `g-update-2026-06-15-llms-txt-clarified-as-unused-by-google-search` | Google update ledger | Update dated 2026-06-15 | llms.txt has no Google Search visibility effect | Does not govern non-Google crawlers | Review through [[2026 Google Update Timeline]] |
 | `sparktoro-zero-click-2026` | SparkToro study | Published 2026-06-08 | Click scarcity planning context | Practitioner panel, not site forecast | Refresh when market pack updates |
 | `g-qualify-links` | Google Search Central | Last updated 2025-12-10 | Link qualification for paid, UGC, and nofollow cases | Markup control may sit outside the team | Monthly source-ledger check |

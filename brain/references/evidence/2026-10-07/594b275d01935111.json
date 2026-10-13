@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://web.dev/articles/inp",
+  "normalized_full_document_sha256": "dc5ae15549e95ea17283fd2b48fd661aa384ce8a110b5ed177161fb487ce9217",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "an inp below or at 200 milliseconds means a page has good responsiveness"
+  ],
+  "records": [
+    {
+      "source_id": "wd-inp",
+      "source_url": "https://web.dev/articles/inp",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "confirmed_by_manual_review",
+      "excerpt_index": 0
+    }
+  ]
+}

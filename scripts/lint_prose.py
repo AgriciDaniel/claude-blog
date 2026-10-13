@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Lint markdown and Python files for forbidden prose characters per
-CONTRIBUTING.md: unicode em-dash (U+2014), unicode en-dash (U+2013), and
-ASCII ` -- ` (double-hyphen with spaces).
+.github/CONTRIBUTING.md ("No em dashes or en dashes"): unicode em-dash
+(U+2014), unicode en-dash (U+2013), and ASCII ` -- ` (double-hyphen with
+spaces). That document is the source of the forbidden set; it lists no other
+characters, so none are added here.
 
 Respects code fences and inline backticks, where the chars may appear as
 pedagogical references or CLI examples. Exit nonzero on violations.
@@ -9,7 +11,10 @@ pedagogical references or CLI examples. Exit nonzero on violations.
 Usage:
     python3 scripts/lint_prose.py [--root <path>] [--format text|json]
 
-Returns 0 on clean, 1 on violations (with file:line:context output).
+Returns 0 on clean, 1 on violations (with file:line:context output), 2 when
+the lint could not run to completion: the root is not a directory, or a
+tracked text file cannot be decoded as UTF-8 or read. A file that cannot be
+read is never silently treated as clean. Violations take priority over 2.
 """
 
 from __future__ import annotations
@@ -29,6 +34,10 @@ FORBIDDEN = {
 FILE_ALLOWLIST = {
     "skills/blog/references/synthesis-contract.md",  # pedagogical inside backticks
 }
+
+
+class UnreadableFile(Exception):
+    """A lint target could not be read as UTF-8 text."""
 
 
 def _find_violations_in_line(line: str) -> list[tuple[str, str]]:
@@ -61,8 +70,8 @@ def lint_file(path: Path) -> list[tuple[int, str, str, str]]:
     """
     try:
         text = path.read_text(encoding="utf-8")
-    except (UnicodeDecodeError, OSError):
-        return []
+    except (UnicodeDecodeError, OSError) as exc:
+        raise UnreadableFile(f"{path}: {exc}") from exc
     violations: list[tuple[int, str, str, str]] = []
     # fence_open is the OPENING delimiter string (e.g. "```", "````", "~~~").
     # Per CommonMark, the closing fence must consist of >= the same number of
@@ -110,8 +119,16 @@ def main() -> int:
     parser.add_argument("--format", choices=["text", "json"], default="text", help="Output format")
     args = parser.parse_args()
     root = Path(args.root).resolve()
+    if not root.is_dir():
+        message = f"--root is not a directory: {root}"
+        if args.format == "json":
+            print(json.dumps({"ok": False, "error": message}, indent=2))
+        else:
+            print(f"ERROR: {message}", file=sys.stderr)
+        return 2
     total = 0
     records = []
+    unreadable: list[str] = []
     for path in gather_targets(root):
         rel = path.relative_to(root)
         rel_str = str(rel).replace("\\", "/")
@@ -123,7 +140,12 @@ def main() -> int:
             continue
         if rel_str in FILE_ALLOWLIST:
             continue
-        for line_no, char, name, text in lint_file(path):
+        try:
+            found = lint_file(path)
+        except UnreadableFile as exc:
+            unreadable.append(f"{rel_str}: {str(exc).split(': ', 1)[-1]}")
+            continue
+        for line_no, char, name, text in found:
             total += 1
             record = {"path": rel_str, "line": line_no, "char": char, "description": name, "text": text[:120]}
             records.append(record)
@@ -131,13 +153,23 @@ def main() -> int:
                 print(f"{rel_str}:{line_no}: {name}  {text[:120]}")
     if total > 0:
         if args.format == "json":
-            print(json.dumps({"ok": False, "count": total, "violations": records}, indent=2))
+            print(json.dumps({"ok": False, "count": total, "violations": records, "unreadable": unreadable}, indent=2))
         else:
-            print(f"\nFAIL: {total} prose-hygiene violations (CONTRIBUTING.md rule).")
+            print(f"\nFAIL: {total} prose-hygiene violations (.github/CONTRIBUTING.md rule).")
             print("Replace with: '. ', ', ', ': ', '; ', '()', or ' - ' (hyphen).")
+            for item in unreadable:
+                print(f"ERROR: could not read {item}", file=sys.stderr)
         return 1
+    if unreadable:
+        if args.format == "json":
+            print(json.dumps({"ok": False, "count": 0, "violations": [], "unreadable": unreadable}, indent=2))
+        else:
+            for item in unreadable:
+                print(f"ERROR: could not read {item}", file=sys.stderr)
+            print(f"FAIL: {len(unreadable)} file(s) could not be decoded as UTF-8, so they were not linted.")
+        return 2
     if args.format == "json":
-        print(json.dumps({"ok": True, "count": 0, "violations": []}, indent=2))
+        print(json.dumps({"ok": True, "count": 0, "violations": [], "unreadable": []}, indent=2))
     else:
         print("OK: zero prose-hygiene violations.")
     return 0

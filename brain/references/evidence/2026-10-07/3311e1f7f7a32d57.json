@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://support.google.com/webmasters/answer/6211453?hl=en",
+  "normalized_full_document_sha256": "67cca2a0102af8cb59f2f1d0c77c9e5a183590a6dd807482fbf61680b806a718",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "missing data for this period has been restored"
+  ],
+  "records": [
+    {
+      "source_id": "gsc-reporting-anomalies-2026-08-13",
+      "source_url": "https://support.google.com/webmasters/answer/6211453?hl=en",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    }
+  ]
+}

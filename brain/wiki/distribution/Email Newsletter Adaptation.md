@@ -4,7 +4,7 @@ title: "Email Newsletter Adaptation"
 domain: "Blog Distribution"
 status: active
 created: 2026-07-06
-updated: 2026-07-09
+updated: 2026-10-07
 tags:
   - distribution
   - email
@@ -24,7 +24,7 @@ source_urls:
   - "https://developers.google.com/search/docs/fundamentals/creating-helpful-content"
   - "https://developers.google.com/search/docs/fundamentals/ai-optimization-guide"
   - "https://sparktoro.com/blog/in-2026-less-than-one-third-of-google-searches-still-send-a-click/"
-  - "https://www.niemanlab.org/2026/05/google-highlights-links-from-subscribed-publications-in-new-ai-overviews-update/"
+  - "https://blog.google/products-and-platforms/products/search/explore-web-generative-ai-search/"
 ---
 
 # Email Newsletter Adaptation
@@ -39,7 +39,7 @@ Preserve the canonical URL, the post's practical takeaway, author or brand voice
 
 ### Channel-Specific Adaptations Allowed For Email
 
-The adapter may use a subject line, preheader, short source note, "why this matters" paragraph, and canonical call to action. It may segment by subscriber interest if the segmentation source is known. It should not claim that subscription will force AI Overview visibility. Nieman Lab's subscribed-publication item, `niemanlab-subscribed-publications-aio-2026`, is context for audience relationships, not a promise that any newsletter link will receive special treatment.
+The adapter may use a subject line, preheader, short source note, "why this matters" paragraph, and canonical call to action. It may segment by subscriber interest if the segmentation source is known. It should not claim that subscription will force AI Overview visibility. Google's May 6, 2026 subscription-link announcement, `g-ai-search-subscription-links-2026-05-06`, describes a rollout for linked news subscriptions in AI Mode and AI Overviews. It does not establish newsletter promotion, universal eligibility, or publisher traffic gains.
 
 ## Email Newsletter Adaptation Asset Table
 
@@ -50,7 +50,7 @@ The adapter may use a subject line, preheader, short source note, "why this matt
 | Body lead | One answer-first paragraph | `g-helpful-content` | Content owner | Click to canonical post | Match the article's scope |
 | Source note | Short provenance sentence or source link | [[Repurposing Source Fidelity]] | Factcheck owner | Forward-safe context | Add dated source cue |
 | Canonical return path | Primary link to the post | [[Canonical Attribution Rules]] | Distribution lead | Clicks and assisted sessions | Confirm URL and tracking |
-| Audience loop | Subscribe, reply, save, or follow-up prompt | `niemanlab-subscribed-publications-aio-2026` | Audience owner | Replies, saves, repeat visits | Choose one owned action |
+| Audience loop | Subscribe, reply, save, or follow-up prompt | Editorial audience practice; the subscription-link announcement does not validate newsletter tactics | Audience owner | Replies, saves, repeat visits | Choose one owned action |
 | Forward-safe claim | One statistic or policy statement likely to leave the inbox | Source ID and caveat visible | Factcheck owner | Forwarded replies | Narrow or remove if context breaks |
 | Segment fit | List segment, interest tag, or suppression rule | Owned list evidence | Audience owner | Unsubscribes and replies | Send only to matched readers |
 
@@ -64,7 +64,7 @@ A blog post explains that Google Search does not require a special AI-only file.
 
 ### Email-Only Failure Patterns
 
-The adaptation fails when the subject line claims more certainty than the body supports, when the preheader drops the caveat, or when a forwarded email cannot show the source note. It also fails when `niemanlab-subscribed-publications-aio-2026` is treated as a guarantee for this list rather than audience-relationship context.
+The adaptation fails when the subject line claims more certainty than the body supports, when the preheader drops the caveat, or when a forwarded email cannot show the source note. It also fails when `g-ai-search-subscription-links-2026-05-06` is treated as a guarantee for this list rather than audience-relationship context.
 
 ### Asset Matrix Handoff
 
@@ -80,4 +80,4 @@ The adaptation fails when the subject line claims more certainty than the body s
 
 ## Source IDs Wired
 
-This note cites `g-helpful-content`, `g-ai-opt-guide`, `g-update-2026-06-15-llms-txt-clarified-as-unused-by-google-search`, `sparktoro-zero-click-2026`, and `niemanlab-subscribed-publications-aio-2026`.
+This note cites `g-helpful-content`, `g-ai-opt-guide`, `g-update-2026-06-15-llms-txt-clarified-as-unused-by-google-search`, `sparktoro-zero-click-2026`, and `g-ai-search-subscription-links-2026-05-06`.

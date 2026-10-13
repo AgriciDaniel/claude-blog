@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://ahrefs.com/blog/ai-overviews-reduce-clicks-update/",
+  "normalized_full_document_sha256": "a5675f3dc42b1e68efc6be6ca8106f819ca5e291d1f2ebe9bd86e48e9ce22caa",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "the data suggest that the presence of ai overviews now reduces"
+  ],
+  "records": [
+    {
+      "source_id": "ahrefs-aio",
+      "source_url": "https://ahrefs.com/blog/ai-overviews-reduce-clicks-update/",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "qualified",
+      "excerpt_index": 0
+    }
+  ]
+}

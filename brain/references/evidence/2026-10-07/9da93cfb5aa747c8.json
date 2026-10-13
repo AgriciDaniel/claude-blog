@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://developers.google.com/search/docs/appearance/structured-data/organization",
+  "normalized_full_document_sha256": "19c2fd935ed18e663bdc995a63bb51171640224ead95ec8de881bc69d4f24d93",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "disambiguate your organization in search results"
+  ],
+  "records": [
+    {
+      "source_id": "schema-org-type",
+      "source_url": "https://developers.google.com/search/docs/appearance/structured-data/organization",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "confirmed_by_manual_review",
+      "excerpt_index": 0
+    }
+  ]
+}

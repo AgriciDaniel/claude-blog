@@ -4,7 +4,7 @@ title: "Distribution and Repurposing"
 domain: "Blog Distribution"
 status: active
 created: 2026-07-06
-updated: 2026-07-09
+updated: 2026-10-07
 tags:
   - distribution
   - repurposing
@@ -21,7 +21,7 @@ related:
   - "[[Voice and Style]]"
   - "[[Zero Click Planning Baseline]]"
 source_urls:
-  - "https://www.similarweb.com/blog/marketing/geo/gen-ai-stats/"
+  - "https://aisearch.similarweb.com/blog/gen-ai-stats/"
   - "https://sparktoro.com/blog/in-2026-less-than-one-third-of-google-searches-still-send-a-click/"
   - "https://blog.google/products-and-platforms/products/search/search-io-2026/"
   - "https://developers.google.com/search/docs/appearance/ai-features"
@@ -40,7 +40,7 @@ The hub owns derivative asset boundaries, canonical attribution, source-fidelity
 
 ### What The Hub Must Not Absorb
 
-This hub does not own technical SEO fixes, schema generation, content scoring, voice system design, or media asset production. Those route to [[Blog Schema Stack]], [[Blog Quality Score]], [[Voice and Style]], and [[Images Audio and Charts]]. It also must not promote AI Mode reach from `blog-io2026` or AI referral growth from `similarweb-gen-ai-stats-2026` into a guaranteed channel outcome.
+This hub does not own technical SEO fixes, schema generation, content scoring, voice system design, or media asset production. Those route to [[Blog Schema Stack]], [[Blog Quality Score]], [[Voice and Style]], and [[Images Audio and Charts]]. It also must not promote AI Mode reach from `blog-io2026` or worldwide generative-AI website-visit share from `similarweb-gen-ai-stats-2026` into a guaranteed channel outcome.
 
 ## Distribution and Repurposing Spoke Map
 
@@ -75,7 +75,7 @@ The hub fails when a market-context source is treated as channel ROI, when a cha
 
 ## Distribution and Repurposing Evidence And Refresh Rules
 
-Refresh this hub when Google changes AI feature documentation, when [[2026 Google Update Timeline]] adds a relevant Search update, or when market studies materially change click-scarcity or AI referral context. Similarweb's generative AI stats source is market context from 2026-05-28; SparkToro's clickstream study is a practitioner panel from 2026-06-08. Google I/O 2026 explains AI Mode scale, but it is not a traffic-share metric for any site.
+Refresh this hub when Google changes AI feature documentation, when [[2026 Google Update Timeline]] adds a relevant Search update, or when market studies materially change click-scarcity or AI referral context. Similarweb's July 29, 2026 publication estimates worldwide generative-AI website visits from June 2025 through May 2026, not AI referrals or all prompts; SparkToro's clickstream study is a practitioner panel from 2026-06-08. Google I/O 2026 explains AI Mode scale, but it is not a traffic-share metric for any site.
 
 ## Source IDs In Hub Scope
 

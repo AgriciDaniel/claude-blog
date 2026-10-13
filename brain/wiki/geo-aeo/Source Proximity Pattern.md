@@ -4,7 +4,7 @@ title: "Source Proximity Pattern"
 domain: "GEO and AEO"
 status: evergreen
 created: 2026-07-06
-updated: 2026-07-09
+updated: 2026-10-07
 tags: [geo-aeo, ai-citation, evergreen]
 ---
 
@@ -12,7 +12,7 @@ tags: [geo-aeo, ai-citation, evergreen]
 
 ## Source Proximity Pattern Evidence Job
 
-This note defines how close a source must be to the claim it supports inside an extractable passage. The pattern is editorial and evidentiary, not a documented Google ranking factor. Use `g-ai-features` and `g-ai-opt-guide` for official Google AI feature boundaries, `g-update-2026-06-15-llms-txt-clarified-as-unused-by-google-search` for the file shortcut caveat, and `ziptie-aio-source-selection` for practitioner guidance on visible attribution near answer blocks. `blog-io2026` provides AI Mode product context when the passage is being reviewed for conversational search.
+This note defines how close a source must be to the claim it supports inside an extractable passage. The pattern is editorial and evidentiary, not a documented Google ranking factor. Use `g-ai-features` and `g-ai-opt-guide` for official Google AI feature boundaries, `g-update-2026-06-15-llms-txt-clarified-as-unused-by-google-search` for the file shortcut caveat, and `ziptie-aio-source-selection` only for its attributed answer-first, self-contained-heading heuristic. Placing sources beside claims is this vault's traceability practice, not a validated ZipTie ranking rule. `blog-io2026` provides AI Mode product context when the passage is being reviewed for conversational search.
 
 ### Source Types This Note Owns
 
@@ -26,14 +26,14 @@ Do not validate ranking effect, traffic lift, AI citation probability, or assist
 
 | Source ID | URL owner or type | Date basis | Claim coverage | Limitation | Refresh cadence |
 |---|---|---|---|---|---|
-| `g-ai-features` | Google Search documentation | last verified 2026-07-09 | AI feature and preview-control context | Does not guarantee citation | Monthly or docs change |
+| `g-ai-features` | Google Search documentation | last verified 2026-10-07 | AI feature and preview-control context | Does not guarantee citation | Monthly or docs change |
 | `g-ai-opt-guide` | Google Search documentation | updated 2026-06-15 | AI optimization foundations and no special AI files | Not a passage template spec | Monthly or docs change |
 | `g-update-2026-06-15-llms-txt-clarified-as-unused-by-google-search` | Google update record | 2026-06-15 event | llms.txt has no Google Search visibility effect | Does not govern non-Google consumers | Review through [[2026 Google Update Timeline]] |
-| `ziptie-aio-source-selection` | Practitioner source | published 2026-03-25 | Visible attribution and extractable blocks | Advisory, not official | Replace if stronger evidence appears |
+| `ziptie-aio-source-selection` | Practitioner source | published 2026-03-25 | Answer-first self-contained sections with clear headings | Attributed practitioner heuristic, no validated citation effect | Replace if stronger evidence appears |
 | `blog-io2026` | Google product blog | published 2026-05-19 | AI Mode product-scale context | Not a page-level traffic metric | Refresh before AI Mode planning |
 | `seer-aio-impact-ctr-2026` | Practitioner analysis | published 2026-04-24 | AI Overview citation association context | Non-causal and not property-specific | Refresh before client-facing benchmark use |
 | `sparktoro-zero-click-2026` | Market panel analysis | published 2026-06-08 | Search journey and click-scarcity context | Not a page forecast | Route broad claims to [[Dual Optimization]] |
-| `g-genai-reports` | Google Search Central blog | published 2026-06-03 | Search Console generative AI reporting context | Property access may vary | Check when measurement claims appear |
+| `g-genai-reports` | Google Search Central blog | published 2026-06-03 | Search Console generative AI reporting context | August 31 update reports worldwide rollout; account exports still need owner access | Check when measurement claims appear |
 
 ## Source Proximity Pattern Refresh Procedure
 

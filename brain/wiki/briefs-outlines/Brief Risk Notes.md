@@ -4,7 +4,7 @@ title: "Brief Risk Notes"
 domain: "Blog Briefs"
 status: active
 created: 2026-07-06
-updated: 2026-07-09
+updated: 2026-10-07
 tags: [briefs-outlines, serp-briefs, active]
 ---
 
@@ -38,7 +38,7 @@ Risk scoring starts with the reader decision the brief will influence. A high-vo
 | Outdated Search guidance | source steward | `g-update-2026-06-15-llms-txt-clarified-as-unused-by-google-search` or newer ledger entry | Refresh due date is named and routed to [[Research Pack Index]] | Monitor |
 | Unapproved factual claim | brief owner | Source ID from [[Brief Source Pack]] | Claim has a verdict label from the claim-ledger discipline | Revise before draft |
 | Third-party tool guarantee | analyst | `g-update-2026-06-05-guidance-on-third-party-seo-tools-services-and-advice` | Tool output is framed as external estimate, not Google's internal data | Caveat before approval |
-| Host-authority content tactic | editor | `g-site-rep-abuse` and `g-spam-policies` | Brief avoids outsourced content framed around borrowed authority | Blocked until strategy changes |
+| Host-authority content tactic | editor | `g-site-rep-abuse`, `g-spam-policies`, and `g-site-reputation-eea-2026-08-28` | Brief checks the policy conditions and preserves the EEA enforcement scope, instead of labeling every outsourced page abusive | Blocked until strategy changes |
 | Scaled update request | brief owner | `g-spam-policies` | Bulk page generation has named user value and review owner | Escalate if value is thin |
 
 ## Brief Risk Notes Acceptance Procedure
@@ -74,7 +74,7 @@ After review, the risk note preserves this instruction: "Cover crawlable helpful
 - `g-spam-policies`
 - `g-update-2026-06-15-llms-txt-clarified-as-unused-by-google-search` for unsupported file requirements
 - `g-update-2026-06-05-guidance-on-third-party-seo-tools-services-and-advice` for tool-guarantee risk
-- `g-site-rep-abuse`
+- `g-site-rep-abuse`, qualified historical clarification; current regional enforcement uses `g-site-reputation-eea-2026-08-28`
 - `g-ai-opt-guide`
 - `g-gsc-api`
 - `sparktoro-zero-click-2026`

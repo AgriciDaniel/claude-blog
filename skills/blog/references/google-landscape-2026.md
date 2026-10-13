@@ -1,6 +1,6 @@
 # Google Search Landscape 2026
 
-Verified against Google-owned sources on 2026-08-25. The machine-readable
+Verified against Google-owned sources on 2026-10-11. The machine-readable
 source of truth is `data/google-updates.json`. This reference contains only
 Google-confirmed events, documented product behavior, and explicit operational
 inferences. It intentionally excludes unsourced market-share, CTR, recovery,
@@ -21,18 +21,23 @@ Use these labels when applying this reference:
 Product announcements are product context, not ranking factors. Update dates do
 not prove why a site gained or lost visibility.
 
-## August 2026 Baseline
+## September 2026 Baseline
 
-The latest confirmed ranking event is the August 2026 spam update. Google says
-it ran from August 18 through August 21 and applied globally to all languages.
-Google did not publish a target profile.
+The latest confirmed ranking event is the September 2026 spam update. Google
+says it began on September 24, applies globally to all languages, and may take
+up to two weeks to complete. Its status dashboard marked the rollout complete
+as of October 8, 2026. Google did not publish a target profile.
 
-Source:
-https://status.search.google.com/incidents/LEubPCm2octf2uMqCFKE
+Sources:
+https://status.search.google.com/products/rGHU1u87FJnkP6W2GwMi/history
+https://status.search.google.com/incidents.json
 
 Treat any property-level impact as pending observation. Google's core-update
 analysis guidance says to wait a full week after rollout before comparison.
-August 28 is therefore the first complete post-update comparison date.
+October 15 is therefore the first complete post-update comparison date for the
+September update. The August 2026 spam update (August 18 to August 21) is the
+previous event; its comparison window has already closed, so do not mix the two
+windows when analyzing a change that falls between them.
 
 Source:
 https://developers.google.com/search/docs/appearance/core-updates
@@ -41,12 +46,13 @@ https://developers.google.com/search/docs/appearance/core-updates
 
 | Event | Confirmed dates | Operational treatment |
 |------|-----------------|-----------------------|
-| February 2026 Discover core update | February 5 to February 27 | Analyze Discover separately from Web Search |
+| February 2026 Discover update | February 5 to February 27 | Analyze Discover separately from Web Search |
 | March 2026 spam update | March 24 to March 25 | Check spam-policy exposure only when local evidence exists |
 | March 2026 core update | March 27 to April 8 | Use the documented post-update comparison procedure |
 | May 2026 core update | May 21 to June 2 | Keep event timing separate from causation |
 | June 2026 spam update | June 24 to June 26 | Do not infer a policy category from the rollout alone |
-| August 2026 spam update | August 18 to August 21 | Keep impact pending until at least August 28 |
+| August 2026 spam update | August 18 to August 21 | Compare against the closed window; do not merge it with the September event |
+| September 2026 spam update | September 24 to October 8 | Keep impact pending until at least October 15 |
 
 Source history:
 https://status.search.google.com/products/rGHU1u87FJnkP6W2GwMi/history
@@ -99,6 +105,42 @@ factor. Use experience, expertise, authoritativeness, and trust as editorial
 review lenses. Do not fabricate first-hand experience, credentials, testing,
 statistics, reviews, or testimonials.
 
+### Helpful-content page update (2026-10-05)
+
+Google's helpful-content page shows "Last updated 2026-10-05 UTC" (fetched
+2026-10-11). The Search Central updates log carries no matching entry, so that
+date comes from the page itself. The page says:
+
+- Evaluate content by Who, How, and Why. Why is described as perhaps the most
+  important question.
+- Add accurate authorship information, such as bylines, where readers might
+  expect it.
+- Fabricating creator profiles (AI-generated headshots, made-up names, false
+  credentials) is a form of deception.
+- Changing page dates to look fresh when the content has not substantially
+  changed is listed as a warning sign.
+- Ask whether the use of automation, including AI generation, is self-evident
+  to visitors through disclosures or other ways.
+- Trust is the most important E-E-A-T aspect, and E-E-A-T itself is not a
+  specific ranking factor.
+
+Operational reading (inference): publish `dateModified` only after a
+substantive edit, use only real author profiles, and disclose AI assistance
+where readers would expect to know.
+
+Related Search Central entries, verified from the updates log and the pages
+themselves on 2026-10-11:
+
+- 2026-10-01: the generative-AI content guide
+  (https://developers.google.com/search/docs/fundamentals/using-gen-ai-content)
+  says to fact-check AI output before publishing, to consider explaining how
+  content was created, and that many pages generated without added value may
+  violate the scaled content abuse policy.
+- 2026-09-16: the Search profile badge guide
+  (https://developers.google.com/search/docs/appearance/search-profiles) covers
+  a badge that links readers to a claimed Search profile. It states no ranking
+  effect for the badge.
+
 ## Structured Data
 
 Recommend structured data only when the visible page supports it and the type
@@ -134,8 +176,9 @@ a review, reviewer, rating, or experience is authentic.
 
 ## Search Console Generative-AI Reports
 
-Google documents separate Search and Discover generative-AI reports for a
-subset of properties. Do not promise clicks or queries in those dedicated
+Google announced separate Search and Discover generative-AI reports on June 3,
+initially for a subset of properties. Its August 31 update says the insights
+have rolled out to all websites worldwide. Do not promise clicks or queries in those dedicated
 views. No supported Search Console API endpoint is documented for the dedicated
 reports, so API tooling must report the capability as unavailable rather than
 synthesize it.
@@ -235,11 +278,14 @@ Sources:
 
 ## Refresh Procedure
 
-1. Run `python3 scripts/check_google_currentness.py --root . --json`.
+Maintainer steps, run against a trusted checkout of this repository (`<repo-root>` is
+its absolute path):
+
+1. Run `python3 "<repo-root>/scripts/check_google_currentness.py" --root "<repo-root>" --json`.
 2. Review all manual sources in `data/google-updates.json`.
 3. Add only claims directly supported by the cited source.
 4. Keep source conflicts and pending impact explicit.
-5. Run `python3 scripts/sync_google_updates.py --root .`.
+5. Run `python3 "<repo-root>/scripts/sync_google_updates.py" --root "<repo-root>"`.
 6. Run the Google ledger tests and repository release gates.
 
 The automated checker reports new source dates and stale reviews. It never

@@ -5,14 +5,16 @@ Google Indexing API v3 - notify Google of URL updates and removals.
 Publishes URL_UPDATED or URL_DELETED notifications. Supports single URL
 and batch mode (up to 200 URLs/day). Includes quota tracking.
 
-IMPORTANT: The Indexing API is officially restricted to pages with
-JobPosting or BroadcastEvent/VideoObject structured data. Google may
-process other page types but provides no guarantees.
+IMPORTANT: Per Google, "The Indexing API can only be used to crawl pages with
+either JobPosting or BroadcastEvent embedded in a VideoObject"
+(https://developers.google.com/search/apis/indexing-api/v3/quickstart).
+Submitting any other page type is outside the supported use, so submitting
+requires the explicit --confirm-eligible flag. --status never needs it.
 
 Usage:
-    python indexing_notify.py https://example.com/jobs/123
-    python indexing_notify.py https://example.com/jobs/123 --action URL_DELETED
-    python indexing_notify.py --batch urls.txt
+    python indexing_notify.py https://example.com/jobs/123 --confirm-eligible
+    python indexing_notify.py https://example.com/jobs/123 --action URL_DELETED --confirm-eligible
+    python indexing_notify.py --batch urls.txt --confirm-eligible
     python indexing_notify.py --status https://example.com/jobs/123
 """
 
@@ -25,31 +27,47 @@ from typing import Optional
 from urllib.parse import urlparse
 
 try:
-    from googleapiclient.discovery import build
-    from googleapiclient.http import BatchHttpRequest
-except ImportError:
-    print(
-        "Error: google-api-python-client required. "
-        "Install with: pip install google-api-python-client",
-        file=sys.stderr,
+    from google_auth import (
+        describe_google_api_error, get_oauth_credentials, safe_exception_text, setup_hint,
     )
-    sys.exit(1)
-
-try:
-    from google_auth import get_oauth_credentials
 except ImportError:
     import os
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-    from google_auth import get_oauth_credentials
+    from google_auth import (
+        describe_google_api_error, get_oauth_credentials, safe_exception_text, setup_hint,
+    )
+
+try:
+    from googleapiclient.discovery import build
+except ImportError:
+    print(f"Error: google-api-python-client required. {setup_hint()}", file=sys.stderr)
+    sys.exit(1)
 
 INDEXING_SCOPES = ["https://www.googleapis.com/auth/indexing"]
 DAILY_QUOTA = 200
 
 SCOPE_WARNING = (
-    "NOTE: The Indexing API is officially for JobPosting and "
-    "BroadcastEvent/VideoObject pages only. Google may process other "
-    "page types but provides no guarantees."
+    "NOTE: The Indexing API only supports pages with JobPosting markup or "
+    "BroadcastEvent markup embedded in a VideoObject. It is not a general "
+    "indexing tool for other page types."
 )
+CONFIRM_REFUSAL = (
+    "Refusing to submit: the Indexing API only supports JobPosting pages and "
+    "BroadcastEvent-in-VideoObject pages. Re-run with --confirm-eligible only "
+    "if every URL is one of those page types. (--status needs no flag.)"
+)
+
+
+def _status_of(error) -> int | None:
+    """HTTP status from a googleapiclient HttpError or equivalent, never from text."""
+    for holder in (getattr(error, "resp", None), error):
+        for attr in ("status", "status_code", "code"):
+            value = getattr(holder, attr, None)
+            if isinstance(value, int) and 100 <= value <= 599:
+                return value
+            if isinstance(value, str) and value.isdigit():
+                return int(value)
+    return None
 
 
 def _path_contains_symlink(path: Path, root: Path) -> bool:
@@ -129,7 +147,7 @@ def _build_indexing_service():
     try:
         return build("indexing", "v3", credentials=credentials)
     except Exception as e:
-        print(f"Error building Indexing service: {e}", file=sys.stderr)
+        print(f"Error building Indexing service: {safe_exception_text(e)}", file=sys.stderr)
         return None
 
 
@@ -180,22 +198,21 @@ def notify_url(
         latest = metadata.get("latestUpdate", {}) or metadata.get("latestRemove", {})
         result["notify_time"] = latest.get("notifyTime")
     except Exception as e:
-        error_str = str(e)
-        if "403" in error_str:
-            result["error"] = (
-                "Permission denied. The service account must be added as an "
-                "Owner in Google Search Console for this domain. "
-                "Also ensure the Indexing API is enabled in your GCP project."
+        status = _status_of(e)
+        if status == 403:
+            result["error"] = describe_google_api_error(
+                e, 'Indexing', "Check the service account's Owner access in Google Search Console for this domain."
             )
-        elif "429" in error_str:
+        elif status == 429:
+            result["quota_exceeded"] = True
             result["error"] = (
                 f"Quota exceeded. Daily limit: {DAILY_QUOTA} publish requests. "
                 "Apply for a quota increase at https://developers.google.com/search/apis/indexing-api/v3/quota-increase"
             )
-        elif "400" in error_str:
-            result["error"] = f"Invalid URL or request: {e}"
+        elif status == 400:
+            result["error"] = f"Invalid URL or request: {describe_google_api_error(e, 'Indexing')}"
         else:
-            result["error"] = f"Indexing API error: {e}"
+            result["error"] = describe_google_api_error(e, 'Indexing')
 
     return result
 
@@ -246,10 +263,10 @@ def get_notification_metadata(url: str) -> dict:
                 "notify_time": remove.get("notifyTime"),
             }
     except Exception as e:
-        if "404" in str(e):
+        if _status_of(e) == 404:
             result["error"] = "No notification metadata found for this URL."
         else:
-            result["error"] = f"Error fetching metadata: {e}"
+            result["error"] = f"Error fetching metadata: {describe_google_api_error(e, 'Indexing')}"
 
     return result
 
@@ -276,6 +293,8 @@ def batch_notify(
         "results": [],
         "summary": {"success": 0, "error": 0},
         "quota_warning": None,
+        "stopped_on_quota": False,
+        "not_submitted": [],
         "error": None,
     }
 
@@ -293,6 +312,7 @@ def batch_notify(
             f"Batch size ({len(urls)}) exceeds daily quota ({DAILY_QUOTA}). "
             f"Only the first {DAILY_QUOTA} URLs will be submitted."
         )
+        result["not_submitted"] = list(urls[DAILY_QUOTA:])
         urls = urls[:DAILY_QUOTA]
 
     if len(urls) > 50:
@@ -313,9 +333,16 @@ def batch_notify(
 
         if notification.get("error"):
             result["summary"]["error"] += 1
-            # Stop on quota errors
-            if "429" in str(notification.get("error", "")):
-                result["error"] = "Stopped: daily quota exceeded."
+            # Stop on quota exhaustion, classified by HTTP status, not message text.
+            if notification.get("quota_exceeded"):
+                not_attempted = [u.strip() for u in urls[i + 1:] if u.strip()]
+                result["stopped_on_quota"] = True
+                result["not_submitted"] = [url] + not_attempted
+                result["error"] = (
+                    f"Stopped: daily quota exceeded after {result['summary']['success']} "
+                    f"successful submissions. {len(result['not_submitted'])} URL(s) were NOT "
+                    "submitted (see not_submitted); retry them after the quota resets."
+                )
                 break
         else:
             result["summary"]["success"] += 1
@@ -349,9 +376,20 @@ def main():
         default=0.5,
         help="Delay between batch requests in seconds (default: 0.5)",
     )
+    parser.add_argument(
+        "--confirm-eligible",
+        action="store_true",
+        help=(
+            "Required to submit. Confirms every URL is a JobPosting page or a "
+            "BroadcastEvent-in-VideoObject page, the only types the Indexing API supports."
+        ),
+    )
     parser.add_argument("--json", "-j", action="store_true", help="Output as JSON")
 
     args = parser.parse_args()
+
+    if (args.batch or args.url) and not args.status and not args.confirm_eligible:
+        _exit_error(CONFIRM_REFUSAL, args.json)
 
     if args.status:
         result = get_notification_metadata(args.status)
@@ -393,6 +431,10 @@ def main():
             print(f"Estimated remaining daily quota: {result.get('estimated_remaining_batch_quota', '?')}")
             if result.get("quota_warning"):
                 print(f"Warning: {result['quota_warning']}")
+            if result.get("not_submitted"):
+                print(f"NOT submitted ({len(result['not_submitted'])}):")
+                for pending in result["not_submitted"]:
+                    print(f"  {pending}")
         else:
             if result.get("notify_time"):
                 print(f"Notified: {result['url']} ({result['action']}) at {result['notify_time']}")

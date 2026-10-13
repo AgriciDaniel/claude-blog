@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://docs.dataforseo.com/v3/",
+  "normalized_full_document_sha256": "41d15fea19cadb50db77c023ecfdbcfd6cdb1134f366af92ff257ed562942e89",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "live method: results are not stored"
+  ],
+  "records": [
+    {
+      "source_id": "dfs-api",
+      "source_url": "https://docs.dataforseo.com/v3/",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "qualified",
+      "excerpt_index": 0
+    }
+  ]
+}

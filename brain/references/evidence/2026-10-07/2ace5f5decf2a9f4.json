@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://web.dev/articles/ttfb",
+  "normalized_full_document_sha256": "9072725ce7b70af4aeb3ea4db60d1398c1857fe468c181f4778c5caae22d76c3",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "ttfb is a metric that measures the time between starting navigating to a page"
+  ],
+  "records": [
+    {
+      "source_id": "wd-ttfb",
+      "source_url": "https://web.dev/articles/ttfb",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    }
+  ]
+}

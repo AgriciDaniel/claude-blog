@@ -18,7 +18,7 @@ Use this before publishing a claude-blog release.
 - [ ] Unix installer works in a temporary `HOME`.
 - [ ] Windows installer works in a temporary profile.
 - [ ] Nested skill payloads are present after install, including FLOW prompt references and Google report templates.
-- [ ] Unix uninstall removes only paths from the claude-blog manifest or package allowlist.
+- [ ] Unix and Windows uninstall remove only paths from the claude-blog manifest or package allowlist.
 - [ ] Shared credentials under `~/.config/claude-seo` are not deleted by uninstall.
 
 ## Publishing

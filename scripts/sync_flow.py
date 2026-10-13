@@ -11,6 +11,15 @@ Ports the seo-flow sync pattern with blog-specific changes:
 - Stdlib only. HTTPS only. Host-allowlisted to api.github.com. 5 MB cap.
 - Anonymous-first: the script only authenticates if GITHUB_TOKEN is set in the
   environment, or if a 403 is returned and `gh auth token` provides one.
+- Lock drift compares the upstream body only. The injected license header and
+  the "Synced from FLOW on DATE" line are excluded from the drift comparison,
+  so identical upstream content never reports CHANGED just because the date
+  moved. The lock itself still lists the sha256 of each file as written, so
+  `sha256sum -c` style checks and consistency_check.py keep working. A file
+  whose only difference is the sync date is left untouched.
+- skills/blog-flow/scripts/sync_flow.py is a thin wrapper around this script.
+- Exit codes: 0 success, 2 lock drift without --allow-drift, 3 network or
+  upstream error (for example --dry-run with no network).
 """
 
 import argparse
@@ -20,6 +29,7 @@ import hashlib
 import json
 import os
 import pathlib
+from pathlib import Path
 import shutil
 import subprocess
 import sys
@@ -33,10 +43,22 @@ API_ROOT = "https://api.github.com/repos/AgriciDaniel/flow/contents"
 _ALLOWED_HOST = "api.github.com"
 _SIZE_LIMIT = 5 * 1024 * 1024  # 5 MB
 
+# CC BY 4.0 section 3(a)(1): credit, license link, and a notice that the
+# material was modified (the retained prompt projection is edited locally).
 LICENSE_HEADER = (
     "<!-- (c) Daniel Agrici, FLOW (https://github.com/AgriciDaniel/flow), "
-    "CC BY 4.0 -->"
+    "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). "
+    "Modified from the original; see source -->"
 )
+
+# Line prefixes the sync injects at the top of every file. They are excluded
+# from the drift comparison (the license text is not upstream content and the
+# date changes daily).
+_SYNC_HEADER_PREFIXES = (
+    "<!-- (c) Daniel Agrici, FLOW (",
+    "<!-- Synced from FLOW on",
+)
+_SYNC_DATE_PREFIX = "<!-- Synced from FLOW on"
 
 # Blog-applicable stages only. The "local" stage from FLOW is intentionally
 # skipped: those prompts target Google Business Profile and brick-and-mortar
@@ -81,7 +103,44 @@ def script_root():
     return pathlib.Path(script_dir).parent
 
 
-def parse_args():
+def resolve_references_dir(references_dir=None, *, require_existing=False):
+    """Select a trusted absolute reference root without consulting the CWD.
+
+    Explicit roots must be outside the package. Reference contents remain
+    untrusted data and cannot authorize execution, credentials or publication.
+    """
+    bundled = script_root() / "skills" / "blog-flow" / "references"
+    selected = references_dir if references_dir is not None else os.environ.get("CLAUDE_BLOG_FLOW_REFERENCES_DIR")
+    package = script_root().resolve()
+    if selected is None:
+        refs = bundled.resolve()
+        if refs != bundled.parent.resolve() / bundled.name:
+            raise ValueError("Bundled FLOW references must not traverse a symlink")
+    else:
+        raw = os.fspath(selected)
+        refs = Path(raw)
+        if not refs.is_absolute() or ".." in refs.parts or any(token in raw for token in ("$", "{", "}", "%")):
+            raise ValueError("FLOW references override must be a caller-resolved absolute path")
+        for component in (refs, *refs.parents):
+            if component.is_symlink():
+                raise ValueError("FLOW references override must not traverse a symlink")
+            if component.exists() and not component.is_dir():
+                raise ValueError("FLOW references override must name a directory")
+        refs = refs.resolve()
+        if refs == package or package in refs.parents or refs in package.parents:
+            raise ValueError("Persistent FLOW references must be outside the installed package")
+    if refs.exists() and not refs.is_dir():
+        raise ValueError("FLOW reference root must be a directory")
+    if require_existing and not refs.is_dir():
+        raise ValueError("Selected FLOW references are missing; sync the configured persistent root first")
+    if refs.exists():
+        for entry in refs.rglob("*"):
+            if entry.is_symlink() and not entry.resolve().is_relative_to(refs):
+                raise ValueError("FLOW reference symlink escapes the selected root")
+    return refs
+
+
+def parse_args(argv=None):
     epilog = (
         "Modes: no flags syncs all blog-applicable files to disk; --dry-run "
         "reports changes without writing; --ref <sha> syncs from a specific "
@@ -108,7 +167,9 @@ def parse_args():
         "content hashes do not match flow-prompts.lock). Required when bumping "
         "the FLOW reference; review the diff carefully before passing this flag.",
     )
-    return parser.parse_args()
+    parser.add_argument("--references-dir", help="Caller-resolved absolute persistent reference root outside the package")
+    parser.add_argument("--resolve-references", action="store_true", help="Print the selected existing reference root without network access or writes")
+    return parser.parse_args(argv)
 
 
 def _base_headers():
@@ -287,6 +348,59 @@ def _sha256(content):
     return hashlib.sha256(content.encode("utf-8")).hexdigest()
 
 
+def strip_sync_header(text):
+    """Return text without the leading license and sync-date comment lines."""
+    lines = text.split("\n")
+    index = 0
+    while index < len(lines) and lines[index].startswith(_SYNC_HEADER_PREFIXES):
+        index += 1
+    return "\n".join(lines[index:])
+
+
+def normalized_sha256(text):
+    """Digest of the upstream body, independent of header text and sync date."""
+    return _sha256(strip_sync_header(text))
+
+
+def _differs_only_in_sync_date(old, new):
+    """True when two files are identical apart from the sync-date line."""
+    def keep(text):
+        return [
+            line for line in text.split("\n")
+            if not line.startswith(_SYNC_DATE_PREFIX)
+        ]
+    return keep(old) == keep(new)
+
+
+def _load_lock_hashes(lock_text):
+    hashes = {}
+    for line in lock_text.splitlines():
+        if line and not line.startswith("#"):
+            parts = line.split("  ", 1)
+            if len(parts) == 2:
+                hashes[parts[1]] = parts[0]
+    return hashes
+
+
+def _baseline_normalized(lock_path, rel, locked_sha):
+    """Normalized digest of the reviewed baseline file, or None if unverifiable.
+
+    The lock stores the digest of each file as written (header and date
+    included). The baseline file next to the lock is trusted only when its
+    own digest matches the lock entry, then its body digest is the baseline.
+    """
+    candidate = lock_path.parent / pathlib.PurePosixPath(rel).relative_to(
+        LOCK_REL.parent.as_posix()
+    )
+    try:
+        text = candidate.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError, ValueError):
+        return None
+    if _sha256(text) != locked_sha:
+        return None
+    return normalized_sha256(text)
+
+
 def _atomic_write(path, content):
     """Write content atomically via a temp file in the same directory."""
     dir_ = path.parent
@@ -320,11 +434,28 @@ def _assert_inside_references(refs_root, candidate):
         )
 
 
+def reference_key(refs_root, path):
+    # Keep reviewed lock keys stable across physical roots and package versions.
+    return (LOCK_REL.parent / path.relative_to(refs_root)).as_posix()
+
+
+def _stage(refs, target_path, raw, today):
+    """Build the file content to write, keeping a date-only difference as is."""
+    content = inject_license_header(raw, today)
+    try:
+        current = target_path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        return content
+    if _differs_only_in_sync_date(current, content):
+        return current
+    return content
+
+
 def record_write(root, refs_root, path, content, dry_run, changes):
     # Path-traversal guard. Must run before any filesystem mutation.
     _assert_inside_references(refs_root, path)
 
-    rel = path.relative_to(root).as_posix()
+    rel = reference_key(refs_root, path)
     changes.setdefault("hashes", {})[rel] = _sha256(content)
     if path.exists():
         current = path.read_text(encoding="utf-8")
@@ -340,7 +471,7 @@ def record_write(root, refs_root, path, content, dry_run, changes):
 
 def sync(args):
     root = script_root()
-    refs = root / "skills" / "blog-flow" / "references"
+    refs = resolve_references_dir(getattr(args, "references_dir", None))
     today = datetime.date.today().isoformat()
     headers = _base_headers()
     changes = {"added": [], "updated": [], "unchanged": [], "hashes": {}}
@@ -351,14 +482,17 @@ def sync(args):
     # mutation (audit VULN-018).
     pending = []  # list of (target_path, content) tuples
 
+    norms = {}  # rel -> digest of the upstream body (header and date excluded)
+
     for source, target in STATIC_FILES:
         print(f"fetch: {source}", file=sys.stderr)
         raw = fetch_file(source, args.ref, headers)
-        content = inject_license_header(raw, today)
         target_path = refs / target
+        content = _stage(refs, target_path, raw, today)
         pending.append((target_path, content))
-        rel = target_path.relative_to(root).as_posix()
+        rel = reference_key(refs, target_path)
         changes["hashes"][rel] = _sha256(content)
+        norms[rel] = normalized_sha256(content)
 
     for stage in PROMPT_STAGES:
         source_dir = f"docs/09-prompts/{stage}"
@@ -368,32 +502,40 @@ def sync(args):
             raw = fetch_file(source, args.ref, headers)
             prompt_rows.append(prompt_meta(stage, filename, raw))
             target_path = refs / "prompts" / stage / filename
-            content = inject_license_header(raw, today)
+            content = _stage(refs, target_path, raw, today)
             pending.append((target_path, content))
-            rel = target_path.relative_to(root).as_posix()
+            rel = reference_key(refs, target_path)
             changes["hashes"][rel] = _sha256(content)
+            norms[rel] = normalized_sha256(content)
 
     readme_path = refs / "prompts" / "README.md"
-    readme_content = inject_license_header(prompt_readme(prompt_rows), today)
+    readme_content = _stage(refs, readme_path, prompt_readme(prompt_rows), today)
     pending.append((readme_path, readme_content))
-    readme_rel = readme_path.relative_to(root).as_posix()
+    readme_rel = reference_key(refs, readme_path)
     changes["hashes"][readme_rel] = _sha256(readme_content)
+    norms[readme_rel] = normalized_sha256(readme_content)
 
     # Phase 2: compute lockfile drift against the staged hashes (pre-write).
-    lock_path = root / LOCK_REL
+    lock_path = refs / "flow-prompts.lock"
+    # A new persistent root inherits the packaged reviewed baseline. It does
+    # not bypass review merely because no private lock exists yet.
+    baseline_lock = lock_path if lock_path.exists() else root / LOCK_REL
+    _assert_inside_references(refs, lock_path)
+    for target, _content in pending:
+        _assert_inside_references(refs, target)
     drift_lines = []
-    if lock_path.exists():
-        old_lock = lock_path.read_text(encoding="utf-8")
-        old_hashes = {}
-        for line in old_lock.splitlines():
-            if line and not line.startswith("#"):
-                parts = line.split("  ", 1)
-                if len(parts) == 2:
-                    old_hashes[parts[1]] = parts[0]
+    if baseline_lock.exists():
+        old_hashes = _load_lock_hashes(baseline_lock.read_text(encoding="utf-8"))
         for rel, sha in sorted(changes["hashes"].items()):
             old_sha = old_hashes.get(rel)
             if old_sha is None:
                 drift_lines.append(f"ADDED   {rel}")
+                continue
+            baseline_norm = _baseline_normalized(baseline_lock, rel, old_sha)
+            if baseline_norm is not None:
+                # Compare upstream bodies, so a moved sync date is not drift.
+                if baseline_norm != norms[rel]:
+                    drift_lines.append(f"CHANGED {rel}")
             elif old_sha != sha:
                 drift_lines.append(f"CHANGED {rel}")
         for rel in sorted(old_hashes):
@@ -434,7 +576,7 @@ def sync(args):
         )
         for line in drift_lines:
             print(f"  {line}", file=sys.stderr)
-    elif lock_path.exists():
+    elif baseline_lock.exists():
         print(
             "Lockfile: no drift (all hashes match baseline)",
             file=sys.stderr,
@@ -471,5 +613,38 @@ def sync(args):
     return changes
 
 
+def main(argv=None):
+    args = parse_args(argv)
+    if args.resolve_references:
+        print(resolve_references_dir(args.references_dir, require_existing=True))
+        return 0
+    if not args.ref:
+        print(
+            "NOTE: no --ref given, so the upstream default branch is fetched "
+            "(a moving target). Pass --ref <commit-sha> to pin a reviewed commit.",
+            file=sys.stderr,
+        )
+    try:
+        result = sync(args)
+    except urllib.error.HTTPError as exc:
+        print(
+            f"ERROR: GitHub returned HTTP {exc.code} ({exc.reason}) for a FLOW "
+            "request. Nothing was written. For 403, set GITHUB_TOKEN or run "
+            "`gh auth login`.",
+            file=sys.stderr,
+        )
+        return 3
+    except (urllib.error.URLError, TimeoutError, ConnectionError) as exc:
+        reason = getattr(exc, "reason", exc)
+        print(
+            f"ERROR: could not reach api.github.com ({reason}). Nothing was "
+            "written. Check the network connection and DNS, then retry.",
+            file=sys.stderr,
+        )
+        return 3
+    print(json.dumps(result, sort_keys=True))
+    return 0
+
+
 if __name__ == "__main__":
-    print(json.dumps(sync(parse_args()), sort_keys=True))
+    sys.exit(main())

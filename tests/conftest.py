@@ -1,5 +1,7 @@
 """Shared fixtures for claude-blog tests."""
 
+import os
+import re
 import sys
 from pathlib import Path
 
@@ -7,6 +9,41 @@ import pytest
 
 # Add scripts directory to path so we can import analyze_blog
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
+
+# Browser-gated tests (rendered-DOM, WebSocket and service-worker checks) skip
+# locally when no matching Chromium is installed, so a plain `pytest` never
+# downloads a browser. CI installs the browser and sets this variable to "1";
+# a browser skip then FAILS, so a missing or mismatched Chromium cannot make
+# those tests silently vanish from the green count.
+REQUIRE_BROWSER_ENV = "CLAUDE_BLOG_REQUIRE_BROWSER"
+BROWSER_SKIP_REASON = re.compile(
+    r"requires matching installed chromium|could not import 'patchright", re.IGNORECASE
+)
+
+
+def _skip_reason(report) -> str:
+    longrepr = report.longrepr
+    if isinstance(longrepr, tuple) and len(longrepr) == 3:
+        return str(longrepr[2])
+    return str(longrepr)
+
+
+@pytest.hookimpl(hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    outcome = yield
+    report = outcome.get_result()
+    if os.environ.get(REQUIRE_BROWSER_ENV) != "1":
+        return
+    if not report.skipped or hasattr(report, "wasxfail"):
+        return
+    reason = _skip_reason(report)
+    if BROWSER_SKIP_REASON.search(reason):
+        report.outcome = "failed"
+        report.longrepr = (
+            f"{REQUIRE_BROWSER_ENV}=1 forbids skipping browser-gated tests, but "
+            f"{item.nodeid} skipped: {reason}\n"
+            "Install the matching browser with `python -m patchright install chromium`."
+        )
 
 
 @pytest.fixture

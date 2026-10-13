@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://developers.google.com/search/docs/crawling-indexing/robots/intro",
+  "normalized_full_document_sha256": "c2d9b29cfd54ac0303c6719d301145dbab05caf6de91191f730a7b6c6bca83e0",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "a page that's disallowed in robots.txt can still be indexed if linked to from other sites"
+  ],
+  "records": [
+    {
+      "source_id": "g-robots-intro",
+      "source_url": "https://developers.google.com/search/docs/crawling-indexing/robots/intro",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "confirmed_by_manual_review",
+      "excerpt_index": 0
+    }
+  ]
+}

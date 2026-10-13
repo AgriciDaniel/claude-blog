@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap",
+  "normalized_full_document_sha256": "07a54f611a0a06b3327bebce04a2f131350902c4fb255913d2f23f10f16bea82",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "all formats limit a single sitemap to 50mb (uncompressed) or 50,000 urls"
+  ],
+  "records": [
+    {
+      "source_id": "g-sitemaps",
+      "source_url": "https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    }
+  ]
+}

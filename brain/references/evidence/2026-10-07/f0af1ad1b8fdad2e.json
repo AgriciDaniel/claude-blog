@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://sparktoro.com/blog/in-2026-less-than-one-third-of-google-searches-still-send-a-click/",
+  "normalized_full_document_sha256": "f44f4383746b6b8e8585db08e9c265f4e3cd61097cf4efaa6aa213b43ada3d5c",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "only 0.34% of searches made their way to ai mode from january–april 2026"
+  ],
+  "records": [
+    {
+      "source_id": "sparktoro-zero-click-2026",
+      "source_url": "https://sparktoro.com/blog/in-2026-less-than-one-third-of-google-searches-still-send-a-click/",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "qualified",
+      "excerpt_index": 0
+    }
+  ]
+}

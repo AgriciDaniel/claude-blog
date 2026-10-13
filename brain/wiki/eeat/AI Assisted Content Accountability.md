@@ -3,7 +3,7 @@ type: spoke
 title: "AI Assisted Content Accountability"
 status: evergreen
 created: 2026-07-06
-updated: 2026-07-09
+updated: 2026-10-07
 tags: [eeat, evergreen]
 domain: "Blog Trust"
 confidence: verified
@@ -77,3 +77,5 @@ A generated "CRM onboarding checklist" arrives with plausible steps, no named ed
 ## Write Contract Hook For AI Work
 
 [[Blog Write Article Contract]] consumes this note before the final delivery gate. Inputs provided are generated-section list, accountable owner, added-value proof, claim-source map, and unresolved AI-risk notes. The contract expects author or reviewer notes, blocked claim IDs, and a final handoff status of pass, fix, or blocked, with `g-helpful-content` and `g-spam-policies` attached to any AI-quality decision.
+
+For AI Assisted Content Accountability, `nng-editorial-heuristics` supplies general interaction-design principles. Applying those principles to this note's editorial checks is a project adaptation, not an experimentally established SEO or AI-citation requirement.

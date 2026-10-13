@@ -4,7 +4,7 @@ title: "E-E-A-T Trust Subscore"
 domain: "Blog Quality"
 status: active
 created: 2026-07-06
-updated: 2026-07-10
+updated: 2026-10-07
 tags: [quality, scorecard, active]
 confidence: advisory
 related:
@@ -18,7 +18,7 @@ related:
 
 ## Trust Scoring Assignment
 
-This 15 point spoke scores whether the draft makes experience, expertise, accountability, source quality, and sensitivity visible enough for a reviewer to trust the recommendation. `g-helpful-content` ties helpful content review to E-E-A-T style questions, `g-qrg-full` supplies the full rater-guideline frame, `g-update-2025-09-11-qrg-update-sept-2025` flags current AI Overview and YMYL examples, and `nng-editorial-heuristics` supports transparent review feedback.
+This 15 point spoke scores whether the draft makes experience, expertise, accountability, source quality, and sensitivity visible enough for a reviewer to trust the recommendation. `g-helpful-content` ties helpful content review to E-E-A-T style questions, `g-qrg-full` supplies the full rater-guideline frame, `g-update-2025-09-11-qrg-update-sept-2025` records updated YMYL definitions and illustrative examples, and `nng-editorial-heuristics` supports transparent review feedback.
 
 ## Trust Signals This Note Scores
 
@@ -83,3 +83,5 @@ Also send conflict notes and sensitivity escalation.
 Expected output: trust severity and report recommendation.
 [[Factcheck Claim Register]] consumes risky claim details.
 It expects source ID, verdict label, confidence, and refresh date.
+
+For E-E-A-T Trust Subscore, `nng-editorial-heuristics` supplies general interaction-design principles. Applying those principles to this note's editorial checks is a project adaptation, not an experimentally established SEO or AI-citation requirement.

@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://www.nngroup.com/articles/ten-usability-heuristics/",
+  "normalized_full_document_sha256": "a1f36ac18b4b85e22bb72b5aa75d3e3103e589bc104b444cb773d5cb83d52edf",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "jakob nielsen's 10 general principles for interaction design"
+  ],
+  "records": [
+    {
+      "source_id": "nng-editorial-heuristics",
+      "source_url": "https://www.nngroup.com/articles/ten-usability-heuristics/",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "qualified",
+      "excerpt_index": 0
+    }
+  ]
+}

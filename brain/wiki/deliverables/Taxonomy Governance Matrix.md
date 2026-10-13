@@ -4,12 +4,12 @@ title: "Taxonomy Governance Matrix"
 domain: "Blog Content Brain"
 status: active
 created: 2026-07-09
-updated: 2026-07-09
+updated: 2026-10-07
 tags: [deliverables, taxonomy, governance]
 source_urls:
   - "https://developers.google.com/search/docs/fundamentals/creating-helpful-content"
   - "https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls"
-  - "https://developers.google.com/search/docs/crawling-indexing/sitemaps/overview"
+  - "https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap"
   - "https://developers.google.com/search/docs/crawling-indexing/robots/intro"
 ---
 

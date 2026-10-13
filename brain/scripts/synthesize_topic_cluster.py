@@ -17,7 +17,10 @@ from typing import Any
 from ingest_topic_cluster_input import ValidationError, clean_output_text, clean_structure, write_json
 
 
+from source_evidence import citation_errors, ledger_index
+
 REPO = Path(__file__).resolve().parents[1]
+
 DEFAULT_LEDGER = REPO / "references" / "source-ledger.json"
 STOPWORDS = {
     "a",
@@ -109,10 +112,10 @@ def dedupe(errors: list[str]) -> list[str]:
 
 def load_source_index(path: str | Path = DEFAULT_LEDGER) -> dict[str, dict[str, Any]]:
     data = json.loads(Path(path).read_text(encoding="utf-8"))
-    sources = data.get("sources", [])
-    if not isinstance(sources, list):
-        raise SourceError("source ledger sources must be a list")
-    return {source["id"]: source for source in sources if isinstance(source, dict) and "id" in source}
+    try:
+        return ledger_index(data)
+    except ValueError as exc:
+        raise SourceError(str(exc)) from exc
 
 
 def synthesize(record: dict[str, Any], *, ledger_path: str | Path = DEFAULT_LEDGER) -> dict[str, Any]:
@@ -133,6 +136,10 @@ def synthesize(record: dict[str, Any], *, ledger_path: str | Path = DEFAULT_LEDG
         "internal_link_matrix": matrix,
         "recommendations": recommendations,
         "source_citations": citations,
+        "evidence_notes": [
+            "Scores and numeric passage or entity thresholds are local editorial heuristics, not validated Google ranking or AI citation factors.",
+            "Qualified sources support only the narrowed claims listed with their citations; preserve their limitations when applying advice.",
+        ],
     }
     return clean_structure(plan)
 
@@ -325,9 +332,9 @@ def collect_source_ids(*sections: Any) -> list[str]:
 
 
 def source_citations(source_ids: list[str], source_index: dict[str, dict[str, Any]]) -> list[dict[str, Any]]:
-    missing = [source_id for source_id in source_ids if source_id not in source_index]
-    if missing:
-        raise SourceError("unknown source IDs: " + ", ".join(missing))
+    failures = citation_errors(source_ids, source_index)
+    if failures:
+        raise SourceError("source evidence unavailable: " + "; ".join(failures))
     citations: list[dict[str, Any]] = []
     for source_id in source_ids:
         source = source_index[source_id]
@@ -339,6 +346,10 @@ def source_citations(source_ids: list[str], source_index: dict[str, dict[str, An
                 "published": source.get("published", source.get("last_updated", "")),
                 "retrieved": source.get("retrieved", ""),
                 "confidence": source.get("confidence", ""),
+                "review_decision": source["verification"]["decision"],
+                "reviewed_on": source["verification"]["reviewed_on"],
+                "supported_claims": source["supports_claims"],
+                "limitations": source.get("limitations", ""),
             }
         )
     return citations

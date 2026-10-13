@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://www.sitemaps.org/protocol.html",
+  "normalized_full_document_sha256": "365e7a0ea3fa4b3a8e429cefbd90e3f9dfafafe5f610473ac788a9d140bd48b1",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "each text file can contain a maximum of 50,000 urls"
+  ],
+  "records": [
+    {
+      "source_id": "sitemaps-org",
+      "source_url": "https://www.sitemaps.org/protocol.html",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "confirmed_by_manual_review",
+      "excerpt_index": 0
+    }
+  ]
+}

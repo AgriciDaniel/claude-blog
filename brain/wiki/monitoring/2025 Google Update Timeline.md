@@ -4,7 +4,7 @@ title: "2025 Google Update Timeline"
 domain: "Google Update Monitoring"
 status: active
 created: 2026-07-06
-updated: 2026-07-09
+updated: 2026-10-07
 tags: [monitoring, google-updates, active]
 source_urls:
   - "https://status.search.google.com/products/rGHU1u87FJnkP6W2GwMi/history"
@@ -34,14 +34,14 @@ The main 2025 decision is classification. A core update routes to quality review
 
 | 2025 decision | Required input | Source IDs | Evidence state | Owner | Next action |
 |---|---|---|---|---|---|
-| January QRG revision | Confirm rater-guideline date and changed topic areas | `g-update-2025-01-23-qrg-update-jan-2025`, `g-qrg-full` | CONFIRMED | Quality reviewer | Refresh quality checks for generated or copied main content. |
+| January QRG revision | Confirm rater-guideline date and changed topic areas | `g-update-2025-01-23-qrg-update-jan-2025`, `g-qrg-full` | CONFIRMED | Quality reviewer | Review the revision log alignment of Lowest and Low sections with spam policies, then consult the full guideline sections for detailed content claims. |
 | March core update | Record official rollout dates before impact analysis | `g-update-2025-03-13-march-2025-core-update`, `g-status-dashboard` | CONFIRMED | SEO lead | Wait for rollout completion, then compare affected page groups. |
 | AI Mode launch and US rollout | Keep product rollout separate from ranking update claims | `g-update-2025-03-05-ai-mode-experimental-launch`, `g-update-2025-05-20-ai-mode-general-rollout-us` | CONFIRMED | AI search owner | Route citation-surface implications to [[AI Citation Mechanics]]. |
-| June structured-data simplification | Identify deprecated rich-result features before brief approval | `g-update-2025-06-19-structured-data-deprecation`, `g-search-gallery` | CONFIRMED | Schema reviewer | Remove unsupported rich-result tactics from blog schema briefs. |
+| June 12 structured-data simplification | The legacy source ID contains June 19; the article was published June 12, 2025 | `g-update-2025-06-19-structured-data-deprecation`, `g-search-gallery` | CONFIRMED | Schema reviewer | Remove unsupported rich-result tactics from blog schema briefs. |
 | June core update | Use official duration, not volatility screenshots | `g-update-2025-06-30-june-2025-core-update`, `g-ranking-history` | CONFIRMED | Monitoring owner | Queue impact review only for content classes with first-party movement. |
-| September QRG revision | Record AI Overview examples and YMYL expansion as quality context | `g-update-2025-09-11-qrg-update-sept-2025`, `g-qrg-full` | CONFIRMED | Editorial lead | Refresh YMYL-adjacent checks without calling QRG a ranking system. |
+| September QRG revision | Record updated YMYL definitions, illustrative examples, and minor changes from the revision log | `g-update-2025-09-11-qrg-update-sept-2025`, `g-qrg-full` | CONFIRMED | Editorial lead | Refresh YMYL-adjacent checks without calling QRG a ranking system. |
 | December core update | Preserve the final 2025 core event boundary | `g-update-2025-12-11-december-2025-core-update`, `g-status-dashboard` | CONFIRMED | SEO lead | Use a post-rollout window before recommending rewrites. |
-| August AI Mode expansion | Preserve the English-first product-surface caveat | `g-update-2025-08-21-ai-mode-expands-to-180-countries` | CONFIRMED product note | AI search owner | Keep locale implications in [[AI Search Update Watch]]. |
+| August AI Mode expansion | English expansion to over 180 new countries; U.S. AI Ultra Labs restaurant features have narrower availability | `g-update-2025-08-21-ai-mode-expands-to-180-countries` | CONFIRMED product note | AI search owner | Keep locale implications in [[AI Search Update Watch]]. |
 | December core limitation | Block sector-impact language from dashboard chronology alone | `g-update-2025-12-11-december-2025-core-update` | CONFIRMED timing, impact unproven | Reviewer | Require separate evidence before report text names an affected market. |
 
 ## Evidence Boundaries For 2025 Entries

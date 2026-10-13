@@ -1,0 +1,2249 @@
+{
+  "schema_version": 1,
+  "owner": "claude-blog-reviewed-legacy-payload",
+  "purpose": "Adopt or remove only exact known public package bytes within an existing legacy manifest scope. Unknown and modified files are never adopted.",
+  "revisions": [
+    {
+      "name": "v2.2.0",
+      "commit": "7b6ca107adb40b7c59030568420c117e2ea61301"
+    },
+    {
+      "name": "public-main-audit-base",
+      "commit": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+    }
+  ],
+  "files": {
+    "agents/blog-researcher.md": [
+      {
+        "sha256": "b343b89fb97234a63f393efb09d6def7c186d3ca5587612cd5e359c8b6978ab2",
+        "source": "agents/blog-researcher.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "b343b89fb97234a63f393efb09d6def7c186d3ca5587612cd5e359c8b6978ab2",
+        "source": "agents/blog-researcher.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "agents/blog-reviewer.md": [
+      {
+        "sha256": "5ea0b050b4d8b78cc70c749ba6fc37391770cab33c308376ff90470ecd1a01cf",
+        "source": "agents/blog-reviewer.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "5ea0b050b4d8b78cc70c749ba6fc37391770cab33c308376ff90470ecd1a01cf",
+        "source": "agents/blog-reviewer.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "agents/blog-seo.md": [
+      {
+        "sha256": "6976e4a0c88bd6ff65d969266f0052b0d31f13bd7da0bd3e25f76a684cc77273",
+        "source": "agents/blog-seo.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "6976e4a0c88bd6ff65d969266f0052b0d31f13bd7da0bd3e25f76a684cc77273",
+        "source": "agents/blog-seo.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "agents/blog-translator.md": [
+      {
+        "sha256": "dffc5ee8557e47f4d2132cc57fc783840587a795ceeb6d0ca57e1d678ee3e862",
+        "source": "agents/blog-translator.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "dffc5ee8557e47f4d2132cc57fc783840587a795ceeb6d0ca57e1d678ee3e862",
+        "source": "agents/blog-translator.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "agents/blog-writer.md": [
+      {
+        "sha256": "1b510e2d8d206af9d3561e8e04a4fca9b1968c865e5bbabea21b103f900c58d7",
+        "source": "agents/blog-writer.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "1b510e2d8d206af9d3561e8e04a4fca9b1968c865e5bbabea21b103f900c58d7",
+        "source": "agents/blog-writer.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "scripts/ai_citation_score.py": [
+      {
+        "sha256": "43ded191f35d50da4b21ea3fe8adf85c691b54db241880acd531651963918877",
+        "source": "scripts/ai_citation_score.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "43ded191f35d50da4b21ea3fe8adf85c691b54db241880acd531651963918877",
+        "source": "scripts/ai_citation_score.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "scripts/analyze_blog.py": [
+      {
+        "sha256": "71346890615dac82e31db243bcaf45b8f179b899824658ab6e7831e674859a33",
+        "source": "scripts/analyze_blog.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "4f09942d549c369aee0ea364d19267fa2b4e4dad6901f89dce3012e75e92672a",
+        "source": "scripts/analyze_blog.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "scripts/blog_hygiene.py": [
+      {
+        "sha256": "fb6c1caf0ae0818cc02a946ef65643a3db4529d251fd1e1c944bfcab963ae020",
+        "source": "scripts/blog_hygiene.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "fb6c1caf0ae0818cc02a946ef65643a3db4529d251fd1e1c944bfcab963ae020",
+        "source": "scripts/blog_hygiene.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "scripts/blog_preflight.py": [
+      {
+        "sha256": "f2d363ff3d60100464561e4087f4063677f390d757851b58776d30f7a1f57cf5",
+        "source": "scripts/blog_preflight.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "f2d363ff3d60100464561e4087f4063677f390d757851b58776d30f7a1f57cf5",
+        "source": "scripts/blog_preflight.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "scripts/blog_render.py": [
+      {
+        "sha256": "b764527fa3d3c8add4389ff2edd500ca1f24de4dfb3c5ae1607bc4d656948b14",
+        "source": "scripts/blog_render.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "b764527fa3d3c8add4389ff2edd500ca1f24de4dfb3c5ae1607bc4d656948b14",
+        "source": "scripts/blog_render.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "scripts/check_google_currentness.py": [
+      {
+        "sha256": "4b59a31da579b8746ffb41d0ac0bd2d16e34da12d1a75b9f6b3c3662f9546dc3",
+        "source": "scripts/check_google_currentness.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "4b59a31da579b8746ffb41d0ac0bd2d16e34da12d1a75b9f6b3c3662f9546dc3",
+        "source": "scripts/check_google_currentness.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "scripts/check_secrets.py": [
+      {
+        "sha256": "62df1b0a9098449852c85c1b9b37c7a77c1d23b5f68de1ab8d2c9dadd98b30bb",
+        "source": "scripts/check_secrets.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "62df1b0a9098449852c85c1b9b37c7a77c1d23b5f68de1ab8d2c9dadd98b30bb",
+        "source": "scripts/check_secrets.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "scripts/cognitive_load.py": [
+      {
+        "sha256": "acd51e54a1a20448b581b91b2a1c6cfc3f8450eb84993261bd0d0cbc6b07bf49",
+        "source": "scripts/cognitive_load.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "acd51e54a1a20448b581b91b2a1c6cfc3f8450eb84993261bd0d0cbc6b07bf49",
+        "source": "scripts/cognitive_load.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "scripts/consistency_check.py": [
+      {
+        "sha256": "9e413bbdbe471658d9e919958b926f81dd69865d343db9e05970d7232356b82a",
+        "source": "scripts/consistency_check.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "9e413bbdbe471658d9e919958b926f81dd69865d343db9e05970d7232356b82a",
+        "source": "scripts/consistency_check.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "scripts/content_decay.py": [
+      {
+        "sha256": "1d7ea72cd50661ac2fe7c2ab5fdd71be8ff1effa16fd401d786cf22d7549d1be",
+        "source": "scripts/content_decay.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "1d7ea72cd50661ac2fe7c2ab5fdd71be8ff1effa16fd401d786cf22d7549d1be",
+        "source": "scripts/content_decay.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "scripts/dependency_smoke.py": [
+      {
+        "sha256": "73c537cabae891375a139100e6efc4accd09e7d428874981d04772065df073e3",
+        "source": "scripts/dependency_smoke.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "73c537cabae891375a139100e6efc4accd09e7d428874981d04772065df073e3",
+        "source": "scripts/dependency_smoke.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "scripts/discourse_research.py": [
+      {
+        "sha256": "ff16e0eb1cc3c8abac4c970ada1884ccebc49416fa2fd0b2e1ffaf514d2801aa",
+        "source": "scripts/discourse_research.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "ff16e0eb1cc3c8abac4c970ada1884ccebc49416fa2fd0b2e1ffaf514d2801aa",
+        "source": "scripts/discourse_research.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "scripts/generate_hero.py": [
+      {
+        "sha256": "6cc7068794477ac481f772698bd44d266a76d1877634b6d7f1e8576fde276ac4",
+        "source": "scripts/generate_hero.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "6cc7068794477ac481f772698bd44d266a76d1877634b6d7f1e8576fde276ac4",
+        "source": "scripts/generate_hero.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "scripts/lint_prose.py": [
+      {
+        "sha256": "28a34ded79880d25bb19c9808c13d950b7ef00b22f52817a963d7a336ea888fe",
+        "source": "scripts/lint_prose.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "28a34ded79880d25bb19c9808c13d950b7ef00b22f52817a963d7a336ea888fe",
+        "source": "scripts/lint_prose.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "scripts/load_untrusted_root.py": [
+      {
+        "sha256": "fff64fe01f1fbea13f6b76f94dc4c7ea70c83adc0b3bd070b431b79214ce7ae3",
+        "source": "scripts/load_untrusted_root.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "fff64fe01f1fbea13f6b76f94dc4c7ea70c83adc0b3bd070b431b79214ce7ae3",
+        "source": "scripts/load_untrusted_root.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "scripts/quality_gate.py": [
+      {
+        "sha256": "170740511f28cc3ba461a309eb1263cf8ffea997421b29402055c64355acb200",
+        "source": "scripts/quality_gate.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "170740511f28cc3ba461a309eb1263cf8ffea997421b29402055c64355acb200",
+        "source": "scripts/quality_gate.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "scripts/style_learn.py": [
+      {
+        "sha256": "6b3873f4a4c27928db7a5f80338a4211a20a460df4ed7385e3a4d8381d53f1b5",
+        "source": "scripts/style_learn.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "6b3873f4a4c27928db7a5f80338a4211a20a460df4ed7385e3a4d8381d53f1b5",
+        "source": "scripts/style_learn.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "scripts/sync_flow.py": [
+      {
+        "sha256": "4e4459d42f884e7d8ecf9dfb01fe39ea6529f2f951198a521b87e800748f914f",
+        "source": "scripts/sync_flow.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "4e4459d42f884e7d8ecf9dfb01fe39ea6529f2f951198a521b87e800748f914f",
+        "source": "scripts/sync_flow.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "scripts/sync_google_updates.py": [
+      {
+        "sha256": "affeb2aefc316cc325fe05273597cf51a8a2b0357753b7291488be2a9ceb544e",
+        "source": "scripts/sync_google_updates.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "affeb2aefc316cc325fe05273597cf51a8a2b0357753b7291488be2a9ceb544e",
+        "source": "scripts/sync_google_updates.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "scripts/validate_public_release.py": [
+      {
+        "sha256": "75fe2ba93215fdad4e6ff89b86572c8e5dd85e395e30e40f979b8087cd9634c6",
+        "source": "scripts/validate_public_release.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "75fe2ba93215fdad4e6ff89b86572c8e5dd85e395e30e40f979b8087cd9634c6",
+        "source": "scripts/validate_public_release.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-analyze/SKILL.md": [
+      {
+        "sha256": "a0256d77fa9c0eccbfd26f21ccc50795902b39bd4f3a4b512bae4b8a9177d1be",
+        "source": "skills/blog-analyze/SKILL.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "a0256d77fa9c0eccbfd26f21ccc50795902b39bd4f3a4b512bae4b8a9177d1be",
+        "source": "skills/blog-analyze/SKILL.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-audio/SKILL.md": [
+      {
+        "sha256": "db7fb80abdc0ec41a1fe7b9116da8b7e72c2cdad2c58767dbedc2eb87c98e89c",
+        "source": "skills/blog-audio/SKILL.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "db7fb80abdc0ec41a1fe7b9116da8b7e72c2cdad2c58767dbedc2eb87c98e89c",
+        "source": "skills/blog-audio/SKILL.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-audio/references/voices.md": [
+      {
+        "sha256": "a43085b27660a02cb149d805ca8db5aa030d08c94e27331c294c7960482a8168",
+        "source": "skills/blog-audio/references/voices.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "a43085b27660a02cb149d805ca8db5aa030d08c94e27331c294c7960482a8168",
+        "source": "skills/blog-audio/references/voices.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-audio/scripts/__init__.py": [
+      {
+        "sha256": "f035fa7f2922bce0800a2c8f1592163d643e4fde757158f061cefe954e95ca67",
+        "source": "skills/blog-audio/scripts/__init__.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "f035fa7f2922bce0800a2c8f1592163d643e4fde757158f061cefe954e95ca67",
+        "source": "skills/blog-audio/scripts/__init__.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-audio/scripts/generate_audio.py": [
+      {
+        "sha256": "2a025d743aa42e2332f6436042b6e43c2ddd54a5a0704a79dbf94e0e0df1685f",
+        "source": "skills/blog-audio/scripts/generate_audio.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "2a025d743aa42e2332f6436042b6e43c2ddd54a5a0704a79dbf94e0e0df1685f",
+        "source": "skills/blog-audio/scripts/generate_audio.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-audio/scripts/requirements.lock": [
+      {
+        "sha256": "12b56fe9e30ffb432a34fd7c8fd00435200817980a9a365dde34f8b198c9d53e",
+        "source": "skills/blog-audio/scripts/requirements.lock",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "12b56fe9e30ffb432a34fd7c8fd00435200817980a9a365dde34f8b198c9d53e",
+        "source": "skills/blog-audio/scripts/requirements.lock",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-audio/scripts/requirements.txt": [
+      {
+        "sha256": "39d9fe4652988b678babb1dba4665921e976ca4c0472bc8a22b18f0237810c71",
+        "source": "skills/blog-audio/scripts/requirements.txt",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "39d9fe4652988b678babb1dba4665921e976ca4c0472bc8a22b18f0237810c71",
+        "source": "skills/blog-audio/scripts/requirements.txt",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-audio/scripts/run.py": [
+      {
+        "sha256": "e5c8ba1b27ce186326698cf838edfc506cc35c36498581e1be2b57ddaa416242",
+        "source": "skills/blog-audio/scripts/run.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "e5c8ba1b27ce186326698cf838edfc506cc35c36498581e1be2b57ddaa416242",
+        "source": "skills/blog-audio/scripts/run.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-audio/scripts/setup_environment.py": [
+      {
+        "sha256": "52e7ae33fa5e89660f48c615ebcf65bf11a361b0d96da0c671ccd0b98fe1945c",
+        "source": "skills/blog-audio/scripts/setup_environment.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "52e7ae33fa5e89660f48c615ebcf65bf11a361b0d96da0c671ccd0b98fe1945c",
+        "source": "skills/blog-audio/scripts/setup_environment.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-audit/SKILL.md": [
+      {
+        "sha256": "e9c8808b7f4ccfea5f445893579d281e87cc37e8bc5c6f0934ba258ccd1e4b93",
+        "source": "skills/blog-audit/SKILL.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "e9c8808b7f4ccfea5f445893579d281e87cc37e8bc5c6f0934ba258ccd1e4b93",
+        "source": "skills/blog-audit/SKILL.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-brand/SKILL.md": [
+      {
+        "sha256": "673d0e64bf074cd8de3086386f05652716bb3c2ef43f5a14ce003f7435237b58",
+        "source": "skills/blog-brand/SKILL.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "673d0e64bf074cd8de3086386f05652716bb3c2ef43f5a14ce003f7435237b58",
+        "source": "skills/blog-brand/SKILL.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-brief/SKILL.md": [
+      {
+        "sha256": "a992bf619b0ac32f45b4e6879eb225446cfb0e54334b6aabd35ea6ab35ce5e0a",
+        "source": "skills/blog-brief/SKILL.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "a992bf619b0ac32f45b4e6879eb225446cfb0e54334b6aabd35ea6ab35ce5e0a",
+        "source": "skills/blog-brief/SKILL.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-calendar/SKILL.md": [
+      {
+        "sha256": "b83374a9835030949c240f91fd6de01f15e6c4a14849a4c54e2244f37fb2567b",
+        "source": "skills/blog-calendar/SKILL.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "b83374a9835030949c240f91fd6de01f15e6c4a14849a4c54e2244f37fb2567b",
+        "source": "skills/blog-calendar/SKILL.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-cannibalization/SKILL.md": [
+      {
+        "sha256": "f9b73ebc79ddd3d243ecce574d970b86aaccde913b9c4037a36224d9de2252d3",
+        "source": "skills/blog-cannibalization/SKILL.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "f9b73ebc79ddd3d243ecce574d970b86aaccde913b9c4037a36224d9de2252d3",
+        "source": "skills/blog-cannibalization/SKILL.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-chart/SKILL.md": [
+      {
+        "sha256": "a0e9a5999333668b6eedecf57578984c46a94b46da74c21717812299840cfd6c",
+        "source": "skills/blog-chart/SKILL.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "a0e9a5999333668b6eedecf57578984c46a94b46da74c21717812299840cfd6c",
+        "source": "skills/blog-chart/SKILL.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-chart/scripts/generate_chart_svg.py": [
+      {
+        "sha256": "32ef0a13b97c879121a5e2809dc65a2cb55c4743a2ec60a8baef8134b9f63e0c",
+        "source": "skills/blog-chart/scripts/generate_chart_svg.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "32ef0a13b97c879121a5e2809dc65a2cb55c4743a2ec60a8baef8134b9f63e0c",
+        "source": "skills/blog-chart/scripts/generate_chart_svg.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-cluster/SKILL.md": [
+      {
+        "sha256": "c79e96299f965aad169c938c35ca7554c5bdd694ea8790c101ddcb3e79e7c50f",
+        "source": "skills/blog-cluster/SKILL.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "c79e96299f965aad169c938c35ca7554c5bdd694ea8790c101ddcb3e79e7c50f",
+        "source": "skills/blog-cluster/SKILL.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-cluster/references/cluster-architecture.md": [
+      {
+        "sha256": "20cec194ac746bc857055ffa567a3806b074434c472bbc9005b922db0944f6b0",
+        "source": "skills/blog-cluster/references/cluster-architecture.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "20cec194ac746bc857055ffa567a3806b074434c472bbc9005b922db0944f6b0",
+        "source": "skills/blog-cluster/references/cluster-architecture.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-cluster/references/execution-workflow.md": [
+      {
+        "sha256": "1f23a4d66cc6f63edd0e70a57c06153bd5e97f9037a7cdd7b3688292e48bcf29",
+        "source": "skills/blog-cluster/references/execution-workflow.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "1f23a4d66cc6f63edd0e70a57c06153bd5e97f9037a7cdd7b3688292e48bcf29",
+        "source": "skills/blog-cluster/references/execution-workflow.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-cluster/references/semantic-clustering.md": [
+      {
+        "sha256": "81c9730b79d59d6fe75a97d86709c015a7240ead9f31384f0927e8134e767461",
+        "source": "skills/blog-cluster/references/semantic-clustering.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "81c9730b79d59d6fe75a97d86709c015a7240ead9f31384f0927e8134e767461",
+        "source": "skills/blog-cluster/references/semantic-clustering.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-decay/SKILL.md": [
+      {
+        "sha256": "7371597aa5fe8a931a8c88d8de12a6b2e2d8224a51048c2597d79c445fc52776",
+        "source": "skills/blog-decay/SKILL.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "7371597aa5fe8a931a8c88d8de12a6b2e2d8224a51048c2597d79c445fc52776",
+        "source": "skills/blog-decay/SKILL.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-discourse/SKILL.md": [
+      {
+        "sha256": "b7e30c2666076bcebfef746b7ba14be4c533c642b7bef287e6e636b741e38e2a",
+        "source": "skills/blog-discourse/SKILL.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "b7e30c2666076bcebfef746b7ba14be4c533c642b7bef287e6e636b741e38e2a",
+        "source": "skills/blog-discourse/SKILL.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-discourse/scripts/discourse_research.py": [
+      {
+        "sha256": "232dd30c6e91a83ab169c0798c372bde6ea723273f54dd2f503cf392ef2c3a87",
+        "source": "skills/blog-discourse/scripts/discourse_research.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "232dd30c6e91a83ab169c0798c372bde6ea723273f54dd2f503cf392ef2c3a87",
+        "source": "skills/blog-discourse/scripts/discourse_research.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-factcheck/SKILL.md": [
+      {
+        "sha256": "b8dd61f0d5480dfb31f9fd4d12a4909ade41fdc489bb1de5248a17455e1c1765",
+        "source": "skills/blog-factcheck/SKILL.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "b8dd61f0d5480dfb31f9fd4d12a4909ade41fdc489bb1de5248a17455e1c1765",
+        "source": "skills/blog-factcheck/SKILL.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-flow/SKILL.md": [
+      {
+        "sha256": "82054b14b3f389e5a4e26e4462644b71a7ab8e64e0d167e193c0dd77e605aecb",
+        "source": "skills/blog-flow/SKILL.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "82054b14b3f389e5a4e26e4462644b71a7ab8e64e0d167e193c0dd77e605aecb",
+        "source": "skills/blog-flow/SKILL.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-flow/references/bibliography.md": [
+      {
+        "sha256": "48e7813662dd84a92b91fb5ef433a97da1e569f6f86e6959f3c2e59bbf85c924",
+        "source": "skills/blog-flow/references/bibliography.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "48e7813662dd84a92b91fb5ef433a97da1e569f6f86e6959f3c2e59bbf85c924",
+        "source": "skills/blog-flow/references/bibliography.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-flow/references/flow-framework.md": [
+      {
+        "sha256": "4e654aafe95e5a0e322cf18a01cc240c2f02a1154ac17e92add232872f78962f",
+        "source": "skills/blog-flow/references/flow-framework.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "4e654aafe95e5a0e322cf18a01cc240c2f02a1154ac17e92add232872f78962f",
+        "source": "skills/blog-flow/references/flow-framework.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-flow/references/flow-prompts.lock": [
+      {
+        "sha256": "711d20cc3c47709505c190819e9d076ed8aa56479a757e7ca1e99131a62024d7",
+        "source": "skills/blog-flow/references/flow-prompts.lock",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "711d20cc3c47709505c190819e9d076ed8aa56479a757e7ca1e99131a62024d7",
+        "source": "skills/blog-flow/references/flow-prompts.lock",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-flow/references/prompts/README.md": [
+      {
+        "sha256": "4441433d01f810580313854721edca56a96492695f8c8c4403061ca7466b99cd",
+        "source": "skills/blog-flow/references/prompts/README.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "4441433d01f810580313854721edca56a96492695f8c8c4403061ca7466b99cd",
+        "source": "skills/blog-flow/references/prompts/README.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-flow/references/prompts/find/content-planning-for-topical-relevance-prompt.md": [
+      {
+        "sha256": "9b2aab25c21547167f4bb6badc8a7ef3d6411b7addccda5de42c5f102e295f9b",
+        "source": "skills/blog-flow/references/prompts/find/content-planning-for-topical-relevance-prompt.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "9b2aab25c21547167f4bb6badc8a7ef3d6411b7addccda5de42c5f102e295f9b",
+        "source": "skills/blog-flow/references/prompts/find/content-planning-for-topical-relevance-prompt.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-flow/references/prompts/find/content-prioritization-prompt.md": [
+      {
+        "sha256": "7f82500eee43f13c3b93f9f7f7b0270c8878e60177cda4f0ee288cfac4d3a655",
+        "source": "skills/blog-flow/references/prompts/find/content-prioritization-prompt.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "7f82500eee43f13c3b93f9f7f7b0270c8878e60177cda4f0ee288cfac4d3a655",
+        "source": "skills/blog-flow/references/prompts/find/content-prioritization-prompt.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-flow/references/prompts/find/keyword-research-prompt.md": [
+      {
+        "sha256": "c5529e292663d95c155319d9decc43534814e718298d0190320a6e92c9a0ed18",
+        "source": "skills/blog-flow/references/prompts/find/keyword-research-prompt.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "c5529e292663d95c155319d9decc43534814e718298d0190320a6e92c9a0ed18",
+        "source": "skills/blog-flow/references/prompts/find/keyword-research-prompt.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-flow/references/prompts/find/keyword-variations-for-topical-relevance-prompt.md": [
+      {
+        "sha256": "b650ed30e94e7138b2b6e1457f8e0d28c6765fc97c9438ade2a340f632e8b517",
+        "source": "skills/blog-flow/references/prompts/find/keyword-variations-for-topical-relevance-prompt.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "b650ed30e94e7138b2b6e1457f8e0d28c6765fc97c9438ade2a340f632e8b517",
+        "source": "skills/blog-flow/references/prompts/find/keyword-variations-for-topical-relevance-prompt.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-flow/references/prompts/find/prompt-audience-avatar.md": [
+      {
+        "sha256": "62c5847878890a6b540012db0e29afda6cd511264e428242cb51a48e45ff03f1",
+        "source": "skills/blog-flow/references/prompts/find/prompt-audience-avatar.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "62c5847878890a6b540012db0e29afda6cd511264e428242cb51a48e45ff03f1",
+        "source": "skills/blog-flow/references/prompts/find/prompt-audience-avatar.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-flow/references/prompts/leverage/backlink-competition-prompt.md": [
+      {
+        "sha256": "cb148a3d698152d98cb63fe0c15ce1caf8488d858afb822d54d972e7f25c1c21",
+        "source": "skills/blog-flow/references/prompts/leverage/backlink-competition-prompt.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "cb148a3d698152d98cb63fe0c15ce1caf8488d858afb822d54d972e7f25c1c21",
+        "source": "skills/blog-flow/references/prompts/leverage/backlink-competition-prompt.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-flow/references/prompts/optimize/ai-detector-test-follow-up-prompt.md": [
+      {
+        "sha256": "c749937b806da105e3514be11a3f0e6d98605d8ab5ad5d5beed4ef676d11021b",
+        "source": "skills/blog-flow/references/prompts/optimize/ai-detector-test-follow-up-prompt.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "c749937b806da105e3514be11a3f0e6d98605d8ab5ad5d5beed4ef676d11021b",
+        "source": "skills/blog-flow/references/prompts/optimize/ai-detector-test-follow-up-prompt.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-flow/references/prompts/optimize/ai-supporting-pages-rewrite-prompt.md": [
+      {
+        "sha256": "462f4221ba7fd24a84ae732ee79d91eedd1c850f8eb312e8cf2b39d1f867138c",
+        "source": "skills/blog-flow/references/prompts/optimize/ai-supporting-pages-rewrite-prompt.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "462f4221ba7fd24a84ae732ee79d91eedd1c850f8eb312e8cf2b39d1f867138c",
+        "source": "skills/blog-flow/references/prompts/optimize/ai-supporting-pages-rewrite-prompt.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-flow/references/prompts/optimize/basic-prompt.md": [
+      {
+        "sha256": "d984730765d5276bf10084ad40e854fa9058c894249bd760338d1f12c4e951e2",
+        "source": "skills/blog-flow/references/prompts/optimize/basic-prompt.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "d984730765d5276bf10084ad40e854fa9058c894249bd760338d1f12c4e951e2",
+        "source": "skills/blog-flow/references/prompts/optimize/basic-prompt.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-flow/references/prompts/optimize/blog-post-outline-prompt.md": [
+      {
+        "sha256": "17b4dd82121f1914e0b08cfa14a483ff03ac49a0c03c351013c39cab8893e742",
+        "source": "skills/blog-flow/references/prompts/optimize/blog-post-outline-prompt.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "17b4dd82121f1914e0b08cfa14a483ff03ac49a0c03c351013c39cab8893e742",
+        "source": "skills/blog-flow/references/prompts/optimize/blog-post-outline-prompt.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-flow/references/prompts/optimize/blog-post-writing-prompt.md": [
+      {
+        "sha256": "9a45d9765d98349d31b2961080e0222d9e41f90f062ca9eef6ebbcc3ee8c7a29",
+        "source": "skills/blog-flow/references/prompts/optimize/blog-post-writing-prompt.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "9a45d9765d98349d31b2961080e0222d9e41f90f062ca9eef6ebbcc3ee8c7a29",
+        "source": "skills/blog-flow/references/prompts/optimize/blog-post-writing-prompt.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-flow/references/prompts/optimize/claude-prompt-1.md": [
+      {
+        "sha256": "36bb200c02f31f29fdfd0791d4e9e76ec073eeafa4d49ab7a9440a0b09a35072",
+        "source": "skills/blog-flow/references/prompts/optimize/claude-prompt-1.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "36bb200c02f31f29fdfd0791d4e9e76ec073eeafa4d49ab7a9440a0b09a35072",
+        "source": "skills/blog-flow/references/prompts/optimize/claude-prompt-1.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-flow/references/prompts/optimize/claude-prompt-2.md": [
+      {
+        "sha256": "ac5e96dfdf0a7a05c7aba648d6ed8eeecb215b1ff61215ba916907752aacfba5",
+        "source": "skills/blog-flow/references/prompts/optimize/claude-prompt-2.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "ac5e96dfdf0a7a05c7aba648d6ed8eeecb215b1ff61215ba916907752aacfba5",
+        "source": "skills/blog-flow/references/prompts/optimize/claude-prompt-2.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-flow/references/prompts/optimize/ctr-audit-prompt.md": [
+      {
+        "sha256": "3ddb7665f720b6dddbaef4b4ce114ea5cf81d78fbdd960a6b0b9407afe2b60f5",
+        "source": "skills/blog-flow/references/prompts/optimize/ctr-audit-prompt.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "3ddb7665f720b6dddbaef4b4ce114ea5cf81d78fbdd960a6b0b9407afe2b60f5",
+        "source": "skills/blog-flow/references/prompts/optimize/ctr-audit-prompt.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-flow/references/prompts/optimize/follow-up-prompt-1.md": [
+      {
+        "sha256": "e314979fe161797349169606e7d22dd495bf4a857d5999f9e633028dae15acc7",
+        "source": "skills/blog-flow/references/prompts/optimize/follow-up-prompt-1.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "e314979fe161797349169606e7d22dd495bf4a857d5999f9e633028dae15acc7",
+        "source": "skills/blog-flow/references/prompts/optimize/follow-up-prompt-1.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-flow/references/prompts/optimize/follow-up-prompt-2.md": [
+      {
+        "sha256": "31b58c5ce1acd0fadf46d34c29959f81b88feb819a7d50fa630226fdfa0bf37c",
+        "source": "skills/blog-flow/references/prompts/optimize/follow-up-prompt-2.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "31b58c5ce1acd0fadf46d34c29959f81b88feb819a7d50fa630226fdfa0bf37c",
+        "source": "skills/blog-flow/references/prompts/optimize/follow-up-prompt-2.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-flow/references/prompts/optimize/follow-up-prompt.md": [
+      {
+        "sha256": "add172a3798a7108c9a5983474e74a88f0d675523a305dabb460b0c37c2cae60",
+        "source": "skills/blog-flow/references/prompts/optimize/follow-up-prompt.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "add172a3798a7108c9a5983474e74a88f0d675523a305dabb460b0c37c2cae60",
+        "source": "skills/blog-flow/references/prompts/optimize/follow-up-prompt.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-flow/references/prompts/optimize/paa-question-rewording-prompt.md": [
+      {
+        "sha256": "7efe4cc586725ffb229dafdb27673ce4e1818aa51f5317ebf9788c4921262474",
+        "source": "skills/blog-flow/references/prompts/optimize/paa-question-rewording-prompt.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "7efe4cc586725ffb229dafdb27673ce4e1818aa51f5317ebf9788c4921262474",
+        "source": "skills/blog-flow/references/prompts/optimize/paa-question-rewording-prompt.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-flow/references/prompts/optimize/prompt-core-30-content-audit.md": [
+      {
+        "sha256": "1c352400687d41c6f775e72f2ccd69a92cae2c4329c9080edf918e6eb9245084",
+        "source": "skills/blog-flow/references/prompts/optimize/prompt-core-30-content-audit.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "1c352400687d41c6f775e72f2ccd69a92cae2c4329c9080edf918e6eb9245084",
+        "source": "skills/blog-flow/references/prompts/optimize/prompt-core-30-content-audit.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-flow/references/prompts/optimize/property-content-with-authority-audit-prompt.md": [
+      {
+        "sha256": "d60dcbe5899c15a991e242e11eec25175244a5f5514dfe524265d6eb21e84382",
+        "source": "skills/blog-flow/references/prompts/optimize/property-content-with-authority-audit-prompt.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "d60dcbe5899c15a991e242e11eec25175244a5f5514dfe524265d6eb21e84382",
+        "source": "skills/blog-flow/references/prompts/optimize/property-content-with-authority-audit-prompt.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-flow/references/prompts/optimize/reddit-claude-prompt.md": [
+      {
+        "sha256": "be3e1c0cada8cd1c8e161391657fb31cc6dce121d1cfd0fb1c7eca9f7e3ae545",
+        "source": "skills/blog-flow/references/prompts/optimize/reddit-claude-prompt.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "be3e1c0cada8cd1c8e161391657fb31cc6dce121d1cfd0fb1c7eca9f7e3ae545",
+        "source": "skills/blog-flow/references/prompts/optimize/reddit-claude-prompt.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-flow/references/prompts/optimize/schema-prompt-1.md": [
+      {
+        "sha256": "8301cc7ebe7b5ff56f2f33997dc0d1658faf926066ef08122025552f3e1ec000",
+        "source": "skills/blog-flow/references/prompts/optimize/schema-prompt-1.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "8301cc7ebe7b5ff56f2f33997dc0d1658faf926066ef08122025552f3e1ec000",
+        "source": "skills/blog-flow/references/prompts/optimize/schema-prompt-1.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-flow/references/prompts/optimize/step-1-the-chatgpt-discovery-prompt.md": [
+      {
+        "sha256": "6bb1b93f145938bc137a0296d02abdb599d0a35b27c58e5a8a15be76088d778f",
+        "source": "skills/blog-flow/references/prompts/optimize/step-1-the-chatgpt-discovery-prompt.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "6bb1b93f145938bc137a0296d02abdb599d0a35b27c58e5a8a15be76088d778f",
+        "source": "skills/blog-flow/references/prompts/optimize/step-1-the-chatgpt-discovery-prompt.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-flow/references/prompts/optimize/step-2-the-follow-up-qualifying-prompt.md": [
+      {
+        "sha256": "cc7a08cf4b62a973e18e62f1700017ac03fb68e2dde1d54335b73d04c76682e4",
+        "source": "skills/blog-flow/references/prompts/optimize/step-2-the-follow-up-qualifying-prompt.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "cc7a08cf4b62a973e18e62f1700017ac03fb68e2dde1d54335b73d04c76682e4",
+        "source": "skills/blog-flow/references/prompts/optimize/step-2-the-follow-up-qualifying-prompt.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-flow/references/prompts/optimize/technical-audit-prompt.md": [
+      {
+        "sha256": "90e4a87501931f3bfe43ba54c2c91d45607da43c73df52305e391350de5cb90e",
+        "source": "skills/blog-flow/references/prompts/optimize/technical-audit-prompt.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "90e4a87501931f3bfe43ba54c2c91d45607da43c73df52305e391350de5cb90e",
+        "source": "skills/blog-flow/references/prompts/optimize/technical-audit-prompt.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-flow/references/prompts/optimize/visibility-follow-up-prompt.md": [
+      {
+        "sha256": "21c6a2d30a54b41fe9134f8c08d72d77a9a98cb3496d99285d17239dde4aef8b",
+        "source": "skills/blog-flow/references/prompts/optimize/visibility-follow-up-prompt.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "21c6a2d30a54b41fe9134f8c08d72d77a9a98cb3496d99285d17239dde4aef8b",
+        "source": "skills/blog-flow/references/prompts/optimize/visibility-follow-up-prompt.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-flow/references/prompts/optimize/visibility-prompt.md": [
+      {
+        "sha256": "8dc3883a11fc46012dfe6d57dec13909f4b392992745b8b0001be4c0fc68993c",
+        "source": "skills/blog-flow/references/prompts/optimize/visibility-prompt.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "8dc3883a11fc46012dfe6d57dec13909f4b392992745b8b0001be4c0fc68993c",
+        "source": "skills/blog-flow/references/prompts/optimize/visibility-prompt.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-flow/references/prompts/win/bofu-page-brief-generator.md": [
+      {
+        "sha256": "608fa79a2baecf4829f64b6ef699b5f0164c74e1d52973afa280cdb11054c31d",
+        "source": "skills/blog-flow/references/prompts/win/bofu-page-brief-generator.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "608fa79a2baecf4829f64b6ef699b5f0164c74e1d52973afa280cdb11054c31d",
+        "source": "skills/blog-flow/references/prompts/win/bofu-page-brief-generator.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-flow/references/prompts/win/conversion-audit-prompt.md": [
+      {
+        "sha256": "1ed348a1e364110161b5d89aef4fb8ae7d429e7ed836d6e0e306270cf7e80063",
+        "source": "skills/blog-flow/references/prompts/win/conversion-audit-prompt.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "1ed348a1e364110161b5d89aef4fb8ae7d429e7ed836d6e0e306270cf7e80063",
+        "source": "skills/blog-flow/references/prompts/win/conversion-audit-prompt.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-flow/references/prompts/win/dual-surface-content-scorecard.md": [
+      {
+        "sha256": "9b8996cb72a1cd07ccd966e7402366a1a31483e07819d7093ef941f160824e28",
+        "source": "skills/blog-flow/references/prompts/win/dual-surface-content-scorecard.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "9b8996cb72a1cd07ccd966e7402366a1a31483e07819d7093ef941f160824e28",
+        "source": "skills/blog-flow/references/prompts/win/dual-surface-content-scorecard.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-flow/scripts/sync_flow.py": [
+      {
+        "sha256": "af9529e2a5fad14aa3445092c180f4b83dc48e703e704b6ec71fcf8f0fdb7f74",
+        "source": "skills/blog-flow/scripts/sync_flow.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "af9529e2a5fad14aa3445092c180f4b83dc48e703e704b6ec71fcf8f0fdb7f74",
+        "source": "skills/blog-flow/scripts/sync_flow.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-geo/SKILL.md": [
+      {
+        "sha256": "650a39d02aaa03cd4083286ec6f0346bef2268a732ede0b26f24a6a967149b90",
+        "source": "skills/blog-geo/SKILL.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "650a39d02aaa03cd4083286ec6f0346bef2268a732ede0b26f24a6a967149b90",
+        "source": "skills/blog-geo/SKILL.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-google/SKILL.md": [
+      {
+        "sha256": "7406cd6b5f78bb50cc7b0fe6fe9828ca8c5ad054ed498cd30791043ab31428fd",
+        "source": "skills/blog-google/SKILL.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "7406cd6b5f78bb50cc7b0fe6fe9828ca8c5ad054ed498cd30791043ab31428fd",
+        "source": "skills/blog-google/SKILL.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-google/assets/templates/cwv-audit-report.md": [
+      {
+        "sha256": "94e81dd051757c8fe588756206eb83cc2d1c3907a76610862f01a1bcd1c2ac5d",
+        "source": "skills/blog-google/assets/templates/cwv-audit-report.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "94e81dd051757c8fe588756206eb83cc2d1c3907a76610862f01a1bcd1c2ac5d",
+        "source": "skills/blog-google/assets/templates/cwv-audit-report.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-google/assets/templates/gsc-performance-report.md": [
+      {
+        "sha256": "0e11d334bde19d36fdbe6769633f3f81b2584014c394217434b5f0214f378843",
+        "source": "skills/blog-google/assets/templates/gsc-performance-report.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "0e11d334bde19d36fdbe6769633f3f81b2584014c394217434b5f0214f378843",
+        "source": "skills/blog-google/assets/templates/gsc-performance-report.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-google/assets/templates/indexation-status-report.md": [
+      {
+        "sha256": "afc337905d82f83659a229382432876edba9bd9af6e589b3e4de4786974f13b3",
+        "source": "skills/blog-google/assets/templates/indexation-status-report.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "afc337905d82f83659a229382432876edba9bd9af6e589b3e4de4786974f13b3",
+        "source": "skills/blog-google/assets/templates/indexation-status-report.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-google/references/api-reference.md": [
+      {
+        "sha256": "eafa6686d29c17e0a718239830a819b1367f70afb1e08a80df5629eb237fb43a",
+        "source": "skills/blog-google/references/api-reference.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "eafa6686d29c17e0a718239830a819b1367f70afb1e08a80df5629eb237fb43a",
+        "source": "skills/blog-google/references/api-reference.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-google/references/auth-setup.md": [
+      {
+        "sha256": "e8e49d7e0a000523b36b1112a56bf972e9035dcc42ec25ea386adf327d18ceac",
+        "source": "skills/blog-google/references/auth-setup.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "e8e49d7e0a000523b36b1112a56bf972e9035dcc42ec25ea386adf327d18ceac",
+        "source": "skills/blog-google/references/auth-setup.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-google/references/rate-limits-quotas.md": [
+      {
+        "sha256": "8ab54974bf45e575dc015f414da74104a0fee7f04ed83caaca754802c4a37ae1",
+        "source": "skills/blog-google/references/rate-limits-quotas.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "8ab54974bf45e575dc015f414da74104a0fee7f04ed83caaca754802c4a37ae1",
+        "source": "skills/blog-google/references/rate-limits-quotas.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-google/references/search-currentness.md": [
+      {
+        "sha256": "0faec024f388e01b4a102c6a2ca9973d851ffeb1b6ed0a149cb7b13b1cb1b22f",
+        "source": "skills/blog-google/references/search-currentness.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "0faec024f388e01b4a102c6a2ca9973d851ffeb1b6ed0a149cb7b13b1cb1b22f",
+        "source": "skills/blog-google/references/search-currentness.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-google/scripts/__init__.py": [
+      {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "source": "skills/blog-google/scripts/__init__.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "source": "skills/blog-google/scripts/__init__.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-google/scripts/crux_history.py": [
+      {
+        "sha256": "ba113ee7fd0206e6d9486d1fa80bb6799572d91f1afe8d5ec72f3094b7ea0b09",
+        "source": "skills/blog-google/scripts/crux_history.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "ba113ee7fd0206e6d9486d1fa80bb6799572d91f1afe8d5ec72f3094b7ea0b09",
+        "source": "skills/blog-google/scripts/crux_history.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-google/scripts/ga4_report.py": [
+      {
+        "sha256": "6b2108de4e946d9b5235057fff92c2f383965b4544b600b2cef4a7b1e179063d",
+        "source": "skills/blog-google/scripts/ga4_report.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "6b2108de4e946d9b5235057fff92c2f383965b4544b600b2cef4a7b1e179063d",
+        "source": "skills/blog-google/scripts/ga4_report.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-google/scripts/google_auth.py": [
+      {
+        "sha256": "b02d38700236e2867c86544bb4407c4d8665c3084507650b826f29d0c563235f",
+        "source": "skills/blog-google/scripts/google_auth.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "b02d38700236e2867c86544bb4407c4d8665c3084507650b826f29d0c563235f",
+        "source": "skills/blog-google/scripts/google_auth.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-google/scripts/google_report.py": [
+      {
+        "sha256": "23a16465daa5f355f6fd49327474b097fcacdb98355119c8b10a9311d4e1c77c",
+        "source": "skills/blog-google/scripts/google_report.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "23a16465daa5f355f6fd49327474b097fcacdb98355119c8b10a9311d4e1c77c",
+        "source": "skills/blog-google/scripts/google_report.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-google/scripts/gsc_inspect.py": [
+      {
+        "sha256": "85ab423d1da0ed2135afae39f604fc7dac1e192521c63565a8cb57a8fb562bb2",
+        "source": "skills/blog-google/scripts/gsc_inspect.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "85ab423d1da0ed2135afae39f604fc7dac1e192521c63565a8cb57a8fb562bb2",
+        "source": "skills/blog-google/scripts/gsc_inspect.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-google/scripts/gsc_query.py": [
+      {
+        "sha256": "b909fd8e38a88f2ac55a1585de3bac40e6b84ac1115905084bf9d1f0ee5bb167",
+        "source": "skills/blog-google/scripts/gsc_query.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "b909fd8e38a88f2ac55a1585de3bac40e6b84ac1115905084bf9d1f0ee5bb167",
+        "source": "skills/blog-google/scripts/gsc_query.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-google/scripts/indexing_notify.py": [
+      {
+        "sha256": "06d88bf13dda4cfa260e6a5a6e79a752f2ee194674efd35d6edf08f4bda7a50d",
+        "source": "skills/blog-google/scripts/indexing_notify.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "06d88bf13dda4cfa260e6a5a6e79a752f2ee194674efd35d6edf08f4bda7a50d",
+        "source": "skills/blog-google/scripts/indexing_notify.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-google/scripts/keyword_planner.py": [
+      {
+        "sha256": "c1abc75af57ecff328b4bc29cd2e22db3e9bac9b48a74983b9ec313d7c094849",
+        "source": "skills/blog-google/scripts/keyword_planner.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "c1abc75af57ecff328b4bc29cd2e22db3e9bac9b48a74983b9ec313d7c094849",
+        "source": "skills/blog-google/scripts/keyword_planner.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-google/scripts/nlp_analyze.py": [
+      {
+        "sha256": "dda9ab56a0ffda90a52af4d32a79ee168b92e40fab9e0dc3564e3906886aa58f",
+        "source": "skills/blog-google/scripts/nlp_analyze.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "dda9ab56a0ffda90a52af4d32a79ee168b92e40fab9e0dc3564e3906886aa58f",
+        "source": "skills/blog-google/scripts/nlp_analyze.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-google/scripts/pagespeed_check.py": [
+      {
+        "sha256": "ab530e2919aba38dec4ac01cbe38aef94121259454be1211854ae793e9b4bf47",
+        "source": "skills/blog-google/scripts/pagespeed_check.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "ab530e2919aba38dec4ac01cbe38aef94121259454be1211854ae793e9b4bf47",
+        "source": "skills/blog-google/scripts/pagespeed_check.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-google/scripts/requirements.lock": [
+      {
+        "sha256": "fccdb2ad56411a4409198efeae3b6c868b9e623c1b71f76cd7bd5693762997af",
+        "source": "skills/blog-google/scripts/requirements.lock",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "fccdb2ad56411a4409198efeae3b6c868b9e623c1b71f76cd7bd5693762997af",
+        "source": "skills/blog-google/scripts/requirements.lock",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-google/scripts/requirements.txt": [
+      {
+        "sha256": "f609a6ff041ed11975961d595171187aeeb5a2c88f8d086f71c0275477456afa",
+        "source": "skills/blog-google/scripts/requirements.txt",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "f609a6ff041ed11975961d595171187aeeb5a2c88f8d086f71c0275477456afa",
+        "source": "skills/blog-google/scripts/requirements.txt",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-google/scripts/run.py": [
+      {
+        "sha256": "50c4b9256d6969a1dc46aace5807db5a9b3b9d056a924b3de88eedcda8b7b432",
+        "source": "skills/blog-google/scripts/run.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "50c4b9256d6969a1dc46aace5807db5a9b3b9d056a924b3de88eedcda8b7b432",
+        "source": "skills/blog-google/scripts/run.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-google/scripts/setup_environment.py": [
+      {
+        "sha256": "dd898df6dfe900d51eb2ffbcabd8a20d69fd9c7fed18d37cfeebed94875f68c3",
+        "source": "skills/blog-google/scripts/setup_environment.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "dd898df6dfe900d51eb2ffbcabd8a20d69fd9c7fed18d37cfeebed94875f68c3",
+        "source": "skills/blog-google/scripts/setup_environment.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-google/scripts/youtube_search.py": [
+      {
+        "sha256": "2a4065a2ba2638a6c3130b2fd2e9e79a61f9583375fe607cf797ab5bad64583b",
+        "source": "skills/blog-google/scripts/youtube_search.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "2a4065a2ba2638a6c3130b2fd2e9e79a61f9583375fe607cf797ab5bad64583b",
+        "source": "skills/blog-google/scripts/youtube_search.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-image/SKILL.md": [
+      {
+        "sha256": "3d802efe079b76b3da09c7b40fd0f90ab5fb414b5839b5b177b60c8c269bc3ec",
+        "source": "skills/blog-image/SKILL.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "3d802efe079b76b3da09c7b40fd0f90ab5fb414b5839b5b177b60c8c269bc3ec",
+        "source": "skills/blog-image/SKILL.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-image/references/gemini-models.md": [
+      {
+        "sha256": "27f57846e615cb936129e8151db25428702eae6e33fc3b58143c723f8235d195",
+        "source": "skills/blog-image/references/gemini-models.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "27f57846e615cb936129e8151db25428702eae6e33fc3b58143c723f8235d195",
+        "source": "skills/blog-image/references/gemini-models.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-image/references/mcp-tools.md": [
+      {
+        "sha256": "c3c2d9a0489e7e085bc8e50d20443be0a312ad72951f89844b3bf1db1746abff",
+        "source": "skills/blog-image/references/mcp-tools.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "c3c2d9a0489e7e085bc8e50d20443be0a312ad72951f89844b3bf1db1746abff",
+        "source": "skills/blog-image/references/mcp-tools.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-image/references/prompt-engineering-blog.md": [
+      {
+        "sha256": "fec0398f634960656542812c8659aa98b601ca802ea1d3fc837ecc6795bcf82c",
+        "source": "skills/blog-image/references/prompt-engineering-blog.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "fec0398f634960656542812c8659aa98b601ca802ea1d3fc837ecc6795bcf82c",
+        "source": "skills/blog-image/references/prompt-engineering-blog.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-image/scripts/setup_image_mcp.py": [
+      {
+        "sha256": "454375fc2e2f63e50e1634fe392a09c1cb0e645ca4c9ef559247bf4c64afd038",
+        "source": "skills/blog-image/scripts/setup_image_mcp.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "454375fc2e2f63e50e1634fe392a09c1cb0e645ca4c9ef559247bf4c64afd038",
+        "source": "skills/blog-image/scripts/setup_image_mcp.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-image/scripts/validate_image_setup.py": [
+      {
+        "sha256": "2e4a753eb32f5617f155a93a1cf9ce9c6f8d454fb6fbc21e33e689054679e483",
+        "source": "skills/blog-image/scripts/validate_image_setup.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "2e4a753eb32f5617f155a93a1cf9ce9c6f8d454fb6fbc21e33e689054679e483",
+        "source": "skills/blog-image/scripts/validate_image_setup.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-locale-audit/SKILL.md": [
+      {
+        "sha256": "3a6136a83f9e46b134f6831862c33dabf0a6486b65f5872541e527aa7ff898b7",
+        "source": "skills/blog-locale-audit/SKILL.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "3a6136a83f9e46b134f6831862c33dabf0a6486b65f5872541e527aa7ff898b7",
+        "source": "skills/blog-locale-audit/SKILL.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-localize/SKILL.md": [
+      {
+        "sha256": "f30f565d9a7a8d0e02a2d7fb7166600b8dd61e447c030891d3ff339eb5db1418",
+        "source": "skills/blog-localize/SKILL.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "f30f565d9a7a8d0e02a2d7fb7166600b8dd61e447c030891d3ff339eb5db1418",
+        "source": "skills/blog-localize/SKILL.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-multilingual/SKILL.md": [
+      {
+        "sha256": "e7819afdcd008dbeb47632474214a482a379bbdbfbc450c276d371c17aad1761",
+        "source": "skills/blog-multilingual/SKILL.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "e7819afdcd008dbeb47632474214a482a379bbdbfbc450c276d371c17aad1761",
+        "source": "skills/blog-multilingual/SKILL.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-notebooklm/SKILL.md": [
+      {
+        "sha256": "5ef9bc8d318d7e6af7a5f0858d265004a645eebed5cf7bafb5769efbeb1893db",
+        "source": "skills/blog-notebooklm/SKILL.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "5ef9bc8d318d7e6af7a5f0858d265004a645eebed5cf7bafb5769efbeb1893db",
+        "source": "skills/blog-notebooklm/SKILL.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-notebooklm/references/commands.md": [
+      {
+        "sha256": "102a339858bd6d8618f41334ec41a71f96b3bef0e37d7ffd48556c5b7a6d2a59",
+        "source": "skills/blog-notebooklm/references/commands.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "102a339858bd6d8618f41334ec41a71f96b3bef0e37d7ffd48556c5b7a6d2a59",
+        "source": "skills/blog-notebooklm/references/commands.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-notebooklm/references/troubleshooting.md": [
+      {
+        "sha256": "9c115f9f754dee48fead6db6d4f81bd10566fb60750897032e5cbc2c473827bd",
+        "source": "skills/blog-notebooklm/references/troubleshooting.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "9c115f9f754dee48fead6db6d4f81bd10566fb60750897032e5cbc2c473827bd",
+        "source": "skills/blog-notebooklm/references/troubleshooting.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-notebooklm/scripts/__init__.py": [
+      {
+        "sha256": "27573cd87e40b5d9d979b9a27bd429023d5c3727989ae326032329dc7fbda86e",
+        "source": "skills/blog-notebooklm/scripts/__init__.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "27573cd87e40b5d9d979b9a27bd429023d5c3727989ae326032329dc7fbda86e",
+        "source": "skills/blog-notebooklm/scripts/__init__.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-notebooklm/scripts/ask_question.py": [
+      {
+        "sha256": "915518f663ff99cf1db58d23fa2b06a1558be1f9b0d9f6f1cba3fc4c92eff062",
+        "source": "skills/blog-notebooklm/scripts/ask_question.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "915518f663ff99cf1db58d23fa2b06a1558be1f9b0d9f6f1cba3fc4c92eff062",
+        "source": "skills/blog-notebooklm/scripts/ask_question.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-notebooklm/scripts/auth_manager.py": [
+      {
+        "sha256": "bfc46c75044b81f5eea150d47ff5b0c0a80934b8128a66b030a957d988bae69d",
+        "source": "skills/blog-notebooklm/scripts/auth_manager.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "bfc46c75044b81f5eea150d47ff5b0c0a80934b8128a66b030a957d988bae69d",
+        "source": "skills/blog-notebooklm/scripts/auth_manager.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-notebooklm/scripts/browser_session.py": [
+      {
+        "sha256": "fe962aaaaeb7e56bacba9b940617b07b51d1558b2d7b5680fe744ebc46d4dda7",
+        "source": "skills/blog-notebooklm/scripts/browser_session.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "fe962aaaaeb7e56bacba9b940617b07b51d1558b2d7b5680fe744ebc46d4dda7",
+        "source": "skills/blog-notebooklm/scripts/browser_session.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-notebooklm/scripts/browser_utils.py": [
+      {
+        "sha256": "90d708bb69950dfe6ec537eb439851538e6b58f53c8e40d4d29fb03f013a257f",
+        "source": "skills/blog-notebooklm/scripts/browser_utils.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "90d708bb69950dfe6ec537eb439851538e6b58f53c8e40d4d29fb03f013a257f",
+        "source": "skills/blog-notebooklm/scripts/browser_utils.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-notebooklm/scripts/cleanup_manager.py": [
+      {
+        "sha256": "17b5c20de80dff533d74199e30c490065aa6a05e679118a5a45532dd4fd363a0",
+        "source": "skills/blog-notebooklm/scripts/cleanup_manager.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "17b5c20de80dff533d74199e30c490065aa6a05e679118a5a45532dd4fd363a0",
+        "source": "skills/blog-notebooklm/scripts/cleanup_manager.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-notebooklm/scripts/config.py": [
+      {
+        "sha256": "8d5ef252d7252a148e6857848f24f3c0152ee314c2fb0af9f4f1fcddd4bc8cf7",
+        "source": "skills/blog-notebooklm/scripts/config.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "8d5ef252d7252a148e6857848f24f3c0152ee314c2fb0af9f4f1fcddd4bc8cf7",
+        "source": "skills/blog-notebooklm/scripts/config.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-notebooklm/scripts/notebook_manager.py": [
+      {
+        "sha256": "cf830d19ccb29bf3a9b26133f38268bd1826c1410e2cf5aec7bbc385d08d30ee",
+        "source": "skills/blog-notebooklm/scripts/notebook_manager.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "cf830d19ccb29bf3a9b26133f38268bd1826c1410e2cf5aec7bbc385d08d30ee",
+        "source": "skills/blog-notebooklm/scripts/notebook_manager.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-notebooklm/scripts/requirements.lock": [
+      {
+        "sha256": "8f493636bcb932578fea0f82fb13b9900543d9b2c9f4ce5c2b72af1a6d0885f0",
+        "source": "skills/blog-notebooklm/scripts/requirements.lock",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "8f493636bcb932578fea0f82fb13b9900543d9b2c9f4ce5c2b72af1a6d0885f0",
+        "source": "skills/blog-notebooklm/scripts/requirements.lock",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-notebooklm/scripts/requirements.txt": [
+      {
+        "sha256": "0d164b7d0f2a1286e5026717dee2f12ccb11eb87409db13d157348eff407b081",
+        "source": "skills/blog-notebooklm/scripts/requirements.txt",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "0d164b7d0f2a1286e5026717dee2f12ccb11eb87409db13d157348eff407b081",
+        "source": "skills/blog-notebooklm/scripts/requirements.txt",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-notebooklm/scripts/run.py": [
+      {
+        "sha256": "d393918fb8979bf6304f0cb8404917c48eecd19a820028b06259b3d8d7b8fc16",
+        "source": "skills/blog-notebooklm/scripts/run.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "d393918fb8979bf6304f0cb8404917c48eecd19a820028b06259b3d8d7b8fc16",
+        "source": "skills/blog-notebooklm/scripts/run.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-notebooklm/scripts/setup_environment.py": [
+      {
+        "sha256": "5a90e53bd48ce6b89b9648b51104f1e6b535f95435dca2aaa7197914625ae1a6",
+        "source": "skills/blog-notebooklm/scripts/setup_environment.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "5a90e53bd48ce6b89b9648b51104f1e6b535f95435dca2aaa7197914625ae1a6",
+        "source": "skills/blog-notebooklm/scripts/setup_environment.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-outline/SKILL.md": [
+      {
+        "sha256": "86633a92c1cbfaf8c4797bacb1a7e5413b9de054820aa710b282e2587ea3bbdb",
+        "source": "skills/blog-outline/SKILL.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "86633a92c1cbfaf8c4797bacb1a7e5413b9de054820aa710b282e2587ea3bbdb",
+        "source": "skills/blog-outline/SKILL.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-persona/SKILL.md": [
+      {
+        "sha256": "c86e77e7f2e33c588dafcac786ebd08425f6dac5ad52d4fb541add69608f5c41",
+        "source": "skills/blog-persona/SKILL.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "c86e77e7f2e33c588dafcac786ebd08425f6dac5ad52d4fb541add69608f5c41",
+        "source": "skills/blog-persona/SKILL.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-persona/references/personas/.gitkeep": [
+      {
+        "sha256": "ae2ca9b6a4143482438ecdc292a13acba58860c369ffcc6804afcd4ed2de03e6",
+        "source": "skills/blog-persona/references/personas/.gitkeep",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "ae2ca9b6a4143482438ecdc292a13acba58860c369ffcc6804afcd4ed2de03e6",
+        "source": "skills/blog-persona/references/personas/.gitkeep",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-repurpose/SKILL.md": [
+      {
+        "sha256": "7504750bc45aa2a0cc3c2deef58738328cd28fc634f01e5c95b72394a234024a",
+        "source": "skills/blog-repurpose/SKILL.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "7504750bc45aa2a0cc3c2deef58738328cd28fc634f01e5c95b72394a234024a",
+        "source": "skills/blog-repurpose/SKILL.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-rewrite/SKILL.md": [
+      {
+        "sha256": "57f82cd2bdf68447e8612fc329b16c4ff76614d94e5c33a26f1d09d0b9de068a",
+        "source": "skills/blog-rewrite/SKILL.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "57f82cd2bdf68447e8612fc329b16c4ff76614d94e5c33a26f1d09d0b9de068a",
+        "source": "skills/blog-rewrite/SKILL.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-schema/SKILL.md": [
+      {
+        "sha256": "38beb31b1bcc4454b9d994e056ae060631d2a9626ee8b4cd006c1cdd6a2a88c3",
+        "source": "skills/blog-schema/SKILL.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "38beb31b1bcc4454b9d994e056ae060631d2a9626ee8b4cd006c1cdd6a2a88c3",
+        "source": "skills/blog-schema/SKILL.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-seo-check/SKILL.md": [
+      {
+        "sha256": "41a922ab74ef91f4dffb1bfd20c707acd1910fe0b568f6b695fd7477eabf3941",
+        "source": "skills/blog-seo-check/SKILL.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "41a922ab74ef91f4dffb1bfd20c707acd1910fe0b568f6b695fd7477eabf3941",
+        "source": "skills/blog-seo-check/SKILL.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-strategy/SKILL.md": [
+      {
+        "sha256": "de99ccfd75c10f46821a2f5ec53f05077ad31abf3ab7c2be2f8a9d1dc387ecce",
+        "source": "skills/blog-strategy/SKILL.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "de99ccfd75c10f46821a2f5ec53f05077ad31abf3ab7c2be2f8a9d1dc387ecce",
+        "source": "skills/blog-strategy/SKILL.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-style/SKILL.md": [
+      {
+        "sha256": "b8d4277cecb77f7f0a29914e9796da1fc415f7ed1920e490f55a840d668185e0",
+        "source": "skills/blog-style/SKILL.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "b8d4277cecb77f7f0a29914e9796da1fc415f7ed1920e490f55a840d668185e0",
+        "source": "skills/blog-style/SKILL.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-taxonomy/SKILL.md": [
+      {
+        "sha256": "55a6af5a13216e2ecdcbd1a4c7bedef6ab9b3193378278d8450088f7725c0ea9",
+        "source": "skills/blog-taxonomy/SKILL.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "55a6af5a13216e2ecdcbd1a4c7bedef6ab9b3193378278d8450088f7725c0ea9",
+        "source": "skills/blog-taxonomy/SKILL.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-translate/SKILL.md": [
+      {
+        "sha256": "f391cd910732ebbcd8ed5d633b74261ff011e0b91cb0927a5f5c47c79b856566",
+        "source": "skills/blog-translate/SKILL.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "f391cd910732ebbcd8ed5d633b74261ff011e0b91cb0927a5f5c47c79b856566",
+        "source": "skills/blog-translate/SKILL.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-translate/references/cultural-adaptation.md": [
+      {
+        "sha256": "27518514f76e38db0dae970ea8ffc5226351f6af346eceb2f0ef4f5661c334ba",
+        "source": "skills/blog-translate/references/cultural-adaptation.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "27518514f76e38db0dae970ea8ffc5226351f6af346eceb2f0ef4f5661c334ba",
+        "source": "skills/blog-translate/references/cultural-adaptation.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-translate/references/translation-rules.md": [
+      {
+        "sha256": "163a899f678aa1aa29ea8b07f0d3cf6e038c4ae8e2d686f8a506d2f8a6cdbb79",
+        "source": "skills/blog-translate/references/translation-rules.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "163a899f678aa1aa29ea8b07f0d3cf6e038c4ae8e2d686f8a506d2f8a6cdbb79",
+        "source": "skills/blog-translate/references/translation-rules.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-write/SKILL.md": [
+      {
+        "sha256": "523bb06666235df94920de3eb7eb4d3e17c09e33c5ab7b39cfe196e29a4a5bc4",
+        "source": "skills/blog-write/SKILL.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "523bb06666235df94920de3eb7eb4d3e17c09e33c5ab7b39cfe196e29a4a5bc4",
+        "source": "skills/blog-write/SKILL.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog-write/references/delivery.md": [
+      {
+        "sha256": "e66aee9580652279badef206cb4bccd6fe02fe8e70a771d117f1c32503069201",
+        "source": "skills/blog-write/references/delivery.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "e66aee9580652279badef206cb4bccd6fe02fe8e70a771d117f1c32503069201",
+        "source": "skills/blog-write/references/delivery.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog/SKILL.md": [
+      {
+        "sha256": "7ce5833fb6905f8451552304ef95678a18eec658901e0cc975b8a19fed5ebc4c",
+        "source": "skills/blog/SKILL.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "7ce5833fb6905f8451552304ef95678a18eec658901e0cc975b8a19fed5ebc4c",
+        "source": "skills/blog/SKILL.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog/data/google-updates.json": [
+      {
+        "sha256": "77253bb09ebafdc1bff9ad6d607c3af6f1766d076f7726b99abe6a82b1086cc1",
+        "source": "data/google-updates.json",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "77253bb09ebafdc1bff9ad6d607c3af6f1766d076f7726b99abe6a82b1086cc1",
+        "source": "data/google-updates.json",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog/references/ai-crawler-guide.md": [
+      {
+        "sha256": "dd637426004b99ddc5c2c96bc49da9e0e9d79fa5d2ea985ffe4443ae50bd61ed",
+        "source": "skills/blog/references/ai-crawler-guide.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "dd637426004b99ddc5c2c96bc49da9e0e9d79fa5d2ea985ffe4443ae50bd61ed",
+        "source": "skills/blog/references/ai-crawler-guide.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog/references/ai-slop-detection.md": [
+      {
+        "sha256": "32f24bc6c3a064f2f54da589eac4f880256afe6a8545382c2bac615e3f0bc407",
+        "source": "skills/blog/references/ai-slop-detection.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "32f24bc6c3a064f2f54da589eac4f880256afe6a8545382c2bac615e3f0bc407",
+        "source": "skills/blog/references/ai-slop-detection.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog/references/blog-delivery-contract.md": [
+      {
+        "sha256": "1ee9c185a69d086e521109b4e445bc8199572a4a7b06dc9c5d64e9f6ca25895a",
+        "source": "skills/blog/references/blog-delivery-contract.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "1ee9c185a69d086e521109b4e445bc8199572a4a7b06dc9c5d64e9f6ca25895a",
+        "source": "skills/blog/references/blog-delivery-contract.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog/references/cognitive-load.md": [
+      {
+        "sha256": "ca0f994ef813328f6bb2ed78a9d63ae0982ab5503b7634e18bdc9707617bfd57",
+        "source": "skills/blog/references/cognitive-load.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "ca0f994ef813328f6bb2ed78a9d63ae0982ab5503b7634e18bdc9707617bfd57",
+        "source": "skills/blog/references/cognitive-load.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog/references/content-rules.md": [
+      {
+        "sha256": "93838dafb909991c176f4331963323a5737613f37610e2feea18fe1b229be453",
+        "source": "skills/blog/references/content-rules.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "93838dafb909991c176f4331963323a5737613f37610e2feea18fe1b229be453",
+        "source": "skills/blog/references/content-rules.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog/references/content-templates.md": [
+      {
+        "sha256": "37f4699c4bd79c53429481154470a181cf3c9e6f955209365f1a4f0a6e3b1d5d",
+        "source": "skills/blog/references/content-templates.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "37f4699c4bd79c53429481154470a181cf3c9e6f955209365f1a4f0a6e3b1d5d",
+        "source": "skills/blog/references/content-templates.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog/references/cta-placement.md": [
+      {
+        "sha256": "2ab2b8ad6555e290c2bf96c7a78b7878152a04f40549bc3ff51d05630b99abe4",
+        "source": "skills/blog/references/cta-placement.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "2ab2b8ad6555e290c2bf96c7a78b7878152a04f40549bc3ff51d05630b99abe4",
+        "source": "skills/blog/references/cta-placement.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog/references/distribution-playbook.md": [
+      {
+        "sha256": "9f23c80e8468cc461997f0b08bc77c35440f2ce32db2bf2e026080bd01de6eeb",
+        "source": "skills/blog/references/distribution-playbook.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "9f23c80e8468cc461997f0b08bc77c35440f2ce32db2bf2e026080bd01de6eeb",
+        "source": "skills/blog/references/distribution-playbook.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog/references/editorial-heuristics.md": [
+      {
+        "sha256": "8f7b31e9db91e5ac3bd66f4d81c013bb0655fe6b744971715ac68ead1cbd5e9e",
+        "source": "skills/blog/references/editorial-heuristics.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "8f7b31e9db91e5ac3bd66f4d81c013bb0655fe6b744971715ac68ead1cbd5e9e",
+        "source": "skills/blog/references/editorial-heuristics.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog/references/eeat-signals.md": [
+      {
+        "sha256": "ed0aea4025076cda88281eac01aeb875a2ed5e0232ddf2c964c05887532b86fe",
+        "source": "skills/blog/references/eeat-signals.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "ed0aea4025076cda88281eac01aeb875a2ed5e0232ddf2c964c05887532b86fe",
+        "source": "skills/blog/references/eeat-signals.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog/references/flow-alignment.md": [
+      {
+        "sha256": "d9febf9d512f42ce39e5d51d944e7ca07f2ab682a8268618b47bc4ac022b466d",
+        "source": "skills/blog/references/flow-alignment.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "d9febf9d512f42ce39e5d51d944e7ca07f2ab682a8268618b47bc4ac022b466d",
+        "source": "skills/blog/references/flow-alignment.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog/references/geo-optimization.md": [
+      {
+        "sha256": "8e13668c4107a9ed707f86726916206047ba00da6d23cfb6b10ddb751b34efaa",
+        "source": "skills/blog/references/geo-optimization.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "8e13668c4107a9ed707f86726916206047ba00da6d23cfb6b10ddb751b34efaa",
+        "source": "skills/blog/references/geo-optimization.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog/references/google-landscape-2026.md": [
+      {
+        "sha256": "181321fc89f8570679d98bd668f8d7a1bc445e8fecd121528328904db7d36627",
+        "source": "skills/blog/references/google-landscape-2026.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "181321fc89f8570679d98bd668f8d7a1bc445e8fecd121528328904db7d36627",
+        "source": "skills/blog/references/google-landscape-2026.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog/references/internal-linking.md": [
+      {
+        "sha256": "ca2bc275af1fe9cb41585a6ee46e696974995238f1279010ce3fa80763ed7d92",
+        "source": "skills/blog/references/internal-linking.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "ca2bc275af1fe9cb41585a6ee46e696974995238f1279010ce3fa80763ed7d92",
+        "source": "skills/blog/references/internal-linking.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog/references/orchestration-details.md": [
+      {
+        "sha256": "0f46434c3a87647f49eaf6e0f113751bf51f87d37416851b4cd69a49bafc2ae7",
+        "source": "skills/blog/references/orchestration-details.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "0f46434c3a87647f49eaf6e0f113751bf51f87d37416851b4cd69a49bafc2ae7",
+        "source": "skills/blog/references/orchestration-details.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog/references/platform-guides.md": [
+      {
+        "sha256": "cd3f400809efa8d6f2d021f7c2e639474ea33989c61472d46c474ee7ab940284",
+        "source": "skills/blog/references/platform-guides.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "cd3f400809efa8d6f2d021f7c2e639474ea33989c61472d46c474ee7ab940284",
+        "source": "skills/blog/references/platform-guides.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog/references/quality-scoring.md": [
+      {
+        "sha256": "ab563a355938159fdbb66e3966b0864eb8197c883cd07ad70ef1d9f88e436967",
+        "source": "skills/blog/references/quality-scoring.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "ab563a355938159fdbb66e3966b0864eb8197c883cd07ad70ef1d9f88e436967",
+        "source": "skills/blog/references/quality-scoring.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog/references/research-quality.md": [
+      {
+        "sha256": "7942a5a40a33eea5711592987fb6cacac29460662e23c1bb0d9a35555ce37f4d",
+        "source": "skills/blog/references/research-quality.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "7942a5a40a33eea5711592987fb6cacac29460662e23c1bb0d9a35555ce37f4d",
+        "source": "skills/blog/references/research-quality.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog/references/schema-stack.md": [
+      {
+        "sha256": "61958878a5789e792738cdf571828935727a4a8304d4b271c3a762c1197c4114",
+        "source": "skills/blog/references/schema-stack.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "61958878a5789e792738cdf571828935727a4a8304d4b271c3a762c1197c4114",
+        "source": "skills/blog/references/schema-stack.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog/references/synthesis-contract.md": [
+      {
+        "sha256": "bc358388a210e083429b9233c5087103bdc111a2974a93c3dfcb5cb3e7866cb6",
+        "source": "skills/blog/references/synthesis-contract.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "bc358388a210e083429b9233c5087103bdc111a2974a93c3dfcb5cb3e7866cb6",
+        "source": "skills/blog/references/synthesis-contract.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog/references/video-embeds.md": [
+      {
+        "sha256": "da2dd1128fdbd412186c6175a9d6de4d77af540adda357fbba3dc12c667fc615",
+        "source": "skills/blog/references/video-embeds.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "da2dd1128fdbd412186c6175a9d6de4d77af540adda357fbba3dc12c667fc615",
+        "source": "skills/blog/references/video-embeds.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog/references/visual-media.md": [
+      {
+        "sha256": "cf972559ef46e4a712d19289fd18577a8364ed8732561940093b0a56070c7be5",
+        "source": "skills/blog/references/visual-media.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "cf972559ef46e4a712d19289fd18577a8364ed8732561940093b0a56070c7be5",
+        "source": "skills/blog/references/visual-media.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog/scripts/analyze_blog.py": [
+      {
+        "sha256": "71346890615dac82e31db243bcaf45b8f179b899824658ab6e7831e674859a33",
+        "source": "scripts/analyze_blog.py",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "4f09942d549c369aee0ea364d19267fa2b4e4dad6901f89dce3012e75e92672a",
+        "source": "scripts/analyze_blog.py",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog/templates/case-study.md": [
+      {
+        "sha256": "44d383f52cda7b6927cabd5c62e3b3a24d653ba3bc21d780154dc2991516fb15",
+        "source": "skills/blog/templates/case-study.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "44d383f52cda7b6927cabd5c62e3b3a24d653ba3bc21d780154dc2991516fb15",
+        "source": "skills/blog/templates/case-study.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog/templates/comparison.md": [
+      {
+        "sha256": "342e346a0554e9f5053176a7872094402a610c4ce99c99a9b91c276ec30b9099",
+        "source": "skills/blog/templates/comparison.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "342e346a0554e9f5053176a7872094402a610c4ce99c99a9b91c276ec30b9099",
+        "source": "skills/blog/templates/comparison.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog/templates/data-research.md": [
+      {
+        "sha256": "438fddb2f2ff52a2cc21ac40663cd94687c9e926d33b16f01ebc0740eff7bdee",
+        "source": "skills/blog/templates/data-research.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "438fddb2f2ff52a2cc21ac40663cd94687c9e926d33b16f01ebc0740eff7bdee",
+        "source": "skills/blog/templates/data-research.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog/templates/faq-knowledge.md": [
+      {
+        "sha256": "b7fbcfa2df520432bbb35e6b131614ff9d8bef8ad051f0211ba7c08d09bed270",
+        "source": "skills/blog/templates/faq-knowledge.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "b7fbcfa2df520432bbb35e6b131614ff9d8bef8ad051f0211ba7c08d09bed270",
+        "source": "skills/blog/templates/faq-knowledge.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog/templates/how-to-guide.md": [
+      {
+        "sha256": "78b622fe51166717584acbd1c3e7c6dbb941879b6f926cc2f0a931e2f4d28cd6",
+        "source": "skills/blog/templates/how-to-guide.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "78b622fe51166717584acbd1c3e7c6dbb941879b6f926cc2f0a931e2f4d28cd6",
+        "source": "skills/blog/templates/how-to-guide.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog/templates/listicle.md": [
+      {
+        "sha256": "b4af2351da7a9b530d81021d687afd2baa90847986107f7329f3f02d72d60195",
+        "source": "skills/blog/templates/listicle.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "b4af2351da7a9b530d81021d687afd2baa90847986107f7329f3f02d72d60195",
+        "source": "skills/blog/templates/listicle.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog/templates/news-analysis.md": [
+      {
+        "sha256": "e146115478ca33a51e6b6afb8dc6ed5fa906b8fd9bd118727e40835e60a4187d",
+        "source": "skills/blog/templates/news-analysis.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "e146115478ca33a51e6b6afb8dc6ed5fa906b8fd9bd118727e40835e60a4187d",
+        "source": "skills/blog/templates/news-analysis.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog/templates/pillar-page.md": [
+      {
+        "sha256": "e8409dec628cf8ac99969ae7d3e9f283d1a2c239d364041619d8ee3a7ca8ede4",
+        "source": "skills/blog/templates/pillar-page.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "e8409dec628cf8ac99969ae7d3e9f283d1a2c239d364041619d8ee3a7ca8ede4",
+        "source": "skills/blog/templates/pillar-page.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog/templates/product-review.md": [
+      {
+        "sha256": "52005ac49d613fa624cc77b22de0c0e683fd03a9661e4eea2f4e52afecd6a9ce",
+        "source": "skills/blog/templates/product-review.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "52005ac49d613fa624cc77b22de0c0e683fd03a9661e4eea2f4e52afecd6a9ce",
+        "source": "skills/blog/templates/product-review.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog/templates/roundup.md": [
+      {
+        "sha256": "15bce96ce2475823102154e6684ef1a165cdd21190247ee79de9371e7aab2c21",
+        "source": "skills/blog/templates/roundup.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "15bce96ce2475823102154e6684ef1a165cdd21190247ee79de9371e7aab2c21",
+        "source": "skills/blog/templates/roundup.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog/templates/thought-leadership.md": [
+      {
+        "sha256": "2d4516afa8ec22aad71395d1888413350748bdc084a585ee3b6dbdcb522e3d97",
+        "source": "skills/blog/templates/thought-leadership.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "2d4516afa8ec22aad71395d1888413350748bdc084a585ee3b6dbdcb522e3d97",
+        "source": "skills/blog/templates/thought-leadership.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ],
+    "skills/blog/templates/tutorial.md": [
+      {
+        "sha256": "0bf0453ecbb407bf097233c3f02d7584dcaa0b13b9ae97f83163db6f304973ad",
+        "source": "skills/blog/templates/tutorial.md",
+        "revision": "7b6ca107adb40b7c59030568420c117e2ea61301"
+      },
+      {
+        "sha256": "0bf0453ecbb407bf097233c3f02d7584dcaa0b13b9ae97f83163db6f304973ad",
+        "source": "skills/blog/templates/tutorial.md",
+        "revision": "2500d4c765034864cede2bf215d00ccd4d7d6fb8"
+      }
+    ]
+  }
+}

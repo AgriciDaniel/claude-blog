@@ -3,8 +3,8 @@
   "status": "market-ready",
   "domain": "blog content creation, optimization, and management dual-optimized for Google rankings (E-E-A-T, the 2026 core updates) and AI citations (GEO/AEO), spanning writing, rewriting and freshness, SERP-informed briefs and outlines, editorial calendars and strategy, semantic topic clusters, schema and internal linking, multilingual publishing, the FLOW framework, factchecking, personas, distribution, and the blog delivery contract, grounded in the claude-blog skill",
   "generic_only": false,
-  "last_verified": "2026-08-25",
-  "release_note": "Blog post, topic cluster, and GEO citation audit JSON adapter paths are implemented, CLI-wired, and covered by subprocess tests. Market-ready verification passed after all 118 due source-ledger entries received explicit content, manual, or corrected review decisions on 2026-08-25.",
+  "last_verified": "2026-10-07",
+  "release_note": "All three domain adapter paths are implemented and CLI-wired. On 2026-10-07, the lead reran the whole Brain suite (182 tests) and the executable whole-Brain local audit scored 98/100 with no critical failures or warnings. The ledger contains 127 active reviewed and three retired records, with 97 packaged reviewed-excerpt artifacts. Historical global source dates are preserved. This internal gate does not verify authenticated providers, publication or performance.",
   "raw_input_types": [
     "blog-post input JSON using schemas/blog-post-input.schema.json",
     "Markdown body supplied through blog-post input JSON",
@@ -237,5 +237,6 @@
       "status": "implemented",
       "planned": false
     }
-  ]
+  ],
+  "verification_scope": "Python 3.11: 182 whole-Brain tests passed, including all adapter regressions. Executable audit --require market-ready --verify: 98/100, no critical failures or warnings, 2026-10-07. Packaged offline checks verify excerpt bytes/hash and source/review provenance. Full normalized captures were independently hash-checked in the retained audit pack; the packaged gate does not recompute full-document digests, establish full-page availability or prove semantic entailment. Secure descriptor-relative evidence reads are verified on Linux and fail closed on unsupported platforms. The excerpt gate covers active-ledger referenced paths; all 97 currently shipped artifacts are covered."
 }

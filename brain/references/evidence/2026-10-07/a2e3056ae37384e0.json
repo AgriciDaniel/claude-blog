@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://support.google.com/merchants/answer/16989427",
+  "normalized_full_document_sha256": "e0b548168a1287e5dd21d23ccd80ecfb73eff304b7e6f3067496efe417712a55",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "videos submitted via the video link [video_link] attribute will become eligible to serve"
+  ],
+  "records": [
+    {
+      "source_id": "g-update-2026-06-30-merchant-center-product-videos-serving-eligible",
+      "source_url": "https://support.google.com/merchants/answer/16989427",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    }
+  ]
+}

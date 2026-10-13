@@ -9,7 +9,7 @@ description: >
   Use when user says "multilingual blog", "blog multilingual", "write in
   multiple languages", "international blog", "mehrsprachiger Blog", "blog
   multilingue", "blog multilingue", "create blog in German and French".
-user-invokable: true
+user-invocable: true
 argument-hint: "<topic> --languages <comma-separated-codes>"
 license: MIT
 compatibility: Requires claude-blog (blog-write). Optional integration with claude-seo (seo-hreflang) for richer hreflang validation.
@@ -21,6 +21,14 @@ metadata:
 
 # Blog Multilingual, One-Command International Publishing
 
+Bundled paths below use host Markdown substitution of `${CLAUDE_SKILL_DIR}`;
+it is not an exported shell variable. Resolve them before execution, quote
+paths, and refuse nonabsolute overrides. Pass `blog_reference_root` resolved
+from `${CLAUDE_SKILL_DIR}/../blog/references`, `blog_template_root` from
+`${CLAUDE_SKILL_DIR}/../blog/templates`, and needed sibling roots to agents.
+Read the main reference `orchestration-details.md` before loading project
+context; pass only its helper-fenced output to downstream agents.
+
 The flagship multilingual orchestrator. Combines blog writing, translation,
 cultural adaptation, and full international SEO into a single command.
 Produces publication-ready blog posts in every target language with hreflang
@@ -28,7 +36,7 @@ tags, localized JSON-LD schema, and CMS-integration metadata.
 
 > Adapted from `claude-blog-multilingual` by Chris Mueller (AI Marketing Hub
 > Pro Hub Challenge submission, March 2026, scored 85/100 Proficient).
-> Original: https://github.com/Chriss54/multilingual-int
+> Original repository: no longer available as of 2026-10-12
 > This port removes the original `curl | bash` installer and credential
 > handling flagged in the audit, integrates as core skills, and uses the
 > shared cultural-adaptation reference under `blog-translate/references/`.
@@ -58,7 +66,7 @@ deeper validation `seo-hreflang` provides.
 | Argument | Required | Default | Description |
 |----------|----------|---------|-------------|
 | `<topic>` | Yes | required | Blog topic or working title |
-| `--languages` | Yes | required | Comma-separated Google-compatible hreflang tags (e.g. `de,fr,es-MX,ja,pt-BR`) |
+| `--languages` | Yes | required | Comma-separated Google-compatible hreflang tags (e.g. `de,fr,es-MX,ja,pt-BR`; see the code rules in Phase 1) |
 | `--source` | No | `en` | Source language to write the original in |
 | `--no-localize` | No | off | Skip cultural adaptation (translation only) |
 | `--format` | No | auto | Output format: `md`, `mdx`, or `html` |
@@ -76,9 +84,17 @@ in `<source>` first, then translated."
 2. Validate each language code with the shared multilingual locale rules used
    by `blog-translate`, `blog-localize`, and `blog-locale-audit`: ISO 639-1
    language in lowercase, optional ISO 15924 script in title case, optional
-   ISO 3166-1 Alpha-2 region in uppercase. Require a region or explicit
-   neutral mode for ambiguous language-only targets such as `es`, `pt`, and
-   `zh`.
+   ISO 3166-1 Alpha-2 region in uppercase. Google's localized-versions
+   documentation (https://developers.google.com/search/docs/specialty/international/localized-versions,
+   read 2026-10-12) allows a language code by itself (`de` is valid hreflang),
+   but never a region by itself. This pipeline is stricter for translation
+   quality: language-only codes are accepted only for unambiguous editorial
+   markets (`de`, `fr`, `ja`, and the source language). `es`, `pt`, and `zh`
+   (and any language spanning materially different markets or scripts) need a
+   region or script (`es-ES`, `es-MX`, `pt-BR`, `pt-PT`, `zh-Hans`, `zh-Hant`)
+   or an explicit neutral mode the user requests. If the user passes a bare
+   `es`, `pt`, or `zh`, ask once which market they mean. The hreflang value
+   emitted in Phase 5 is exactly the normalized code the user supplied.
 3. Detect output format from the project (frontmatter convention, file
    extensions, framework hints) or use `--format`.
 4. Resolve source language. If a target language equals `--source`, drop it
@@ -113,6 +129,9 @@ For each target language, invoke `blog-translate`:
 
 - Input: the original blog post produced in Phase 2.
 - Target: the specific language code.
+- Mode: orchestrated. Put the literal line `Mode: orchestrated` at the top of
+  the invocation. In orchestrated mode `blog-translate` skips its own delivery
+  contract (see its Phase 7); this orchestrator runs it once in Phase 6.
 - Run targets in parallel where the runtime supports it (one Task per
   language) to reduce wall-clock time.
 
@@ -128,13 +147,16 @@ post:
 
 - Input: the translated blog post.
 - Locale: the target language or region code.
+- Mode: orchestrated. Put the literal line `Mode: orchestrated` at the top of
+  the invocation. In orchestrated mode `blog-localize` skips its own delivery
+  contract; this orchestrator runs it once in Phase 6.
 - Run in parallel.
 
 Apply the localized output only after resolving the generated path inside
 `multilingual/`, rejecting symlinks, and creating a backup when overwriting.
 The localizer swaps brand examples, adapts CTAs, substitutes legal
 references, and adjusts formality. See
-`../blog-localize/SKILL.md` for the full adaptation pass.
+`${CLAUDE_SKILL_DIR}/../blog-localize/SKILL.md` for the full adaptation pass.
 
 Progress: `Phase 4: Cultural adaptation complete for [N] languages`.
 
@@ -230,7 +252,7 @@ Machine-readable mapping for CMS integration:
     {
       "lang": "de",
       "locale": "de-DE",
-      "hreflang": "de-DE",
+      "hreflang": "de",
       "slug": "wie-man-ki-slop-vermeidet",
       "file": "de/wie-man-ki-slop-vermeidet.md",
       "url": "https://example.com/de/wie-man-ki-slop-vermeidet/",
@@ -246,6 +268,9 @@ Machine-readable mapping for CMS integration:
   }
 }
 ```
+
+`hreflang` is exactly the normalized code the user supplied (here `de`);
+`locale` records the cultural profile used, which may be more specific.
 
 Save to `multilingual/hreflang-map.json`.
 
@@ -271,25 +296,62 @@ Attach or update Article/BlogPosting JSON-LD on every language version with
 ```
 
 Use the existing `/blog schema` sub-skill for richer schema on each version.
-Keep Article/BlogPosting, Person, Organization, and BreadcrumbList as the
-priority stack. FAQPage is optional and only for visible FAQ content as an
-entity and AI-citation signal, not a Google rich result target.
+For the internal schema heuristic, Article or BlogPosting earns 2 points,
+Person earns 1, and either Organization or BreadcrumbList earns 1. This is not
+a Google requirement. Include both Organization and BreadcrumbList when the
+visible site data supports them. FAQPage is optional and only for visible FAQ
+content as an entity signal, not a Google rich result target.
 
-### Phase 6: Delivery Summary
+### Phase 6: Final Locale Delivery Contract (exactly one run per locale)
+
+This is the ONLY delivery-contract run for each target locale. `blog-translate`
+and `blog-localize` ran in orchestrated mode and skipped theirs (each carries
+the sentence "When invoked by blog-multilingual (orchestrated mode), skip the delivery contract; blog-multilingual runs it once per locale on the final text." and the line "Orchestrated mode is signaled by the literal line `Mode: orchestrated` at the top of the invocation."), so the full
+five-gate sequence runs once, on the final localized text (or on the
+translation when `--no-localize` is set). The source locale keeps the
+successful `/blog write` review. Do not start this phase until the last
+translation or localization change for the locale is saved.
+
+For each target locale, run the canonical sequence independently:
+
+1. Resolve `BLOG_SCRIPT_DIR="${CLAUDE_BLOG_SCRIPTS_DIR:-${CLAUDE_SKILL_DIR}/../../scripts}"`
+   and reject it unless absolute. Never resolve helpers from the current
+   project's `scripts/` directory.
+2. Visuals: create `multilingual/{lang}/delivery/{localized-slug}/` as the
+   isolated artifact directory and copy the final locale source into it under
+   its lowercase localized slug. Resolve every draft marker (`[INTERNAL-LINK`,
+   `[IMAGE`, `[CHART`): none may remain. Reuse the source hero by copying it
+   as `hero.<ext>`; a new locale-specific hero is a paid call and needs the
+   `blog-image` cost and consent gate first.
+3. Render: `python3 "$BLOG_SCRIPT_DIR/blog_render.py" --md <locale-file> --out-dir <locale-delivery-dir>`.
+4. Init nonce: `python3 "$BLOG_SCRIPT_DIR/blog_preflight.py" --draft <locale-delivery-dir> --init-review-nonce`.
+5. Review: pass only the printed nonce to a fresh `blog-reviewer` invocation
+   against the rendered locale HTML. The reviewer returns text; save it
+   verbatim to `<locale-delivery-dir>/review.md`.
+6. Gates: `python3 "$BLOG_SCRIPT_DIR/blog_preflight.py" --draft <locale-delivery-dir> --strict --slug <localized-slug>`.
+7. Loop: after ANY change to the locale file, hero, HTML, or PDF, re-render,
+   re-init the nonce, and re-review. Maximum 3 iterations per locale.
+
+Mark the locale passed only at 90+/100, zero P0, matching nonce, final
+`BLOCKING: false`, and all other gates. A failed locale remains
+`draft-blocked`; keep successful locales and report the failed locale's
+diagnostic without calling the whole set complete.
+
+### Phase 7: Delivery Summary
 
 ```
-## Multilingual blog complete: [Title]
+## Multilingual blog [complete / partially blocked]: [Title]
 
 ### Original
 - Language: [source]
 - File: multilingual/{source}/{slug}.{ext}
 
 ### Translations
-| Language | File | Localized | Keywords adapted |
-|----------|------|-----------|------------------|
-| de | multilingual/de/{slug}.md | yes | [N] |
-| fr | multilingual/fr/{slug}.md | yes | [N] |
-| es | multilingual/es/{slug}.md | yes | [N] |
+| Language | File | Localized | Keywords adapted | Delivery review |
+|----------|------|-----------|------------------|-----------------|
+| de | multilingual/de/{slug}.md | yes | [N] | passed / draft-blocked |
+| fr | multilingual/fr/{slug}.md | yes | [N] | passed / draft-blocked |
+| es-MX | multilingual/es-MX/{slug}.md | yes | [N] | passed / draft-blocked |
 
 ### International SEO assets
 - multilingual/hreflang-tags.html
@@ -300,6 +362,7 @@ entity and AI-citation signal, not a Google rich result target.
 ### Total
 - [N] posts in [N] languages
 - [N] SEO assets generated
+- [N] locale artifact sets passed 90+, zero P0, and nonce verification
 
 ### Next steps
 - Replace `{source-url}`, `{lang-1-url}`, `{lang-2-url}`, and
@@ -329,6 +392,7 @@ entity and AI-citation signal, not a Google rich result target.
 | `blog-write` missing | Error: "This skill requires `blog-write`. Reinstall claude-blog." |
 | One translation fails | Complete the rest, report partial results, suggest a retry command |
 | Source language equals a target | Skip that target, log a notice |
+| Bare `es`, `pt`, or `zh` target | Ask which market (`es-ES`, `es-MX`, `pt-BR`, `pt-PT`, `zh-Hans`, `zh-Hant`) or require an explicit neutral mode |
 | 10 or more target languages | Stop before writing. Explain scaled-content-abuse risk and require reviewed batches of at most 9 target languages |
 | `seo-hreflang` not installed | Use the self-contained generator, note it in the summary |
 
@@ -336,7 +400,7 @@ entity and AI-citation signal, not a Google rich result target.
 
 | Command | Purpose |
 |---------|---------|
-| `/blog multilingual <topic> --languages de,fr,es` | Write source, translate, localize, emit hreflang assets |
+| `/blog multilingual <topic> --languages de,fr,es-MX` | Write source, translate, localize, emit hreflang assets |
 | `/blog translate <file> --to de,fr,es` | Translate one file into target languages |
 | `/blog localize <file> --locale de-DE` | Cultural deep-adaptation of one translated file |
 | `/blog locale-audit <directory>` | Multilingual QA across a directory |

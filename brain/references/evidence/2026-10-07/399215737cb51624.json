@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://www.seoclarity.net/research/analysis-of-top-cited-pages-from-chatgpt",
+  "normalized_full_document_sha256": "473a28432768263145d6309d3728cd2b7a2208c814494f50fb3c80fc6e9aa449",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "25% have no organic visibility when ranking in any of the top 100 ranking positions"
+  ],
+  "records": [
+    {
+      "source_id": "seoclarity-chatgpt",
+      "source_url": "https://www.seoclarity.net/research/analysis-of-top-cited-pages-from-chatgpt",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "qualified",
+      "excerpt_index": 0
+    }
+  ]
+}

@@ -11,6 +11,20 @@
 - **Best For:** Client success stories, internal project retrospectives, before/after transformations, strategy validation, process documentation
 - **Avoid When:** You lack specific metrics or measurable outcomes (vague "it went well" stories don't qualify), or when the subject hasn't given permission to be referenced
 
+### Evidence gate
+
+Confirm measurable before-and-after evidence, the method used to derive it, and
+permission to identify the subject before drafting. If any is missing, do not
+invent results or imply permission. Use a process retrospective with anonymized,
+supported facts when authorized, choose another template, or return an
+evidence-needs brief.
+
+**ILLUSTRATIVE, REPLACE WITH REAL DATA:** Every "Acme Corp" figure in this
+template (73%, 1,200ms to 320ms, 12% errors, $2M contract, $8,400 to $3,200 per
+month, NPS 24 to 67, 78% over-fetching) is invented to show format only. It is
+not a real company or result. Never ship an example figure, and never copy one
+into a post. Replace each with your own sourced number or remove the claim.
+
 ---
 
 ## Section-by-Section Structure
@@ -22,7 +36,7 @@
 **Format:** "How [Company/Team] [Achieved Specific Result] in [Timeframe]"
 
 **Examples:**
-- "How Acme Corp Reduced API Latency by 73% in 6 Weeks"
+- "How Acme Corp Reduced API Latency by 73% in 6 Weeks" (ILLUSTRATIVE, REPLACE WITH REAL DATA)
 - "How a 3-Person Team Scaled to 1M Monthly Users in 90 Days"
 - "How We Cut Build Times from 12 Minutes to 45 Seconds"
 
@@ -45,7 +59,7 @@
 2. **How** (1 sentence): The core strategy in plain language.
 3. **Timeframe** (phrase): How long it took.
 
-**Example:**
+**Example (ILLUSTRATIVE, REPLACE WITH REAL DATA):**
 > **TL;DR:** Acme Corp reduced API response times from 1,200ms to 320ms (73% improvement) by migrating from a monolithic REST API to an edge-cached GraphQL gateway. The migration was completed in 6 weeks with zero downtime and a 2-person engineering team.
 
 [STAT: The headline metric that anchors the entire case study]
@@ -87,7 +101,7 @@
 
 [IMAGE] Diagram or screenshot showing the "before" state: the broken architecture, the poor metrics dashboard, the error logs.
 
-**Example opening:**
+**Example opening (ILLUSTRATIVE, REPLACE WITH REAL DATA):**
 > "At peak traffic, Acme's API was returning 500 errors on 12% of requests, and their largest enterprise client had set a 30-day deadline to fix it or cancel their $2M annual contract."
 
 ---
@@ -114,7 +128,7 @@
 
 [INTERNAL-LINK] Link to a detailed guide on the strategy or technology chosen: "We wrote a comprehensive guide on [strategy/technology]: read it here."
 
-**Example:**
+**Example (ILLUSTRATIVE, REPLACE WITH REAL DATA):**
 > "The team chose to migrate from REST to GraphQL: not because of hype, but because their analysis showed that 78% of API calls were over-fetching data by 3-10x, and the client-specific BFF (Backend for Frontend) pattern they'd tried first added latency instead of reducing it."
 
 ---
@@ -135,7 +149,7 @@
 
 [STAT: Implementation efficiency metric (time spent, cost, iterations required)]
 
-**Example step:**
+**Example step (ILLUSTRATIVE, REPLACE WITH REAL DATA):**
 > 3. **Deployed edge caching layer** (Week 3-4): Set up Cloudflare Workers as a caching layer between the GraphQL gateway and origin servers. Used stale-while-revalidate with a 60s TTL: this single change accounted for 40% of the total latency reduction.
 
 ---
@@ -157,13 +171,15 @@
 
 [IMAGE] Screenshot of the "after" state: the improved dashboard, the clean error logs, the performance graph.
 
-**Example:**
+**Example (ILLUSTRATIVE, REPLACE WITH REAL DATA):**
 > | Metric | Before | After | Change |
 > |--------|--------|-------|--------|
 > | API response time (p95) | 1,200ms | 320ms | -73% |
 > | Error rate (5xx) | 12% | 0.3% | -97.5% |
 > | Infrastructure cost | $8,400/mo | $3,200/mo | -62% |
 > | Client satisfaction (NPS) | 24 | 67 | +179% |
+>
+> *Invented figures for format only. Replace with measured results and name the source and period.*
 
 ---
 

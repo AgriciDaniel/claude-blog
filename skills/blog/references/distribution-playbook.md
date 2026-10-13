@@ -134,8 +134,8 @@ companion video or claim machine-recognized authority.
 - Front-load the value: "[Key Finding]: How to [Achieve Outcome]"
 
 ### Transcript SEO
-YouTube auto-captions are approximately 85% accurate. Always upload your own
-transcript for perfect accuracy:
+YouTube auto-captions can contain errors. Upload your own transcript for
+accuracy:
 
 1. Export transcript from your blog post (strip formatting)
 2. Add timestamps matching video chapters
@@ -153,7 +153,7 @@ a current primary source is loaded.
 |---------|-----------|
 | Colors | Contrasting colors (complementary palette), avoid YouTube red |
 | Text | Maximum 4 words, large readable font (even on mobile) |
-| Face | Close-up with expressive emotion (increases CTR 30-40%) |
+| Face | Close-up with expressive emotion (test against your own channel data) |
 | Consistency | Use brand template for recognizable channel identity |
 | Resolution | 1280x720 minimum, 16:9 aspect ratio |
 | File size | Under 2MB (YouTube compresses further) |
@@ -223,8 +223,11 @@ over keyword-optimized SEO content.
 | Links | Put external links in the FIRST COMMENT, not the body |
 
 ### Why First Comment for Links
-LinkedIn's algorithm suppresses posts containing external links in the body.
-Posts with external links get 30-50% less reach than text-only posts. Place
+Some practitioners report lower reach for posts with external links in the
+body. Observational studies disagree: some find a reach penalty, others find
+little or none, and LinkedIn has not confirmed a link penalty (for example
+Ordinal's analysis, https://www.tryordinal.com/blog/linkedin-link-penalty-study,
+seen in search 2026-10-11, not fully verified). As a low-cost hedge, place
 your blog link as the first comment immediately after publishing.
 
 ### Thought Leadership Positioning

@@ -7,6 +7,10 @@ Usage:
 The profiler reuses scripts/analyze_blog.py for per-post style signals, then
 aggregates them into a deterministic JSON profile or a VOICE.md-ready markdown
 block.
+
+Exit codes: 0 profile produced, 1 no readable sample posts (post_count 0),
+2 a named path does not exist. On 1 or 2 nothing is written, so an existing
+VOICE.md is never replaced by an empty profile.
 """
 
 from __future__ import annotations
@@ -210,8 +214,8 @@ def strip_to_plain_text(content: str) -> str:
     body = analyze_blog.strip_frontmatter(content)
     body = re.sub(r"```.*?```", "", body, flags=re.DOTALL)
     body = re.sub(r"<[^>]+>", "", body)
-    body = re.sub(r"!\[.*?\]\(.*?\)", "", body)
-    body = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", body)
+    body = re.sub(r"!\[[^\]\n]{0,300}\]\([^)\n]{0,1000}\)", "", body)
+    body = re.sub(r"\[([^\]\n]{1,300})\]\([^)\n]{1,1000}\)", r"\1", body)
     body = re.sub(r"^#{1,6}\s+", "", body, flags=re.MULTILINE)
     body = re.sub(r"\n{3,}", "\n\n", body)
     return body.strip()
@@ -264,7 +268,7 @@ def paragraph_word_counts(content: str) -> list[int]:
     cleaned = re.sub(r"```.*?```", "", content, flags=re.DOTALL)
     cleaned = re.sub(r"<[^>]+>", "", cleaned)
     cleaned = re.sub(r"^#{1,6}\s+.*$", "", cleaned, flags=re.MULTILINE)
-    cleaned = re.sub(r"!\[.*?\]\(.*?\)", "", cleaned)
+    cleaned = re.sub(r"!\[[^\]\n]{0,300}\]\([^)\n]{0,1000}\)", "", cleaned)
     paragraphs = [p.strip() for p in re.split(r"\n\s*\n", cleaned) if p.strip()]
     return [len(p.split()) for p in paragraphs if len(p.split()) >= 5]
 
@@ -625,7 +629,21 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
 
+    missing = [path for path in args.paths if not Path(path).exists()]
+    if missing:
+        print(f"Error: path not found: {', '.join(missing)}. Nothing was written.", file=sys.stderr)
+        return 2
+
     profile = learn_style(args.paths, min_posts=args.min)
+    if profile["sample"]["post_count"] == 0:
+        for warning in profile["sample"].get("warnings", []):
+            print(f"Warning: {warning}", file=sys.stderr)
+        print(
+            "Error: no readable sample posts were found, so no voice profile was "
+            "produced. Nothing was written (an existing VOICE.md is untouched).",
+            file=sys.stderr,
+        )
+        return 1
     rendered = render_markdown(profile) if args.format == "markdown" else render_json(profile)
 
     for warning in profile["sample"].get("warnings", []):

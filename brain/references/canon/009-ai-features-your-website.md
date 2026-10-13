@@ -4,8 +4,10 @@
 
 AI features and your website, Google Search Central.
 URL: https://developers.google.com/search/docs/appearance/ai-features
-Retrieved: 2026-07-09.
+Retrieved and reviewed: 2026-10-07.
 Confidence: EVIDENCE-BASED.
+
+Ledger source: `g-ai-features`.
 
 ## Core Thesis
 
@@ -13,7 +15,8 @@ Google documents how website content can appear in AI features and how standard 
 
 ## Blog Application
 
-- Keep content indexable when the goal is Search and AI feature visibility.
+- Keep pages indexed and eligible to appear with a snippet when the goal is
+  supporting-link eligibility in Search AI features; eligibility is not inclusion.
 - Use snippet and preview controls deliberately.
 - Avoid claiming a page can force inclusion in AI Overviews or AI Mode.
 - Pair AI feature guidance with the generative AI optimization guide for current llms.txt caveats.

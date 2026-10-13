@@ -9,6 +9,13 @@ url field plus clicks and impressions.
 Optional live export path:
     python3 skills/blog-google/scripts/run.py gsc_query --property sc-domain:example.com --dimensions page --json
 
+Pages are matched across the two periods by a normalized URL: scheme and host
+are lower-cased, the fragment and a trailing slash on the path are dropped, and
+query strings are kept because they can identify different pages. Metric values
+may be numbers or numeric strings (thousands separators such as "1,234" are
+parsed); any other value is an error, never silently counted as 0. Errors are
+reported as JSON ``{"error": ...}`` on stdout with exit code 1.
+
 Usage:
     python3 content_decay.py current.json previous.json
     python3 content_decay.py current.json previous.json --threshold 0.20 --metric clicks
@@ -23,9 +30,11 @@ import math
 import os
 import stat
 import sys
+import re
 import tempfile
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit, urlunsplit
 
 SEVERITY_RANK = {
     "critical": 3,
@@ -45,19 +54,62 @@ def _reject_json_constant(value: str) -> None:
     raise ValueError(f"non-finite JSON value is not allowed: {value}")
 
 
+_THOUSANDS_RE = re.compile(r"^\d{1,3}(?:,\d{3})+(?:\.\d+)?$")
+
+
 def _as_number(value: Any, *, metric: str, page: str) -> float:
-    """Return value as a nonnegative finite float, using 0 for null values."""
+    """Return value as a nonnegative finite float; null counts as 0.
+
+    Numbers and numeric strings are accepted, including thousands separators
+    ("1,234"). Anything else raises instead of being coerced to 0.
+    """
     if value is None:
         return 0.0
-    try:
-        number = float(value)
-    except (TypeError, ValueError):
-        return 0.0
+    if isinstance(value, bool):
+        raise ContentDecayError(
+            f"Metric {metric} for page {page} must be a number, got {value!r}."
+        )
+    if isinstance(value, str):
+        text = value.strip()
+        if _THOUSANDS_RE.match(text):
+            text = text.replace(",", "")
+        try:
+            number = float(text)
+        except ValueError:
+            raise ContentDecayError(
+                f"Metric {metric} for page {page} is not numeric: {value!r}."
+            ) from None
+    else:
+        try:
+            number = float(value)
+        except (TypeError, ValueError):
+            raise ContentDecayError(
+                f"Metric {metric} for page {page} is not numeric: {value!r}."
+            ) from None
     if not math.isfinite(number):
         raise ContentDecayError(
             f"Metric {metric} for page {page} must be a finite number."
         )
     return max(number, 0.0)
+
+
+def normalize_page(page: str) -> str:
+    """Normalize a page URL so the same page matches across periods.
+
+    Lower-cases scheme and host, drops the fragment and a trailing slash on the
+    path, and keeps the query string untouched.
+    """
+    text = page.strip()
+    if any(ord(char) < 32 or char.isspace() for char in text):
+        return page  # urlsplit would silently drop control characters
+    parts = urlsplit(text)
+    if parts.scheme and parts.netloc:
+        path = parts.path.rstrip("/")
+        return urlunsplit((parts.scheme.lower(), parts.netloc.lower(), path, parts.query, ""))
+    if text.startswith("/"):
+        parts = urlsplit(text)
+        return urlunsplit(("", "", parts.path.rstrip("/") or "/", parts.query, ""))
+    return text
 
 
 def _read_safely(path: Path, max_bytes: int) -> str:
@@ -84,7 +136,10 @@ def _read_safely(path: Path, max_bytes: int) -> str:
         os.close(fd)
     if len(data) > max_bytes:
         raise ContentDecayError(f"{path} exceeds size cap after read ({max_bytes}).")
-    return data.decode("utf-8")
+    try:
+        return data.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        raise ContentDecayError(f"{path} is not valid UTF-8 text: {exc.reason}") from exc
 
 
 def _row_page(row: dict[str, Any]) -> str | None:
@@ -151,6 +206,7 @@ def aggregate_pages(
         page = _row_page(row)
         if not page:
             continue
+        page = normalize_page(page)
         if required_metric is not None and required_metric not in row:
             raise ContentDecayError(
                 f"Row for page {page} is missing selected metric column: {required_metric}."
@@ -456,7 +512,7 @@ def main(argv: list[str] | None = None) -> int:
         output = json.dumps(report, indent=2, allow_nan=False) + "\n"
     try:
         write_output(output, args.output)
-    except ContentDecayError as exc:
+    except (ContentDecayError, OSError) as exc:
         print(json.dumps({"error": str(exc)}, indent=2, allow_nan=False))
         return 1
     return 0

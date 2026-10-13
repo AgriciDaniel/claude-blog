@@ -1,0 +1,27 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://developers.google.com/search/blog/2026/06/gen-ai-performance-reports",
+  "normalized_full_document_sha256": "e2b5cae3f2307f4b02cf22a36cfc1666a54090f1643264f1d4ca46517e5c0010",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "as of august 31, 2026, we've rolled out these insights to all websites worldwide"
+  ],
+  "records": [
+    {
+      "source_id": "g-genai-reports",
+      "source_url": "https://developers.google.com/search/blog/2026/06/gen-ai-performance-reports",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    },
+    {
+      "source_id": "g-update-2026-06-03-search-console-search-generative-ai-performance-reports",
+      "source_url": "https://developers.google.com/search/blog/2026/06/gen-ai-performance-reports",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    }
+  ]
+}

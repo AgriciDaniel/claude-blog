@@ -12,10 +12,15 @@ import blog_hygiene as bh  # noqa: E402
 
 
 def test_lazy_loading_added_once_and_idempotent() -> None:
-    html = '<p><img src="a.png" alt="A"><img src="b.png" alt="B" loading="eager"></p>'
+    # The first image is the hero and stays eager; later images get lazy loading.
+    html = (
+        '<p><img src="hero.png" alt="H"><img src="a.png" alt="A">'
+        '<img src="b.png" alt="B" loading="eager"></p>'
+    )
     out, n = bh.fix_html_lazy_loading(html)
     assert n == 1
-    assert 'src="a.png" alt="A"' in out and 'loading="lazy"' in out
+    assert '<img src="hero.png" alt="H">' in out
+    assert '<img loading="lazy" src="a.png" alt="A">' in out
     # already-eager image is left untouched
     assert out.count('loading="eager"') == 1
     # idempotent: second pass changes nothing
@@ -59,7 +64,7 @@ def test_h2_extraction_skips_code_fences() -> None:
 
 def test_cli_dry_run_does_not_write(tmp_path: Path) -> None:
     p = tmp_path / "post.html"
-    p.write_text('<img src="a.png">', encoding="utf-8")
+    p.write_text('<img src="hero.png"><img src="a.png">', encoding="utf-8")
     r = subprocess.run(
         [sys.executable, str(ROOT / "scripts" / "blog_hygiene.py"), "--html", str(p)],
         capture_output=True, text=True,
@@ -67,18 +72,18 @@ def test_cli_dry_run_does_not_write(tmp_path: Path) -> None:
     assert r.returncode == 0
     data = json.loads(r.stdout)
     assert data["lazy_fixed"] == 1 and data["applied"] is False
-    assert p.read_text(encoding="utf-8") == '<img src="a.png">'  # unchanged in dry-run
+    assert p.read_text(encoding="utf-8") == '<img src="hero.png"><img src="a.png">'  # unchanged in dry-run
 
 
 def test_cli_apply_writes(tmp_path: Path) -> None:
     p = tmp_path / "post.html"
-    p.write_text('<img src="a.png">', encoding="utf-8")
+    p.write_text('<img src="hero.png"><img src="a.png">', encoding="utf-8")
     r = subprocess.run(
         [sys.executable, str(ROOT / "scripts" / "blog_hygiene.py"), "--html", str(p), "--apply"],
         capture_output=True, text=True,
     )
     assert r.returncode == 0
-    assert 'loading="lazy"' in p.read_text(encoding="utf-8")
+    assert p.read_text(encoding="utf-8") == '<img src="hero.png"><img loading="lazy" src="a.png">'
 
 
 def test_cli_refuses_symlink(tmp_path: Path) -> None:

@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://www.rfc-editor.org/info/rfc9309/",
+  "normalized_full_document_sha256": "061a9597322bd4c70209dc5bff9399d28070266b0ae2ae6f431df74d8923dcb5",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "crawlers must use the parseable rules"
+  ],
+  "records": [
+    {
+      "source_id": "rfc9309",
+      "source_url": "https://www.rfc-editor.org/info/rfc9309",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    }
+  ]
+}

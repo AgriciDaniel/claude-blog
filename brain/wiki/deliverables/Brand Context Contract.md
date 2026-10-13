@@ -4,7 +4,7 @@ title: "Brand Context Contract"
 domain: "Blog Content Brain"
 status: active
 created: 2026-07-09
-updated: 2026-07-09
+updated: 2026-10-07
 tags: [deliverables, brand, voice]
 source_urls:
   - "https://developers.google.com/search/docs/fundamentals/creating-helpful-content"
@@ -41,3 +41,5 @@ The contract requires audience, buyer problem, positioning, approved claims, pro
 2. Check claims against [[Research Pack Index]] before adding them to the proof library.
 3. Test voice rules on one paragraph and reject rules that reduce clarity.
 4. Route approved context to [[Style Learning Voice Profile]] for measurable style fields.
+
+For Brand Context Contract, `nng-editorial-heuristics` supplies general interaction-design principles. Applying those principles to this note's editorial checks is a project adaptation, not an experimentally established SEO or AI-citation requirement.

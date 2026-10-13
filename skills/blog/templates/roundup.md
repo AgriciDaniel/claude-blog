@@ -18,6 +18,14 @@
   - You want content that is inherently shareable (each expert shares it with their audience)
   - You want to build relationships with industry figures for future collaboration
 
+### Evidence gate
+
+Confirm the supplied or already published contribution from every named expert
+and retain its attribution source. If credible contributions are unavailable,
+do not invent quotes, opinions, or outreach. Switch to a sourced research
+synthesis, or return an evidence-needs brief describing the contributors and
+permissions required.
+
 ---
 
 ## Section-by-Section Structure

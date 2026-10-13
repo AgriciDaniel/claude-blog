@@ -3,7 +3,7 @@ type: spoke
 title: "E-E-A-T Review Rubric"
 status: evergreen
 created: 2026-07-06
-updated: 2026-07-09
+updated: 2026-10-07
 tags: [eeat, evergreen]
 domain: "Blog Trust"
 confidence: verified
@@ -73,3 +73,5 @@ A B2B security checklist answers the reader task and cites vendor docs, but the 
 ## Analyzer Trust Subscore Wiring
 
 [[Blog Analyzer Score Report]] consumes the rubric as the trust subscore source. Inputs provided are row scores, blocker flags, weakest source IDs, owner, and confidence. The report expects severity labels, a trust-subscore explanation, and fix cards that cite `g-helpful-content`, `g-qrg-full`, or `g-spam-policies` according to the failing row.
+
+For E-E-A-T Review Rubric, `nng-editorial-heuristics` supplies general interaction-design principles. Applying those principles to this note's editorial checks is a project adaptation, not an experimentally established SEO or AI-citation requirement.

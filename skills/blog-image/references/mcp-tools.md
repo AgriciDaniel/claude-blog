@@ -1,7 +1,13 @@
-# MCP Tools Reference - @ycse/nanobanana-mcp
+# MCP Tools Reference - @ycse/nanobanana-mcp (optional, at your own risk)
 
 > Package: `@ycse/nanobanana-mcp`
 > GitHub: https://github.com/YCSE/nanobanana-mcp
+>
+> The default generation route is the direct API through the repo's
+> `generate_hero.py` (see `blog-image/SKILL.md`, Step 5). This MCP is optional.
+> The pinned release `@ycse/nanobanana-mcp@1.1.1` only supports model IDs that
+> Google shut down on 2026-06-25, so image calls through it are expected to
+> fail. Install it only if you accept that.
 
 ## Tools
 
@@ -78,10 +84,12 @@ Switch the active Gemini model.
 - `flash`: maps to `gemini-3.1-flash-image-preview`
 - `pro`: maps to `gemini-3-pro-image-preview`
 
-Those preview IDs shut down on 2026-06-25. Stable Google API IDs such as
-`gemini-3.1-flash-image`, `gemini-3.1-flash-lite-image`, and
-`gemini-3-pro-image` are direct API IDs. Do not pass them to `set_model`
-unless the installed MCP package explicitly supports them.
+Both preview IDs were shut down on 2026-06-25 (Google deprecations page,
+checked 2026-10-12), so the pinned package cannot generate images. Stable
+Google API IDs such as `gemini-nano-banana-2.1`, `gemini-3.1-flash-image`,
+`gemini-3.1-flash-lite-image`, and `gemini-3-pro-image` are direct API IDs.
+Do not pass them to `set_model` unless the installed MCP package explicitly
+supports them.
 
 ### get_image_history
 Retrieve list of images generated in the current session.
@@ -104,7 +112,7 @@ Reset session context and conversation history.
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `GOOGLE_AI_API_KEY` | Yes | API key from https://aistudio.google.com/apikey |
+| `GOOGLE_AI_API_KEY` | Yes | API key from https://aistudio.google.com/apikey (also the only key variable `generate_hero.py` reads) |
 | `NANOBANANA_MODEL` | No | Pinned package accepts only `gemini-3.1-flash-image-preview` or `gemini-3-pro-image-preview`; both are shut down |
 
 ## Output Directory

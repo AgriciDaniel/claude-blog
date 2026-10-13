@@ -3,7 +3,7 @@ type: spoke
 title: "Reputation Research Workflow"
 status: evergreen
 created: 2026-07-06
-updated: 2026-07-09
+updated: 2026-10-07
 tags: [eeat, evergreen]
 domain: "Blog Trust"
 confidence: verified
@@ -73,3 +73,5 @@ A draft cites "Jordan Lee" as an outside expert for a cybersecurity article. Sea
 ## Brand Contract Evidence Feed
 
 [[Brand Context Contract]] consumes reputation findings when a proof library claims authority, awards, expert status, or customer trust. Inputs provided are entity scope, independent evidence list, relationship labels, negative-context notes, confidence, and refresh date. The contract expects approved proof points, banned overclaims, and source IDs suitable for future briefs.
+
+For Reputation Research Workflow, `nng-editorial-heuristics` supplies general interaction-design principles. Applying those principles to this note's editorial checks is a project adaptation, not an experimentally established SEO or AI-citation requirement.

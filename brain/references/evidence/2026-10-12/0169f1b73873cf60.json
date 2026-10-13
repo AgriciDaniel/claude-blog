@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://developers.google.com/analytics/devguides/reporting/data/v1",
+  "normalized_full_document_sha256": "809cef6e050e2ba6e75cd988008ea41f32552caef2d528eb86ded242801f7ac5",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "for a list of all the dimensions and metrics supported by the data api"
+  ],
+  "records": [
+    {
+      "source_id": "g-ga4-data",
+      "source_url": "https://developers.google.com/analytics/devguides/reporting/data/v1",
+      "retrieved_on": "2026-10-12",
+      "reviewed_on": "2026-10-12",
+      "review_decision": "confirmed_by_manual_review",
+      "excerpt_index": 0
+    }
+  ]
+}

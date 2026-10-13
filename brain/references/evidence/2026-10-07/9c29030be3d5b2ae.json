@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://developers.google.com/crawling/docs/crawl-budget",
+  "normalized_full_document_sha256": "a229d244c16bc66ffd23a138c77c741c9553415208e652d07364f975054334db",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "the numbers given here are a rough estimate to help you classify your site"
+  ],
+  "records": [
+    {
+      "source_id": "g-crawl-budget",
+      "source_url": "https://developers.google.com/crawling/docs/crawl-budget",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "qualified",
+      "excerpt_index": 0
+    }
+  ]
+}

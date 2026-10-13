@@ -4,7 +4,7 @@ title: "Blog Chart Specification"
 domain: "Blog Media"
 status: active
 created: 2026-07-09
-updated: 2026-07-09
+updated: 2026-10-07
 tags: [deliverables, charts, media, active]
 ---
 
@@ -42,3 +42,5 @@ Record chart type, source provenance, license or usage basis, accessibility appr
 ## Source IDs Used
 
 Chart specifications use `g-helpful-content`, `nng-editorial-heuristics`, `schema-full`, and `g-google-images`.
+
+For Blog Chart Specification, `nng-editorial-heuristics` supplies general interaction-design principles. Applying those principles to this note's editorial checks is a project adaptation, not an experimentally established SEO or AI-citation requirement.

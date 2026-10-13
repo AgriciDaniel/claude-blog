@@ -4,7 +4,7 @@ title: "Audience Persona Template"
 domain: "Blog Voice"
 status: active
 created: 2026-07-06
-updated: 2026-07-09
+updated: 2026-10-07
 tags: [personas, voice-style, active]
 ---
 
@@ -76,3 +76,5 @@ Secondary consumer: [[Content Brief Output Contract]] uses the reader job and pr
 ## Audience Persona Template Drift Check
 
 Refresh the card when the product, target locale, buyer role, regulatory risk, or source packet changes. If a persona has no evidence after review, mark it as a hypothesis and block it from driving tone or examples.
+
+For Audience Persona Template, `nng-editorial-heuristics` supplies general interaction-design principles. Applying those principles to this note's editorial checks is a project adaptation, not an experimentally established SEO or AI-citation requirement.

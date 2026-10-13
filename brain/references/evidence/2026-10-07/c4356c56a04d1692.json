@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://developer.chrome.com/docs/crux/api",
+  "normalized_full_document_sha256": "44dc3edfd22a83c92d07f64936af07b5302c53d1a68ab914c482bcf8bd1e0d14",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "75% of page loads experienced the given metric at or less than this value"
+  ],
+  "records": [
+    {
+      "source_id": "chrome-crux",
+      "source_url": "https://developer.chrome.com/docs/crux/api",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "confirmed_by_manual_review",
+      "excerpt_index": 0
+    }
+  ]
+}

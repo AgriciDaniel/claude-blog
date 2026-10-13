@@ -10,6 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from audit_brain import check_wiki_substance  # noqa: E402
+from evidence_fixtures import captured_evidence_root, reviewed_source
 
 
 def write_source_ledger(root: Path, sources: dict[str, str]) -> None:
@@ -17,7 +18,7 @@ def write_source_ledger(root: Path, sources: dict[str, str]) -> None:
     references.mkdir(parents=True)
     payload = {
         "sources": [
-            {"id": source_id, "url": url}
+            reviewed_source(source_id, url.replace("https://example.org/", "https://developers.google.com/search/docs/"))
             for source_id, url in sorted(sources.items())
         ]
     }

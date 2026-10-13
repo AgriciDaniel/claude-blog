@@ -4,7 +4,7 @@ title: "Style Learning Voice Profile"
 domain: "Blog Content Brain"
 status: active
 created: 2026-07-09
-updated: 2026-07-09
+updated: 2026-10-07
 tags: [deliverables, voice, style]
 source_urls:
   - "https://developers.google.com/search/docs/fundamentals/creating-helpful-content"
@@ -41,3 +41,5 @@ Use only brand-approved samples, audience context, channel, locale, excluded phr
 2. Preserve helpfulness and trust over mimicry when style guidance conflicts with clarity.
 3. Record any phrase ban with an example, because abstract taste notes decay quickly.
 4. Revalidate the profile after brand repositioning, locale expansion, or a major audience change.
+
+For Style Learning Voice Profile, `nng-editorial-heuristics` supplies general interaction-design principles. Applying those principles to this note's editorial checks is a project adaptation, not an experimentally established SEO or AI-citation requirement.

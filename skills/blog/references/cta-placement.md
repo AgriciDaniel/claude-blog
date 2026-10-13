@@ -30,7 +30,7 @@ and audience fit are loaded for the project.
 
 - Place CTAs AFTER value delivery, not at arbitrary positions
 - Above-fold CTAs only work when preceding content conveys value proposition
-- Moving CTA below long-form value content can increase conversions 304%
+- Moving a CTA below long-form value content won one reported A/B test on a long sales page (Michael Aagaard, ContentVerve, reported as +304%; original write-up not verified here). Treat it as a reason to test placement, not an expected lift
 - Maximum 2-3 CTAs per long-form post (intro contextual, mid-content, end summary)
 
 ## Accessible HTML

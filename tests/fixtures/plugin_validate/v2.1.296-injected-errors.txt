@@ -1,0 +1,33 @@
+Validating marketplace manifest: /home/runner/work/claude-blog/claude-blog/.claude-plugin/marketplace.json
+
+✘ Found 2 errors:
+
+  ❯ plugins.0.source: Invalid input
+  ❯ plugins[0].name: Plugin name "claude-blog" is reserved: it passes as one of Anthropic's own. A third party's plugin name cannot start with "claude-", "anthropic-", "anthropics-", or "cc-plugin-", be "claude", "anthropic", "anthropics", "claude-code", or "claude-mods", or put "official" beside "claude" or "anthropic". Name it for what it does.
+
+Validating plugin: /home/runner/work/claude-blog/claude-blog/.claude-plugin/plugin.json
+
+✘ Found 2 errors:
+
+  ❯ version: Invalid input: expected string, received number
+  ❯ keywords: Invalid input: expected array, received string
+
+Validating plugin: /home/runner/work/claude-blog/claude-blog/CLAUDE.md
+
+⚠ Found 1 warning:
+
+  ❯ root: CLAUDE.md at the plugin root is not loaded as project context. To ship context with your plugin, use a skill (skills/<name>/SKILL.md) instead.
+
+Validating skill: /home/runner/work/claude-blog/claude-blog/skills/blog-write/SKILL.md
+
+✘ Found 1 error:
+
+  ❯ frontmatter: YAML frontmatter failed to parse: YAML Parse error: Unexpected token. At runtime this skill loads with empty metadata (all frontmatter fields silently dropped).
+
+Validating agent: /home/runner/work/claude-blog/claude-blog/agents/blog-writer.md
+
+✘ Found 1 error:
+
+  ❯ frontmatter: YAML frontmatter failed to parse: YAML Parse error: Unexpected token. At runtime this agent loads with its name taken from the filename and every other frontmatter field silently dropped.
+
+✘ Validation failed

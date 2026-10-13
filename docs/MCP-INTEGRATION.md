@@ -63,10 +63,10 @@ tracked file).
 
 ```bash
 # Recommended: writes ~/.claude/settings.json (user-private, mode 0600)
-python3 skills/blog-image/scripts/setup_image_mcp.py --key YOUR_KEY
+python3 skills/blog-image/scripts/setup_image_mcp.py --key-file /path/to/key.txt   # or omit for an interactive prompt
 
 # Project-local (env-expansion only, NEVER stores literal key)
-python3 skills/blog-image/scripts/setup_image_mcp.py --key YOUR_KEY --project
+python3 skills/blog-image/scripts/setup_image_mcp.py --key-file /path/to/key.txt --project
 # Then export the key in your shell so the env-expansion resolves:
 export GOOGLE_AI_API_KEY="your-key-from-aistudio.google.com"
 ```
@@ -87,7 +87,7 @@ python3 skills/blog-image/scripts/validate_image_setup.py
 ### Requirements
 
 - Node.js 18+ (for `npx`)
-- Google AI API key (free tier: ~10 RPM / ~500 images per day)
+- Google AI API key with access to the selected model. Quotas vary by model, project and tier; check [active limits in AI Studio](https://ai.google.dev/gemini-api/docs/rate-limits) before a run (reviewed 2026-10-07).
 
 ---
 
@@ -96,7 +96,7 @@ python3 skills/blog-image/scripts/validate_image_setup.py
 **DataForSEO is the recommended MCP integration for `claude-blog`.** It provides
 a single unified API covering SERP data, keyword research, backlink analysis,
 on-page auditing, domain analytics, content analysis, and AI optimization,
-replacing the need for separate Ahrefs, Semrush, GSC, and PageSpeed integrations.
+consolidating several third-party research workflows. Search Console owner data, GA4 analytics, and PageSpeed measurements remain distinct inputs with their own access and semantics.
 
 ### What It Enables
 

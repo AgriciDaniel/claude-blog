@@ -11,6 +11,36 @@ This is the Gate 2 (Format Completeness) implementation of the v1.9.0
 Blog Delivery Contract. Same source produces both outputs so they cannot
 diverge.
 
+Output names: <slug> is the frontmatter `slug` when present, otherwise the
+file stem of --md (so D/image-formats.md renders D/image-formats.html and .pdf,
+and Gate 2 finds one matching set). The name is lowercased and hyphenated.
+
+Frontmatter keys read (flat `key: value` lines; `tags` may be a list):
+  required: title, description, date, author
+  optional: slug (output name), canonical (full https URL: sets the canonical
+    link, og:url, the og:image and JSON-LD image URLs, the default site name
+    and the footer site link), site_name (default: host of canonical),
+    lang (default en), og_image_alt (default: title), kicker (default: first
+    tag, else "Article"), tags (JSON-LD keywords), lastUpdated (alias
+    dateModified; dateModified wins when both are set): an ISO date or
+    datetime not earlier than `date`. It becomes JSON-LD dateModified, an
+    article:modified_time meta tag and a visible "Updated <date>" line under
+    the byline. Absent, dateModified equals `date` and nothing is added.
+  Nothing else is read. The hero is the hero.<png|jpg|jpeg|webp> file in the
+  output directory, not a frontmatter key.
+
+Provenance and markers the gates rely on:
+  <meta name="blog-source-sha256" content="<hex>"> in the HTML head is the
+    SHA-256 of the exact bytes of the file passed to --md. blog_preflight.py
+    compares it with the current source so a stale render is caught.
+  The renderer's own footer link carries data-bs-generated="1". Body content
+    cannot set it: the sanitizer drops data-* attributes.
+  Draft placeholders ([INTERNAL-LINK, [IMAGE, [CHART) still render, but each
+    one is named on stderr, because the delivery gates block them.
+  --md must be markdown (.md, .markdown or .mdx). An .html source is refused;
+    an .mdx source renders as plain markdown (JSX, import and export lines
+    are not interpreted) and says so on stderr.
+
 Usage:
     python3 scripts/blog_render.py --md <path.md> --out-dir <dir> \\
         [--pdf-engine playwright|weasyprint|auto] [--json]
@@ -21,6 +51,7 @@ Returns 0 on success, 1 on render error or missing required artifact.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import html as html_lib
 import json
 import errno
@@ -28,6 +59,7 @@ import os
 import re
 import stat
 import sys
+import tempfile
 import urllib.parse
 import urllib.request
 from datetime import datetime, timezone
@@ -47,6 +79,10 @@ _LOSSY_FALLBACK_PATTERNS = {
     "definition_list": re.compile(r"^[^\n:]+\n:\s+", re.MULTILINE),
     "fenced_code_with_language": re.compile(r"^```[a-zA-Z0-9_+-]+", re.MULTILINE),
 }
+# Draft-only markers the orchestrator must resolve before delivery.
+_PLACEHOLDER_RE = re.compile(r"\[(?:INTERNAL-LINK|IMAGE|CHART)[^\]\n]*\]?", re.IGNORECASE)
+_MDX_SYNTAX_RE = re.compile(r"^(?:import|export)\s", re.MULTILINE)
+HTML_SOURCE_SUFFIXES = frozenset({".html", ".htm", ".xhtml"})
 SAFE_LINK_SCHEMES = frozenset({"http", "https", "mailto"})
 SAFE_MEDIA_SCHEMES = frozenset({"http", "https"})
 DANGEROUS_SCHEMES = frozenset({"javascript", "data", "file", "vbscript"})
@@ -77,6 +113,14 @@ ALLOWED_ATTRS = {
     "th": frozenset({"colspan", "rowspan", "scope"}),
 }
 
+# The renderer wraps the converted and sanitized markdown body in these comment
+# markers and records the sha256 of the UTF-8 bytes strictly between them in
+# <meta name="blog-body-sha256">. The sanitizer drops comments and escapes "<"
+# in text, so author content can neither contain nor forge a marker; Gate 2
+# recomputes the hash to catch an .html edited by hand after rendering.
+BODY_START_MARKER = "<!--bs-body:start-->"
+BODY_END_MARKER = "<!--bs-body:end-->"
+
 HTML_TEMPLATE = """<!DOCTYPE html>
 <html lang="{lang}">
 <head>
@@ -88,6 +132,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 <meta name="description" content="{description_escaped}">
 {canonical_tag}
 <meta name="author" content="{author_escaped}">
+<meta name="blog-source-sha256" content="{source_sha256}">
+<meta name="blog-body-sha256" content="{body_sha256}">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <meta property="og:type" content="article">
 <meta property="og:title" content="{title_escaped}">
@@ -98,7 +144,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="{og_image_alt_escaped}">
 <meta property="og:site_name" content="{site_name_escaped}">
-<meta property="article:published_time" content="{published_iso}">
+<meta property="article:published_time" content="{published_iso}">{modified_meta}
 <meta property="article:author" content="{author_escaped}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{title_escaped}">
@@ -113,19 +159,19 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 <p class="kicker">{kicker_escaped}</p>
 <h1>{title_escaped}</h1>
 <p class="dek">{description_escaped}</p>
-<p class="byline"><strong>By {author_escaped}</strong> &middot; {published_human} &middot; {reading_time_min} min read &middot; {word_count} words</p>
+<p class="byline"><strong>By {author_escaped}</strong> &middot; {published_human} &middot; {reading_time_min} min read &middot; {word_count} words</p>{updated_html}
 </header>
 <figure class="hero"><img src="{hero_filename}" alt="{og_image_alt_escaped}" width="1200" height="630"></figure>
 {body_html}
-<footer class="post-footer"><span>Published at <a href="{site_url_or_dash}">{site_name_escaped}</a></span><span>{published_human} &middot; {author_escaped}</span></footer>
+<footer class="post-footer"><span>Published at <a href="{site_url_or_dash}" data-bs-generated="1">{site_name_escaped}</a></span><span>{published_human} &middot; {author_escaped}</span></footer>
 </article>
 </body>
 </html>
 """
 
 CSS = """
-:root{--bg:#fafaf9;--surface:#fff;--text:#1c1917;--muted:#57534e;--soft:#78716c;--accent:#0d9488;--accent-soft:#ccfbf1;--accent-deep:#115e59;--border:#e7e5e4;--code-bg:#f5f5f4;--warn:#b91c1c;--shadow:0 1px 3px rgba(0,0,0,.06),0 4px 12px rgba(0,0,0,.04)}
-@media (prefers-color-scheme:dark){:root{--bg:#18181b;--surface:#27272a;--text:#fafafa;--muted:#a1a1aa;--soft:#71717a;--accent:#2dd4bf;--accent-soft:#134e4a;--accent-deep:#99f6e4;--border:#3f3f46;--code-bg:#1f1f23;--warn:#fca5a5;--shadow:0 1px 3px rgba(0,0,0,.4),0 4px 12px rgba(0,0,0,.3)}}
+:root{--bg:#fafaf9;--surface:#fff;--text:#1c1917;--muted:#57534e;--soft:#78716c;--accent:#0f766e;--accent-soft:#ccfbf1;--accent-deep:#115e59;--border:#e7e5e4;--code-bg:#f5f5f4;--warn:#b91c1c;--shadow:0 1px 3px rgba(0,0,0,.06),0 4px 12px rgba(0,0,0,.04)}
+@media (prefers-color-scheme:dark){:root{--bg:#18181b;--surface:#27272a;--text:#fafafa;--muted:#a1a1aa;--soft:#92929c;--accent:#2dd4bf;--accent-soft:#134e4a;--accent-deep:#99f6e4;--border:#3f3f46;--code-bg:#1f1f23;--warn:#fca5a5;--shadow:0 1px 3px rgba(0,0,0,.4),0 4px 12px rgba(0,0,0,.3)}}
 *,*::before,*::after{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
 body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;line-height:1.65;margin:0;font-size:17px;-webkit-font-smoothing:antialiased}
@@ -134,6 +180,8 @@ article{max-width:740px;margin:0 auto;padding:3rem 1.5rem 5rem}
 h1{font-size:clamp(2rem,5vw,2.85rem);line-height:1.12;letter-spacing:-.025em;margin:0 0 1.1rem;font-weight:800}
 .dek{color:var(--muted);font-size:clamp(1.05rem,2.5vw,1.2rem);line-height:1.5;margin:0 0 1.75rem;max-width:60ch}
 .byline{color:var(--soft);font-size:.875rem;font-family:ui-monospace,monospace;margin:0 0 2.5rem}
+.updated{color:var(--soft);font-size:.875rem;font-family:ui-monospace,monospace;margin:0 0 2.5rem}
+.byline + .updated{margin-top:-2rem}
 .byline strong{color:var(--text);font-weight:600}
 .hero{margin:0 0 2.5rem;background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:var(--shadow)}
 .hero img{display:block;width:100%;height:auto;aspect-ratio:1200/630;object-fit:cover}
@@ -150,10 +198,18 @@ ul,ol{margin:0 0 1.25rem;padding-left:1.5rem}
 li{margin:.35rem 0}
 strong{font-weight:700;color:var(--text)}
 img{max-width:100%;height:auto}
+svg{max-width:100%;height:auto}
+figure{margin:0 0 1.75rem}
+figure svg{display:block;margin:0 auto}
+figcaption{color:var(--muted);font-size:.875rem;margin-top:.5rem}
+.table-wrap{max-width:100%;overflow-x:auto;margin:0 0 1.5rem;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;width:100%;font-size:.95rem}
+th,td{border:1px solid var(--border);padding:.5rem .75rem;text-align:left;vertical-align:top}
+th{background:var(--code-bg);font-weight:700}
 .post-footer{margin-top:4rem;padding-top:2rem;border-top:1px solid var(--border);font-size:.875rem;color:var(--muted);font-family:ui-monospace,monospace;display:flex;flex-wrap:wrap;gap:.6rem 1.5rem;justify-content:space-between}
 .post-footer a{color:var(--accent);text-decoration:none}
 ::selection{background:var(--accent);color:var(--bg)}
-@media print{body{background:#fff;color:#000;font-size:11pt}article{max-width:none;padding:0 1rem}.hero{box-shadow:none}}
+@media print{body{background:#fff;color:#000;font-size:11pt}article{max-width:none;padding:0 1rem}.hero{box-shadow:none}.table-wrap{overflow:visible}}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 """
 
@@ -193,6 +249,7 @@ class _BodySanitizer(HTMLParser):
         super().__init__(convert_charrefs=False)
         self.out: list[str] = []
         self.drop_depth = 0
+        self.table_depth = 0
 
     def _clean_attrs(self, tag: str, attrs: list[tuple[str, str | None]]) -> str:
         allowed = ALLOWED_ATTRS.get(tag, frozenset()) | GLOBAL_ATTRS
@@ -219,6 +276,11 @@ class _BodySanitizer(HTMLParser):
         if tag not in ALLOWED_TAGS:
             return
         attr_text = self._clean_attrs(tag, attrs)
+        if tag == "table":
+            self.table_depth += 1
+            # Focusable scroll region so a wide table scrolls on a phone and
+            # can be reached by keyboard.
+            self.out.append('<div class="table-wrap" role="region" aria-label="Table" tabindex="0">')
         self.out.append(f"<{tag}{attr_text}>")
 
     def handle_startendtag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
@@ -235,7 +297,12 @@ class _BodySanitizer(HTMLParser):
             return
         if self.drop_depth or tag not in ALLOWED_TAGS or tag in VOID_TAGS:
             return
+        if tag == "table" and not self.table_depth:
+            return
         self.out.append(f"</{tag}>")
+        if tag == "table" and self.table_depth:
+            self.table_depth -= 1
+            self.out.append("</div>")
 
     def handle_data(self, data: str) -> None:
         if not self.drop_depth:
@@ -426,7 +493,7 @@ def _build_json_ld(fm: dict, word_count: int, og_image_url: str) -> str:
         "description": fm.get("description", ""),
         "image": og_image_url,
         "datePublished": fm.get("date", ""),
-        "dateModified": fm.get("date", ""),
+        "dateModified": _resolve_modified(fm) or fm.get("date", ""),
         "author": {"@type": "Person", "name": fm.get("author", "")},
         "wordCount": word_count,
         "keywords": ", ".join(fm.get("tags", [])) if isinstance(fm.get("tags"), list) else fm.get("tags", ""),
@@ -442,7 +509,7 @@ def _build_json_ld(fm: dict, word_count: int, og_image_url: str) -> str:
     return json.dumps(data, ensure_ascii=False).replace("</", "<\\/")
 
 
-def _read_md_safely(path: Path) -> str:
+def _read_md_bytes_safely(path: Path) -> bytes:
     """Read a markdown source with symlink refusal + size cap. Mirrors the
     O_NOFOLLOW pattern used by scripts/load_untrusted_root.py for project-
     root files so a caller cannot redirect the renderer at an attacker-
@@ -464,7 +531,157 @@ def _read_md_safely(path: Path) -> str:
         os.close(fd)
     if len(data) > MAX_MD_BYTES:
         raise ValueError(f"source markdown exceeds {MAX_MD_BYTES} bytes")
-    return data.decode("utf-8")
+    return data
+
+
+def _read_md_safely(path: Path) -> str:
+    return _read_md_bytes_safely(path).decode("utf-8")
+
+
+def _check_source_suffix(path: Path) -> None:
+    """Refuse an HTML file passed as the markdown source, warn for .mdx."""
+    suffix = path.suffix.lower()
+    if suffix in HTML_SOURCE_SUFFIXES:
+        raise ValueError(
+            f"--md must be a markdown source (.md, .markdown or .mdx), got an HTML file: {path.name}. "
+            "Pass the markdown the HTML was written from; this renderer produces the HTML itself."
+        )
+
+
+def _warn_source_quirks(path: Path, raw: str) -> None:
+    """Name draft placeholders and MDX-only syntax on stderr; never blocks."""
+    if path.suffix.lower() == ".mdx":
+        extra = " Import/export lines are present and will render as text." if _MDX_SYNTAX_RE.search(raw) else ""
+        print(
+            f"WARN: {path.name} is MDX; it is rendered as plain markdown, so JSX components "
+            f"are not interpreted.{extra}",
+            file=sys.stderr,
+        )
+    for match in _PLACEHOLDER_RE.finditer(raw):
+        line = raw.count("\n", 0, match.start()) + 1
+        print(
+            f"WARN: draft placeholder still in the source at line {line}: {match.group(0).strip()!r}. "
+            "Resolve it (real link, local image, inline SVG chart) or remove it; "
+            "the delivery gates block any remaining [INTERNAL-LINK, [IMAGE or [CHART marker.",
+            file=sys.stderr,
+        )
+
+
+def _lexical_absolute(path: Path) -> Path:
+    """Return an absolute path without resolving symlinks."""
+    return Path(os.path.abspath(os.fspath(path)))
+
+
+def _is_trusted_system_symlink(path: Path, link_stat: os.stat_result) -> bool:
+    """True for an OS-level alias such as /home -> var/home or macOS /tmp.
+
+    Only a root-owned link sitting directly under the filesystem root
+    qualifies. An attacker who can plant links inside a working tree cannot
+    create one there, so honouring these keeps the symlink guard focused on
+    redirection inside the output tree and at the leaf.
+    """
+    if not hasattr(link_stat, "st_uid") or os.name != "posix":
+        return False
+    return link_stat.st_uid == 0 and path.parent == Path(path.anchor)
+
+
+def _reject_symlink_components(path: Path) -> None:
+    """Reject symlinks in every existing component of a lexical path.
+
+    Trusted system-level aliases directly under the filesystem root (see
+    _is_trusted_system_symlink) are allowed; any other symlink, including
+    one in an ancestor of the output directory, is refused.
+    """
+    absolute = _lexical_absolute(path)
+    current = Path(absolute.anchor)
+    for part in absolute.parts[1:]:
+        current /= part
+        try:
+            link_stat = os.lstat(current)
+        except FileNotFoundError:
+            continue
+        if stat.S_ISLNK(link_stat.st_mode) and not _is_trusted_system_symlink(current, link_stat):
+            raise ValueError(f"refusing symlink path component: {current}")
+
+
+def _validate_output_destination(path: Path, root: Path) -> Path:
+    """Validate an unresolved output leaf under an unresolved output root."""
+    root = _lexical_absolute(root)
+    destination = _lexical_absolute(path)
+    _reject_symlink_components(root)
+    if destination.parent != root:
+        raise ValueError(f"output path escapes output directory: {destination}")
+    try:
+        mode = os.lstat(destination).st_mode
+    except FileNotFoundError:
+        return destination
+    if stat.S_ISLNK(mode):
+        raise ValueError(f"refusing to overwrite symlink: {destination}")
+    if not stat.S_ISREG(mode):
+        raise ValueError(f"refusing non-regular output path: {destination}")
+    return destination
+
+
+def _atomic_write_text(path: Path, content: str, root: Path) -> Path:
+    """Write a regular output atomically without following the final leaf."""
+    destination = _validate_output_destination(path, root)
+    fd, temp_name = tempfile.mkstemp(
+        prefix=f".{destination.name}.", suffix=".tmp", dir=destination.parent
+    )
+    temp_path = Path(temp_name)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as handle:
+            handle.write(content)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temp_path, destination)
+        return destination
+    finally:
+        try:
+            temp_path.unlink()
+        except FileNotFoundError:
+            pass
+
+
+ISO_WHEN = re.compile(r"\d{4}-\d{2}-\d{2}(?:[T ]\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:\d{2})?)?")
+
+
+def _parse_iso_when(value: str):
+    """Parse an ISO date or datetime into a naive datetime, or None."""
+    text = value.strip()
+    if not ISO_WHEN.fullmatch(text):
+        return None
+    try:
+        if len(text) == 10:
+            return datetime.fromisoformat(text)
+        return datetime.fromisoformat(text.replace("Z", "+00:00")).replace(tzinfo=None)
+    except ValueError:
+        return None
+
+
+def _resolve_modified(fm: dict) -> str | None:
+    """Return the validated modified date (`dateModified` wins over `lastUpdated`), or None."""
+    key = "dateModified" if str(fm.get("dateModified", "")).strip() else "lastUpdated"
+    value = str(fm.get(key, "")).strip()
+    if not value:
+        return None
+    modified = _parse_iso_when(value)
+    if modified is None:
+        raise ValueError(
+            f"frontmatter `{key}` is not an ISO date or datetime: {value!r}. Use YYYY-MM-DD or YYYY-MM-DDTHH:MM:SSZ."
+        )
+    published = _parse_iso_when(str(fm.get("date", "")))
+    if published is None:
+        raise ValueError(
+            f"frontmatter `{key}` ({value}) cannot be compared because `date` ({fm.get('date', '')!r}) "
+            "is not an ISO date. Use YYYY-MM-DD for `date`."
+        )
+    if modified < published:
+        raise ValueError(
+            f"frontmatter `{key}` ({value}) is earlier than `date` ({fm.get('date')}); "
+            "an update cannot predate publication."
+        )
+    return value
 
 
 def _validate_frontmatter(fm: dict, body: str) -> None:
@@ -477,6 +694,7 @@ def _validate_frontmatter(fm: dict, body: str) -> None:
             f"missing or empty required frontmatter key(s): {missing}. "
             f"Required: {list(REQUIRED_FRONTMATTER_KEYS)}."
         )
+    _resolve_modified(fm)
     if not body.strip():
         raise ValueError(
             "markdown body is empty (after frontmatter). The renderer refuses "
@@ -509,10 +727,14 @@ def _warn_if_stdlib_fallback_is_lossy(body: str) -> None:
 
 def _render_html(md_path: Path, out_dir: Path, hero_filename: str) -> Path:
     hero_filename = _validate_hero_filename(hero_filename)
-    raw = _read_md_safely(md_path)
+    _check_source_suffix(md_path)
+    source_bytes = _read_md_bytes_safely(md_path)
+    # utf-8-sig: a byte order mark must not hide the opening frontmatter fence.
+    raw = source_bytes.decode("utf-8-sig")
     fm, body = _parse_frontmatter(raw)
     _validate_frontmatter(fm, body)
     _warn_if_stdlib_fallback_is_lossy(body)
+    _warn_source_quirks(md_path, raw)
 
     body_html = _markdown_to_html(body)
     # Strip a leading <h1> from the body if the template already provides
@@ -528,6 +750,8 @@ def _render_html(md_path: Path, out_dir: Path, hero_filename: str) -> Path:
     # blocks here too. Counting code-block tokens as prose words causes
     # ~15-20% over-count on docs that contain code samples (real defect
     # caught by the v1.9.0 audit's end-to-end test).
+    if BODY_START_MARKER in body_html or BODY_END_MARKER in body_html:
+        raise ValueError("rendered body contains a reserved bs-body marker; refusing to render")
     visible_text = re.sub(r"<pre[^>]*>.*?</pre>", " ", body_html, flags=re.DOTALL)
     visible_text = re.sub(r"<code[^>]*>.*?</code>", " ", visible_text, flags=re.DOTALL)
     visible_text = re.sub(r"<[^>]+>", " ", visible_text)
@@ -535,6 +759,8 @@ def _render_html(md_path: Path, out_dir: Path, hero_filename: str) -> Path:
     word_count = len(re.findall(r"\b\w+\b", visible_text))
     reading_time = max(1, word_count // 200)
 
+    modified = _resolve_modified(fm)
+    modified_differs = bool(modified) and modified != str(fm.get("date", "")).strip()
     canonical = fm.get("canonical", "")
     title = fm.get("title", md_path.stem)
     site_name = fm.get("site_name") or (canonical.split("/")[2] if canonical.startswith("http") else "")
@@ -547,33 +773,49 @@ def _render_html(md_path: Path, out_dir: Path, hero_filename: str) -> Path:
         description_escaped=_safe_attr(fm.get("description", "")),
         canonical_tag=f'<link rel="canonical" href="{_safe_attr(canonical)}">' if canonical else "",
         author_escaped=_safe_attr(fm.get("author", "Anonymous")),
+        source_sha256=hashlib.sha256(source_bytes).hexdigest(),
         og_url_tag=f'<meta property="og:url" content="{_safe_attr(canonical)}">' if canonical else "",
         og_image=_safe_attr(og_image),
         og_image_alt_escaped=_safe_attr(fm.get("og_image_alt", title)),
         site_name_escaped=_safe_attr(site_name or "Blog"),
         published_iso=_safe_attr(fm.get("date", datetime.now(timezone.utc).strftime("%Y-%m-%d"))),
         published_human=_safe_attr(fm.get("date", datetime.now(timezone.utc).strftime("%Y-%m-%d"))),
+        modified_meta=(
+            f'\n<meta property="article:modified_time" content="{_safe_attr(modified)}">' if modified_differs else ""
+        ),
+        updated_html=(
+            f'\n<p class="updated">Updated <time class="updated" itemprop="dateModified" '
+            f'datetime="{_safe_attr(modified)}">{_safe_attr(modified)}</time></p>' if modified_differs else ""
+        ),
         reading_time_min=reading_time,
         word_count=word_count,
         kicker_escaped=_safe_attr(fm.get("kicker") or (fm.get("tags")[0].title() if isinstance(fm.get("tags"), list) and fm.get("tags") else "Article")),
         hero_filename=_safe_attr(hero_filename),
-        body_html=body_html,
+        body_html=BODY_START_MARKER + body_html + BODY_END_MARKER,
+        body_sha256=hashlib.sha256(body_html.encode("utf-8")).hexdigest(),
         site_url_or_dash=_safe_attr(site_url or "#"),
         json_ld=_build_json_ld(fm, word_count, og_image),
         css=CSS,
     )
 
-    slug = _slugify(str(fm.get("slug") or title))
-    out_root = out_dir.resolve()
-    out_html = (out_root / f"{slug}.html").resolve(strict=False)
-    out_html.relative_to(out_root)
-    if out_html.exists() and out_html.is_symlink():
-        raise ValueError(f"refusing to overwrite symlink: {out_html}")
-    out_html.write_text(rendered, encoding="utf-8")
-    return out_html
+    # `slug` wins; otherwise name the outputs after the source file stem so the
+    # documented minimal frontmatter yields <stem>.html/.pdf next to <stem>.md.
+    slug = _slugify(str(fm.get("slug") or re.sub(r"[_.\s]+", " ", md_path.stem)))
+    stem_slug = _slugify(re.sub(r"[_.\s]+", " ", md_path.stem))
+    if fm.get("slug") and slug != stem_slug:
+        print(
+            f"WARNING: frontmatter slug '{slug}' differs from the markdown file name "
+            f"'{md_path.stem}'. The outputs are named {slug}.html and {slug}.pdf, but "
+            f"preflight Gate 2 needs the .md, .html and .pdf to share one name: rename "
+            f"{md_path.name} to {slug}.md (or drop `slug`) before running the gates.",
+            file=sys.stderr,
+        )
+    out_root = _lexical_absolute(out_dir)
+    out_html = out_root / f"{slug}.html"
+    return _atomic_write_text(out_html, rendered, out_root)
 
 
-def _render_pdf(html_path: Path, out_pdf: Path, engine: str) -> bool:
+def _render_pdf_to_path(html_path: Path, out_pdf: Path, engine: str) -> bool:
     """Render html_path to out_pdf via the chosen engine. Returns True on
     success, False on failure (no exception raised; caller decides)."""
     asset_root = html_path.parent.resolve()
@@ -621,11 +863,27 @@ def _render_pdf(html_path: Path, out_pdf: Path, engine: str) -> bool:
                     return False
     if engine in ("auto", "weasyprint"):
         try:
-            from weasyprint import HTML, default_url_fetcher  # type: ignore
-            def fetcher(url: str, *args, **kwargs):
-                if not _local_asset_allowed(url):
-                    raise ValueError(f"blocked external PDF asset: {url}")
-                return default_url_fetcher(url, *args, **kwargs)
+            from weasyprint import HTML  # type: ignore
+            try:
+                from weasyprint.urls import URLFetcher  # type: ignore
+            except ImportError:
+                # Compatibility for pre-70 installations. The declared and
+                # tested dependency uses the public URLFetcher class in 70.
+                from weasyprint import default_url_fetcher  # type: ignore
+                def fetcher(url: str, *args, **kwargs):
+                    if not _local_asset_allowed(url):
+                        raise ValueError(f"blocked external PDF asset: {url}")
+                    return default_url_fetcher(url, *args, **kwargs)
+            else:
+                class LocalAssetFetcher(URLFetcher):
+                    def fetch(self, url: str, headers=None):
+                        if not _local_asset_allowed(url):
+                            raise ValueError(f"blocked external PDF asset: {url}")
+                        return super().fetch(url, headers)
+                fetcher = LocalAssetFetcher(
+                    allowed_protocols=("file",), allow_redirects=False,
+                    fail_on_errors=True,
+                )
             HTML(filename=str(html_path), url_fetcher=fetcher).write_pdf(str(out_pdf))
             return True
         except Exception as e:
@@ -633,11 +891,47 @@ def _render_pdf(html_path: Path, out_pdf: Path, engine: str) -> bool:
     return False
 
 
+def _render_pdf(html_path: Path, out_pdf: Path, engine: str) -> bool:
+    """Render to an exclusive temporary file, then atomically promote it."""
+    try:
+        destination = _validate_output_destination(out_pdf, html_path.parent)
+    except ValueError as exc:
+        print(f"[render] refusing PDF output: {exc}", file=sys.stderr)
+        return False
+
+    fd, temp_name = tempfile.mkstemp(
+        prefix=f".{destination.name}.", suffix=".tmp", dir=destination.parent
+    )
+    os.close(fd)
+    temp_path = Path(temp_name)
+    try:
+        if not _render_pdf_to_path(html_path, temp_path, engine):
+            return False
+        mode = os.lstat(temp_path).st_mode
+        if not stat.S_ISREG(mode) or temp_path.stat().st_size == 0:
+            print("[render] PDF renderer did not produce a regular non-empty file", file=sys.stderr)
+            return False
+        os.replace(temp_path, destination)
+        return True
+    except Exception as exc:
+        print(f"[render] PDF promotion failed: {exc}", file=sys.stderr)
+        return False
+    finally:
+        try:
+            temp_path.unlink()
+        except FileNotFoundError:
+            pass
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("--md", required=True, help="Path to markdown source file")
     parser.add_argument("--out-dir", required=True, help="Output directory for .html and .pdf")
-    parser.add_argument("--hero", default="hero.png", help="Hero image filename (relative to out-dir)")
+    parser.add_argument(
+        "--hero",
+        default=None,
+        help="Hero image filename (relative to out-dir); defaults to a supported hero.<ext> in out-dir",
+    )
     parser.add_argument("--pdf-engine", choices=["auto", "playwright", "weasyprint", "none"], default="auto")
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
@@ -649,15 +943,33 @@ def main() -> int:
     if not md_path.is_file() and not md_path.is_symlink():
         print(f"ERROR: {md_path} not a file", file=sys.stderr)
         return 1
-    raw_out_dir = Path(args.out_dir)
-    if raw_out_dir.exists() and raw_out_dir.is_symlink():
-        print(f"ERROR: refusing symlink output directory: {raw_out_dir}", file=sys.stderr)
+    try:
+        _check_source_suffix(md_path)
+    except ValueError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
         return 1
-    out_dir = raw_out_dir.resolve()
-    out_dir.mkdir(parents=True, exist_ok=True)
+    raw_out_dir = _lexical_absolute(Path(args.out_dir))
+    try:
+        _reject_symlink_components(raw_out_dir)
+        raw_out_dir.mkdir(parents=True, exist_ok=True)
+        _reject_symlink_components(raw_out_dir)
+    except (OSError, ValueError) as exc:
+        print(f"ERROR: refusing output directory: {exc}", file=sys.stderr)
+        return 1
+    out_dir = raw_out_dir
+
+    hero_filename = args.hero
+    if hero_filename is None:
+        for extension in (".png", ".jpg", ".jpeg", ".webp"):
+            candidate = out_dir / f"hero{extension}"
+            if candidate.is_file() and not candidate.is_symlink():
+                hero_filename = candidate.name
+                break
+        else:
+            hero_filename = "hero.png"
 
     try:
-        html_path = _render_html(md_path, out_dir, args.hero)
+        html_path = _render_html(md_path, out_dir, hero_filename)
     except Exception as e:
         print(f"ERROR: html render failed: {e}", file=sys.stderr)
         return 1

@@ -121,10 +121,10 @@ def test_ledger_covers_current_search_contracts() -> None:
         "not ranking factors",
         "first 2MB",
         "Back-button hijacking",
-        "August 2026 spam update",
+        "September 2026 spam update",
         "logging errors",
         "fake reviews",
-        "Python client 31.2.0",
+        "Google Ads API v25.2",
     ):
         assert contract in ledger_text
 
@@ -151,7 +151,10 @@ def test_brain_ledger_is_an_exact_projection_of_the_canonical_ledger() -> None:
 
 def test_currentness_evaluator_distinguishes_current_and_refresh_required() -> None:
     module = _load_currentness_module()
+    # Exercise evaluator behavior against a frozen review date. The canonical
+    # ledger advances independently as new primary-source evidence is reviewed.
     ledger = _load_ledger()
+    ledger["last_verified"] = "2026-08-25"
 
     current = module.evaluate(
         ledger,
@@ -278,7 +281,8 @@ def test_google_currentness_guidance_preserves_api_boundaries() -> None:
     assert "SOURCE_CONFLICT" in guidance
     assert "PENDING_OBSERVATION" in guidance
     assert "fake reviews" in guidance
-    assert "Python client 31.2.0" in guidance
+    assert "Google Ads API v25.2" in guidance
+    assert "release notes and support table together" in guidance
 
 
 def test_google_landscape_excludes_unsourced_market_and_recovery_claims() -> None:

@@ -13,52 +13,41 @@ tags:
 
 ## Use This When
 
-Use this prompt when you need a structured find deliverable and want the model to separate observations, assumptions, recommended actions, and claims that need verification.
+Plan non-overlapping pillar and cluster coverage.
 
-## AI Compatibility
+## Task Inputs
 
-Works with long-context reasoning models. For smaller models, provide narrower inputs and ask for one output section at a time.
+- goal.
+- URL inventory.
+- audience and market.
+- entities and sources.
 
-## Inputs
+## Decisions
 
-- Blog, publication, product, or website name.
-- Target article, hub page, query set, or campaign.
-- Audience and geography where relevant.
-- Existing evidence: analytics, search results, reader research, source notes, sales objections, or content inventory.
-- Constraints, exclusions, and required sources.
+- Assign pillar, cluster, merge, refresh, or retire.
+- Separate gaps from cannibalization.
 
 ## Prompt
 
 ```text
-Act as a senior SEO strategist using the FLOW model.
+Act as a senior blog strategist using the FLOW model.
 
-Task: create a Find-stage blog deliverable for: [TOPIC, ARTICLE, HUB, OR SITE].
+Use only supplied evidence. Label assumptions and unverified claims. Complete these checks:
+1. Map each page to a reader job.
+2. Group unanswered needs.
+3. Design internal-link routes.
+4. Rank gaps by value, evidence, and effort.
 
-Use only the supplied inputs and clearly label any assumption. Do not invent statistics. Do not reuse private examples. Build the answer around:
-1. Searcher or buyer intent.
-2. Evidence available now.
-3. Gaps that block trust, extraction, or conversion.
-4. Recommended changes in priority order.
-5. Measurement events and review cadence.
-6. Claims that require source verification before publication.
-
-Return a concise working document the team can execute.
+Return only the required output. Do not invent statistics, support, or private examples.
 ```
 
-## Output
+## Required Output
 
-- Executive summary.
-- Priority table.
-- Recommended copy, structure, or audit findings.
-- Evidence needed.
-- Measurement plan.
-- Verification checklist.
-
-## Example
-
-Input: a blog post or hub page with weak proof, thin source support, and an unclear conversion path.
-
-Expected output: a prioritized content brief, claims to verify, internal links to add, and the conversion event to measure.
+- Coverage map.
+- Page-role decisions.
+- Topic plan.
+- Source and link gaps.
+- Publishing queue.
 
 ## See Also
 

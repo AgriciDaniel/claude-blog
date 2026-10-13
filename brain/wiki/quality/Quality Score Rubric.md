@@ -47,8 +47,7 @@ that repository check, while scores below 70 fail it. The rendered five-gate
 delivery contract is stricter: only scores from 90 to 100 are delivery
 candidates, and only when no blocker exists. Scores from 80 to 89 are strong
 and scores from 70 to 79 are acceptable as editorial bands, but both require
-revision before Gate 4 delivery. A single blocker from [[Quality Gate Failure
-Modes]] overrides either threshold because the rubric is a decision aid, not a
+revision before Gate 4 delivery. A single blocker from [[Quality Gate Failure Modes]] overrides either threshold because the rubric is a decision aid, not a
 way to average away risk.
 
 ## Quality Score Rubric Review Procedure

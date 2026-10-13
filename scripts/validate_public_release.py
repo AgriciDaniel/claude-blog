@@ -17,7 +17,8 @@ from pathlib import Path
 
 PUBLIC_REPOSITORY = "https://github.com/AgriciDaniel/claude-blog"
 PUBLIC_VERSION = "2.2.0"
-PUBLIC_SLUG = "claude-blog@agricidaniel-blog"
+PUBLIC_PLUGIN_IDENTIFIER = "claude-blog"
+PUBLIC_SLUG = f"{PUBLIC_PLUGIN_IDENTIFIER}@agricidaniel-blog"
 PUBLIC_OWNER = "AgriciDaniel"
 PUBLIC_OWNER_URL = "https://github.com/AgriciDaniel"
 PUBLIC_MARKETPLACE = "agricidaniel-blog"
@@ -34,8 +35,9 @@ PUBLIC_PINNED_INSTALL_SH = (
 PUBLIC_DISCUSSIONS = f"{PUBLIC_REPOSITORY}/discussions"
 PUBLIC_SECURITY_ADVISORY = f"{PUBLIC_REPOSITORY}/security/advisories/new"
 PUBLIC_DOCUMENTATION = f"{PUBLIC_REPOSITORY}/tree/main/docs"
-SECURITY_CHECKOUT_RE = re.compile(
-    r"\bgit checkout v([0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?)\b"
+SECURITY_CHECKOUT_GUIDANCE = "git checkout <commit-sha-or-release-tag>"
+PREOWNERSHIP_INSTALLER_PIN_RE = re.compile(
+    r"(?:git checkout\s+|CLAUDE_BLOG_REF\s*=\s*[\"']?|/claude-blog/)v2\.2\.0(?:/install\.(?:sh|ps1))?\b"
 )
 SURFACES = (
     "README.md",
@@ -48,6 +50,8 @@ SURFACES = (
     ".github/SECURITY.md",
     "install.sh",
     "install.ps1",
+    "uninstall.sh",
+    "uninstall.ps1",
     "skills/blog/SKILL.md",
 )
 FORBIDDEN_PATTERNS = {
@@ -104,9 +108,34 @@ def validate(root: Path) -> dict:
             if path.name.startswith("PUBLIC-BACKLOG-TRIAGE-"):
                 errors.append({"kind": "private_triage_note", "file": relative})
 
+    # Inspect maintained execution and instruction surfaces as well as the
+    # canonical release metadata. Historical raw captures and test fixtures
+    # are evidence, and are intentionally outside this distribution check.
+    for directory, patterns in {
+        "skills": ("*.md", "*.py", "*.json", "*.txt"),
+        "agents": ("*.md",),
+        "scripts": ("*.py", "*.ps1"),
+        "data": ("*.json",),
+        ".github/workflows": ("*.yml", "*.yaml"),
+    }.items():
+        for pattern in patterns:
+            for path in (root / directory).rglob(pattern):
+                if path.is_symlink() or any(part in {".venv", "__pycache__"} for part in path.parts):
+                    continue
+                relative = path.relative_to(root).as_posix()
+                contents.setdefault(relative, path.read_text(encoding="utf-8"))
+
     for relative, text in contents.items():
+        if relative == "scripts/validate_public_release.py":
+            # The detector's own forbidden-pattern definitions contain the
+            # strings they must reject elsewhere. Keep scanning its runtime
+            # code, excluding only this declarative pattern table.
+            text = re.sub(
+                r"(?ms)^FORBIDDEN_PATTERNS = \{.*?(?=^RAW_INSTALLER_RE =)",
+                "", text,
+            )
         for kind, pattern in FORBIDDEN_PATTERNS.items():
-            if kind == "private_repository_url" and relative not in SURFACES:
+            if kind == "private_repository_url" and relative.startswith("docs/"):
                 # Attribution and migration history may legitimately mention
                 # the private repository. Canonical distribution surfaces may
                 # not identify it as the public package.
@@ -143,13 +172,10 @@ def validate(root: Path) -> dict:
 
     version_fragments = {
         "README.md": (
-            f"git checkout v{PUBLIC_VERSION}",
-            f"CLAUDE_BLOG_REF=v{PUBLIC_VERSION}",
+            "git checkout <commit-sha-or-release-tag>",
+            "CLAUDE_BLOG_REF=<commit-sha-or-release-tag>",
         ),
-        "CLAUDE.md": (
-            f"CLAUDE_BLOG_REF=v{PUBLIC_VERSION}",
-            PUBLIC_PINNED_INSTALL_SH,
-        ),
+        "CLAUDE.md": ("CLAUDE_BLOG_REF=<commit-sha-or-release-tag>",),
         "CITATION.cff": (f"version: {PUBLIC_VERSION}",),
         "pyproject.toml": (f'version = "{PUBLIC_VERSION}"',),
         ".claude-plugin/plugin.json": (f'"version": "{PUBLIC_VERSION}"',),
@@ -169,16 +195,28 @@ def validate(root: Path) -> dict:
                     }
                 )
 
+    # v2.2.0 predates the ownership-aware installer, and its uninstall.sh runs
+    # an unguarded recursive delete. Install documentation must not pin to it.
+    for relative in ("README.md", "CLAUDE.md", "docs/INSTALLATION.md", ".github/SECURITY.md"):
+        for match in PREOWNERSHIP_INSTALLER_PIN_RE.finditer(contents.get(relative, "")):
+            errors.append(
+                {
+                    "kind": "unsafe_preownership_installer_pin",
+                    "file": relative,
+                    "actual": match.group(0),
+                }
+            )
+
     citation = contents.get("CITATION.cff", "")
+    # SECURITY.md must give the same pin-a-reviewed-ref guidance as the README
+    # and must never tell users to run the v2.2.0 installer (checked above).
     security = contents.get(".github/SECURITY.md", "")
-    security_versions = sorted(set(SECURITY_CHECKOUT_RE.findall(security)))
-    if security_versions != [PUBLIC_VERSION]:
+    if SECURITY_CHECKOUT_GUIDANCE not in security:
         errors.append(
             {
-                "kind": "invalid_public_security_version",
+                "kind": "invalid_public_security_guidance",
                 "file": ".github/SECURITY.md",
-                "expected": PUBLIC_VERSION,
-                "actual": security_versions,
+                "expected": SECURITY_CHECKOUT_GUIDANCE,
             }
         )
 
@@ -270,6 +308,7 @@ def validate(root: Path) -> dict:
         )
     else:
         expected_plugin = {
+            "name": PUBLIC_PLUGIN_IDENTIFIER,
             "homepage": PUBLIC_REPOSITORY,
             "repository": PUBLIC_REPOSITORY,
         }
@@ -335,7 +374,7 @@ def validate(root: Path) -> dict:
             not isinstance(plugins, list)
             or not any(
                 isinstance(entry, dict)
-                and entry.get("name") == "claude-blog"
+                and entry.get("name") == PUBLIC_PLUGIN_IDENTIFIER
                 and entry.get("source") == "./"
                 for entry in plugins
             )

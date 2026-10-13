@@ -1,0 +1,27 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://developers.google.com/search/blog/2024/08/august-2024-core-update",
+  "normalized_full_document_sha256": "284e4e0b13677f4e08048a58f67707a36f8df0e6e8192aa760eb8fcacd08199e",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "feedback we've heard from some creators and others over the past few months"
+  ],
+  "records": [
+    {
+      "source_id": "g-aug-2024-core",
+      "source_url": "https://developers.google.com/search/blog/2024/08/august-2024-core-update",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    },
+    {
+      "source_id": "g-update-2024-08-15-august-2024-core-update",
+      "source_url": "https://developers.google.com/search/blog/2024/08/august-2024-core-update",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "confirmed_by_manual_review",
+      "excerpt_index": 0
+    }
+  ]
+}

@@ -20,6 +20,14 @@ Do NOT use this template for:
 - Reference/FAQ content (use faq-knowledge)
 - Analysis based entirely on someone else's data (write a news-analysis instead)
 
+### Evidence gate
+
+Confirm access to the original dataset, collection method, study period,
+limitations, and reproducible calculations before drafting. If these are not
+available, do not imply original research. Use news analysis or another sourced
+synthesis template, or return an evidence-needs brief for the missing study
+materials.
+
 **Value Note:** Original research can be useful when the methodology, evidence,
 limitations, and results are transparent. The template itself carries no
 ranking, backlink, or AI-citation guarantee.

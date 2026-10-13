@@ -4,7 +4,7 @@ title: "Example Selection Rules"
 domain: "Blog Voice"
 status: active
 created: 2026-07-06
-updated: 2026-07-09
+updated: 2026-10-07
 tags: [personas, voice-style, active]
 ---
 
@@ -16,7 +16,7 @@ Example Selection Rules decides which examples can appear in a blog draft, brief
 
 ### Allowed Example Moves
 
-Use a small scenario, comparison, failure case, sample sentence, or before-and-after rewrite when it clarifies the reader task. Cite `g-helpful-content` for usefulness, `g-qrg-full` for trust-sensitive content, `g-update-2025-01-23-qrg-update-jan-2025` for avoiding copied or filler main content, and `g-update-2025-09-11-qrg-update-sept-2025` when AI Overview examples or YMYL expansion change review pressure. `g-localized` is relevant when the example depends on language or region.
+Use a small scenario, comparison, failure case, sample sentence, or before-and-after rewrite when it clarifies the reader task. Cite `g-helpful-content` for usefulness, `g-qrg-full` for trust-sensitive content, `g-update-2025-01-23-qrg-update-jan-2025` for avoiding copied or filler main content, and `g-update-2025-09-11-qrg-update-sept-2025` when updated YMYL definitions or illustrative examples change review pressure. `g-localized` is relevant when the example depends on language or region.
 
 ### Disallowed Example Moves And Approval Exceptions
 

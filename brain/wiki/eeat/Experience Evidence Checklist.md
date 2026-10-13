@@ -3,7 +3,7 @@ type: spoke
 title: "Experience Evidence Checklist"
 status: evergreen
 created: 2026-07-06
-updated: 2026-07-09
+updated: 2026-10-07
 tags: [eeat, evergreen]
 domain: "Blog Trust"
 confidence: verified
@@ -73,3 +73,5 @@ A "best standing desks for small apartments" draft claims one desk is easiest to
 ## Draft Package Experience Inputs
 
 [[Blog Write Article Contract]] consumes this checklist while assembling claim-backed sections. Inputs are highlighted experience claims, proof artifacts, environment notes, limitations, and privacy-safe media needs. The contract expects revised claim wording, source IDs, visual requests, and blocked sections when experience cannot be shown.
+
+For Experience Evidence Checklist, `nng-editorial-heuristics` supplies general interaction-design principles. Applying those principles to this note's editorial checks is a project adaptation, not an experimentally established SEO or AI-citation requirement.

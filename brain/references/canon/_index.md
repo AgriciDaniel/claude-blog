@@ -1,7 +1,9 @@
 # Claude Blog Brain Canon
 
-Status: researched.
-Last verified: 2026-07-09.
+Status: research-reviewed.
+Canonical claims reviewed against the source ledger: 2026-10-07.
+Historical publication and event dates remain attached to each source.
+Research review does not substitute for the executable release audit.
 
 This folder holds the primary source layer for blog SEO, E-E-A-T, schema, AI search, spam policy, and performance decisions. Use these notes before practitioner sources.
 

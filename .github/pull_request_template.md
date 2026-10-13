@@ -27,7 +27,7 @@
 ## Security checklist (if applicable)
 - [ ] No new hardcoded secrets, API keys, or credentials
 - [ ] No new `Bash` tool grants in agent frontmatter (`tests/test_security_guardrails.py` enforces)
-- [ ] No new `allowed-tools` field (invalid in SKILL.md frontmatter)
+- [ ] No unreviewed skill tool preapprovals (`allowed-tools` is supported metadata)
 - [ ] Trust boundaries documented in SECURITY.md if new untrusted-data surfaces introduced
 
 ## Contributor reference

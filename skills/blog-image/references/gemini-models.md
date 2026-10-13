@@ -1,24 +1,39 @@
 # Gemini Image Generation Models - Nano Banana
 
-> Last updated: 2026-07-08
-> Aligned with Google's July 2026 model availability state. Check live pricing
-> and project limits before quoting cost or throughput.
+> Last updated: 2026-10-12
+> Checked against https://ai.google.dev/gemini-api/docs/models,
+> /deprecations, /image-generation, and /pricing on 2026-10-12. Check live
+> pricing and project limits before quoting cost or throughput.
 
 ## Available Models
 
-### gemini-3.1-flash-image (Recommended - Speed + Quality)
+### gemini-nano-banana-2.1 (Current Default for New Work)
+| Property | Value |
+|----------|-------|
+| **Model ID** | `gemini-nano-banana-2.1` |
+| **Status** | Stable, released 2026-10-06; the image-generation guide uses it as its primary model |
+| **Cost** | $0.0336 (1K), $0.0504 (2K), $0.113 (4K) per image, standard paid tier |
+| **Use** | Recommended model for new integrations; named by Google as the replacement for `gemini-3.1-flash-image` |
+
+Only the status and price above were read from Google's pages. Check the
+image-generation guide for its aspect ratios, sizes, and features before
+relying on them. The pinned Nano Banana MCP package has a separate
+compatibility boundary and does not accept this ID.
+
+### gemini-3.1-flash-image (Previous Generation)
 | Property | Value |
 |----------|-------|
 | **Model ID** | `gemini-3.1-flash-image` |
 | **Tier** | Nano Banana 2 (Flash) |
+| **Status** | Previous generation. Google's deprecations page lists no shutdown date and names `gemini-nano-banana-2.1` as the replacement |
 | **Speed** | Fast - optimized for high-volume use |
 | **Aspect Ratios** | All 14 ratios (see table below) |
 | **Max Resolution** | Up to 4096×4096 (4K tier) |
 | **Features** | Google Search grounding (web + image), thinking levels, image-only output, extreme aspect ratios, 512px drafts |
 | **Rate Limits** | Check live project limits in AI Studio and the rate limits page |
 | **Output Tokens** | 1K: 1,120, 2K: 1,680, 4K: 2,520 |
-| **Cost (1K)** | ~$0.067/image |
-| **Best For** | Most blog images, rapid iteration, batch generation |
+| **Cost** | $0.045 (0.5K), $0.067 (1K), $0.101 (2K), $0.151 (4K) per image |
+| **Best For** | Existing integrations that already use it; the script's current default constant |
 
 ### gemini-3.1-flash-lite-image (Low Latency)
 | Property | Value |
@@ -34,9 +49,9 @@
 | **Cost (1K)** | ~$0.0336/image |
 | **Best For** | Low-latency drafts, lightweight edits, high-volume 1K work |
 
-**MCP caveat:** The pinned `@ycse/nanobanana-mcp@1.1.1` package may not accept
-this stable model ID. Use direct API or upgrade the MCP package before selecting
-Lite from Claude Code.
+**MCP caveat:** The pinned `@ycse/nanobanana-mcp@1.1.1` package does not
+accept this stable model ID. Use the direct API (`generate_hero.py --model`)
+or upgrade the MCP package before selecting Lite from Claude Code.
 
 ### gemini-3-pro-image (Highest Quality - Text + Detail)
 | Property | Value |
@@ -54,11 +69,12 @@ Lite from Claude Code.
 
 **Note:** The preview image ID `gemini-3-pro-image-preview` shut down on 2026-06-25. Use `gemini-3-pro-image`.
 
-### gemini-2.5-flash-image (Stable Fallback)
+### gemini-2.5-flash-image (Legacy, Migrate Away)
 | Property | Value |
 |----------|-------|
 | **Model ID** | `gemini-2.5-flash-image` |
-| **Tier** | Nano Banana Original (stable) |
+| **Tier** | Nano Banana Original |
+| **Status** | Deprecated. The deprecations page lists an earliest shutdown of 2027-03-15 and recommends `gemini-3.1-flash-lite-image`. The pricing page text still says it "will be shut down on October 2, 2026", which conflicts with the deprecations page; treat it as unreliable and do not start new work on it |
 | **Speed** | Fast |
 | **Aspect Ratios** | Standard ratios vary by API surface, verify in current docs |
 | **Max Resolution** | Up to 1024×1024 (1K tier) |
@@ -74,37 +90,37 @@ Lite from Claude Code.
 | **Speed** | Fastest | Medium | Slowest |
 | **Best For** | Batch generation, drafts | General-purpose blog images | Maximum detail, print |
 
-**Status:** Deprecated on 2026-06-15; shutdown scheduled for 2026-08-17. Use `gemini-3.1-flash-image` for current standard image generation, or `gemini-3-pro-image` for highest quality.
+**Status:** Deprecated on 2026-06-15; shut down on 2026-08-17. Use `gemini-nano-banana-2.1` for current standard image generation, or `gemini-3-pro-image` for highest quality.
 
 **Notes:** Imagen 4 models are dedicated image generators (not multimodal LLMs). They lack conversational editing and should not be used for new workflows.
 
 ## Deprecated Models (DO NOT USE)
 
 ### gemini-3.1-flash-image-preview
-- **Status:** Deprecated on 2026-05-28 and shut down on 2026-06-25. Use `gemini-3.1-flash-image`.
+- **Status:** Shut down on 2026-06-25 (deprecations page). Use `gemini-nano-banana-2.1`.
 
 ### gemini-3-pro-image-preview
 - **Status:** Deprecated on 2026-05-28 and shut down on 2026-06-25. Use `gemini-3-pro-image`.
 
 ### gemini-2.5-flash-image-preview
-- **Status:** Shut down - use the stable `gemini-2.5-flash-image` variant
+- **Status:** Shut down (2026-01-15 per the deprecations page) - use `gemini-nano-banana-2.1`
 
 ### gemini-2.0-flash-exp
-- **Status:** Deprecated, shutdown June 1, 2026. Use `gemini-2.5-flash-image`
+- **Status:** Deprecated, shutdown June 1, 2026. Use `gemini-nano-banana-2.1`
 
 ### Legacy models (Gemini 2.0 Flash and earlier)
-- **Status:** Shut down June 1, 2026. Migrate to `gemini-3.1-flash-image` or `gemini-3-pro-image`.
+- **Status:** Shut down June 1, 2026. Migrate to `gemini-nano-banana-2.1` or `gemini-3-pro-image`.
 
 ## Model Selection for Blog Content
 
 | Blog Use Case | Recommended Model | Why |
 |---------------|-------------------|-----|
-| Quick draft / iteration | NB2 Flash (512px) | Fastest, cheapest, good enough for review |
-| Standard blog images | NB2 Flash (1K-2K) | Best speed/quality ratio |
+| Quick draft / iteration | NB Lite (1K) or NB2 Flash (512px) | Lowest 1K price; 512px is a `gemini-3.1-flash-image` size |
+| Standard blog images | Nano Banana 2.1 (1K-2K) | Current default, $0.0336 at 1K |
 | Hero images with text | NB Pro | Strong text rendering and reasoning mode |
-| Final hero / OG at 4K | NB2 Flash or Pro (4K) | Both support 4K output |
+| Final hero / OG at 4K | Nano Banana 2.1 or Pro (4K) | Both list a 4K price |
 | High-volume 1K drafts | NB Lite | Lowest latency and lowest 1K image price |
-| Budget batch generation | Original (2.5 Flash) | $0.039/img, proven quality |
+| Budget batch generation | NB Lite or Nano Banana 2.1 batch tier | 2.5 Flash is deprecated; batch is half the standard price |
 
 ## Aspect Ratios
 
@@ -151,7 +167,7 @@ limits table before promising throughput: https://ai.google.dev/gemini-api/docs/
 | Tier 1 (Pay-as-you-go) | 150-300 | 1,500-10,000 | Enable billing on Google Cloud project |
 | Tier 2 ($250+ spend) | 1,000+ | Unlimited | Cumulative $250+ API spend |
 
-**Important:** The old NB2 and Pro preview image IDs are shut down. Free tier
+**Important:** The old NB2 and Pro preview image IDs (shut down 2026-06-25) no longer work. Free tier
 availability for image generation may require billing to be enabled.
 
 ## Pricing Guidance
@@ -161,17 +177,20 @@ https://ai.google.dev/gemini-api/docs/pricing
 
 | Model | Resolution | Cost per Image | Notes |
 |-------|-----------|---------------|-------|
-| NB Lite | 1K | ~$0.0336 | Direct API, 1K optimized |
-| NB2 Flash | 1K | ~$0.067 | Standard |
+| Nano Banana 2.1 | 1K | $0.0336 | Current default |
+| Nano Banana 2.1 | 2K | $0.0504 | |
+| Nano Banana 2.1 | 4K | $0.113 | |
+| NB Lite | 1K | $0.0336 | Direct API, 1K optimized |
+| NB2 Flash (previous gen) | 1K | ~$0.067 | Standard |
 | NB2 Flash | 2K | ~$0.101 | Higher resolution |
 | NB2 Flash | 4K | ~$0.151 | Highest Flash tier |
 | Pro | 1K/2K | ~$0.134 | Premium quality |
 | Pro | 4K | ~$0.24 | Premium 4K |
-| Original (2.5) | 1K | ~$0.039 | Budget option |
+| Original (2.5) | 1K | ~$0.039 | Deprecated, earliest shutdown 2027-03-15 |
 | Imagen 4 Fast | - | $0.02 | Deprecated, shutdown 2026-08-17 |
 | Imagen 4 Standard | - | $0.04 | Deprecated, shutdown 2026-08-17 |
 | Imagen 4 Ultra | - | $0.06 | Deprecated, shutdown 2026-08-17 |
-| Batch API | Any | 50% discount | Asynchronous, higher latency |
+| Batch API | Any | about 50% of standard | Asynchronous, higher latency (Nano Banana 2.1 batch: $0.0168 at 1K) |
 
 **Cost optimization:** Use 512px for drafts (cheapest), 1K for standard blog images, reserve 2K-4K for hero images and final assets.
 

@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://developers.google.com/search/docs/specialty/international/managing-multi-regional-sites",
+  "normalized_full_document_sha256": "0a275b958ae8c30c376ea0f232b4ec203f9be1f3d2d2b896532b19937c02d307",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "subdirectories with gtld example.com/de/"
+  ],
+  "records": [
+    {
+      "source_id": "g-multiregional",
+      "source_url": "https://developers.google.com/search/docs/specialty/international/managing-multi-regional-sites",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "confirmed_by_manual_review",
+      "excerpt_index": 0
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://developers.google.com/search/docs/appearance/structured-data/search-gallery",
+  "normalized_full_document_sha256": "347cfe31e8f708ddf2a9d64f10b14bf700bb9bdc3bfc32c379396d0862981353",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "structured data features"
+  ],
+  "records": [
+    {
+      "source_id": "g-search-gallery",
+      "source_url": "https://developers.google.com/search/docs/appearance/structured-data/search-gallery",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "confirmed_by_manual_review",
+      "excerpt_index": 0
+    }
+  ]
+}

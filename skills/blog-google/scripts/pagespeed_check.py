@@ -18,20 +18,26 @@ import sys
 from typing import Optional
 from urllib.parse import urlparse
 
-try:
-    import requests
-except ImportError:
-    print("Error: requests library required. Install with: pip install requests")
-    sys.exit(1)
-
 # Import credential helper (same directory)
 try:
-    from google_auth import get_api_key, load_config, request_with_retries
+    from google_auth import (
+        api_key_headers, get_api_key, load_config, redact_secrets,
+        request_with_retries, safe_exception_text, setup_hint,
+    )
 except ImportError:
     # Fallback: try relative import from scripts/
     import os
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-    from google_auth import get_api_key, load_config, request_with_retries
+    from google_auth import (
+        api_key_headers, get_api_key, load_config, redact_secrets,
+        request_with_retries, safe_exception_text, setup_hint,
+    )
+
+try:
+    import requests
+except ImportError:
+    print(f"Error: requests library required. {setup_hint()}", file=sys.stderr)
+    sys.exit(1)
 
 PSI_ENDPOINT = "https://www.googleapis.com/pagespeedonline/v5/runPagespeed"
 CRUX_ENDPOINT = "https://chromeuxreport.googleapis.com/v1/records:queryRecord"
@@ -115,11 +121,13 @@ def run_pagespeed(
         if isinstance(params["category"], list):
             params["category"].append(cat)
 
-    if api_key:
-        params["key"] = api_key
+    # The key travels in the x-goog-api-key header, never in the URL, so a
+    # connection error or logged URL cannot expose it. Google Cloud documents
+    # the header for API keys: https://docs.cloud.google.com/docs/authentication/api-keys-use
+    headers = api_key_headers(api_key) if api_key else None
 
     try:
-        resp = request_with_retries("GET", PSI_ENDPOINT, params=params, timeout=120)
+        resp = request_with_retries("GET", PSI_ENDPOINT, params=params, headers=headers, timeout=120)
         resp.raise_for_status()
         data = resp.json()
     except requests.exceptions.Timeout:
@@ -129,12 +137,12 @@ def run_pagespeed(
         if resp.status_code == 429:
             result["error"] = "PSI rate limit exceeded (240 QPM / 25,000 QPD). Wait and retry."
         elif resp.status_code == 400:
-            result["error"] = f"Invalid URL or parameters: {resp.text}"
+            result["error"] = f"Invalid URL or parameters: {redact_secrets(resp.text, [api_key])[:1000]}"
         else:
-            result["error"] = f"PSI API error {resp.status_code}: {e}"
+            result["error"] = f"PSI API error {resp.status_code}: {safe_exception_text(e, api_key)}"
         return result
     except requests.exceptions.RequestException as e:
-        result["error"] = f"Request failed: {e}"
+        result["error"] = f"Request failed: {safe_exception_text(e, api_key)}"
         return result
 
     result["analysis_timestamp"] = data.get("analysisUTCTimestamp")
@@ -334,7 +342,8 @@ def query_crux(
     try:
         resp = request_with_retries(
             "POST",
-            f"{CRUX_ENDPOINT}?key={api_key}",
+            CRUX_ENDPOINT,
+            headers=api_key_headers(api_key),
             json=body,
             timeout=30,
         )
@@ -354,7 +363,7 @@ def query_crux(
         resp.raise_for_status()
         data = resp.json()
     except requests.exceptions.RequestException as e:
-        result["error"] = f"CrUX API request failed: {e}"
+        result["error"] = f"CrUX API request failed: {safe_exception_text(e, api_key)}"
         return result
 
     record = data.get("record", {})

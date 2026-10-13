@@ -24,8 +24,9 @@ follows its instruction to use it). Three other layers remain in the
 contract: sanitize (also performed here), tool-boundary (platform-enforced
 via agent frontmatter), and provenance (also emitted here).
 
-Usage:
-    python3 scripts/load_untrusted_root.py <path-to-file>
+Usage (run it from the trusted installed path, never a relative scripts/ path,
+because a project directory can plant its own scripts/ folder):
+    python3 "${CLAUDE_BLOG_SCRIPTS_DIR:-${CLAUDE_SKILL_DIR}/../../scripts}/load_untrusted_root.py" <path-to-file>
 
     Output: a fenced block ready for injection into a system prompt.
 

@@ -8,7 +8,8 @@ deliverables.
 
 - `source-ledger.json` is the canonical source registry. It records source URL,
   source type, dates, retrieval metadata, confidence, evidence tier,
-  methodology, limitations, supported claims, and raw snapshot status.
+  methodology, limitations, supported claims, and raw snapshot status. Lifecycle
+  distinguishes active support from retired provenance and unverified claims.
 - `claim-ledger.md` is the adversarial claim register. It maps volatile claims
   to research questions, verdicts, confidence, primary source URL and date,
   second-source status, and refresh due dates.
@@ -21,7 +22,7 @@ deliverables.
 - `market-research.md` summarizes buyer, market, and demand evidence with
   practitioner caveats where needed.
 - `adapter-manifest.json` records adapter maturity truth. It remains
-  generic-only until implementation and test gates are release-verified.
+  governed by implementation and test gates separately from source review.
 
 ## No Source In Prose Only
 

@@ -4,7 +4,7 @@ title: "2024 Google Update Timeline"
 domain: "Google Update Monitoring"
 status: active
 created: 2026-07-06
-updated: 2026-07-09
+updated: 2026-10-07
 tags: [monitoring, google-updates, active]
 source_urls:
   - "https://status.search.google.com/products/rGHU1u87FJnkP6W2GwMi/history"
@@ -35,11 +35,11 @@ This spoke records the 2024 Google-owned update sequence that matters for blog a
 | Decision checkpoint | Required input | Source IDs | Evidence state | Owner | Next action |
 |---|---|---|---|---|---|
 | March quality and spam reset | Confirm that the March 2024 entry joins core ranking and spam-policy changes | `g-update-2024-03-05-march-2024-core-update-spam-updates`, `g-ranking-history` | CONFIRMED | SEO lead | Route affected audits to both quality review and spam-policy screening. |
-| INP replaces FID in audit language | Verify the date before changing performance checklists | `g-update-2024-03-05-inp-replaces-fid` | CONFIRMED | Technical reviewer | Remove FID language from blog audit templates and use INP when performance enters scope. |
+| INP replaces FID in audit language | The announced switch was March 12, 2024; the legacy source ID retains March 5 | `g-update-2024-03-05-inp-replaces-fid` | CONFIRMED | Technical reviewer | Remove FID language from blog audit templates and use INP when performance enters scope. |
 | June spam event | Record the Google dashboard start date before testing pages | `g-update-2024-06-20-june-2024-spam-update`, `g-status-dashboard` | CONFIRMED | Monitoring owner | Compare scaled-content, redirect, and cloaking risks before changing content. |
 | August core event | Separate helpful-content recovery claims from official update confirmation | `g-update-2024-08-15-august-2024-core-update` | CONFIRMED | Content strategy lead | Inspect content quality and usefulness improvements, not short-term rank noise. |
 | November core event | Record the rollout duration and avoid overfitting daily movement | `g-update-2024-11-11-november-2024-core-update`, `g-status-dashboard` | CONFIRMED | SEO lead | Open a delayed impact review only after the rollout window is complete. |
-| Site reputation clarification | Check third-party hosted content before recommending new partner content | `g-update-2024-11-19-site-reputation-abuse-policy-clarified` | CONFIRMED | Editorial governance owner | Quarantine recommendations involving parasite or hosted third-party sections. |
+| Site reputation clarification | November 2024 oversight clarification is historical; current regional enforcement needs the August 2026 EEA source | `g-update-2024-11-19-site-reputation-abuse-policy-clarified` | CONFIRMED | Editorial governance owner | Quarantine recommendations involving parasite or hosted third-party sections. |
 | December core and spam sequence | Keep the two December lanes separate | `g-update-2024-12-12-december-2024-core-update`, `g-update-2024-12-19-december-2024-spam-update` | CONFIRMED | Monitoring owner | Tag later impact notes with the exact event, not "December update" alone. |
 | May site-reputation enforcement start | Confirm the enforcement phase before reviewing hosted third-party areas | `g-update-2024-05-05-site-reputation-abuse-enforcement-begins` | CONFIRMED | Governance owner | Inspect coupons, affiliate pages, and partner sections as their own lane. |
 | December spam specificity | Do not blend scaled-content checks into December core recommendations | `g-update-2024-12-19-december-2024-spam-update`, `g-spam-policies` | CONFIRMED | Spam reviewer | Open policy screening only when a page pattern matches spam definitions. |
@@ -56,6 +56,8 @@ The current-cycle seed IDs `g-update-2026-05-21-may-2026-core-update` and `g-upd
 2. Assign the event to one lane: core quality, spam policy, technical metric, or policy clarification.
 3. Link follow-up work to the matching playbook instead of writing tactical advice in the timeline.
 4. If a later source changes an entry, update this note and [[Google Algorithm Update Ledger]] together inside a dated refresh pass.
+
+The August article `g-aug-2024-core` describes feedback over the preceding few months, not a September 2023 starting date. The November site-reputation clarification remains historical policy evidence. Current enforcement must also preserve `g-site-reputation-eea-2026-08-28`: from August 30, 2026 the manual-action effect differs inside and outside the EEA. This does not convert historical 2024 impact reviews into current regional conclusions.
 
 ## 2024 Timeline Applied Audit Case
 

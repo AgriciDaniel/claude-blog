@@ -53,7 +53,7 @@ The Claude Blog Brain is vendored at `./brain` as a self-contained, evidence-gat
        |          |
        v          v
 +------------------+  +------------------------+
-|  5 Subagents     |  |  17 root-level Scripts  |
+|  5 Subagents     |  |  22 root-level Scripts  |
 |  agents/*.md     |  |  scripts/*.py          |
 |                  |  |                        |
 |  blog-researcher |  |  analyze_blog          |
@@ -99,7 +99,7 @@ name, description, trigger phrases, and allowed tools.
 
 Each sub-skill is a standalone Claude Code skill with its own:
 
-- YAML frontmatter (name, description, user-invokable, argument-hint, metadata.version)
+- YAML frontmatter validated by `scripts/validate_skills.py` using real YAML with duplicate-key rejection. Native `user-invocable` defaults to true; explicit booleans, name/directory agreement and size caps are project policy. `allowed-tools` is valid host permission preapproval metadata, but this bundle deliberately ships no preapprovals. Agent `tools` is the allowlist.
 - Detailed workflow (step-by-step instructions)
 - Input/output specifications
 - Quality checks
@@ -189,29 +189,41 @@ Structural templates for different content types. Each template defines
 section structure, word count targets, and format-specific guidance.
 See [TEMPLATES.md](TEMPLATES.md) for the full reference.
 
-### 6. Root-Level Python Scripts (14)
+### 6. Root-Level Python Scripts (22)
 
 **Location**: `scripts/*.py`
 
-Standalone CLIs that the orchestrator calls via Bash. Each has argparse,
-docstring, JSON output, and stdlib-only or narrowly-pinned dependencies.
+Twenty-two Python helpers live at the repository root (count them with
+`ls scripts/*.py | wc -l`; `scripts/windows_installer_ownership.ps1` is the
+PowerShell twin of the ownership engine and is not counted). They support the
+orchestrator, the delivery contract, the installers and the CI checks.
+Interfaces and output formats are documented by each helper (`--help`);
+dependencies are stdlib-only or narrowly pinned.
 
 | Script | Purpose | Introduced |
 |---|---|---|
 | `analyze_blog.py` | 5-category 100-point quality scoring; batch mode; JSON/markdown/table output | v1.0.0 |
 | `ai_citation_score.py` | Non-calibrated AI citation readiness heuristic, 0-100 per post | v1.10.0 |
 | `blog_hygiene.py` | Optional deterministic hygiene: lazy-load images and auto-TOC | v1.11.0 |
-| `blog_preflight.py` | Runs 5-gate Blog Delivery Contract (Gates 1, 2, 3, 5; reads Gate 4 output) | v1.9.0 |
-| `blog_render.py` | md -> html -> pdf renderer; XSS-safe JSON-LD via `</`->`<\/`; O_NOFOLLOW symlink refusal; frontmatter validation | v1.9.0 |
+| `blog_preflight.py` | Runs the 5-gate Blog Delivery Contract (Gates 1, 2, 3, 5 plus the Gate 4 nonce and digest checks); `--init-review-nonce` issues the review nonce | v1.9.0 |
+| `blog_render.py` | md -> html -> pdf renderer; XSS-safe JSON-LD via `</`->`<\/`; O_NOFOLLOW symlink refusal; frontmatter validation; embeds `blog-source-sha256`; refuses `.html` input | v1.9.0 |
+| `check_google_currentness.py` | Checks the reviewed Google update ledger against official machine-readable feeds | Maintenance |
+| `check_secrets.py` | Fails on unadjudicated detect-secrets findings without printing raw values | Maintenance |
 | `cognitive_load.py` | Per-section concept-density analyzer (entities, numerics, jargon, forward refs, clause depth) | v1.8.0 |
+| `consistency_check.py` | Validates repository-local references and FLOW prompt locks | Maintenance |
 | `content_decay.py` | GSC content-decay detector: 20%+ QoQ decline | v1.10.0 |
+| `dependency_smoke.py` | Offline initialization smoke checks for the optional runtimes | Maintenance |
 | `discourse_research.py` | Discourse-brief synthesis from SERP JSON; depth-bounded parsing; path-traversal guards | v1.8.0 |
 | `generate_hero.py` | Hero image ladder: Banana MCP -> Gemini API -> Unsplash/Pexels/Pixabay -> Openverse | v1.9.0 |
-| `load_untrusted_root.py` | Code-enforced BRAND/VOICE/DISCOURSE fencing with CSPRNG nonces; O_NOFOLLOW + size cap | v1.8.3 |
+| `installer_ownership.py` | Shared Unix legacy/v2 ownership verification, migration and rollback | Unreleased |
 | `lint_prose.py` | Fence-aware prose-hygiene linter (no em-dash, en-dash, ` -- `); CI-enforced | v1.8.4 |
-| `quality_gate.py` | Pre-commit gate: block posts scoring < 70 | v1.10.0 |
+| `load_untrusted_root.py` | Code-enforced BRAND/VOICE/DISCOURSE fencing with CSPRNG nonces; O_NOFOLLOW + size cap | v1.8.3 |
+| `quality_gate.py` | Pre-commit gate: block posts scoring < 70; fail-closed on bad paths and missing frontmatter; `--select` is the pre-commit hook mode that skips Markdown files that are not blog posts | v1.10.0 |
 | `style_learn.py` | Author voice-profile learner from sample posts | v1.10.0 |
 | `sync_flow.py` | Pulls FLOW reference prompts from upstream; sandboxed; stdlib-only | v1.7.0 |
+| `sync_google_updates.py` | Synchronizes the canonical Google update ledger into the Blog Brain | Maintenance |
+| `validate_public_release.py` | Read-only validation of a prepared public worktree | Maintenance |
+| `validate_skills.py` | Real-YAML validation of skill and agent frontmatter plus the maintained bundle contract | Maintenance |
 
 ---
 
@@ -231,14 +243,14 @@ docstring, JSON output, and stdlib-only or narrowly-pinned dependencies.
       |
       +-- Spawns: blog-researcher agent
       |   |
-      |   +-- WebSearch: finds 8-12 statistics
-      |   +-- WebSearch: finds 3-5 Pixabay/Unsplash images
+      |   +-- WebSearch: finds evidence for material claims
+      |   +-- WebSearch: finds useful licensed visual evidence
       |   +-- WebFetch: verifies sources and URLs
       |   +-- Returns: structured research data
       |
       +-- Presents outline for user approval
       |
-      +-- Invokes: blog-chart (2-4 charts, built-in)
+      +-- Invokes: blog-chart when a chart explains the data
       |
       +-- Spawns: blog-writer agent
       |   |
@@ -247,24 +259,31 @@ docstring, JSON output, and stdlib-only or narrowly-pinned dependencies.
       |   |   - Sourced statistics
       |   |   - Image embeds
       |   |   - Chart embeds
-      |   |   - FAQ section
-      |   +-- Returns: complete article
+      |   |   - Q&A only when it answers reader questions
+      |   +-- Returns: complete article (draft-only markers allowed)
       |
       +-- Quality verification (5 categories, 100 points)
       |
-      +-- v1.9.0: 5-gate Blog Delivery Contract (blog_preflight.py)
-      |     Gate 1 Capability Discovery -> capabilities.json
-      |     Gate 2 Format Completeness  -> .md + .html + .pdf + hero.<ext>
-      |     Gate 3 Visual Verification  -> patchright/playwright 3 viewports
-      |     Gate 4 Content Review       -> blog-reviewer agent (BLOCKING)
-      |     Gate 5 Asset + Link         -> imgs, links, schema, wordCount
+      +-- 5-gate Blog Delivery Contract, canonical sequence
+      |     1 Draft     D/S.md (markers allowed)
+      |     2 Visuals   orchestrator resolves every marker, hero, charts
+      |     3 Render    blog_render.py -> S.html + S.pdf (blog-source-sha256)
+      |     4 Nonce     blog_preflight.py --init-review-nonce (stores digests)
+      |     5 Review    blog-reviewer; orchestrator saves review.md verbatim
+      |     6 Gates     blog_preflight.py --draft D --strict
+      |     7 Loop      any edit => re-render, re-nonce, re-review; max 3x
       |     If any gate BLOCKS: iterate up to 3x then escalate to user
       |
       +-- Writes file to user's project
       |
       v
-  Delivery summary (8 artifacts: md, html, pdf, hero, 4 viewport screenshots, review.md, preflight-report.json)
+  Delivery summary: md, html, pdf, hero, 3 viewport screenshots (preview/),
+  review.md, preflight-report.json
 ```
+
+The authoritative sequence and the full list of what each gate enforces live
+once, in `skills/blog/references/blog-delivery-contract.md`. This file does not
+repeat them: when the two disagree, the contract wins.
 
 ### Analyze Flow
 
@@ -337,13 +356,17 @@ AI Citation (15 pts)      ###############---------------
 
 | Score | Rating | Action |
 |-------|--------|--------|
-| 90-100 | Exceptional | Publish as-is (v1.9.0 contract delivers GREEN) |
+| 90-100 | Exceptional | Eligible for delivery review; all gates must still pass |
 | 80-89 | Strong | Minor tweaks; orchestrator iterates if Gate 4 wants 90+ |
 | 70-79 | Acceptable | Notable gaps; iterate |
 | 60-69 | Below Standard | Significant improvements required |
 | < 60 | Rewrite | Full rewrite recommended |
 
-The Blog Delivery Contract uses the configured quality threshold of 70.
+The standalone quality gate uses a configurable default threshold of 70.
+Delivery separately requires reviewer score >=90, explicit zero uncleared P0
+issues, a matching nonce on files unchanged since the nonce was issued, a valid
+final nonblocking decision, and all five preflight gates (full list in
+[`blog-delivery-contract.md`](../skills/blog/references/blog-delivery-contract.md)). An analyzer score alone cannot authorize delivery.
 Advisory style and length observations do not block delivery or infer
 authorship. Integrity and safety failures remain blocking.
 
@@ -355,11 +378,11 @@ These are non-negotiable. Content violating any of these must not be published:
 |------|-----------|
 | Fabricated statistics | Zero tolerance |
 | Paragraph clarity | Review in context; no fixed length gate |
-| Heading hierarchy | Never skip levels (H1 > H2 > H3) |
+| Heading hierarchy | Never skip levels (H1 > H2 > H3); one H1; checked by Gate 2 |
 | Source tier | Tier 1-3 only |
-| Image alt text | Required on all images |
-| Self-promotion | Max 1 brand mention |
-| Chart diversity | No duplicate chart types per post |
+| Image alt text | Required on all images; a missing `alt` is a Gate 2 violation |
+| Self-promotion | Keep mentions useful to the reader and disclose commercial context |
+| Chart selection | Use the clearest chart for the evidence, without a fixed quota |
 
 ---
 
@@ -505,22 +528,36 @@ After installation, `claude-blog` occupies this structure inside `~/.claude/`:
     └── blog-translator.md              # v1.7.0
 ```
 
-**Component counts (v2.2.0)**: 32 skill directories (1 orchestrator + 31
-sub-skills); 30 user-facing commands, 5 agents (blog-researcher, blog-writer, blog-seo, blog-reviewer,
-blog-translator), 22 references in `skills/blog/references/` (plus per-sub-skill
-references and 30 synced FLOW prompts under `skills/blog-flow/references/`),
-12 content templates, 17 root-level scripts (`scripts/analyze_blog.py`,
-`ai_citation_score.py`, `blog_hygiene.py`, `blog_preflight.py`,
-`blog_render.py`, `cognitive_load.py`, `content_decay.py`,
-`discourse_research.py`, `generate_hero.py`, `load_untrusted_root.py`,
-`lint_prose.py`, `quality_gate.py`, `style_learn.py`, `sync_flow.py`,
-`consistency_check.py`, `dependency_smoke.py`, `validate_public_release.py`) plus per-sub-skill scripts under
-`blog-google/`, `blog-notebooklm/`, `blog-audio/`, `blog-image/`.
+**Component counts**: 32 skill directories (1 orchestrator + 31 sub-skills);
+30 user-facing commands (`blog-chart` is internal); 5 agents (blog-researcher,
+blog-writer, blog-seo, blog-reviewer, blog-translator); 22 references in
+`skills/blog/references/` (plus per-sub-skill references and the synced FLOW
+prompts under `skills/blog-flow/references/`); 12 content templates; 22
+root-level Python scripts (the table in section 6; `ls scripts/*.py | wc -l`)
+plus per-sub-skill scripts under `blog-google/`, `blog-notebooklm/`,
+`blog-audio/`, `blog-image/` and `blog-flow/`. Only the reference
+count is asserted by a test (`test_reference_count_coherence`); the other
+numbers are maintained by hand, so verify them with `ls` before relying on
+them. The test count is deliberately not quoted here (run
+`python3 -m pytest --collect-only -q | tail -1`).
 v1.8.0+ adds three project-root context files (BRAND.md / VOICE.md /
 DISCOURSE.md, auto-loaded via `scripts/load_untrusted_root.py` with
 CSPRNG nonce fencing). v1.8.4+ enforces prose hygiene and version
 coherence via CI (see `scripts/lint_prose.py`, `tests/test_version_coherence.py`).
 v1.9.0 adds the 5-gate Blog Delivery Contract (see
-`skills/blog/references/blog-delivery-contract.md`) and a 250+ test pytest
-suite including mutation-test-verified XSS, symlink, and frontmatter
-regression coverage.
+`skills/blog/references/blog-delivery-contract.md`) and a pytest suite that
+includes mutation-test-verified XSS, symlink, and frontmatter regression
+coverage.
+
+## Installed resource paths
+
+Consumer skills resolve bundled resources from host Markdown substitution
+`${CLAUDE_SKILL_DIR}`, which is not an ordinary exported shell variable.
+Shared helpers live at `../../scripts`, siblings at `..`, main references at
+`../blog/references`, and own helpers at `scripts` beneath that anchor. These
+relationships hold in repository/plugin and standalone layouts. Explicit
+absolute `CLAUDE_BLOG_*` overrides take precedence; relative overrides fail.
+No executable helper or reviewed reference falls back to the consumer CWD or
+a default global profile. The orchestrator passes resolved absolute roots and
+fenced context into agents; root CLAUDE.md is developer-only plugin context.
+Writable optional integration state remains a separate migration concern.

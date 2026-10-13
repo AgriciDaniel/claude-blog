@@ -4,26 +4,22 @@ set -euo pipefail
 # claude-blog installer
 # Installs the blog skill ecosystem to ~/.claude/skills/ and ~/.claude/agents/
 #
-# One-command install:
-#   curl -sL https://raw.githubusercontent.com/AgriciDaniel/claude-blog/main/install.sh | bash
+# Verified local install:
+#   bash install.sh [--force-adopt]
+# Download and verify this file with the README checksum instructions first.
+# Set CLAUDE_BLOG_REF to a full commit SHA (preferred) or a release tag: the
+# cloned revision supplies the installer that does the work, so the digest of
+# this wrapper alone does not pin what runs.
+#
+#   --force-adopt           Replace installed files that were edited after
+#                           install. Each one is first copied to
+#                           ~/.claude/claude-blog-backups/<timestamp>/.
+#   CLAUDE_BLOG_SKIP_PIP=1  Skip the optional Python dependency step.
+# Source: https://raw.githubusercontent.com/AgriciDaniel/claude-blog/main/install.sh
 
-# Declared outside main() so the EXIT trap can access it after main() returns
 TEMP_DIR=""
+INSTALL_STATS_FILE=""
 readonly CLAUDE_BLOG_VERSION="2.2.0"
-
-copy_tree() {
-    local src="$1"
-    local dest="$2"
-    [ -d "${src}" ] || return 0
-    mkdir -p "${dest}"
-    while IFS= read -r -d '' rel_path; do
-        mkdir -p "${dest}/$(dirname "${rel_path}")"
-        cp "${src}/${rel_path}" "${dest}/${rel_path}"
-    done < <(
-        cd "${src}" &&
-            find . -type d -name '__pycache__' -prune -o -type f ! -name '*.pyc' -print0
-    )
-}
 
 count_files() {
     local path="$1"
@@ -34,23 +30,23 @@ count_files() {
     find "${path}" -type d -name '__pycache__' -prune -o -type f ! -name '*.pyc' -print | wc -l | tr -d ' '
 }
 
-record_install() {
-    local manifest="$1"
-    local path="$2"
-    printf '%s\n' "${path}" >>"${manifest}"
-}
-
 print_commands() {
     local skill_md="$1"
     if [ ! -f "${skill_md}" ]; then
         return
     fi
-    awk -F'|' '
+    # Table cells escape a literal pipe as \| (for example "[generate\|edit]").
+    # Protect those with a placeholder before splitting on the real columns.
+    awk '
         /^\| `\/blog / {
-            cmd=$2
-            desc=$3
+            line = $0
+            gsub(/\\[|]/, "\001", line)
+            split(line, cells, "|")
+            cmd = cells[2]
+            desc = cells[3]
             gsub(/`/, "", cmd)
-            gsub(/\\\|/, "|", cmd)
+            gsub(/\001/, "|", cmd)
+            gsub(/\001/, "|", desc)
             gsub(/^[ \t]+|[ \t]+$/, "", cmd)
             gsub(/^[ \t]+|[ \t]+$/, "", desc)
             printf "    %-38s %s\n", cmd, desc
@@ -58,12 +54,113 @@ print_commands() {
     ' "${skill_md}"
 }
 
+print_python_help() {
+    cat <<'HELP'
+  How to get Python 3.11 or newer:
+    macOS: the stock /usr/bin/python3 from Apple's command line tools is too old (3.9 or older).
+           Install a current Python, for example:  brew install python@3.12
+           (or use the python.org installer, or: uv python install 3.12),
+           then open a NEW terminal and check that `python3 --version` shows 3.11+.
+    Linux: install it with your package manager, for example
+           sudo apt install python3.12   or   sudo dnf install python3.12
+    If a newer interpreter is already installed under another name (python3.12),
+    put its directory first on PATH so that `python3` resolves to it, then re-run.
+HELP
+}
+
+# The ownership engine prints "refusing symlinked path component <path>" for a
+# symlinked profile directory. Older installed copies of the engine print the
+# cryptic "unsafe parent at skills: Not a directory"; rewrite that into the
+# same clear message so users always see which directory is the problem.
+run_ownership_engine() {
+    local errors status=0
+    errors="$(mktemp -t claude-blog-ownership-err.XXXXXX)"
+    python3 "$@" 2>"${errors}" || status=$?
+    if [ -s "${errors}" ]; then
+        sed -E \
+            -e 's#ERROR: installation path has an unsafe parent at ([^:]+): Not a directory#ERROR: refusing symlinked path component \1 (a directory in the Claude profile is a symlink, not a real directory)#' \
+            -e 's#ERROR: Claude profile path has an unsafe ancestor at ([^:]+): Not a directory#ERROR: refusing symlinked path component \1#' \
+            "${errors}" >&2
+    fi
+    rm -f "${errors}"
+    return "${status}"
+}
+
+install_payload() {
+    local source_dir="$1" claude_dir="$2" manifest="$3" stats="$4" force_adopt="$5"
+    local force_args=()
+    if [ "${force_adopt}" = "1" ]; then
+        force_args=(--force-adopt)
+    fi
+    # Preserve the public standalone payload contracts for audit tests:
+    # ${SKILL_DIR}/blog/data/google-updates.json
+    # scripts/*.py
+    run_ownership_engine "${source_dir}/scripts/installer_ownership.py" install \
+        --source "${source_dir}" \
+        --profile "${claude_dir}" \
+        --manifest "${manifest}" \
+        --stats "${stats}" \
+        --version "${CLAUDE_BLOG_VERSION}" \
+        --legacy-inventory "${source_dir}/data/legacy-install-ownership.json" \
+        ${force_args[@]+"${force_args[@]}"}
+}
+
+# Optional Python dependencies. Uses the same interpreter that was version
+# checked (python3 -m pip, never a stray pip3), never sudo, and never
+# --break-system-packages. Failure is a warning: the install itself is complete.
+install_python_dependencies() {
+    local requirements="$1"
+    [ -f "${requirements}" ] || return 0
+    if [ "${CLAUDE_BLOG_SKIP_PIP:-}" = "1" ]; then
+        echo "→ Skipping Python dependencies (CLAUDE_BLOG_SKIP_PIP=1)."
+        return 0
+    fi
+    if ! python3 -m pip --version &>/dev/null; then
+        echo "→ Skipping Python dependencies: pip is not available for $(command -v python3)."
+        echo "  Install them later in a virtual environment (see below)."
+        print_venv_help
+        return 0
+    fi
+    echo "→ Installing Python dependencies..."
+    local pip_args=(--quiet -r "${requirements}")
+    local in_venv=0
+    if python3 -c 'import sys; raise SystemExit(0 if sys.prefix != sys.base_prefix else 1)' >/dev/null 2>&1; then
+        in_venv=1
+    else
+        pip_args=(--user "${pip_args[@]}")
+    fi
+    local pip_log
+    pip_log="$(mktemp -t claude-blog-pip-XXXXXX.log)"
+    if python3 -m pip install "${pip_args[@]}" 2>"${pip_log}"; then
+        rm -f "${pip_log}"
+        if [ "${in_venv}" = "0" ]; then
+            echo "  Installed into your user site-packages (pip --user), not system-wide."
+        fi
+        return 0
+    fi
+    echo "  WARNING: pip install failed. The skills are installed; only the optional Python extras are missing."
+    echo "  Log: ${pip_log}"
+    echo "  First error: $(head -n1 "${pip_log}" 2>/dev/null || echo '(empty)')"
+    if grep -qi "externally-managed-environment" "${pip_log}" 2>/dev/null; then
+        echo "  This Python is externally managed (PEP 668), so pip refuses to install into it."
+    fi
+    print_venv_help
+}
+
+print_venv_help() {
+    echo "  Install the extras in a virtual environment instead (never with sudo):"
+    echo "    python3 -m venv ~/.claude-blog-venv"
+    echo "    ~/.claude-blog-venv/bin/python -m pip install -r requirements.txt"
+    echo "  Run the helper scripts with ~/.claude-blog-venv/bin/python, or activate it first."
+    echo "  To skip this step on later runs: CLAUDE_BLOG_SKIP_PIP=1 ./install.sh"
+}
+
 main() {
     local SKILL_DIR="${HOME}/.claude/skills"
-    local AGENT_DIR="${HOME}/.claude/agents"
     local CLAUDE_DIR="${HOME}/.claude"
     local MANIFEST="${CLAUDE_DIR}/claude-blog-manifest.txt"
     local SCRIPT_DIR
+    local FORCE_ADOPT=0
 
     echo ""
     echo "  ╔══════════════════════════════════════╗"
@@ -74,173 +171,110 @@ main() {
     echo "  Release: ${CLAUDE_BLOG_VERSION}"
     echo ""
 
-    # Determine source directory (local clone or piped from curl)
     if [ -f "${BASH_SOURCE[0]:-}" ] && [ -d "$(dirname "${BASH_SOURCE[0]}")/skills/blog" ]; then
         SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     else
         local repo="${CLAUDE_BLOG_REPO:-AgriciDaniel/claude-blog}"
         local ref="${CLAUDE_BLOG_REF:-main}"
         local url="${CLAUDE_BLOG_URL:-https://github.com/${repo}.git}"
+        # Same rules as install.ps1: refuse values git could read as options or
+        # alternate transports, and refs that are not plain branch/tag/SHA names.
+        if ! printf '%s' "${repo}" | LC_ALL=C grep -Eq '^[A-Za-z0-9][A-Za-z0-9._-]*/[A-Za-z0-9._-]+$'; then
+            echo "ERROR: CLAUDE_BLOG_REPO must look like owner/name (got '${repo}')." >&2
+            return 1
+        fi
+        if ! printf '%s' "${ref}" | LC_ALL=C grep -Eq '^[A-Za-z0-9][A-Za-z0-9._/+@-]*$' \
+            || [[ "${ref}" == *..* || "${ref}" == */ || "${ref}" == *.lock ]]; then
+            echo "ERROR: CLAUDE_BLOG_REF must be a commit SHA, tag or branch name (got '${ref}')." >&2
+            return 1
+        fi
+        if [[ "${url}" == -* || "${url}" == ext::* || "${url}" == fd::* ]] || printf '%s' "${url}" | LC_ALL=C grep -q '[[:cntrl:]]'; then
+            echo "ERROR: CLAUDE_BLOG_URL must be a normal git URL (got an unsafe value)." >&2
+            return 1
+        fi
         echo "→ Cloning claude-blog from ${repo} (${ref})..."
         TEMP_DIR="$(mktemp -d)"
         trap 'rm -rf "${TEMP_DIR}"' EXIT
-        if ! git clone --depth 1 --branch "${ref}" "${url}" "${TEMP_DIR}/claude-blog" 2>/dev/null; then
-            git clone "${url}" "${TEMP_DIR}/claude-blog" 2>/dev/null
-            git -C "${TEMP_DIR}/claude-blog" checkout --detach "${ref}" >/dev/null 2>&1
+        if ! command -v git &>/dev/null; then
+            echo "ERROR: git is required to download the installer payload. Install git, or clone the repository yourself, check out the release, and run ./install.sh from the checkout." >&2
+            return 1
+        fi
+        if ! git clone --depth 1 --branch "${ref}" -- "${url}" "${TEMP_DIR}/claude-blog" 2>/dev/null; then
+            rm -rf "${TEMP_DIR}/claude-blog"
+            if ! git clone -- "${url}" "${TEMP_DIR}/claude-blog" 2>/dev/null \
+                || ! git -C "${TEMP_DIR}/claude-blog" checkout --detach "${ref}" >/dev/null 2>&1; then
+                echo "ERROR: could not fetch ${url} at ref '${ref}'. Check the network, the repository name and that the ref exists, or clone the repository yourself, check out the ref, and run ./install.sh from the checkout." >&2
+                return 1
+            fi
         fi
         SCRIPT_DIR="${TEMP_DIR}/claude-blog"
         echo "  + checked out $(git -C "${SCRIPT_DIR}" rev-parse --short HEAD)"
         if [ "${ref}" = "main" ]; then
-            echo "  Tip: set CLAUDE_BLOG_REF to a tag or commit SHA for a pinned install."
+            echo "  Tip: set CLAUDE_BLOG_REF to a full commit SHA (preferred) or a release tag for a pinned install."
+            echo "  The revision cloned here supplies the installer that runs next; the wrapper's own digest does not cover it."
         fi
+        local selected_installer="${SCRIPT_DIR}/install.sh"
+        if [ -L "${selected_installer}" ] || [ ! -f "${selected_installer}" ]; then
+            echo "ERROR: selected checkout does not contain a regular install.sh: ${selected_installer}" >&2
+            return 1
+        fi
+        # The selected revision owns its payload layout and installation
+        # behavior. This keeps advertised pinned refs compatible when an older
+        # release predates the current ownership engine.
+        bash "${selected_installer}" "$@"
+        return
     fi
 
-    # Check prerequisites
-    if ! command -v python3 &>/dev/null; then
-        echo "WARNING: python3 not found. The scripts require Python 3.11+."
-        echo "         Install with: sudo apt install python3"
-        echo ""
-    elif ! python3 -c 'import sys; raise SystemExit(0 if sys.version_info >= (3, 11) else 1)' >/dev/null 2>&1; then
-        local python3_version
-        python3_version="$(python3 -c 'import sys; print("%d.%d.%d" % sys.version_info[:3])' 2>/dev/null || echo unknown)"
-        echo "WARNING: python3 ${python3_version} found. The scripts require Python 3.11+."
-        echo "         Install Python 3.11+ before running scoring, preflight, render, hero, and lint helpers."
-        echo ""
-    fi
-
-    # Create directories
-    echo "→ Creating directories..."
-    mkdir -p "${CLAUDE_DIR}"
-    mkdir -p "${SKILL_DIR}/blog/references"
-    mkdir -p "${SKILL_DIR}/blog/templates"
-    mkdir -p "${SKILL_DIR}/blog/scripts"
-    mkdir -p "${AGENT_DIR}"
-    : >"${MANIFEST}.tmp"
-
-    # Copy main skill
-    echo "→ Installing main skill: blog..."
-    cp "${SCRIPT_DIR}/skills/blog/SKILL.md" "${SKILL_DIR}/blog/SKILL.md"
-    record_install "${MANIFEST}.tmp" "${SKILL_DIR}/blog"
-
-    # Copy references
-    echo "→ Installing reference files..."
-    copy_tree "${SCRIPT_DIR}/skills/blog/references" "${SKILL_DIR}/blog/references"
-
-    # Copy templates
-    if [ -d "${SCRIPT_DIR}/skills/blog/templates" ]; then
-        echo "→ Installing content templates..."
-        copy_tree "${SCRIPT_DIR}/skills/blog/templates" "${SKILL_DIR}/blog/templates"
-    fi
-
-    # Ship the reviewed Google update ledger with the main skill. The source
-    # stays at data/google-updates.json in the repository; standalone installs
-    # receive it under the self-contained blog skill directory.
-    if [ -f "${SCRIPT_DIR}/data/google-updates.json" ]; then
-        echo "→ Installing Google update ledger..."
-        mkdir -p "${SKILL_DIR}/blog/data"
-        cp "${SCRIPT_DIR}/data/google-updates.json" "${SKILL_DIR}/blog/data/google-updates.json"
-    fi
-
-    # Copy sub-skills (auto-discovers all skill directories)
-    echo "→ Installing sub-skills..."
-    local sub_skill_count=0
-    local expected_sub_skill_count=0
-    for skill_dir in "${SCRIPT_DIR}/skills/"*/; do
-        skill_name="$(basename "${skill_dir}")"
-        [ "$skill_name" = "blog" ] && continue
-        [ -f "${skill_dir}SKILL.md" ] && expected_sub_skill_count=$((expected_sub_skill_count + 1))
-        # VULN-IAC-003 (v1.9.1): defense-in-depth name validation. The
-        # repo is single-owner and a clean clone cannot produce odd names,
-        # but a tampered repo with a symlink like `skills/../../etc` would
-        # hand us '..' here. Refuse anything outside the expected charset
-        # rather than mkdir + cp into the parent. Spell out the accepted
-        # characters instead of using a locale-sensitive regex range.
-        case "$skill_name" in
-            ''|*[!abcdefghijklmnopqrstuvwxyz0123456789-]*)
-                echo "  ! refusing skill with unexpected name: ${skill_name}" >&2
-                continue
+    # Options are validated here, by the revision that actually runs, so a
+    # newer wrapper can forward options that an older release does not know.
+    local arg
+    for arg in "$@"; do
+        case "${arg}" in
+            --force-adopt) FORCE_ADOPT=1 ;;
+            -h|--help)
+                sed -n '/^# Verified local install:/,/^$/p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+                return 0
+                ;;
+            *)
+                echo "ERROR: unknown option: ${arg} (supported: --force-adopt, --help)" >&2
+                return 2
                 ;;
         esac
-        mkdir -p "${SKILL_DIR}/${skill_name}"
-        if [ -f "${skill_dir}SKILL.md" ]; then
-            cp "${skill_dir}SKILL.md" "${SKILL_DIR}/${skill_name}/SKILL.md"
-            echo "  + ${skill_name}"
-            record_install "${MANIFEST}.tmp" "${SKILL_DIR}/${skill_name}"
-            sub_skill_count=$((sub_skill_count + 1))
-        fi
-        for payload_dir in references scripts assets templates; do
-            copy_tree "${skill_dir}${payload_dir}" "${SKILL_DIR}/${skill_name}/${payload_dir}"
-        done
-        if [ -d "${SKILL_DIR}/${skill_name}/scripts" ]; then
-            find "${SKILL_DIR}/${skill_name}/scripts" -type f -name '*.py' -exec chmod +x {} +
-        fi
     done
-    if [ "${sub_skill_count}" -ne "${expected_sub_skill_count}" ]; then
-        echo "ERROR: installed ${sub_skill_count} of ${expected_sub_skill_count} sub-skills." >&2
-        echo "       Installation is incomplete; review the refusal messages above." >&2
+
+    if ! command -v python3 &>/dev/null; then
+        echo "ERROR: python3 3.11+ is required for ownership-safe installation, and python3 was not found on PATH." >&2
+        print_python_help >&2
+        return 1
+    fi
+    if ! python3 -c 'import sys; raise SystemExit(0 if sys.version_info >= (3, 11) else 1)' >/dev/null 2>&1; then
+        local python3_version python3_path
+        python3_version="$(python3 -c 'import sys; print("%d.%d.%d" % sys.version_info[:3])' 2>/dev/null || echo unknown)"
+        python3_path="$(command -v python3)"
+        echo "ERROR: python3 ${python3_version} (${python3_path}) found; python3 3.11+ is required for ownership-safe installation." >&2
+        print_python_help >&2
         return 1
     fi
 
-    # Create personas directory for blog-persona
-    mkdir -p "${SKILL_DIR}/blog/references/personas"
-
-    # Copy agents
-    echo "→ Installing agents..."
-    local agent_count=0
-    for agent_file in "${SCRIPT_DIR}/agents/"*.md; do
-        if [ -f "${agent_file}" ]; then
-            agent_name="$(basename "${agent_file}")"
-            cp "${agent_file}" "${AGENT_DIR}/${agent_name}"
-            record_install "${MANIFEST}.tmp" "${AGENT_DIR}/${agent_name}"
-            echo "  + ${agent_name%.md}"
-            agent_count=$((agent_count + 1))
-        fi
-    done
-
-    # Copy scripts (v1.8.6: ALL root-level scripts, not just analyze_blog.py).
-    # Before v1.8.6 the installer only copied analyze_blog.py, leaving the
-    # v1.8.0+ helpers (cognitive_load, discourse_research, load_untrusted_root,
-    # lint_prose, sync_flow) absent on the user's machine. This broke the
-    # v1.8.3 "code-enforced" untrusted-data contract for every marketplace
-    # / curl-pipe install (closes 7TH-AUDIT-001).
-    echo "→ Installing scripts..."
-    mkdir -p "${SKILL_DIR}/blog/scripts"
-    mkdir -p "${HOME}/.claude/scripts"
-    local script_name
-    local root_script_count=0
-    for script_path in "${SCRIPT_DIR}/scripts/"*.py; do
-        [ -f "${script_path}" ] || continue
-        script_name="$(basename "${script_path}")"
-        # Copy to ~/.claude/scripts/ (canonical install location) AND to the
-        # blog-skill scripts dir (legacy callers of analyze_blog.py).
-        cp "${script_path}" "${HOME}/.claude/scripts/${script_name}"
-        chmod +x "${HOME}/.claude/scripts/${script_name}"
-        record_install "${MANIFEST}.tmp" "${HOME}/.claude/scripts/${script_name}"
-        if [ "${script_name}" = "analyze_blog.py" ]; then
-            cp "${script_path}" "${SKILL_DIR}/blog/scripts/${script_name}"
-            chmod +x "${SKILL_DIR}/blog/scripts/${script_name}"
-        fi
-        echo "  + scripts/${script_name}"
-        root_script_count=$((root_script_count + 1))
-    done
-    mv "${MANIFEST}.tmp" "${MANIFEST}"
-
-    # Install Python dependencies (closes audit VULN-507/804: capture stderr
-    # to a logfile instead of swallowing it. Operator can diagnose failures.)
-    if [ -f "${SCRIPT_DIR}/requirements.txt" ] && command -v pip3 &>/dev/null; then
-        echo "→ Installing Python dependencies..."
-        local pip_log
-        pip_log="$(mktemp -t claude-blog-pip-XXXXXX.log)"
-        if pip3 install --quiet -r "${SCRIPT_DIR}/requirements.txt" 2>"${pip_log}"; then
-            rm -f "${pip_log}"
-        else
-            echo "  WARNING: pip install failed."
-            echo "  See log: ${pip_log}"
-            echo "  First error: $(head -n1 "${pip_log}" 2>/dev/null || echo '(empty)')"
-            echo "  Manual install: pip3 install -r requirements.txt"
-        fi
-        echo "  Tip: Consider using a virtual environment: python3 -m venv .venv && source .venv/bin/activate"
+    if [ -L "${CLAUDE_DIR}" ]; then
+        echo "ERROR: refusing symlinked Claude profile: ${CLAUDE_DIR}" >&2
+        return 1
     fi
+    INSTALL_STATS_FILE="$(mktemp -t claude-blog-install-stats.XXXXXX)"
+    trap 'if [ -n "${INSTALL_STATS_FILE}" ]; then rm -f "${INSTALL_STATS_FILE}"; fi; if [ -n "${TEMP_DIR}" ]; then rm -rf "${TEMP_DIR}"; fi' EXIT
+    install_payload "${SCRIPT_DIR}" "${CLAUDE_DIR}" "${MANIFEST}" "${INSTALL_STATS_FILE}" "${FORCE_ADOPT}"
+
+    local sub_skill_count agent_count root_script_count
+    read -r sub_skill_count agent_count root_script_count < <(
+        python3 - "${INSTALL_STATS_FILE}" <<'PY'
+import json
+import sys
+data = json.load(open(sys.argv[1], encoding="utf-8"))
+print(data["sub_skill_count"], data["agent_count"], data["root_script_count"])
+PY
+    )
+
+    install_python_dependencies "${SCRIPT_DIR}/requirements.txt"
 
     echo ""
     echo "  ╔══════════════════════════════════════╗"

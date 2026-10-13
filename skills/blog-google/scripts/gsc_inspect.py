@@ -21,21 +21,23 @@ from typing import Optional
 from urllib.parse import urlparse
 
 try:
-    from googleapiclient.discovery import build
-except ImportError:
-    print(
-        "Error: google-api-python-client required. "
-        "Install with: pip install google-api-python-client",
-        file=sys.stderr,
+    from google_auth import (
+        describe_google_api_error, execute_with_retries, get_oauth_credentials,
+        load_config, safe_exception_text, setup_hint,
     )
-    sys.exit(1)
-
-try:
-    from google_auth import get_oauth_credentials, load_config, execute_with_retries
 except ImportError:
     import os
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-    from google_auth import get_oauth_credentials, load_config, execute_with_retries
+    from google_auth import (
+        describe_google_api_error, execute_with_retries, get_oauth_credentials,
+        load_config, safe_exception_text, setup_hint,
+    )
+
+try:
+    from googleapiclient.discovery import build
+except ImportError:
+    print(f"Error: google-api-python-client required. {setup_hint()}", file=sys.stderr)
+    sys.exit(1)
 
 GSC_SCOPES = ["https://www.googleapis.com/auth/webmasters.readonly"]
 
@@ -122,7 +124,7 @@ def _build_inspection_service():
     try:
         return build("searchconsole", "v1", credentials=credentials)
     except Exception as e:
-        print(f"Error building service: {e}", file=sys.stderr)
+        print(f"Error building service: {safe_exception_text(e)}", file=sys.stderr)
         return None
 
 
@@ -244,25 +246,31 @@ def inspect_url(
     }
 
     try:
-        response = execute_with_retries(service.urlInspection().index().inspect(body=body))
+        # 429 is surfaced at once: sleeping and retrying every URL of a batch
+        # against an exhausted quota only burns time (batch_inspect stops).
+        response = execute_with_retries(
+            service.urlInspection().index().inspect(body=body), retry_quota=False
+        )
     except Exception as e:
-        error_str = str(e)
-        if "403" in error_str:
-            result["error"] = (
-                f"Permission denied. Add the service account as an Owner "
-                f"in GSC property '{site_url}'."
+        status = getattr(getattr(e, "resp", None), "status", None)
+        if isinstance(status, str) and status.isdigit():
+            status = int(status)
+        if status == 403:
+            result["error"] = describe_google_api_error(
+                e, 'URL Inspection', "Check the service account's URL Inspection access in Google Search Console for this property."
             )
-        elif "429" in error_str:
+        elif status == 429:
+            result["quota_exceeded"] = True
             result["error"] = (
                 f"Rate limit exceeded. URL Inspection: {QPM_LIMIT} QPM / {DAILY_LIMIT} QPD per site."
             )
-        elif "400" in error_str:
+        elif status == 400:
             result["error"] = (
                 f"Invalid request. Ensure the URL '{inspection_url}' belongs to "
                 f"property '{site_url}'."
             )
         else:
-            result["error"] = f"URL Inspection API error: {e}"
+            result["error"] = describe_google_api_error(e, 'URL Inspection')
         return result
 
     ir = response.get("inspectionResult", {})
@@ -360,6 +368,9 @@ def batch_inspect(
             "neutral": 0,
             "error": 0,
         },
+        "warning": None,
+        "stopped_on_quota": False,
+        "not_inspected": [],
         "error": None,
     }
 
@@ -373,10 +384,12 @@ def batch_inspect(
     result["total"] = len(urls)
 
     if len(urls) > DAILY_LIMIT:
-        result["error"] = (
+        # A warning, not an error: the batch still runs for the first DAILY_LIMIT URLs.
+        result["warning"] = (
             f"Batch size ({len(urls)}) exceeds daily limit ({DAILY_LIMIT}). "
             f"Only the first {DAILY_LIMIT} URLs will be processed."
         )
+        result["not_inspected"] = list(urls[DAILY_LIMIT:])
         urls = urls[:DAILY_LIMIT]
 
     service = _build_inspection_service()
@@ -409,6 +422,16 @@ def batch_inspect(
             result["summary"]["fail"] += 1
         else:
             result["summary"]["neutral"] += 1
+
+        if inspection.get("quota_exceeded"):
+            result["stopped_on_quota"] = True
+            result["not_inspected"] = list(urls[i + 1:]) + result["not_inspected"]
+            result["warning"] = (
+                f"Stopped on quota/rate limit after {i + 1} of {len(urls)} URLs; "
+                f"{len(result['not_inspected'])} URL(s) were not inspected. "
+                "Wait for the limit to reset and rerun with the remaining URLs."
+            )
+            break
 
         # Rate limiting
         if i < len(urls) - 1:
@@ -498,6 +521,8 @@ def main():
             print(f"=== URL Inspection Batch Results ===")
             print(f"Property: {site_url}")
             print(f"Total: {result.get('total', 0)} | Pass: {summary.get('pass', 0)} | Fail: {summary.get('fail', 0)} | Errors: {summary.get('error', 0)}")
+            if result.get("warning"):
+                print(f"Warning: {result['warning']}")
             print()
             for r in result.get("results", []):
                 verdict = r.get("verdict", "?")

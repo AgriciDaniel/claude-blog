@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://gs.statcounter.com/search-engine-market-share",
+  "normalized_full_document_sha256": "17ecd004d1dc2895442a8210df6960467d93363e6225b6fa9f295f44bc5eb3e6",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "search engine market share worldwide - september 2026"
+  ],
+  "records": [
+    {
+      "source_id": "statcounter",
+      "source_url": "https://gs.statcounter.com/search-engine-market-share",
+      "retrieved_on": "2026-10-12",
+      "reviewed_on": "2026-10-12",
+      "review_decision": "confirmed_by_manual_review",
+      "excerpt_index": 0
+    }
+  ]
+}

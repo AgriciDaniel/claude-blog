@@ -172,8 +172,41 @@ LANGUAGE_PROFILES: dict[str, dict[str, Any]] = {
         'methodology_patterns': (
             r'\b(?:methodology|sample size|test setup|testing method|research method)\b',
             r'\b(?:we|I|our team)\s+(?:tested|measured|analyzed|conducted)\b[^.\n]{0,180}'
-            r'(?:\d|https?://|\[[^\]]+\]\(https?://)',
+            r'(?:\d|https?://|\[[^\]\n]{1,300}\]\(https?://)',
         ),
+        'readability_model': 'flesch',
+    },
+    'id': {
+        # Indonesian is selected only when declared in frontmatter because it
+        # has no distinctive markers reliable enough for automatic detection.
+        'summary_labels': (
+            r'jawaban singkat', r'ringkasan', r'intinya', r'singkatnya', r'TL;?DR',
+        ),
+        'about_patterns': (
+            r'/tentang(?:-kami)?(?:[/?#]|$)', r'\btentang kami\b',
+            r'\bprofil (?:perusahaan|kami)\b',
+        ),
+        'contact_patterns': (
+            r'/kontak(?:[/?#]|$)', r'/hubungi(?:-kami)?(?:[/?#]|$)',
+            r'\bhubungi kami\b', r'\bkontak kami\b',
+        ),
+        'first_person_patterns': (
+            r'\b(?:kami|tim kami)\s+(?:menguji|mengaudit|membedah|mengukur|menemukan|'
+            r'menangani|mencatat|menganalisis|membandingkan|mengelola)\b',
+            r'\b(?:dari|berdasarkan|menurut)\s+pengalaman kami\b',
+            r'\bkasus yang (?:paling )?kami (?:ingat|tangani|temui)\b',
+            r'\bdi akun (?:klien )?yang kami (?:audit|kelola|pegang)\b',
+            r'\bdata internal(?: kami)?\b',
+        ),
+        'methodology_patterns': (
+            r'\b(?:metode|metodologi|sampel|ukuran sampel|data internal|'
+            r'dari \d+ (?:akun|klien|kampanye))\b',
+            r'\b(?:kami|tim kami)\s+(?:menguji|mengukur|menganalisis|mengaudit|'
+            r'membedah|membandingkan)\b[^.\n]{0,180}'
+            r'(?:\d|https?://|\[[^\]\n]{1,300}\]\(https?://)',
+        ),
+        # Keep the existing fallback until a validated Indonesian readability
+        # formula is available in this analyzer.
         'readability_model': 'flesch',
     },
     'tr': {
@@ -195,7 +228,7 @@ LANGUAGE_PROFILES: dict[str, dict[str, Any]] = {
         'methodology_patterns': (
             r'\b(?:yöntem|metodoloji|örneklem|örneklem büyüklüğü|test düzeni|araştırma yöntemi|sayım|kayıt)\b',
             r'\b(?:biz|ekibimiz)\s+(?:test ettik|ölçtük|analiz ettik)\b[^.\n]{0,180}'
-            r'(?:\d|https?://|\[[^\]]+\]\(https?://)',
+            r'(?:\d|https?://|\[[^\]\n]{1,300}\]\(https?://)',
         ),
         'readability_model': 'atesman',
     },
@@ -338,13 +371,19 @@ class _HTMLAnalysisParser(HTMLParser):
     def _extract_json_ld_metadata(self, raw: str) -> None:
         try:
             data = json.loads(raw)
-        except (json.JSONDecodeError, TypeError):
+        except (json.JSONDecodeError, TypeError, RecursionError):
             return
 
         def visit(value: Any) -> None:
             if isinstance(value, dict):
+                # JSON-LD is untrusted: "@type" may be any JSON value.
                 schema_type = value.get('@type', '')
-                types = {schema_type} if isinstance(schema_type, str) else set(schema_type or [])
+                if isinstance(schema_type, str):
+                    types = {schema_type}
+                elif isinstance(schema_type, list):
+                    types = {item for item in schema_type if isinstance(item, str)}
+                else:
+                    types = set()
                 priority = 2 if types & {'Article', 'BlogPosting', 'NewsArticle'} else 1
                 self._set_metadata('title', value.get('headline') or value.get('name'), priority)
                 self._set_metadata('description', value.get('description'), priority)
@@ -366,7 +405,10 @@ class _HTMLAnalysisParser(HTMLParser):
                 for item in value:
                     visit(item)
 
-        visit(data)
+        try:
+            visit(data)
+        except RecursionError:
+            return
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         tag = tag.lower()
@@ -551,8 +593,8 @@ def _plain_text_for_analysis(content: str) -> str:
                   flags=re.DOTALL | re.IGNORECASE)
     text = re.sub(r'^\s*\|.*\|\s*$', '', text, flags=re.MULTILINE)
     text = re.sub(r'<[^>]+>', '', text)
-    text = re.sub(r'!\[.*?\]\(.*?\)', '', text)
-    text = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', text)
+    text = re.sub(r'!\[[^\]\n]{0,300}\]\([^)\n]{0,1000}\)', '', text)
+    text = re.sub(r'\[([^\]\n]{1,300})\]\([^)\n]{1,1000}\)', r'\1', text)
     text = re.sub(r'^#{1,6}\s+', '', text, flags=re.MULTILINE)
     text = re.sub(r'^\s*(?:[-*+]|\d+\.)\s+', '', text, flags=re.MULTILINE)
     text = re.sub(r'^\s*>\s?', '', text, flags=re.MULTILINE)
@@ -613,7 +655,7 @@ def analyze_paragraphs(content: str) -> dict[str, Any]:
     cleaned = re.sub(r'```.*?```', '', content, flags=re.DOTALL)
     cleaned = re.sub(r'<[^>]+>', '', cleaned)
     cleaned = re.sub(r'^#{1,6}\s+.*$', '', cleaned, flags=re.MULTILINE)
-    cleaned = re.sub(r'!\[.*?\]\(.*?\)', '', cleaned)
+    cleaned = re.sub(r'!\[[^\]\n]{0,300}\]\([^)\n]{0,1000}\)', '', cleaned)
 
     paragraphs = [p.strip() for p in re.split(r'\n\s*\n', cleaned) if p.strip()]
 
@@ -660,7 +702,7 @@ def analyze_paragraphs(content: str) -> dict[str, Any]:
 
 def analyze_images(content: str) -> dict[str, Any]:
     """Count images and check alt text, formats, optimization signals."""
-    md_images = re.findall(r'!\[([^\]]*)\]\(([^)]+)\)', content)
+    md_images = re.findall(r'!\[([^\]\n]{0,300})\]\(([^)\n]{1,1000})\)', content)
     html_images: list[tuple[str, str]] = []
     for tag in re.findall(r'<img\b[^>]*>', content, re.IGNORECASE):
         src_match = re.search(r'\bsrc\s*=\s*["\']([^"\']+)["\']', tag, re.IGNORECASE)
@@ -753,7 +795,7 @@ def analyze_citations(content: str) -> dict[str, Any]:
     stat_patterns = re.findall(r'\d+\.?\d*%', content)
 
     # Inline citations: [text](url)
-    inline_matches = re.findall(r'\[([^\]]+)\]\((https?://[^)]+)\)', content)
+    inline_matches = re.findall(r'\[([^\]\n]{1,300})\]\((https?://[^)\n]{1,1000})\)', content)
     citations_with_urls = [(text, url) for text, url in inline_matches]
 
     # Parenthetical citations (Source Name, year)
@@ -772,7 +814,7 @@ def analyze_citations(content: str) -> dict[str, Any]:
         pos = content.find(stat_value)
         if pos >= 0:
             context = content[pos:pos + 200]
-            if re.search(r'\[.+\]\(https?://', context) or re.search(r'\([^)]*20\d{2}[^)]*\)', context):
+            if re.search(r'\[[^\]\n]{1,300}\]\(https?://', context) or re.search(r'\([^)\n]{0,200}20\d{2}[^)\n]{0,200}\)', context):
                 sourced_stats += 1
             else:
                 unsourced_stats += 1
@@ -1098,7 +1140,7 @@ def analyze_schema(content: str) -> dict[str, Any]:
                 try:
                     data = json.loads(script.string)
                     collect_types(data)
-                except (json.JSONDecodeError, TypeError):
+                except (json.JSONDecodeError, TypeError, RecursionError):
                     pass
         except Exception:
             pass
@@ -1111,7 +1153,7 @@ def analyze_schema(content: str) -> dict[str, Any]:
         ):
             try:
                 collect_types(json.loads(script_body))
-            except (json.JSONDecodeError, TypeError):
+            except (json.JSONDecodeError, TypeError, RecursionError):
                 for match in re.findall(r'"@type"\s*:\s*"([^"]+)"', script_body):
                     schemas.append(match)
 
@@ -1134,9 +1176,9 @@ def analyze_schema(content: str) -> dict[str, Any]:
 def analyze_links(content: str) -> dict[str, Any]:
     """Analyze internal and external links, anchor quality, and tiers."""
     # Internal links: relative paths (not starting with http or /)
-    internal = re.findall(r'\[([^\]]+)\]\((?!https?://|#)([^)]+)\)', content)
+    internal = re.findall(r'\[([^\]\n]{1,300})\]\((?!https?://|#)([^)\n]{1,1000})\)', content)
     # External links
-    external = re.findall(r'\[([^\]]+)\]\((https?://[^)]+)\)', content)
+    external = re.findall(r'\[([^\]\n]{1,300})\]\((https?://[^)\n]{1,1000})\)', content)
 
     bad_anchor_keywords = {'click here', 'read more', 'this article', 'here', 'link', 'this'}
     bad_anchors = [a for a, _ in internal + external if a.lower().strip() in bad_anchor_keywords]
@@ -1256,14 +1298,14 @@ def analyze_ai_citation_readiness(content: str, headings_info: dict[str, Any],
     evidence_backed_sections = 0
     self_contained_sections = 0
     for heading, section in sections:
-        has_source = bool(re.search(r'\[[^\]]+\]\(https?://[^)]+\)', section))
+        has_source = bool(re.search(r'\[[^\]\n]{1,300}\]\(https?://[^)\n]{1,1000}\)', section))
         has_evidence_marker = bool(re.search(
             r'(?:ORIGINAL DATA|PERSONAL EXPERIENCE|UNIQUE INSIGHT)',
             section,
             re.IGNORECASE,
         ))
         has_definition = bool(re.search(
-            r'\*\*[^*]+\*\*\s*(?:is|are|refers to|means)',
+            r'\*\*[^*]+\*\*\s*(?:is|are|refers to|means|adalah|merupakan)',
             section,
             re.IGNORECASE,
         ))
@@ -1288,7 +1330,10 @@ def analyze_ai_citation_readiness(content: str, headings_info: dict[str, Any],
                     break
 
     # Entity clarity: detect defined terms (bold terms followed by explanations)
-    entity_definitions = len(re.findall(r'\*\*[^*]+\*\*\s*(?:is|are|refers to|means)', content))
+    entity_definitions = len(re.findall(
+        r'\*\*[^*]+\*\*\s*(?:is|are|refers to|means|adalah|merupakan)',
+        content,
+    ))
 
     # Extraction-friendly structures
     profile = LANGUAGE_PROFILES.get(language, LANGUAGE_PROFILES['en'])
@@ -1305,7 +1350,7 @@ def analyze_ai_citation_readiness(content: str, headings_info: dict[str, Any],
     intro = re.split(r'^##\s+', content, maxsplit=1, flags=re.MULTILINE)[0]
     purpose_statement = bool(re.search(r'[A-Za-z]{3,}', intro))
     relevant_media_count = (
-        len(re.findall(r'!\[[^\]]+\]\([^)]+\)', content))
+        len(re.findall(r'!\[[^\]\n]{1,300}\]\([^)\n]{1,1000}\)', content))
         + len(re.findall(r'<(?:img|figure|svg)\b', content, re.IGNORECASE))
     )
 
@@ -1491,11 +1536,13 @@ def calculate_score(analysis: dict[str, Any]) -> dict[str, Any]:
     # Originality / differentiated evidence: 5 pts
     orig = analysis['originality']
     orig_score = min(orig.get('evidence_marker_count', 0) * 2, 4)
-    if orig.get('methodology_count', 0) > 0:
-        orig_score = min(5, orig_score + 1)
-    elif citations['unique_sources'] >= 2 and engagement['example_count'] >= 1:
+    if citations['unique_sources'] >= 2 and engagement['example_count'] >= 1:
         # Neutral explainers can demonstrate value through synthesis and examples.
         orig_score = max(orig_score, 3)
+    if orig.get('methodology_count', 0) > 0:
+        # A disclosed method is a bonus on top of the synthesis floor and must
+        # never replace it (disclosing sources must not lower the score).
+        orig_score = min(5, orig_score + 1)
     if orig_score == 0:
         issues.append({'category': 'content', 'severity': 'medium',
                        'issue': 'No differentiated evidence or analysis found - add original data, a sourced synthesis, a case example, or a clearly labeled unique insight'})
@@ -2293,19 +2340,55 @@ def _format_category_detail(result: dict[str, Any], category: str) -> str:
 
 
 def _process_batch(directory: Path, sort_key: str = 'score') -> dict[str, Any]:
-    """Analyze all blog files in a directory."""
+    """Recursively analyze blog files while excluding generated trees."""
     results: list[dict[str, Any]] = []
-    for ext in ['*.md', '*.mdx', '*.html']:
-        for f in directory.glob(ext):
-            results.append(analyze_file(str(f)))
+    root = directory.resolve()
+    skip_directories = {
+        '.git', '.next', '.astro', '.cache', '__pycache__',
+        'node_modules', 'vendor', 'dist', 'build', 'coverage', 'reports',
+        'artifacts', 'outputs',
+    }
+    candidates: list[Path] = []
+    for current_root, dirnames, filenames in os.walk(root, followlinks=False):
+        dirnames[:] = sorted(
+            name for name in dirnames
+            if name not in skip_directories
+            and not name.startswith('.')
+            and not (Path(current_root) / name).is_symlink()
+        )
+        for filename in sorted(filenames):
+            if Path(filename).suffix.lower() not in {'.md', '.mdx', '.html'}:
+                continue
+            path = Path(current_root) / filename
+            if path.is_symlink() or not path.is_file():
+                continue
+            try:
+                path.resolve().relative_to(root)
+            except ValueError:
+                continue
+            candidates.append(path)
+
+    for path in candidates:
+        # One malformed file must not abort the whole batch; report its error
+        # in that file's own result and keep going.
+        try:
+            results.append(analyze_file(str(path)))
+        except Exception as exc:  # noqa: BLE001 - untrusted input, isolate per file
+            results.append({'file': str(path), 'error': f'Could not analyze {path}: {type(exc).__name__}: {exc}'})
 
     # Sort
     if sort_key == 'score':
-        results.sort(key=lambda r: r.get('score', {}).get('total', 0), reverse=True)
+        results.sort(key=lambda r: (
+            -r.get('score', {}).get('total', 0),
+            r.get('file', ''),
+        ))
     elif sort_key == 'name':
         results.sort(key=lambda r: r.get('file', ''))
     elif sort_key == 'words':
-        results.sort(key=lambda r: r.get('paragraphs', {}).get('total_word_count', 0), reverse=True)
+        results.sort(key=lambda r: (
+            -r.get('paragraphs', {}).get('total_word_count', 0),
+            r.get('file', ''),
+        ))
 
     return {'batch': True, 'count': len(results), 'results': results}
 

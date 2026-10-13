@@ -147,13 +147,12 @@ When research returns five posts all citing the same upstream source (e.g. five 
 For every load-bearing claim, mark it explicitly:
 
 ```
-**Claim**: AI Overview coverage is methodology-dependent: about 20% of searches
-in Ahrefs data cited by SparkToro, with an unconfirmed BrightEdge upper estimate
-around 48%.
+**Claim**: AI Overview coverage is methodology-dependent: SparkToro reports AI
+Overviews on 20%+ of all searches.
 **Upstream**: [SparkToro 2026 zero-click study](https://sparktoro.com/blog/in-2026-less-than-one-third-of-google-searches-still-send-a-click/)
 **Echo sources** (paraphrase the upstream): [SEO trade article](url), [agency recap](url)
 **Independent corroboration**: [Semrush AI Overviews study](url) reports about 15.7% in November 2025 after recalibration.
-**Cluster health**: 2 defensible sources (Ahrefs/SparkToro + Semrush), with BrightEdge quarantined as an unconfirmed upper estimate.
+**Cluster health**: 2 defensible sources (SparkToro, which links Ahrefs data, + Semrush).
 ```
 
 This format makes the difference between echo and corroboration explicit. The writer can then decide whether to lead with the original or note the independent confirmation.

@@ -4,7 +4,7 @@ title: "Persona Evidence Packet"
 domain: "Blog Voice"
 status: active
 created: 2026-07-06
-updated: 2026-07-09
+updated: 2026-10-07
 tags: [personas, voice-style, active]
 ---
 
@@ -76,3 +76,5 @@ Brief consumer: [[Content Brief Output Contract]] uses only accepted reader jobs
 ## Persona Evidence Packet Expiry Check
 
 Refresh evidence when the buyer changes, the product changes, the locale changes, or the draft uses a new risk category. Archive stale persona claims rather than leaving them as quiet assumptions.
+
+For Persona Evidence Packet, `nng-editorial-heuristics` supplies general interaction-design principles. Applying those principles to this note's editorial checks is a project adaptation, not an experimentally established SEO or AI-citation requirement.

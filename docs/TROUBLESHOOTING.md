@@ -27,15 +27,69 @@ script exits with an import error.
 
 **Cause**: Python dependencies are not installed.
 
-**Fix**:
+**Fix**: use a virtual environment, so no system Python is modified and no
+`sudo` is needed:
 ```bash
-pip install -r requirements.txt
+python3 -m venv ~/.claude-blog-venv
+~/.claude-blog-venv/bin/python -m pip install -r requirements.txt
 ```
+Then run the helper scripts with `~/.claude-blog-venv/bin/python` (or activate
+the environment first). Outside a virtual environment, `python3 -m pip install
+--user -r requirements.txt` works on Python builds that are not externally
+managed.
 
-Or install the core dependencies individually:
-```bash
-pip install textstat beautifulsoup4 lxml jsonschema
-```
+### Installer warns "pip install failed" or "externally managed"
+
+**Symptom**: `install.sh` finishes, but prints `WARNING: pip install failed`,
+possibly mentioning `externally-managed-environment` (PEP 668).
+
+**Cause**: Debian, Fedora, Homebrew and similar Pythons refuse package installs
+outside a virtual environment. The skills are already installed; only the
+optional Python extras are missing.
+
+**Fix**: create the virtual environment shown above. Do not use `sudo` or
+`--break-system-packages`. Set `CLAUDE_BLOG_SKIP_PIP=1` to silence the step.
+
+### Installer says "python3 3.x found; python3 3.11+ is required"
+
+**Cause**: macOS ships `/usr/bin/python3` at 3.9 or older, and some Linux
+releases ship 3.10 or older.
+
+**Fix**: install a current Python (`brew install python@3.12`, the python.org
+installer, `uv python install 3.12`, or your distribution's `python3.12`
+package), open a new terminal, confirm `python3 --version` reports 3.11 or
+newer, then run the installer again.
+
+### Installer says "managed installation file was modified"
+
+**Cause**: a file the installer owns was edited after installation. Both
+`install.sh` and `uninstall.sh` refuse to overwrite or delete it and change
+nothing.
+
+**Fix**: copy any edit you want to keep somewhere outside `~/.claude`, then run
+`bash install.sh --force-adopt` (or `bash uninstall.sh --force-adopt`). Each
+modified file is first copied to `~/.claude/claude-blog-backups/<timestamp>/`.
+Re-apply your edits from there. Details and limits:
+[INSTALLATION.md](INSTALLATION.md#if-the-installer-reports-managed-installation-file-was-modified).
+
+### Plugin validate reports "claude-blog" as reserved
+
+**Symptom**: `claude plugin validate .` fails with `Plugin name "claude-blog" is
+reserved: it passes as one of Anthropic's own`.
+
+**Cause**: newer Claude Code validators reserve third-party plugin names that
+start with `claude-`. Verified results for this repository: Claude Code 2.1.218
+passes; 2.1.292 and 2.1.296 fail on this one error only (plus a harmless
+warning that a root `CLAUDE.md` is not loaded as plugin context). The v2.2.0
+release fails the same way. In maintainer testing the plugin still installs and
+loads, so treat it as a validation error, not an observed install failure.
+
+**What to do**: nothing for normal use. CI runs the validator through
+`.github/scripts/validate_plugin_tolerate_reserved_name.py`, which tolerates
+exactly this finding (and the root `CLAUDE.md` notice) and fails on anything else. The project's own tests and
+`scripts/validate_public_release.py` do not depend on the newer validator. If a
+future Claude Code release enforces the reservation when installing, report it
+in an issue; the standalone installer is unaffected.
 
 ### Missing textstat or beautifulsoup4
 
@@ -233,15 +287,14 @@ blog-writer, etc.), and instead tries to do everything inline.
    Expected: `blog-researcher.md`, `blog-writer.md`, `blog-seo.md`,
    `blog-reviewer.md`, `blog-translator.md`
 
-2. **Unsupported skill frontmatter**: `allowed-tools` is not a valid
-   `SKILL.md` field and does not enable delegation. Check the sub-skill file:
-   ```bash
-   head -20 ~/.claude/skills/blog-write/SKILL.md
-   ```
-   Valid skill fields include `name`, `description`, `user-invokable`,
-   `argument-hint`, `license`, `compatibility`, `metadata`, and
-   `disable-model-invocation`. Agent tools live in
-   `~/.claude/agents/blog-*.md`.
+2. **Skill metadata or tool restrictions**: validate frontmatter with
+   `python3 scripts/validate_skills.py --root .` in the source checkout.
+   The correct visibility field is `user-invocable`; `allowed-tools` is
+   supported by Claude Code and grants permission preapprovals. It does not
+   spawn agents or restrict the available tool pool. This project keeps skill
+   preapprovals empty by policy. Agent `tools` fields define their tool
+   allowlists; ensure the orchestrator can delegate and passes resolved
+   reference paths to the child.
 
 3. **Claude Code version**: Agent spawning via `Task` requires a recent
    version of Claude Code. Update to the latest version.
@@ -310,6 +363,48 @@ Common issues:
 - `dateModified` not matching `lastUpdated` in frontmatter
 - Image URL not accessible (returns 404)
 - Author `@type` should be `Person`, not `Organization`
+
+---
+
+## Delivery Gate Issues
+
+The gates are specified once, in
+[`skills/blog/references/blog-delivery-contract.md`](../skills/blog/references/blog-delivery-contract.md).
+These are the messages people hit most.
+
+### Gate 4: "review verifier state missing"
+
+**Cause**: the review nonce was never issued for this draft. **Fix**: after
+rendering, run `blog_preflight.py --init-review-nonce --draft <D>`, spawn
+`blog-reviewer` with that nonce, and save its report verbatim to `<D>/review.md`
+(the reviewer has no Write tool, so the orchestrator saves it).
+
+### Gate 4: "draft changed after the review nonce was issued: <file>"
+
+**Cause**: `S.md`, `S.html`, `S.pdf` or the hero changed after the nonce was
+issued, so the stored review no longer describes the files. This is intended
+behavior, not a flaky test. **Fix**: re-render, re-issue the nonce and re-review.
+Older state files written before digests existed skip this check with a warning.
+
+### Gate 2: placeholders, filenames, hero, PDF, source hash
+
+Gate 2 reports leftover `[IMAGE`, `[CHART` or `[INTERNAL-LINK` markers, artifact
+or image filenames that are not lowercase slugs, a hero that does not decode or
+is smaller than 1200x630, a PDF that is not a real PDF, and an HTML
+`blog-source-sha256` that does not match the `.md`, or an `.html` body edited by hand after render
+(`blog-body-sha256`). The fix for the last two is
+always to re-run `blog_render.py` (which also refuses `.html` input). It also
+reports static HTML problems (lang, title, meta description, one H1, heading
+order, og tags, noindex, missing `alt`, `<script>`, inline handlers, iframes),
+each naming the element and the fix.
+
+### Gate 5: external link failures
+
+The renderer's own footer link is checked for its scheme only, so a fully local
+article can pass offline. External links need network access: when several fail
+at once the message says the cause may be a network or DNS problem on your
+machine. Run `curl -I <url>` from the same machine to tell the difference, then
+re-run the gates on a working connection.
 
 ---
 
@@ -399,5 +494,8 @@ If your issue is not listed here:
    ```bash
    ./uninstall.sh && ./install.sh
    ```
+   If this stops with "managed installation file was modified", follow the
+   `--force-adopt` recovery above. Run these from a checkout of a release that
+   contains the ownership-aware installer, not the `v2.2.0` tag.
 
 4. **Open an issue**: https://github.com/AgriciDaniel/claude-blog/issues

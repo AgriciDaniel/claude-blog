@@ -1,0 +1,27 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://web.dev/blog/inp-cwv-march-12",
+  "normalized_full_document_sha256": "062183ec5a64c1993f08e5fd9aa79762acb5b1b6f14b2520e07992399ef73a90",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "will offer a six-month deprecation period"
+  ],
+  "records": [
+    {
+      "source_id": "wd-inp-mar12",
+      "source_url": "https://web.dev/blog/inp-cwv-march-12",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    },
+    {
+      "source_id": "g-update-2024-03-05-inp-replaces-fid",
+      "source_url": "https://web.dev/blog/inp-cwv-march-12",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    }
+  ]
+}

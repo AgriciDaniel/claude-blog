@@ -17,6 +17,14 @@
   - You can provide genuinely original observations beyond what the product's marketing materials say
   - You want to rank for "[Product Name] review" queries
 
+### Evidence gate
+
+Before drafting, confirm the author can supply the testing period, environment,
+method, observations, and comparison basis used below. If that evidence is not
+available, do not infer first-hand use or simulate a test. Switch to a sourced
+comparison or explainer template, or return an evidence-needs brief listing the
+specific testing material required.
+
 ---
 
 ## Section-by-Section Structure

@@ -3,7 +3,7 @@ type: spoke
 title: "YMYL Escalation Matrix"
 status: evergreen
 created: 2026-07-06
-updated: 2026-07-09
+updated: 2026-10-07
 tags: [eeat, evergreen]
 domain: "Blog Trust"
 confidence: verified
@@ -73,3 +73,5 @@ A blog post asks, "Can I deduct my home office?" and includes a checklist for re
 ## Analyzer Escalation Output
 
 [[Blog Analyzer Score Report]] consumes the matrix when a page has trust-risk flags. Inputs are selected risk row, reader decision, jurisdiction, source tier, reviewer status, confidence, and next action. The report expects blocker or advisory severity, reviewer owner, limitation wording, and source IDs for the highest-risk page section.
+
+For YMYL Escalation Matrix, `nng-editorial-heuristics` supplies general interaction-design principles. Applying those principles to this note's editorial checks is a project adaptation, not an experimentally established SEO or AI-citation requirement.

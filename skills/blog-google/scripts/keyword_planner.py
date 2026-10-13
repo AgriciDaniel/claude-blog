@@ -8,13 +8,20 @@ Requires a Google Ads Manager account with a developer token.
 Usage:
     python keyword_planner.py ideas "seo tools" --json
     python keyword_planner.py volume "seo tools,seo audit,seo checker" --json
-    python keyword_planner.py forecast "seo tools" --json
+
+Limits: ideas accepts 1 to 20 seed keywords, per "requires at least 1 and up
+to 20 keywords" in
+https://developers.google.com/google-ads/api/docs/keyword-planning/generate-keyword-ideas
+(fetched 2026-10-12). The per-request keyword cap for volume
+(GenerateKeywordHistoricalMetrics) could not be confirmed from the reference
+pages on that date, so volume only requires at least one keyword and lets the
+API report any larger-batch error.
 
 Prerequisites:
     - Google Ads Manager account (can be free)
     - Developer Token (apply at Google Ads API Center)
     - OAuth credentials or service account
-    - google-ads Python library: pip install google-ads
+    - google-ads Python library: installed by the skill setup script
     - Config: ~/.config/claude-seo/google-api.json with:
       {
         "ads_developer_token": "YOUR_DEV_TOKEN",
@@ -40,18 +47,20 @@ except ImportError:
     HAS_GOOGLE_ADS = False
 
 try:
-    from google_auth import load_config
+    from google_auth import load_config, redact_secrets, safe_exception_text, setup_hint
 except ImportError:
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-    from google_auth import load_config
+    from google_auth import load_config, redact_secrets, safe_exception_text, setup_hint
+
+# GenerateKeywordIdeas: "requires at least 1 and up to 20 keywords" in a keyword seed.
+MAX_SEED_KEYWORDS = 20
 
 
 def _build_ads_client() -> Optional[object]:
     """Build Google Ads client from config."""
     if not HAS_GOOGLE_ADS:
         print(
-            "Error: google-ads library required. Install with: "
-            "pip install 'claude-blog[ads]' (or pip install google-ads).",
+            f"Error: google-ads library required. {setup_hint()}",
             file=sys.stderr,
         )
         return None
@@ -105,7 +114,7 @@ def _build_ads_client() -> Optional[object]:
         return client, customer_id
 
     except Exception as e:
-        print(f"Error building Google Ads client: {e}", file=sys.stderr)
+        print(f"Error building Google Ads client: {safe_exception_text(e, dev_token)}", file=sys.stderr)
         return None
 
 
@@ -132,6 +141,14 @@ def generate_keyword_ideas(
         "ideas": [],
         "error": None,
     }
+
+    seed_keywords = [k for k in (str(k).strip() for k in seed_keywords) if k]
+    if not 1 <= len(seed_keywords) <= MAX_SEED_KEYWORDS:
+        result["error"] = (
+            f"ideas needs between 1 and {MAX_SEED_KEYWORDS} seed keywords "
+            f"(got {len(seed_keywords)}). Google Ads API KeywordSeed limit."
+        )
+        return result
 
     client_data = _build_ads_client()
     if not client_data:
@@ -179,9 +196,9 @@ def generate_keyword_ideas(
 
     except GoogleAdsException as e:
         errors = [err.message for err in e.failure.errors]
-        result["error"] = f"Google Ads API error: {'; '.join(errors)}"
+        result["error"] = f"Google Ads API error: {redact_secrets('; '.join(errors))}"
     except Exception as e:
-        result["error"] = f"Keyword Planner error: {e}"
+        result["error"] = f"Keyword Planner error: {safe_exception_text(e)}"
 
     return result
 
@@ -206,6 +223,11 @@ def get_keyword_volumes(
         "keywords": [],
         "error": None,
     }
+
+    keywords = [k for k in (str(k).strip() for k in keywords) if k]
+    if not keywords:
+        result["error"] = "volume needs at least 1 keyword."
+        return result
 
     client_data = _build_ads_client()
     if not client_data:
@@ -238,9 +260,9 @@ def get_keyword_volumes(
 
     except GoogleAdsException as e:
         errors = [err.message for err in e.failure.errors]
-        result["error"] = f"Google Ads API error: {'; '.join(errors)}"
+        result["error"] = f"Google Ads API error: {redact_secrets('; '.join(errors))}"
     except Exception as e:
-        result["error"] = f"Keyword volume error: {e}"
+        result["error"] = f"Keyword volume error: {safe_exception_text(e)}"
 
     return result
 

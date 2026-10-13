@@ -4,7 +4,7 @@ title: "Owned Audience Loop"
 domain: "Blog Distribution"
 status: active
 created: 2026-07-06
-updated: 2026-07-09
+updated: 2026-10-07
 tags:
   - distribution
   - owned-audience
@@ -24,7 +24,7 @@ source_urls:
   - "https://developers.google.com/search/docs/fundamentals/creating-helpful-content"
   - "https://developers.google.com/search/docs/fundamentals/ai-optimization-guide"
   - "https://sparktoro.com/blog/in-2026-less-than-one-third-of-google-searches-still-send-a-click/"
-  - "https://www.niemanlab.org/2026/05/google-highlights-links-from-subscribed-publications-in-new-ai-overviews-update/"
+  - "https://blog.google/products-and-platforms/products/search/explore-web-generative-ai-search/"
   - "https://developers.google.com/analytics/devguides/reporting/data/v1"
 ---
 
@@ -40,7 +40,7 @@ Keep the canonical URL, source-backed promise, author identity, and next reader 
 
 ### Channel-Specific Adaptations Allowed In Owned Paths
 
-Allowed adaptations include a newsletter prompt, saved-resource CTA, community follow-up question, subscriber-only recap, or repeat-visit reminder. The loop may cite `niemanlab-subscribed-publications-aio-2026` as context that subscribed relationships can matter in AI Overview presentation, but it must not promise surfaced links. Measurement can use `g-ga4-data` for repeat visits and engagement when access exists.
+Allowed adaptations include a newsletter prompt, saved-resource CTA, community follow-up question, subscriber-only recap, or repeat-visit reminder. The loop may cite `g-ai-search-subscription-links-2026-05-06` as a historical announcement about eligible linked news subscriptions in AI Mode and AI Overviews. It does not validate newsletter calls to action or guarantee surfaced links or traffic. Measurement can use `g-ga4-data` for repeat visits and engagement when access exists.
 
 ## Owned Audience Loop Asset Table
 
@@ -65,7 +65,7 @@ A post about a dated source update becomes a newsletter follow-up and a communit
 
 ### Owned Loop Failure Patterns
 
-The loop fails when the CTA is just "subscribe" with no future value, when direct traffic is treated as loyalty without a return-path note, or when unsubscribes are ignored because clicks looked positive. It also fails when subscribed-publication context from `niemanlab-subscribed-publications-aio-2026` is phrased as guaranteed AI Overview placement.
+The loop fails when the CTA is just "subscribe" with no future value, when direct traffic is treated as loyalty without a return-path note, or when unsubscribes are ignored because clicks looked positive. It also fails when subscribed-publication context from `g-ai-search-subscription-links-2026-05-06` is phrased as guaranteed AI Overview placement.
 
 ### Strategy Blueprint Input
 
@@ -81,4 +81,4 @@ The loop fails when the CTA is just "subscribe" with no future value, when direc
 
 ## Source IDs Wired
 
-This note cites `g-helpful-content`, `g-ai-opt-guide`, `g-update-2026-06-15-llms-txt-clarified-as-unused-by-google-search`, `sparktoro-zero-click-2026`, `niemanlab-subscribed-publications-aio-2026`, and `g-ga4-data`.
+This note cites `g-helpful-content`, `g-ai-opt-guide`, `g-update-2026-06-15-llms-txt-clarified-as-unused-by-google-search`, `sparktoro-zero-click-2026`, `g-ai-search-subscription-links-2026-05-06`, and `g-ga4-data`.

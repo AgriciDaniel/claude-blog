@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://web.dev/articles/vitals",
+  "normalized_full_document_sha256": "22c8512ba8fb15ce5915962606df6ad76482ed4a0d3b9b5340614ceb84a7d4ed",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "if it meets the recommended targets at the 75th percentile for all three"
+  ],
+  "records": [
+    {
+      "source_id": "wd-vitals",
+      "source_url": "https://web.dev/articles/vitals",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "confirmed_by_manual_review",
+      "excerpt_index": 0
+    }
+  ]
+}

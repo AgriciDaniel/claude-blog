@@ -112,6 +112,30 @@ fix. Review them only as possible clarity, voice, or repetition problems.
 10. **Listicle introduction bloat.** Review pre-list context for relevance and
     remove material that delays the reader without helping the decision.
 
+### Subject-led sentence patterns (review cues, not bans)
+
+These four patterns come from user reports (upstream issue #72) about drafts
+whose sentences talk about the article instead of the subject. They are pattern
+descriptions, not phrase lists, and a single instance can be fine. This
+guidance is an editing step whose effect on the tics is unproven.
+
+11. **Meta-commentary announcing importance.** A sentence whose subject is the
+    prose itself, such as saying a point deserves its own sentence or that a
+    part matters, instead of making the point. Delete the announcement and let
+    the claim carry its weight, or say why it matters in the same sentence.
+12. **Count-announcing or noun-stub lines.** A fragment that names a quantity or
+    category as a mini heading (a number of limits, "the tradeoffs:") and then
+    delivers the items. Give it a subject and a verb, or fold the items into
+    one sentence. A rhetorical question that moves the reader is a different
+    case and can stay.
+13. **Abstract-noun subjects.** Sentences whose subject is a concept (the
+    limits, the consequence) rather than a person, tool, or thing, so the
+    sentence reads like nobody would say it aloud. Put the actor or object in
+    the subject slot with an active verb.
+14. **Rhythmic stacking.** Consecutive triplets, "not X but Y" contrasts, or
+    short punchy fragments across a section. Vary or merge them when the run
+    repeats; keep one where it earns emphasis.
+
 ### Rhythmic signals to compute
 
 - **Sentence-length variation within paragraphs.** Describe the distribution
@@ -162,6 +186,7 @@ When reporting findings, use:
 - Repeated wrap-up questions: [descriptive observation + examples]
 - Repeated section transitions: [descriptive observation + examples]
 - Explicit summary openers: [descriptive observation + examples]
+- Subject-led sentence patterns (meta-commentary, noun stubs, abstract subjects, rhythmic stacking): [descriptive observation + examples]
 - Listicle introduction pacing: [descriptive observation]
 - Sentence and paragraph shape: [descriptive observation]
 

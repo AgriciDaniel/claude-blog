@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://developers.google.com/search/docs/appearance/preferred-sources",
+  "normalized_full_document_sha256": "5cf1f391034ab0a326389d8f72797c0d078f2a3371acca664fc0a4cab61e1d18",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "only domain-level and subdomain-level sites are eligible"
+  ],
+  "records": [
+    {
+      "source_id": "preferred-sources-custom-button-2026-08-20",
+      "source_url": "https://developers.google.com/search/docs/appearance/preferred-sources",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://developers.google.com/search/docs/crawling-indexing/javascript/javascript-seo-basics",
+  "normalized_full_document_sha256": "53b498eff362851b02562f2280d814745bf0be33a7537428037b5e47d1e0c483",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "google processes javascript web apps in three main phases"
+  ],
+  "records": [
+    {
+      "source_id": "g-js-seo",
+      "source_url": "https://developers.google.com/search/docs/crawling-indexing/javascript/javascript-seo-basics",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    }
+  ]
+}

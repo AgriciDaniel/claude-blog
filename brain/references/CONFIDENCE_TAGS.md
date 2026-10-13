@@ -41,7 +41,9 @@ Examples:
 
 - SparkToro zero-click estimates from a Similarweb panel.
 - Seer AI Overview CTR benchmarks.
-- Ahrefs, Semrush, seoClarity, SE Ranking, Similarweb, or ZipTie studies.
+- Ahrefs, Semrush, seoClarity, SE Ranking, or Similarweb observational studies.
+- ZipTie's attributed editorial guidance, qualified as a hypothesis rather
+  than causal evidence or a Google requirement.
 
 `CONTESTED` is for claims where credible sources disagree, the methodology is
 unstable, or the observed effect varies materially by site, market, query class,

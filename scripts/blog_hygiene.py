@@ -6,7 +6,12 @@ automatically. It is an OPTIONAL helper, not a delivery-contract gate: it never
 blocks delivery and always exits 0 on a successful run.
 
 Fixes:
-  1. HTML: add loading="lazy" to <img> tags that lack a loading attribute.
+  1. HTML: add loading="lazy" to <img> tags that lack a loading attribute,
+     except the first image (the hero / above the fold image), any image with
+     a fetchpriority attribute, and any image whose class contains "hero".
+     Lazy-loading the largest contentful image slows LCP, so those are left alone.
+     <img> text inside <pre>, <code> and HTML comments is documentation, not a
+     real image, and is never touched or reported.
   2. HTML: report (never invent) <img> tags missing alt text.
   3. Markdown: insert an idempotent Table of Contents before the first body H2
      on posts over the word threshold (default 2000) when none is present.
@@ -45,27 +50,84 @@ def slugify(text: str) -> str:
     return text
 
 
+_PROTECTED_OPENERS = (
+    ("<!--", "-->"),
+    ("<pre", "</pre"),
+    ("<code", "</code"),
+)
+
+
+def _protected_spans(html: str) -> list[tuple[int, int]]:
+    """Spans of HTML comments, <pre> and <code> blocks (unclosed ones run to the end)."""
+    lowered = html.lower()
+    spans: list[tuple[int, int]] = []
+    pos = 0
+    while True:
+        hits = []
+        for opener, closer in _PROTECTED_OPENERS:
+            at = lowered.find(opener, pos)
+            if at != -1 and (opener == "<!--" or lowered[at + len(opener): at + len(opener) + 1] in (">", " ", "\t", "\n", "\r", "/")):
+                hits.append((at, opener, closer))
+        if not hits:
+            return spans
+        at, opener, closer = min(hits)
+        end = lowered.find(closer, at + len(opener))
+        if end == -1:
+            spans.append((at, len(html)))
+            return spans
+        end = lowered.find(">", end)
+        end = len(html) if end == -1 else end + 1
+        spans.append((at, end))
+        pos = end
+
+
+def _in_spans(index: int, spans: list[tuple[int, int]]) -> bool:
+    return any(start <= index < end for start, end in spans)
+
+
+_HERO_CLASS_RE = re.compile(r"""\bclass\s*=\s*["'][^"']*\bhero\b""", re.IGNORECASE)
+
+
+def _is_priority_image(tag: str) -> bool:
+    """True for an image that must load eagerly: fetchpriority set or class hero."""
+    return bool(re.search(r"\bfetchpriority\s*=", tag, re.IGNORECASE) or _HERO_CLASS_RE.search(tag))
+
+
 def fix_html_lazy_loading(html: str) -> tuple[str, int]:
-    """Add loading="lazy" to <img> tags missing a loading attribute. Pure."""
+    """Add loading="lazy" to below-the-fold <img> tags lacking a loading attribute. Pure.
+
+    The first real image, images with fetchpriority or a hero class, and images
+    inside <pre>, <code> or comments are never changed.
+    """
+    spans = _protected_spans(html)
     count = 0
-
-    def _add_lazy(m: "re.Match[str]") -> str:
-        nonlocal count
+    seen_first = False
+    out: list[str] = []
+    last = 0
+    for m in re.finditer(r"<img\b[^>]*>", html, flags=re.IGNORECASE | re.DOTALL):
+        if _in_spans(m.start(), spans):
+            continue
         tag = m.group(0)
-        if re.search(r"\bloading\s*=", tag, re.IGNORECASE):
-            return tag
+        is_first = not seen_first
+        seen_first = True
+        if is_first or _is_priority_image(tag) or re.search(r"\bloading\s*=", tag, re.IGNORECASE):
+            continue
         count += 1
+        out.append(html[last:m.start()])
         # insert right after the "<img" token (first 4 chars of the match)
-        return tag[:4] + ' loading="lazy"' + tag[4:]
-
-    result = re.sub(r"<img\b[^>]*>", _add_lazy, html, flags=re.IGNORECASE | re.DOTALL)
-    return result, count
+        out.append(tag[:4] + ' loading="lazy"' + tag[4:])
+        last = m.end()
+    out.append(html[last:])
+    return "".join(out), count
 
 
 def find_missing_alt(html: str) -> list[str]:
     """Return srcs of <img> tags missing an alt attribute (cannot auto-fix)."""
     missing: list[str] = []
+    spans = _protected_spans(html)
     for m in re.finditer(r"<img\b([^>]*)>", html, re.IGNORECASE | re.DOTALL):
+        if _in_spans(m.start(), spans):
+            continue
         attrs = m.group(1)
         if not re.search(r"\balt\s*=", attrs, re.IGNORECASE):
             src_m = re.search(r'\bsrc\s*=\s*["\']([^"\']+)["\']', attrs, re.IGNORECASE)
@@ -198,8 +260,8 @@ def main(argv: list[str] | None = None) -> int:
             if args.apply and inserted:
                 _write_safely(args.md, new_md)
                 result["changed_files"].append(str(args.md))
-    except OSError as exc:
-        print(json.dumps({"error": str(exc)}), file=sys.stdout)
+    except (OSError, UnicodeDecodeError) as exc:
+        print(json.dumps({"error": f"cannot process input: {exc}"}), file=sys.stdout)
         return 2
 
     if result["alt_missing"]:

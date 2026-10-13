@@ -338,39 +338,58 @@ def test_public_marketplace_slug_is_current() -> None:
 
 
 def test_dependency_requirements_and_locks_are_coherent() -> None:
-    audio_req = (
-        ROOT / "skills" / "blog-audio" / "scripts" / "requirements.txt"
-    ).read_text(encoding="utf-8")
-    audio_lock = (
-        ROOT / "skills" / "blog-audio" / "scripts" / "requirements.lock"
-    ).read_text(encoding="utf-8")
-    notebook_req = (
-        ROOT / "skills" / "blog-notebooklm" / "scripts" / "requirements.txt"
-    ).read_text(encoding="utf-8")
-    notebook_lock = (
-        ROOT / "skills" / "blog-notebooklm" / "scripts" / "requirements.lock"
-    ).read_text(encoding="utf-8")
-    google_req = (
-        ROOT / "skills" / "blog-google" / "scripts" / "requirements.txt"
-    ).read_text(encoding="utf-8")
-    google_lock = (
-        ROOT / "skills" / "blog-google" / "scripts" / "requirements.lock"
-    ).read_text(encoding="utf-8")
-    pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
-    uv_lock = (ROOT / "uv.lock").read_text(encoding="utf-8")
+    import tomllib
+    from packaging.requirements import Requirement
+    from packaging.utils import canonicalize_name
 
-    assert "google-genai>=2.14.0,<3.0.0" in audio_req
-    assert "google-genai==2.14.0" in audio_lock
-    assert '"google-genai>=2.14.0,<3.0.0"' in pyproject
-    assert "patchright==1.61.2" in notebook_req
-    assert "patchright==1.61.2" in notebook_lock
-    assert '"patchright==1.61.2"' in pyproject
-    assert 'name = "google-genai"\nversion = "2.14.0"' in uv_lock
-    assert 'name = "patchright"\nversion = "1.61.2"' in uv_lock
-    assert "google-ads>=31.2.0,<32.0.0" in google_req
-    assert "google-ads==31.4.0" in google_lock
-    assert '"google-ads>=31.2.0,<32.0.0"' in pyproject
-    assert 'name = "google-ads"\nversion = "31.4.0"' in uv_lock
+    project = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    uv_lock = tomllib.loads((ROOT / "uv.lock").read_text(encoding="utf-8"))
+    groups = project["project"]["optional-dependencies"]
+    extras = {
+        canonicalize_name(Requirement(raw).name): Requirement(raw)
+        for group in groups.values() for raw in group
+    }
+    locked_uv = {
+        (canonicalize_name(package["name"]), package["version"])
+        for package in uv_lock["package"]
+    }
+    requirement_paths = [ROOT / "requirements.txt"] + [
+        ROOT / "skills" / skill / "scripts" / "requirements.txt"
+        for skill in ("blog-audio", "blog-google", "blog-notebooklm")
+    ]
+    shared_pins = {"google-genai", "patchright", "google-ads"}
+    for path in requirement_paths:
+        declarations = [
+            Requirement(line.split("#", 1)[0].strip())
+            for line in path.read_text(encoding="utf-8").splitlines()
+            if line.split("#", 1)[0].strip()
+        ]
+        lock = path.with_suffix(".lock").read_text(encoding="utf-8")
+        pins = {
+            canonicalize_name(name): version
+            for name, version in re.findall(r"^([A-Za-z0-9_.-]+)==([^ \\]+)", lock, re.MULTILINE)
+        }
+        for requirement in declarations:
+            name = canonicalize_name(requirement.name)
+            assert name in pins, f"{path}: {name} is missing from the hash lock"
+            version = pins[name]
+            assert requirement.specifier.contains(version), f"{path}: {name}=={version} violates {requirement}"
+            if name in extras:
+                assert extras[name].specifier.contains(version), f"pyproject extra rejects {name}=={version}"
+            if name in shared_pins:
+                assert (name, version) in locked_uv, f"uv.lock disagrees on {name}=={version}"
+            block = re.search(
+                rf"^{re.escape(requirement.name)}=={re.escape(version)}(?P<body>.*?)(?=^[A-Za-z0-9_.-]+==|\Z)",
+                lock, re.MULTILINE | re.DOTALL | re.IGNORECASE,
+            )
+            assert block and "--hash=sha256:" in block.group("body"), f"{path}: {name} has no hash"
+    audio = {canonicalize_name(Requirement(raw).name): Requirement(raw) for raw in groups["presentation"]}
+    assert str(audio["google-genai"].specifier) == str(next(
+        req.specifier for req in [Requirement(line) for line in
+            (ROOT / "skills/blog-audio/scripts/requirements.txt").read_text().splitlines()
+            if line and not line.startswith("#")]
+        if canonicalize_name(req.name) == "google-genai"
+    ))
 
 
 def test_shell_installer_is_locale_safe_and_complete(tmp_path: Path) -> None:
@@ -383,6 +402,7 @@ def test_shell_installer_is_locale_safe_and_complete(tmp_path: Path) -> None:
     env = os.environ.copy()
     env.update({
         "HOME": str(tmp_path / "home"),
+        "CLAUDE_BLOG_SKIP_PIP": "1",
         "LANG": "tr_TR.UTF-8",
         "LC_ALL": "tr_TR.UTF-8",
         "PATH": f"{fake_bin}:{env['PATH']}",
@@ -410,10 +430,13 @@ def test_shell_installer_is_locale_safe_and_complete(tmp_path: Path) -> None:
 
 def test_standalone_installers_ship_google_update_ledger() -> None:
     assert (ROOT / "data" / "google-updates.json").is_file()
-    for name in ("install.sh", "install.ps1"):
-        text = (ROOT / name).read_text(encoding="utf-8")
-        assert "data" in text
-        assert "google-updates.json" in text
+    ownership = _load_module("release_installer_ownership", ROOT / "scripts/installer_ownership.py")
+    inventory = ownership.build_inventory(ROOT)[0]
+    ledger = next(item for relative, item in inventory.items() if str(relative) == "skills/blog/data/google-updates.json")
+    assert ledger.source == ROOT / "data/google-updates.json"
+    windows = (ROOT / "scripts/windows_installer_ownership.ps1").read_text(encoding="utf-8")
+    assert "Add-CBPlanFile $plan $ledger 'skills/blog/data/google-updates.json'" in windows
+    assert "Invoke-ClaudeBlogInstall" in (ROOT / "install.ps1").read_text(encoding="utf-8")
     assert "blog" in (ROOT / "uninstall.sh").read_text(encoding="utf-8")
     assert "blog" in (ROOT / "uninstall.ps1").read_text(encoding="utf-8")
 
@@ -458,14 +481,20 @@ def test_ledger_consumer_guidance_matches_installed_path() -> None:
         / "references"
         / "search-currentness.md"
     ).read_text(encoding="utf-8")
-    install_sh = (ROOT / "install.sh").read_text(encoding="utf-8")
-    install_ps1 = (ROOT / "install.ps1").read_text(encoding="utf-8")
+    unix_inventory = (ROOT / "scripts/installer_ownership.py").read_text(encoding="utf-8")
+    windows_inventory = (ROOT / "scripts/windows_installer_ownership.ps1").read_text(encoding="utf-8")
 
+    # The skill is host-rendered in both distribution layouts. A reference
+    # receives the caller's trusted root instead of assuming substitution.
+    assert '${CLAUDE_SKILL_DIR}/../../data/google-updates.json' in orchestrator
+    assert '${CLAUDE_SKILL_DIR}/data/google-updates.json' in orchestrator
     for guidance in (orchestrator, currentness):
-        assert "data/google-updates.json" in guidance
-        assert "~/.claude/skills/blog/data/google-updates.json" in guidance
-    assert '${SKILL_DIR}/blog/data/google-updates.json' in install_sh
-    assert 'Join-Path $BlogDataDir "google-updates.json"' in install_ps1
+        assert '.claude-plugin/plugin.json' in guidance
+        assert 'never from CWD' in guidance or 'current working directory' in guidance
+    assert 'supplied by the caller' in currentness
+    assert '~/.claude/skills/blog/data/google-updates.json' in currentness
+    assert '"skills/blog/data/google-updates.json"' in unix_inventory
+    assert "'skills/blog/data/google-updates.json'" in windows_inventory
 
 
 def _write_flow_lock(root: Path, content: bytes = b"prompt\n") -> None:
@@ -561,12 +590,12 @@ def _public_fixture(root: Path) -> None:
     (root / "skills" / "blog").mkdir(parents=True)
     (root / "README.md").write_text(
         f"{public}\nclaude-blog@agricidaniel-blog\n{raw_sh}\n{raw_ps1}\n"
-        f"git checkout v{version}\nCLAUDE_BLOG_REF=v{version}\n",
+        "git checkout <commit-sha-or-release-tag>\n"
+        "CLAUDE_BLOG_REF=<commit-sha-or-release-tag>\n",
         encoding="utf-8",
     )
     (root / "CLAUDE.md").write_text(
-        f"https://raw.githubusercontent.com/AgriciDaniel/claude-blog/"
-        f"v{version}/install.sh\nCLAUDE_BLOG_REF=v{version}\n",
+        "CLAUDE_BLOG_REF=<commit-sha-or-release-tag>\n",
         encoding="utf-8",
     )
     (root / "CITATION.cff").write_text(
@@ -626,7 +655,7 @@ def _public_fixture(root: Path) -> None:
     )
     (root / ".github" / "SECURITY.md").write_text(
         "Only the latest version is supported.\n"
-        f"Use `git checkout v{version}` before installation.\n",
+        "Use `git checkout <commit-sha-or-release-tag>` before installation.\n",
         encoding="utf-8",
     )
     (root / "install.sh").write_text(
@@ -639,6 +668,8 @@ def _public_fixture(root: Path) -> None:
         '$Repo = "AgriciDaniel/claude-blog"\n',
         encoding="utf-8",
     )
+    for uninstaller in ("uninstall.sh", "uninstall.ps1"):
+        (root / uninstaller).write_text("# public ownership-aware uninstaller\n", encoding="utf-8")
     (root / "skills" / "blog" / "SKILL.md").write_text(
         f'  version: "{version}"\n',
         encoding="utf-8",
@@ -654,6 +685,85 @@ def test_public_release_validator_passes_normalized_fixture(tmp_path: Path) -> N
     assert module.validate(tmp_path)["status"] == "pass"
 
 
+@pytest.mark.parametrize("surface", ["plugin.json", "marketplace.json"])
+def test_public_release_validator_rejects_desynchronized_plugin_identity(
+    tmp_path: Path, surface: str,
+) -> None:
+    module = _load_module("release_identity_validator", ROOT / "scripts/validate_public_release.py")
+    _public_fixture(tmp_path)
+    path = tmp_path / ".claude-plugin" / surface
+    data = json.loads(path.read_text(encoding="utf-8"))
+    if surface == "plugin.json":
+        data["name"] = "blog-engine"
+        expected_kind = "invalid_public_plugin_ownership"
+    else:
+        data["plugins"][0]["name"] = "blog-engine"
+        expected_kind = "invalid_public_marketplace_plugin"
+    path.write_text(json.dumps(data), encoding="utf-8")
+    result = module.validate(tmp_path)
+    assert result["status"] == "fail"
+    assert any(error["kind"] == expected_kind for error in result["errors"])
+
+
+@pytest.mark.parametrize(
+    ("surface", "unsafe"),
+    [
+        ("README.md", "git checkout v2.2.0\n"),
+        ("README.md", "CLAUDE_BLOG_REF=v2.2.0 bash install.sh\n"),
+        ("CLAUDE.md", 'CLAUDE_BLOG_REF="v2.2.0"\n'),
+        ("CLAUDE.md", "https://raw.githubusercontent.com/AgriciDaniel/claude-blog/v2.2.0/install.sh\n"),
+        (".github/SECURITY.md", "cd claude-blog && git checkout v2.2.0\n"),
+        (".github/SECURITY.md", "CLAUDE_BLOG_REF=v2.2.0 ./install.sh\n"),
+    ],
+)
+def test_public_release_validator_rejects_pinning_install_docs_to_preownership_tag(
+    tmp_path: Path, surface: str, unsafe: str,
+) -> None:
+    """v2.2.0 ships an uninstall.sh with an unguarded recursive delete."""
+    module = _load_module("release_preownership_validator", ROOT / "scripts/validate_public_release.py")
+    _public_fixture(tmp_path)
+    path = tmp_path / surface
+    path.write_text(path.read_text(encoding="utf-8") + unsafe, encoding="utf-8")
+    result = module.validate(tmp_path)
+    assert result["status"] == "fail"
+    assert any(error["kind"] == "unsafe_preownership_installer_pin" for error in result["errors"])
+
+
+def test_validator_does_not_depend_on_the_host_plugin_validator() -> None:
+    """The reserved-name check in newer Claude Code is not part of release logic."""
+    source = (ROOT / "scripts/validate_public_release.py").read_text(encoding="utf-8")
+    assert "subprocess" not in source and "plugin validate" not in source
+    assert 'PUBLIC_PLUGIN_IDENTIFIER = "claude-blog"' in source
+    manifest = json.loads((ROOT / ".claude-plugin/plugin.json").read_text(encoding="utf-8"))
+    marketplace = json.loads((ROOT / ".claude-plugin/marketplace.json").read_text(encoding="utf-8"))
+    assert manifest["name"] == "claude-blog"
+    assert marketplace["name"] == "agricidaniel-blog"
+    assert [entry["name"] for entry in marketplace["plugins"]] == ["claude-blog"]
+    assert "blog-engine" not in json.dumps([manifest, marketplace])
+
+
+def test_documented_install_flow_never_runs_the_preownership_release() -> None:
+    for relative in ("README.md", "CLAUDE.md", "docs/INSTALLATION.md"):
+        text = (ROOT / relative).read_text(encoding="utf-8")
+        assert "v2.2.0/install.sh" not in text, relative
+        assert "git checkout v2.2.0" not in text, relative
+        assert "CLAUDE_BLOG_REF=v2.2.0" not in text, relative
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    assert "Integrity is only as pinned as `CLAUDE_BLOG_REF`" in readme
+    assert "full commit SHA" in readme
+
+
+@pytest.mark.parametrize("relative", ["skills/blog-write/SKILL.md", "scripts/unlisted.py", "scripts/unlisted.ps1", "data/unlisted.json"])
+def test_public_release_validator_checks_unlisted_runtime_surfaces(tmp_path: Path, relative: str) -> None:
+    module = _load_module("release_unlisted_validator", ROOT / "scripts/validate_public_release.py")
+    _public_fixture(tmp_path)
+    path = tmp_path / relative
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("claude-blog@ai-marketing-hub-claude-blog\n", encoding="utf-8")
+    result = module.validate(tmp_path)
+    assert any(error["kind"] == "private_marketplace_slug" and error["file"] == relative for error in result["errors"])
+
+
 def test_current_public_release_surfaces_pass_validator() -> None:
     private_note = ROOT / "docs" / "PUBLIC-BACKLOG-TRIAGE-2026-07-23.md"
     if private_note.exists():
@@ -665,9 +775,10 @@ def test_current_public_release_surfaces_pass_validator() -> None:
     assert module.validate(ROOT)["status"] == "pass"
 
 
-def test_public_release_validator_rejects_stale_security_tag(
+def test_public_release_validator_requires_corrected_security_guidance(
     tmp_path: Path,
 ) -> None:
+    """SECURITY.md must tell users to pin a reviewed ref, not the v2.2.0 tag."""
     module = _load_module(
         "release_public_validator_security_version",
         ROOT / "scripts" / "validate_public_release.py",
@@ -675,16 +786,25 @@ def test_public_release_validator_rejects_stale_security_tag(
     _public_fixture(tmp_path)
     security = tmp_path / ".github" / "SECURITY.md"
     security.write_text(
-        security.read_text(encoding="utf-8").replace("v2.2.0", "v1.7.0"),
+        security.read_text(encoding="utf-8").replace(
+            "git checkout <commit-sha-or-release-tag>", "git checkout v1.7.0"
+        ),
         encoding="utf-8",
     )
     report = module.validate(tmp_path)
     assert report["status"] == "fail"
     assert any(
-        error["kind"] == "invalid_public_security_version"
+        error["kind"] == "invalid_public_security_guidance"
         and error["file"] == ".github/SECURITY.md"
         for error in report["errors"]
     )
+
+
+def test_security_policy_never_tells_users_to_run_the_preownership_installer() -> None:
+    text = (ROOT / ".github" / "SECURITY.md").read_text(encoding="utf-8")
+    assert "git checkout <commit-sha-or-release-tag>" in text
+    assert "git checkout v2.2.0" not in text
+    assert "CLAUDE_BLOG_REF=v2.2.0" not in text
 
 
 def test_public_release_validator_rejects_private_raw_url(tmp_path: Path) -> None:

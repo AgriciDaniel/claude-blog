@@ -3,7 +3,7 @@ type: spoke
 title: "Trust Signal Inventory"
 status: evergreen
 created: 2026-07-06
-updated: 2026-07-09
+updated: 2026-10-07
 tags: [eeat, evergreen]
 domain: "Blog Trust"
 confidence: verified
@@ -73,3 +73,5 @@ A SaaS comparison page has an author box, citations, and an "updated" date, but 
 ## Full Site Audit Inventory Feed
 
 [[Full Site Blog Audit Report]] consumes this inventory for page-level trust findings. Inputs supplied are signal state, observed page element, device checked, source IDs, owner, and visible-versus-internal distinction. The audit expects keep, improve, monitor, merge, or prune recommendations only after signal gaps are separated from quality or traffic assumptions.
+
+For Trust Signal Inventory, `nng-editorial-heuristics` supplies general interaction-design principles. Applying those principles to this note's editorial checks is a project adaptation, not an experimentally established SEO or AI-citation requirement.

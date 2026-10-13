@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls",
+  "normalized_full_document_sha256": "4d6ca5834f9c5df787715b0b798e9fa05724613977a9ecf2cb8f29f91f91fa64",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "add a rel=\"canonical\" link from the http page to the https page"
+  ],
+  "records": [
+    {
+      "source_id": "g-canonical",
+      "source_url": "https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "confirmed_by_manual_review",
+      "excerpt_index": 0
+    }
+  ]
+}

@@ -3,7 +3,7 @@ type: spoke
 title: "Reviewer And Expert Review Rules"
 status: evergreen
 created: 2026-07-06
-updated: 2026-07-09
+updated: 2026-10-07
 tags: [eeat, evergreen]
 domain: "Blog Trust"
 confidence: verified
@@ -73,3 +73,5 @@ A DIY electrical-safety article includes step-by-step fixture replacement advice
 ## Write Package Review Output
 
 [[Blog Write Article Contract]] consumes these rules when the draft requires author or reviewer notes. Inputs are claim categories, reviewer identity, relevant expertise, conflict status, review date, sections checked, and exclusions. The contract expects publish-ready review notes, removed-claim list, limitation language, and blocker status for unreviewed consequential advice.
+
+For Reviewer And Expert Review Rules, `nng-editorial-heuristics` supplies general interaction-design principles. Applying those principles to this note's editorial checks is a project adaptation, not an experimentally established SEO or AI-citation requirement.

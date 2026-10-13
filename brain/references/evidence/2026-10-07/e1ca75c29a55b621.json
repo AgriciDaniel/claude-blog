@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://services.google.com/fh/files/misc/hsw-sqrg.pdf",
+  "normalized_full_document_sha256": "e2c0a2b59d9d3581b333f0117b076befd54f7ad12fb7f87999327dae62fde220",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "search quality rater guidelines: an overview 36/36"
+  ],
+  "records": [
+    {
+      "source_id": "g-qrg",
+      "source_url": "https://services.google.com/fh/files/misc/hsw-sqrg.pdf",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    }
+  ]
+}

@@ -10,11 +10,15 @@ import subprocess
 import hashlib
 from pathlib import Path
 
+# Load only the helper shipped beside this installed script, never from CWD.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from runtime_paths import resolve_runtime_paths
+
 
 def get_venv_python():
     """Get the virtual environment Python executable"""
-    skill_dir = Path(__file__).parent.parent
-    venv_dir = skill_dir / ".venv"
+    skill_dir = Path(__file__).resolve().parent.parent
+    venv_dir = resolve_runtime_paths(skill_dir, "blog-google").venv
 
     if os.name == 'nt':  # Windows
         venv_python = venv_dir / "Scripts" / "python.exe"
@@ -25,10 +29,9 @@ def get_venv_python():
 
 
 def ensure_venv():
-    """Ensure virtual environment exists"""
-    skill_dir = Path(__file__).parent.parent
-    venv_dir = skill_dir / ".venv"
-    setup_script = skill_dir / "scripts" / "setup_environment.py"
+    """Return a ready interpreter without installing or updating anything."""
+    skill_dir = Path(__file__).resolve().parent.parent
+    venv_dir = resolve_runtime_paths(skill_dir, "blog-google").venv
     lock_file = skill_dir / "scripts" / "requirements.lock"
     requirements_file = skill_dir / "scripts" / "requirements.txt"
     stamp_file = venv_dir / ".requirements.stamp"
@@ -37,38 +40,42 @@ def ensure_venv():
     expected_stamp = hashlib.sha256(source.read_bytes()).hexdigest() if source.exists() else None
     current_stamp = stamp_file.read_text().strip() if stamp_file.exists() else None
 
-    # Check if venv exists
-    if not venv_dir.exists() or (expected_stamp and current_stamp != expected_stamp):
-        print("First-time setup: Creating virtual environment...")
-        print("   This may take a minute...")
+    venv_python = get_venv_python()
+    setup_script = skill_dir / "scripts" / "setup_environment.py"
+    if not venv_python.is_file():
+        print(f'Google skill setup required. Run: python3 "{setup_script}"')
+        sys.exit(1)
+    if expected_stamp and current_stamp != expected_stamp:
+        print(f'Google skill dependencies are missing or stale. Run: python3 "{setup_script}"')
+        sys.exit(1)
+    return venv_python
 
-        # Run setup with system Python
-        result = subprocess.run([sys.executable, str(setup_script)])
-        if result.returncode != 0:
-            print("Failed to set up environment")
-            sys.exit(1)
 
-        print("Environment ready!")
+USAGE = """Usage: python run.py <script_name> [args...]
 
-    return get_venv_python()
+Available scripts:
+  google_auth.py       - Credential management and auth setup
+  pagespeed_check.py   - PageSpeed Insights + CrUX field data
+  crux_history.py      - CWV history, 25 weeks by default, up to 40
+  youtube_search.py    - YouTube video search and details
+  nlp_analyze.py       - NLP entity extraction and sentiment
+  gsc_query.py         - Search Console performance data
+  gsc_inspect.py       - URL Inspection API
+  indexing_notify.py   - Indexing API notifications
+  ga4_report.py        - GA4 organic traffic reports
+  keyword_planner.py   - Google Ads Keyword Planner
+  google_report.py     - PDF/HTML performance reports
+
+Run "python run.py <script_name> --help" for a script's options."""
 
 
 def main():
     """Main runner"""
+    if len(sys.argv) >= 2 and sys.argv[1] in ("-h", "--help", "help"):
+        print(USAGE)
+        sys.exit(0)
     if len(sys.argv) < 2:
-        print("Usage: python run.py <script_name> [args...]")
-        print("\nAvailable scripts:")
-        print("  google_auth.py       - Credential management and auth setup")
-        print("  pagespeed_check.py   - PageSpeed Insights + CrUX field data")
-        print("  crux_history.py      - 25-week CWV trend history")
-        print("  youtube_search.py    - YouTube video search and details")
-        print("  nlp_analyze.py       - NLP entity extraction and sentiment")
-        print("  gsc_query.py         - Search Console performance data")
-        print("  gsc_inspect.py       - URL Inspection API")
-        print("  indexing_notify.py   - Indexing API notifications")
-        print("  ga4_report.py        - GA4 organic traffic reports")
-        print("  keyword_planner.py   - Google Ads Keyword Planner")
-        print("  google_report.py     - PDF/HTML performance reports")
+        print(USAGE)
         sys.exit(1)
 
     script_name = sys.argv[1]
@@ -83,7 +90,7 @@ def main():
         script_name += '.py'
 
     # Get script path
-    skill_dir = Path(__file__).parent.parent
+    skill_dir = Path(__file__).resolve().parent.parent
     scripts_dir = (skill_dir / "scripts").resolve()
     script_path = (scripts_dir / script_name).resolve()
 
@@ -100,7 +107,11 @@ def main():
         sys.exit(1)
 
     # Ensure venv exists and get Python executable
-    venv_python = ensure_venv()
+    try:
+        venv_python = ensure_venv()
+    except ValueError as exc:
+        print(f"ERROR: {exc}")
+        sys.exit(1)
 
     # Build command
     cmd = [str(venv_python), str(script_path)] + script_args

@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://llmstxt.org/",
+  "normalized_full_document_sha256": "4754cd733303307e7fbe5a838f7dcbfe3118c166bc6e7f87bcaae989d144836f",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "the llms.txt specification is open for community input"
+  ],
+  "records": [
+    {
+      "source_id": "llmstxt",
+      "source_url": "https://llmstxt.org/",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "qualified",
+      "excerpt_index": 0
+    }
+  ]
+}

@@ -15,27 +15,46 @@ Usage:
 import argparse
 import json
 import sys
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from typing import Optional
+
+try:
+    from google_auth import (
+        describe_google_api_error, execute_with_retries, get_oauth_credentials,
+        load_config, safe_exception_text, setup_hint,
+    )
+except ImportError:
+    import os
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from google_auth import (
+        describe_google_api_error, execute_with_retries, get_oauth_credentials,
+        load_config, safe_exception_text, setup_hint,
+    )
 
 try:
     from googleapiclient.discovery import build
 except ImportError:
-    print(
-        "Error: google-api-python-client required. "
-        "Install with: pip install google-api-python-client",
-        file=sys.stderr,
-    )
+    print(f"Error: google-api-python-client required. {setup_hint()}", file=sys.stderr)
     sys.exit(1)
 
-try:
-    from google_auth import get_oauth_credentials, load_config, execute_with_retries
-except ImportError:
-    import os
-    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-    from google_auth import get_oauth_credentials, load_config, execute_with_retries
-
 GSC_SCOPES = ["https://www.googleapis.com/auth/webmasters.readonly"]
+DATA_LAG_DAYS = 3
+DEFAULT_DAYS = 28
+MAX_PAGE_SIZE = 25000
+
+
+def default_date_range(days: int = DEFAULT_DAYS, today: Optional[date] = None) -> tuple:
+    """Return (start, end) as YYYY-MM-DD strings for a window of exactly `days` days.
+
+    The window ends DATA_LAG_DAYS days before today (Search Console data lag) and
+    is inclusive at both ends, so the default is the 28 days ending 3 days ago.
+    The start never falls after the end, for any days >= 1.
+    """
+    if days < 1:
+        raise ValueError("days must be at least 1")
+    end = (today or datetime.now().date()) - timedelta(days=DATA_LAG_DAYS)
+    start = end - timedelta(days=days - 1)
+    return start.strftime("%Y-%m-%d"), end.strftime("%Y-%m-%d")
 
 
 def _build_gsc_service():
@@ -46,7 +65,7 @@ def _build_gsc_service():
     try:
         return build("searchconsole", "v1", credentials=credentials)
     except Exception as e:
-        print(f"Error building GSC service: {e}", file=sys.stderr)
+        print(f"Error building GSC service: {safe_exception_text(e)}", file=sys.stderr)
         return None
 
 
@@ -65,11 +84,13 @@ def query_search_analytics(
 
     Args:
         site_url: GSC property (e.g., 'sc-domain:example.com' or 'https://example.com/').
-        start_date: Start date (YYYY-MM-DD). Default: 28 days ago.
+        start_date: Start date (YYYY-MM-DD). Default: 27 days before end_date
+            (a 28-day window ending 3 days ago, inclusive).
         end_date: End date (YYYY-MM-DD). Default: 3 days ago (data lag).
         dimensions: List of dimensions: query, page, country, device, date, searchAppearance.
         search_type: web, image, video, news, discover, googleNews.
-        row_limit: Max rows per request (1-25000). Auto-paginates if more.
+        row_limit: Rows per page, 1-25000 (values above 25000 are clamped, below
+            1 are rejected). Auto-paginates until a short page or 100,000 rows.
         filters: List of filter dicts with dimension, operator, expression.
         data_state: 'final', 'all', or 'hourly_all'. hourly_all requires hour dimension.
 
@@ -85,15 +106,24 @@ def query_search_analytics(
         "error": None,
     }
 
+    if not isinstance(row_limit, int) or isinstance(row_limit, bool) or row_limit < 1:
+        # A page size of 0 would never advance the pagination offset.
+        result["error"] = "row_limit must be an integer of at least 1."
+        return result
+
     service = _build_gsc_service()
     if not service:
         result["error"] = "Could not build GSC service. Check service account credentials."
         return result
 
-    if not start_date:
-        start_date = (datetime.now() - timedelta(days=28)).strftime("%Y-%m-%d")
     if not end_date:
-        end_date = (datetime.now() - timedelta(days=3)).strftime("%Y-%m-%d")
+        end_date = default_date_range(1)[1]
+    if not start_date:
+        end_day = datetime.strptime(end_date, "%Y-%m-%d").date()
+        start_date = (end_day - timedelta(days=DEFAULT_DAYS - 1)).strftime("%Y-%m-%d")
+    if start_date > end_date:
+        result["error"] = f"start_date {start_date} is after end_date {end_date}."
+        return result
     if dimensions is None:
         dimensions = ["query", "page"]
     dims_lower = {d.lower() for d in dimensions}
@@ -108,7 +138,7 @@ def query_search_analytics(
         "endDate": end_date,
         "dimensions": dimensions,
         "type": search_type,
-        "rowLimit": min(row_limit, 25000),
+        "rowLimit": min(row_limit, MAX_PAGE_SIZE),
         "dataState": data_state,
     }
 
@@ -118,7 +148,7 @@ def query_search_analytics(
     # Auto-paginate
     all_rows = []
     start_row = 0
-    page_size = min(row_limit, 25000)
+    page_size = min(row_limit, MAX_PAGE_SIZE)
 
     try:
         while True:
@@ -142,21 +172,21 @@ def query_search_analytics(
                 break
 
     except Exception as e:
-        error_str = str(e)
-        if "403" in error_str:
-            result["error"] = (
-                f"Permission denied for property '{site_url}'. "
-                "Ensure the service account email is added as a user in "
-                "Google Search Console > Settings > Users and permissions."
+        status = getattr(getattr(e, "resp", None), "status", None)
+        if isinstance(status, str) and status.isdigit():
+            status = int(status)
+        if status == 403:
+            result["error"] = describe_google_api_error(
+                e, 'Search Console', 'Add the service account as a user in Google Search Console > Settings > Users and permissions for this property.'
             )
-        elif "404" in error_str:
+        elif status == 404:
             result["error"] = (
                 f"Property '{site_url}' not found. "
                 "Use 'sc-domain:example.com' for domain properties or "
                 "'https://example.com/' for URL-prefix properties."
             )
         else:
-            result["error"] = f"GSC API error: {e}"
+            result["error"] = describe_google_api_error(e, 'Search Console')
         return result
 
     # Process rows
@@ -244,7 +274,7 @@ def list_sitemaps(site_url: str) -> dict:
                 "contents": sm.get("contents", []),
             })
     except Exception as e:
-        result["error"] = f"Error listing sitemaps: {e}"
+        result["error"] = f"Error listing sitemaps: {describe_google_api_error(e, 'Search Console')}"
 
     return result
 
@@ -271,7 +301,7 @@ def list_sites() -> dict:
                 "permission": site.get("permissionLevel"),
             })
     except Exception as e:
-        result["error"] = f"Error listing sites: {e}"
+        result["error"] = f"Error listing sites: {describe_google_api_error(e, 'Search Console')}"
 
     return result
 
@@ -291,7 +321,13 @@ def main():
         "--property", "-p",
         help="GSC property (e.g., sc-domain:example.com). Uses default from config if not specified.",
     )
-    parser.add_argument("--days", "-d", type=int, default=28, help="Number of days (default: 28)")
+    parser.add_argument(
+        "--days", "-d", type=int, default=DEFAULT_DAYS,
+        help=(
+            f"Window length in days, inclusive, ending {DATA_LAG_DAYS} days ago because of "
+            f"Search Console data lag (default: {DEFAULT_DAYS}, so the last 28 days up to 3 days ago)"
+        ),
+    )
     parser.add_argument("--start-date", help="Start date (YYYY-MM-DD)")
     parser.add_argument("--end-date", help="End date (YYYY-MM-DD)")
     parser.add_argument(
@@ -300,7 +336,10 @@ def main():
         help="Comma-separated dimensions (default: query,page)",
     )
     parser.add_argument("--type", default="web", help="Search type (default: web)")
-    parser.add_argument("--limit", type=int, default=1000, help="Row limit (default: 1000)")
+    parser.add_argument(
+        "--limit", type=int, default=1000,
+        help=f"Rows per page, 1-{MAX_PAGE_SIZE} (default: 1000); pagination continues automatically",
+    )
     parser.add_argument(
         "--data-state",
         choices=["final", "all", "hourly_all"],
@@ -316,6 +355,16 @@ def main():
     parser.add_argument("--json", "-j", action="store_true", help="Output as JSON")
 
     args = parser.parse_args()
+    if args.limit < 1:
+        parser.error("--limit must be at least 1")
+    if args.days < 1:
+        parser.error("--days must be at least 1")
+    for flag, value in (("--start-date", args.start_date), ("--end-date", args.end_date)):
+        if value:
+            try:
+                datetime.strptime(value, "%Y-%m-%d")
+            except ValueError:
+                parser.error(f"{flag} must use YYYY-MM-DD")
 
     # Resolve property
     prop = args.property
@@ -331,8 +380,15 @@ def main():
     elif args.command == "sitemaps":
         result = list_sitemaps(prop)
     else:
-        start = args.start_date or (datetime.now() - timedelta(days=args.days)).strftime("%Y-%m-%d")
-        end = args.end_date or (datetime.now() - timedelta(days=3)).strftime("%Y-%m-%d")
+        default_start, default_end = default_date_range(args.days)
+        end = args.end_date or default_end
+        if args.start_date:
+            start = args.start_date
+        elif args.end_date:
+            end_day = datetime.strptime(args.end_date, "%Y-%m-%d").date()
+            start = (end_day - timedelta(days=args.days - 1)).strftime("%Y-%m-%d")
+        else:
+            start = default_start
         dims = [d.strip() for d in args.dimensions.split(",")]
         filters = []
         if args.device:

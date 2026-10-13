@@ -11,12 +11,20 @@ description: >
   consume. Use when user says "outline", "blog outline", "content outline",
   "structure blog", "plan sections", "article skeleton", "heading structure",
   "SERP analysis", "competitive outline", "plan article".
-user-invokable: true
+user-invocable: true
 argument-hint: "<topic>"
 license: MIT
 ---
 
 # Blog Outline Generator: SERP-Informed Structure Planning
+
+Bundled paths below use host Markdown substitution of `${CLAUDE_SKILL_DIR}`;
+it is not an exported shell variable. Resolve them before execution, quote
+paths, and refuse nonabsolute overrides. Pass `blog_reference_root` resolved
+from `${CLAUDE_SKILL_DIR}/../blog/references`, `blog_template_root` from
+`${CLAUDE_SKILL_DIR}/../blog/templates`, and needed sibling roots to agents.
+Read the main reference `orchestration-details.md` before loading project
+context; pass only its helper-fenced output to downstream agents.
 
 Generates skeletal blog post outlines informed by SERP analysis. A lighter
 alternative to a full content brief - produces heading hierarchy, section

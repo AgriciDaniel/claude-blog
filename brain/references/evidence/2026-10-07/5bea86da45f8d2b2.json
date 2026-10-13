@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://developers.google.com/speed/docs/insights/v5/get-started",
+  "normalized_full_document_sha256": "2f08fb630e1ee09532cf51b49aef3a2896b7a5192ee473388a49f309ec27ee3f",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "we plan to discontinue including real-world data from the chrome user experience report in this api"
+  ],
+  "records": [
+    {
+      "source_id": "g-psi",
+      "source_url": "https://developers.google.com/speed/docs/insights/v5/get-started",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "confirmed_by_manual_review",
+      "excerpt_index": 0
+    }
+  ]
+}

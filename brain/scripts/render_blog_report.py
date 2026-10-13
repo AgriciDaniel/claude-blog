@@ -93,6 +93,9 @@ def render_markdown(plan: dict[str, Any]) -> str:
             f"{text(item.get('recommendation', ''))} "
             f"Sources: {format_sources(item.get('source_ids', []))}"
         )
+    if plan.get("evidence_notes"):
+        lines.extend(["", "## Evidence Scope", ""])
+        lines.extend(f"- {text(note)}" for note in plan["evidence_notes"])
     lines.extend(["", "## Source Citations", ""])
     for source in plan.get("source_citations", []):
         lines.append(
@@ -102,6 +105,12 @@ def render_markdown(plan: dict[str, Any]) -> str:
             f"Retrieved: {text(source.get('retrieved', 'n/a'))}. "
             f"{text(source.get('url', ''))}"
         )
+        if source.get("review_decision") == "qualified":
+            limitations = source.get("limitations", "")
+            if isinstance(limitations, list):
+                limitations = "; ".join(str(item) for item in limitations)
+            claims = "; ".join(source.get("supported_claims", []))
+            lines.append(f"  Qualified scope: {text(claims)} Limitations: {text(limitations)}")
     report = "\n".join(lines).rstrip() + "\n"
     return assert_clean_output(report)
 

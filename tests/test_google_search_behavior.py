@@ -101,14 +101,18 @@ def test_gate_5_warns_without_blocking_on_first_2mb_visibility(
     slug = "cutoff-fixture"
     (tmp_path / f"{slug}.md").write_text("# Fixture\n", encoding="utf-8")
     (tmp_path / f"{slug}.pdf").write_bytes(b"%PDF-1.4\n")
+    (tmp_path / "hero.jpg").write_bytes(b"\xff\xd8\xff")
     critical = (
-        '<title>Fixture</title>'
+        '<html lang="en"><title>Fixture</title>'
         '<meta name="description" content="Fixture">'
+        '<meta property="og:title" content="Fixture"><meta property="og:description" content="Fixture"><meta property="og:image" content="hero.jpg">'
         '<link rel="canonical" href="https://example.com/post">'
         '<script type="application/ld+json">'
         '{"@type":"BlogPosting","headline":"Fixture","image":"hero.jpg",'
         '"datePublished":"2026-07-23","author":{"name":"Tester"},"wordCount":2}'
-        "</script><article>Primary content</article>"
+        "</script><article><header><h1>Fixture</h1>"
+        '<p class="byline"><strong>By Tester</strong> · 2026-07-23</p></header>'
+        '<figure class="hero"><img src="hero.jpg" alt="Fixture hero"></figure>Primary content</article>'
     )
     (tmp_path / f"{slug}.html").write_text(
         "x" * preflight.GOOGLEBOT_HTML_BYTE_LIMIT + critical,
@@ -151,7 +155,8 @@ def _write_dynamic_jsonld_artifacts(tmp_path: Path, slug: str) -> None:
     (tmp_path / f"{slug}.md").write_text("# Fixture\n", encoding="utf-8")
     (tmp_path / f"{slug}.pdf").write_bytes(b"%PDF-1.4\n")
     (tmp_path / f"{slug}.html").write_text(
-        '<title>Fixture</title><meta name="description" content="Fixture">'
+        '<html lang="en"><title>Fixture</title><meta name="description" content="Fixture">'
+        '<meta property="og:title" content="Fixture"><meta property="og:description" content="Fixture"><meta property="og:image" content="hero.jpg">'
         '<link rel="canonical" href="https://example.com/post">'
         "<script>const node=document.createElement('script');"
         "node.type='application/'+'ld+json';"
@@ -336,7 +341,7 @@ def test_inspection_keeps_google_verdict_and_adds_pending_classification(
         def urlInspection(self):
             return _UrlInspection()
 
-    monkeypatch.setattr(gsc_inspect, "execute_with_retries", lambda request: response)
+    monkeypatch.setattr(gsc_inspect, "execute_with_retries", lambda request, **kwargs: response)
     result = gsc_inspect.inspect_url(
         "https://example.com/new",
         "sc-domain:example.com",

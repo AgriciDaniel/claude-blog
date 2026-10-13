@@ -4,7 +4,7 @@ title: "Readability Review"
 domain: "Blog Voice"
 status: active
 created: 2026-07-06
-updated: 2026-07-09
+updated: 2026-10-07
 tags: [personas, voice-style, active]
 ---
 
@@ -76,3 +76,5 @@ Draft consumer: [[Blog Write Article Contract]] uses the approved readability fi
 ## Readability Review Regression Check
 
 Run this pass after major edits, localization, repurposing, and schema rewrites. If a later edit improves fluency but weakens source accuracy, revert the sentence and reopen the relevant voice note.
+
+For Readability Review, `nng-editorial-heuristics` supplies general interaction-design principles. Applying those principles to this note's editorial checks is a project adaptation, not an experimentally established SEO or AI-citation requirement.

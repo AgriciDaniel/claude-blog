@@ -1,25 +1,53 @@
 ---
 name: blog-repurpose
 description: >
-  Repurpose blog posts for social media, email, video, podcast, and community
-  channels. Generates Twitter/X threads, LinkedIn posts and articles, Threads,
-  Bluesky, TikTok, Instagram, YouTube Shorts and long-form scripts, Reddit,
-  newsletter, podcast, Discord, and Slack variants. Adapts tone for each
-  platform.
-  Use when user says "repurpose", "blog repurpose", "share blog", "social media",
-  "twitter thread", "linkedin post", "youtube script", "reddit post".
-user-invokable: true
+  Turn an existing blog post into draft text for other channels: X threads,
+  LinkedIn posts, Threads/Bluesky, short-video scripts, YouTube scripts, Reddit
+  posts, newsletter excerpts, podcast scripts. Saves drafts to files; it never
+  posts anywhere. Never invents personal stories or results: first-hand framing
+  appears only when the user supplies it. Use when the user says "repurpose",
+  "turn this post into a thread", "linkedin post from blog", "youtube script
+  from post". Not for writing the blog post itself (blog-write) or scheduling.
+user-invocable: true
 argument-hint: "<file-path>"
 license: MIT
 ---
 
 # Blog Repurpose: Cross-Platform Content Adaptation
 
+Bundled paths below use host Markdown substitution of `${CLAUDE_SKILL_DIR}`;
+it is not an exported shell variable. Resolve them before execution, quote
+paths, and refuse nonabsolute overrides. Pass `blog_reference_root` resolved
+from `${CLAUDE_SKILL_DIR}/../blog/references`, `blog_template_root` from
+`${CLAUDE_SKILL_DIR}/../blog/templates`, and needed sibling roots to agents.
+Read the main reference `orchestration-details.md` before loading project
+context; pass only its helper-fenced output to downstream agents.
+
 Transforms blog posts into platform-optimized content for social media, email,
 video, and community channels. Each output adapts tone, format, and length to
 match platform conventions and audience expectations.
 
-**FLOW dual-surface thinking (when applicable).** When the original blog post targets a query that also surfaces in a community (Reddit thread, YouTube comment, LinkedIn discussion), repurpose for the community in a way that reinforces the blog only when platform rules allow it. Community linking is optional, disclosed, and rule-dependent. See `skills/blog/references/flow-alignment.md` and `/blog flow win` for the dual-surface scorecard.
+**Honesty rules for every output.**
+- Write only what the source post, its cited sources, or the user supplied.
+  Never invent a personal story, anecdote, customer, test, number of campaigns or
+  clients, result, or credential, and never write as if the user ran an
+  experiment they did not describe.
+- Where a format wants first-hand material (LinkedIn opening, Reddit post,
+  video intro credibility line, podcast anecdote), ask the user for the real
+  experience or results to use. If none is supplied, either write the piece
+  from the post's sourced findings in third person ("The study found...") or
+  leave a clearly marked placeholder such as `[YOUR EXPERIENCE: one true
+  sentence about what you saw]`. Do not fill placeholders yourself.
+- Attribute findings to their sources, not to the author's own work, unless the
+  post presents them as the author's own data.
+- These outputs are drafts for the user to review. This skill does not post,
+  schedule, or contact any platform. Check each platform's current rules on
+  AI-assisted content, self-promotion, and disclosures before the user posts.
+- The delivery contract (render, review nonce, strict preflight) applies to the
+  blog post itself, not to these derivative drafts. If a piece will be published
+  as a full article on the blog, it is a new post for `blog-write`.
+
+**FLOW dual-surface thinking (when applicable).** When the original blog post targets a query that also surfaces in a community (Reddit thread, YouTube comment, LinkedIn discussion), repurpose for the community in a way that reinforces the blog only when platform rules allow it. Community linking is optional, disclosed, and rule-dependent. See `${CLAUDE_SKILL_DIR}/../blog/references/flow-alignment.md` and `/blog flow win` for the dual-surface scorecard.
 
 ## Workflow
 
@@ -96,7 +124,9 @@ Adapt the blog for LinkedIn's professional audience and split outputs by format:
 shorter edition.
 
 **Opening** (first 2-3 lines visible before "See more"):
-- Start with a personal story, observation, or contrarian take
+- Start with an observation or contrarian take drawn from the post, or a
+  personal story only if the user supplied a true one (otherwise use a
+  `[YOUR EXPERIENCE: ...]` placeholder)
 - This is the hook - it must compel clicking "See more"
 - Never start with "I'm excited to share..." or similar cliches
 
@@ -115,8 +145,8 @@ shorter edition.
   no-link post, delayed edit or comment, profile or featured link, or direct
   link when traffic matters.
 
-**Tone:** Professional but conversational. First-person perspective. Share
-what you learned or observed, not just what the data says.
+**Tone:** Professional but conversational. First-person perspective only for
+experience the user supplied; otherwise attribute to the post and its sources.
 
 ### Step 4.5: 2026 Social and Short-Form Matrix
 
@@ -129,11 +159,17 @@ Generate variants only for selected platforms:
 | Instagram carousel | 6-10 slide outline with concise slide copy and visual direction |
 | Discord or Slack | Community announcement or discussion prompt with disclosure and no forced link |
 
-When measuring distribution in Google, Search Console platform properties for
-Instagram, TikTok, X, and YouTube are rolling out gradually. Eligible creators
-can inspect Search and Discover clicks, impressions, posts, and queries in the
-Search Console UI. Do not promise access through `/blog google gsc` or the
-Search Console API until Google documents that support.
+When measuring distribution in Google, Search Console now supports platform
+properties for Instagram, TikTok, X, and YouTube: add and verify each account
+as its own property (Google Search Central, "Platform properties roll out
+globally, plus a new social and video performance guide", July 2026, and
+https://developers.google.com/search/docs/monitor-debug/analyze-social-video-content,
+checked 2026-10-12). The guide does not document Search Console API support, so
+do not promise access through `/blog google gsc` or the API.
+
+Platform limits (characters, video length, link handling) change; confirm the
+current limits in the platform's own composer before the user posts. The counts
+in this skill are working targets.
 
 ### Step 5: YouTube Script
 
@@ -154,7 +190,8 @@ Generate a complete video script structured for retention:
 **Intro** (15-60 seconds):
 - What viewers will learn (3 bullet points)
 - Why it matters right now
-- Brief credibility statement
+- Brief credibility statement (only facts from the post or author details the
+  user provided; otherwise omit)
 - "[SHOW TITLE CARD]"
 
 **Main content** (3-5 talking points):
@@ -189,13 +226,17 @@ Reframe the blog content as an authentic community discussion:
 
 **Post format:**
 - Title: Frame as a question or observation, not a blog promotion
-  - Good: "After analyzing 500 campaigns, here's what actually drives ROI"
+  - Good: "What the [named study] found about what drives [topic] ROI"
   - Bad: "Check out my new blog post about marketing ROI"
+  - Never use a title that claims first-hand work the user did not describe
+    (for example "After analyzing 500 campaigns...")
 - Lead with a question or interesting observation
-- Share key findings as if reporting results to peers
+- Share the post's key findings with their sources named; say whose data it is
+  and do not present it as the poster's own results unless it is
 - Use Reddit markdown formatting (headers, bullet points, bold)
 - Include 3-5 verified, source-backed data points
-- End with a discussion prompt: "Has anyone else seen similar results?"
+- End with a discussion prompt that asks for readers' experience without
+  implying the poster ran a test: "How are you handling [topic]?"
 
 **Self-promotion compliance:**
 - Treat the 10% rule as a conservative heuristic, not a universal Reddit rule

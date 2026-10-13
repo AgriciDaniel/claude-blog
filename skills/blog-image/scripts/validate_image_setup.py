@@ -4,11 +4,18 @@ Validate that nanobanana-mcp is properly configured for claude-blog.
 
 Checks project .mcp.json first, then falls back to global ~/.claude/settings.json.
 
+The pinned package (@ycse/nanobanana-mcp@1.1.1, the newest release) can only
+call two preview models that Google shut down on 2026-06-25, so a configured
+MCP server cannot generate images today. The validator reports that accurately
+and recommends the direct API path (scripts/generate_hero.py) with the current
+model IDs from https://ai.google.dev/gemini-api/docs/models (checked 2026-10-12).
+
 Checks:
 1. Config file has the MCP entry
 2. API key is present
-3. Node.js/npx is available
-4. Output directory exists or can be created
+3. NANOBANANA_MODEL is a value the package accepts and Google still serves
+4. Node.js/npx is available
+5. Output directory exists or can be created
 
 Usage:
     python3 validate_image_setup.py
@@ -16,6 +23,7 @@ Usage:
 """
 
 import argparse
+import datetime
 import json
 import os
 import re
@@ -29,54 +37,61 @@ OUTPUT_DIR = Path.home() / "Documents" / "nanobanana_generated"
 GLOBAL_SETTINGS_PATH = Path.home() / ".claude" / "settings.json"
 PINNED_PACKAGE = "@ycse/nanobanana-mcp@1.1.1"
 PINNED_PACKAGE_DEFAULT_MODEL = "gemini-3.1-flash-image-preview"
+# Sources, fetched 2026-10-12:
+#   https://ai.google.dev/gemini-api/docs/models        (current model IDs)
+#   https://ai.google.dev/gemini-api/docs/deprecations  (shutdown dates)
+#   @ycse/nanobanana-mcp@1.1.1 dist/index.js: VALID_MODELS lists exactly the two
+#   preview IDs below; any other NANOBANANA_MODEL silently falls back to the
+#   default. 1.1.1 is the newest published release.
+PREVIEW_SHUTDOWN = datetime.date(2026, 6, 25)
 SET_MODEL_ALIASES = {
     "flash": "set_model alias for gemini-3.1-flash-image-preview",
     "pro": "set_model alias for gemini-3-pro-image-preview",
 }
+# Models the pinned package accepts in NANOBANANA_MODEL, with Google's shutdown date.
 PINNED_PACKAGE_ENV_MODELS = {
-    "gemini-3.1-flash-image-preview": (
-        "accepted by pinned package, but shut down on 2026-06-25; "
-        "use gemini-3.1-flash-image through direct API or a newer MCP package"
-    ),
-    "gemini-3-pro-image-preview": (
-        "accepted by pinned package, but shut down on 2026-06-25; "
-        "use gemini-3-pro-image through direct API or a newer MCP package"
-    ),
+    "gemini-3.1-flash-image-preview": (PREVIEW_SHUTDOWN, "gemini-nano-banana-2.1"),
+    "gemini-3-pro-image-preview": (PREVIEW_SHUTDOWN, "gemini-3-pro-image"),
 }
+# Current direct-API IDs (models page, 2026-10-12).
 DIRECT_API_MODELS = {
+    "gemini-nano-banana-2.1": "Nano Banana 2.1 direct API ID (released 2026-10-06)",
     "gemini-3.1-flash-image": "Nano Banana 2 direct API ID",
     "gemini-3-pro-image": "Nano Banana Pro direct API ID",
-    "gemini-3.1-flash-lite-image": "Nano Banana Lite direct API ID",
-    "gemini-2.5-flash-image": "Nano Banana Original direct API ID",
+    "gemini-3.1-flash-lite-image": "Nano Banana 2 Lite direct API ID",
+    "gemini-2.5-flash-image": (
+        "Nano Banana (original) direct API ID, shutdown announced for 2027-03-15"
+    ),
 }
+# scripts/generate_hero.py allowlists these; gemini-nano-banana-2.1 is newest on
+# Google's models page but is not in that allowlist yet.
+RECOMMENDED_DIRECT_MODEL = "gemini-3.1-flash-image"
 DEPRECATED_MODEL_REPLACEMENTS = {
-    "gemini-3.1-flash-image-preview": (
-        "deprecated on 2026-05-28 and shut down on 2026-06-25; "
-        "use gemini-3.1-flash-image"
-    ),
-    "gemini-3-pro-image-preview": (
-        "deprecated on 2026-05-28 and shut down on 2026-06-25; "
-        "use gemini-3-pro-image"
-    ),
     "gemini-2.5-flash-image-preview": (
-        "shut down on 2026-01-15; use gemini-2.5-flash-image"
+        "shut down on 2026-01-15; use gemini-nano-banana-2.1"
     ),
-    "gemini-2.0-flash-exp": (
-        "shut down on 2026-06-01; use gemini-3.1-flash-image"
+    "gemini-2.0-flash-preview-image-generation": (
+        "shut down on 2025-11-14; use gemini-nano-banana-2.1"
     ),
     "imagen-4.0-fast-generate-001": (
-        "deprecated on 2026-06-15 and shuts down on 2026-08-17; "
-        "use gemini-3.1-flash-image"
+        "shut down on 2026-08-17; use gemini-nano-banana-2.1"
     ),
     "imagen-4.0-generate-001": (
-        "deprecated on 2026-06-15 and shuts down on 2026-08-17; "
-        "use gemini-3.1-flash-image"
+        "shut down on 2026-08-17; use gemini-nano-banana-2.1"
     ),
     "imagen-4.0-ultra-generate-001": (
-        "deprecated on 2026-06-15 and shuts down on 2026-08-17; "
-        "use gemini-3.1-flash-image"
+        "shut down on 2026-08-17; use gemini-nano-banana-2.1"
     ),
 }
+RECOMMENDATION = (
+    f"Use the direct Gemini API path instead: scripts/generate_hero.py with "
+    f"{RECOMMENDED_DIRECT_MODEL} (default), gemini-3.1-flash-lite-image or "
+    f"gemini-3-pro-image (Google also lists the newer gemini-nano-banana-2.1). The pinned {PINNED_PACKAGE} can only call the preview "
+    f"models gemini-3.1-flash-image-preview and gemini-3-pro-image-preview, which "
+    f"shut down on {PREVIEW_SHUTDOWN.isoformat()}, and no newer release exists "
+    "(sources: https://ai.google.dev/gemini-api/docs/models and "
+    "https://ai.google.dev/gemini-api/docs/deprecations, checked 2026-10-12)."
+)
 PLACEHOLDER_RE = re.compile(r"^\$\{([A-Za-z_][A-Za-z0-9_]*)\}$")
 
 
@@ -119,32 +134,48 @@ def _supported_model_list() -> str:
     return ", ".join(sorted(PINNED_PACKAGE_ENV_MODELS))
 
 
-def validate_nanobanana_model(model: str) -> tuple:
-    """Validate NANOBANANA_MODEL against the pinned MCP package contract."""
+def _package_model_status(model: str, today: datetime.date) -> tuple:
+    """Return (ok, detail) for a model ID the pinned package accepts."""
+    shutdown, replacement = PINNED_PACKAGE_ENV_MODELS[model]
+    if today < shutdown:
+        return True, f"{model} (accepted by pinned {PINNED_PACKAGE}; shuts down on {shutdown.isoformat()})"
+    return False, (
+        f"{model} (accepted by pinned {PINNED_PACKAGE}, but Google shut it down on "
+        f"{shutdown.isoformat()}; its replacement {replacement} is not accepted by "
+        "this package)"
+    )
+
+
+def validate_nanobanana_model(model: str, today: datetime.date = None) -> tuple:
+    """Validate NANOBANANA_MODEL against the pinned MCP package contract.
+
+    Returns (ok, detail). ok is True only when the package accepts the value
+    and Google still serves that model on ``today`` (default: the real date).
+    """
+    today = today or datetime.date.today()
     model = (model or "").strip()
     if not model:
-        return False, (
-            f"(not set - pinned {PINNED_PACKAGE} defaults to "
-            f"{PINNED_PACKAGE_DEFAULT_MODEL}, which shut down on 2026-06-25)"
-        )
+        ok, detail = _package_model_status(PINNED_PACKAGE_DEFAULT_MODEL, today)
+        return ok, f"(not set, pinned package default) {detail}"
     if model in SET_MODEL_ALIASES:
         return False, (
             f"{model} ({SET_MODEL_ALIASES[model]}; aliases are accepted only by "
             "the set_model MCP tool, not by NANOBANANA_MODEL)"
         )
     if model in PINNED_PACKAGE_ENV_MODELS:
-        return False, f"{model} ({PINNED_PACKAGE_ENV_MODELS[model]})"
+        return _package_model_status(model, today)
     if model in DIRECT_API_MODELS:
         return False, (
-            f"{model} ({DIRECT_API_MODELS[model]}; pinned {PINNED_PACKAGE} does not "
-            "accept stable direct API IDs as NANOBANANA_MODEL)"
+            f"{model} ({DIRECT_API_MODELS[model]}; usable through the direct API "
+            f"path, but pinned {PINNED_PACKAGE} ignores it and falls back to "
+            f"{PINNED_PACKAGE_DEFAULT_MODEL})"
         )
     if model in DEPRECATED_MODEL_REPLACEMENTS:
         return False, f"{model} (WARNING: {DEPRECATED_MODEL_REPLACEMENTS[model]})"
     if "-preview" in model:
         return False, (
             f"{model} (WARNING: preview image models are deprecated or shut down; "
-            "use stable direct API IDs outside this pinned MCP package)"
+            f"use a stable direct API ID such as {RECOMMENDED_DIRECT_MODEL})"
         )
     return False, f"{model} (unsupported by pinned {PINNED_PACKAGE}; accepts: {_supported_model_list()})"
 
@@ -204,6 +235,8 @@ def main() -> int:
         results.append(check("MCP config parseable", False, config_error, checks, quiet))
         if args.json:
             print(json.dumps({"status": "error", "checks": checks}, indent=2))
+        else:
+            print(f"\n{RECOMMENDATION}")
         return 1
 
     if config is None:
@@ -215,9 +248,15 @@ def main() -> int:
             quiet,
         ))
         if args.json:
-            print(json.dumps({"status": "error", "checks": checks}, indent=2))
+            print(json.dumps({
+                "status": "error",
+                "checks": checks,
+                "recommendation": RECOMMENDATION,
+            }, indent=2))
         else:
-            print("\nRun: python3 skills/blog-image/scripts/setup_image_mcp.py")
+            print(f"\n{RECOMMENDATION}")
+            print("MCP setup (limited to the shut-down preview models): "
+                  "python3 skills/blog-image/scripts/setup_image_mcp.py")
         return 1
 
     results.append(check("MCP config found", True, config_label, checks, quiet))
@@ -339,6 +378,7 @@ def main() -> int:
             "passed": passed,
             "total": total,
             "checks": checks,
+            **({} if passed == total else {"recommendation": RECOMMENDATION}),
         }, indent=2))
         return 0 if passed == total else 1
 
@@ -350,7 +390,7 @@ def main() -> int:
         return 0
     else:
         print("Status: Some checks failed. Fix the issues above.")
-        print("Setup: python3 skills/blog-image/scripts/setup_image_mcp.py")
+        print(RECOMMENDATION)
         return 1
 
 

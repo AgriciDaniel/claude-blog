@@ -4,7 +4,7 @@ title: "Voice and Style"
 domain: "Blog Voice"
 status: active
 created: 2026-07-06
-updated: 2026-07-09
+updated: 2026-10-07
 tags: [personas, voice-style, active]
 ---
 
@@ -81,3 +81,5 @@ Article consumer: [[Blog Write Article Contract]] receives the final voice route
 ## Voice and Style Evidence And Refresh Rules
 
 Refresh this hub when Google helpful-content guidance, the full QRG, the AI optimization guide, or the editorial heuristics source changes in `references/source-ledger.json`. Review the spoke map after three repeated drift findings or after a major brand positioning change.
+
+For Voice and Style, `nng-editorial-heuristics` supplies general interaction-design principles. Applying those principles to this note's editorial checks is a project adaptation, not an experimentally established SEO or AI-citation requirement.

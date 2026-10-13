@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://developers.google.com/search/docs/appearance/ai-features",
+  "normalized_full_document_sha256": "9bfa869f3bec84e6ff9d4d7edaf0616783e9237f25d9771eaa1af961e46d8f0a",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "there are no additional technical requirements"
+  ],
+  "records": [
+    {
+      "source_id": "g-ai-features",
+      "source_url": "https://developers.google.com/search/docs/appearance/ai-features",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "confirmed_by_manual_review",
+      "excerpt_index": 0
+    }
+  ]
+}

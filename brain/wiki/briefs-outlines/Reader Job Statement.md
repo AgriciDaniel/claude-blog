@@ -4,7 +4,7 @@ title: "Reader Job Statement"
 domain: "Blog Briefs"
 status: active
 created: 2026-07-06
-updated: 2026-07-09
+updated: 2026-10-07
 tags: [briefs-outlines, serp-briefs, active]
 ---
 
@@ -76,3 +76,5 @@ The AI surface caveat stays outside the job sentence: the article may discuss AI
 ## Downstream Use
 
 Send the approved statement to [[Search Intent Classification]] for intent labeling and to [[Heading Hierarchy Rules]] for section design. Keep the sentence in [[Brief To Draft Handoff]] so the writer cannot drift into generic coverage.
+
+For Reader Job Statement, `nng-editorial-heuristics` supplies general interaction-design principles. Applying those principles to this note's editorial checks is a project adaptation, not an experimentally established SEO or AI-citation requirement.

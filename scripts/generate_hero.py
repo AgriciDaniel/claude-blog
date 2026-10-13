@@ -8,7 +8,7 @@ in the requested output directory.
 
 Ladder:
   1. (Orchestrator only) Banana MCP via nanobanana-mcp
-  2. Direct Gemini API via google-genai SDK (requires GOOGLE_AI_API_KEY)
+  2. Direct Gemini API via google-genai SDK (requires GOOGLE_AI_API_KEY or GEMINI_API_KEY)
   3. Premium stock APIs: Unsplash, Pexels, Pixabay (any one key suffices)
   4. Openverse public API (CC-licensed; no key required)
   5. Exit nonzero with setup instructions
@@ -52,8 +52,8 @@ def _project_version() -> str:
 OUTPUT_FILE_PREFIX = "hero"
 DEFAULT_WIDTH = 1200
 DEFAULT_HEIGHT = 630
-DEFAULT_GEMINI_MODEL = os.environ.get("NANOBANANA_MODEL") or "gemini-3.1-flash-image"
-OPENVERSE_API = "https://api.openverse.engineering/v1/images/"
+DEFAULT_GEMINI_MODEL = os.environ.get("NANOBANANA_MODEL") or "gemini-nano-banana-2.1"
+OPENVERSE_API = "https://api.openverse.org/v1/images/"
 UNSPLASH_API = "https://api.unsplash.com/search/photos"
 PEXELS_API = "https://api.pexels.com/v1/search"
 PIXABAY_API = "https://pixabay.com/api/"
@@ -67,10 +67,29 @@ HTTP_TIMEOUT = 20
 ALLOWED_SCHEMES = frozenset({"http", "https"})
 MAX_IMAGE_BYTES = 25 * 1024 * 1024  # 25 MB; legit heroes are well under this.
 GEMINI_IMAGE_MODELS = (
+    "gemini-nano-banana-2.1",
     "gemini-3.1-flash-image",
     "gemini-3.1-flash-lite-image",
     "gemini-3-pro-image",
 )
+# Errors that no other model can fix: stop instead of trying the next model.
+_GEMINI_STOP_MARKERS = (
+    "api key",
+    "api_key",
+    "permission",
+    "unauthenticated",
+    "unauthorized",
+    "billing",
+    "quota",
+    "resource_exhausted",
+    "429",
+    "401",
+    "403",
+)
+
+
+# NAT64 well-known prefix (RFC 6052): the low 32 bits are the IPv4 destination.
+_NAT64_PREFIX = ipaddress.ip_network("64:ff9b::/96")
 
 
 def _is_private_address(host: str) -> bool:
@@ -92,32 +111,34 @@ def _is_private_address(host: str) -> bool:
     for info in infos:
         sockaddr = info[4]
         addr_str = sockaddr[0]
-        try:
-            addr = ipaddress.ip_address(addr_str)
-        except ValueError:
-            return True
-        if (
-            addr.is_private
-            or addr.is_loopback
-            or addr.is_link_local
-            or addr.is_reserved
-            or addr.is_multicast
-            or addr.is_unspecified
-        ):
+        if _is_blocked_address(addr_str):
             return True
     return False
 
 
 def _is_blocked_address(addr_text: str) -> bool:
+    """Fail-closed address check using ipaddress is_global semantics.
+
+    Only globally routable unicast addresses pass. That also blocks ranges the
+    older private/reserved flags missed: CGNAT 100.64.0.0/10 (Tailscale),
+    deprecated site-local fec0::/10 and other special-purpose blocks. An
+    IPv6 address that wraps an IPv4 one (IPv4-mapped, 6to4, NAT64) is judged
+    by the IPv4 address it wraps. blog_preflight.py applies is_global too.
+    """
     try:
-        addr = ipaddress.ip_address(addr_text)
+        addr = ipaddress.ip_address(addr_text.split("%", 1)[0])
     except ValueError:
         return True
+    embedded = getattr(addr, "ipv4_mapped", None) or getattr(addr, "sixtofour", None)
+    if embedded is None and addr in _NAT64_PREFIX:
+        embedded = ipaddress.IPv4Address(int(addr) & 0xFFFFFFFF)
+    if embedded is not None:
+        addr = embedded
     return (
-        addr.is_private
+        not addr.is_global
+        or getattr(addr, "is_site_local", False)
         or addr.is_loopback
         or addr.is_link_local
-        or addr.is_reserved
         or addr.is_multicast
         or addr.is_unspecified
     )
@@ -209,7 +230,7 @@ class _NoRedirectHandler(urllib.request.HTTPRedirectHandler):
     http_error_308 = http_error_301
 
 
-_NO_REDIRECT_OPENER = urllib.request.build_opener(_NoRedirectHandler())
+_NO_REDIRECT_OPENER = urllib.request.build_opener(urllib.request.ProxyHandler({}), _NoRedirectHandler())
 
 
 def _url_for_log(url: str) -> str:
@@ -238,10 +259,40 @@ def _image_ext(data: bytes, fallback: str = ".jpg") -> str:
     return fallback
 
 
+def _is_trusted_system_symlink(path: Path) -> bool:
+    """True for an OS-level alias such as /home -> var/home or macOS /tmp.
+
+    Only a root-owned link sitting directly under the filesystem root
+    qualifies. An attacker who can plant links inside a working tree cannot
+    create one there, so honouring these keeps the guard focused on
+    redirection inside the output tree and at the leaf.
+    """
+    if os.name != "posix":
+        return False
+    try:
+        return path.lstat().st_uid == 0 and path.parent == Path(path.anchor)
+    except OSError:
+        return False
+
+
+def _symlink_component(path: Path) -> Path | None:
+    """Inspect unresolved components before mkdir/resolve can follow an alias.
+
+    Trusted system-level aliases directly under the filesystem root are
+    skipped; every other symlinked component is returned.
+    """
+    candidate = path if path.is_absolute() else Path.cwd() / path
+    for component in (candidate, *candidate.parents):
+        if component.is_symlink() and not _is_trusted_system_symlink(component):
+            return component
+    return None
+
+
 def _atomic_write_bytes(path: Path, data: bytes) -> None:
     """Atomic write via mkstemp + os.replace. Mirrors load_untrusted_root.py."""
-    if path.exists() and path.is_symlink():
-        raise ValueError(f"refusing to overwrite symlink: {path}")
+    unsafe = _symlink_component(path)
+    if unsafe is not None:
+        raise ValueError(f"refusing symlink output path component: {unsafe}")
     fd, tmp = tempfile.mkstemp(dir=str(path.parent), prefix=f".{path.name}.", suffix=".tmp")
     try:
         with os.fdopen(fd, "wb") as f:
@@ -257,8 +308,9 @@ def _atomic_write_bytes(path: Path, data: bytes) -> None:
 
 def _atomic_write_text(path: Path, text: str) -> None:
     """Atomic text write that refuses symlink output paths."""
-    if path.exists() and path.is_symlink():
-        raise ValueError(f"refusing to overwrite symlink: {path}")
+    unsafe = _symlink_component(path)
+    if unsafe is not None:
+        raise ValueError(f"refusing symlink output path component: {unsafe}")
     fd, tmp = tempfile.mkstemp(dir=str(path.parent), prefix=f".{path.name}.", suffix=".tmp")
     try:
         with os.fdopen(fd, "w", encoding="utf-8") as f:
@@ -371,7 +423,7 @@ def _http_get_json(url: str, headers: Optional[dict] = None) -> Optional[dict]:
 
 def _try_gemini(topic: str, tags: list[str], out_dir: Path, width: int, height: int, model: str) -> Optional[dict]:
     """Ladder step 2: direct Gemini API."""
-    api_key = os.environ.get("GOOGLE_AI_API_KEY")
+    api_key = os.environ.get("GOOGLE_AI_API_KEY") or os.environ.get("GEMINI_API_KEY")
     if not api_key:
         return None
     try:
@@ -395,7 +447,7 @@ def _try_gemini(topic: str, tags: list[str], out_dir: Path, width: int, height: 
                 input=prompt,
                 response_format={
                     "type": "image",
-                    "mime_type": "image/png",
+                    "mime_type": "image/jpeg",
                     "aspect_ratio": "16:9",
                 },
             )
@@ -407,7 +459,10 @@ def _try_gemini(topic: str, tags: list[str], out_dir: Path, width: int, height: 
             if img_bytes:
                 break
         except Exception as e:
-            print(f"[gemini] {try_model} interactions.create failed: {e}", file=sys.stderr)
+            message = str(e).replace(api_key, "[redacted]")
+            print(f"[gemini] {try_model} interactions.create failed: {message}", file=sys.stderr)
+            if any(marker in message.lower() for marker in _GEMINI_STOP_MARKERS):
+                break
 
     if not img_bytes or not _is_supported_image(img_bytes):
         return None
@@ -417,7 +472,7 @@ def _try_gemini(topic: str, tags: list[str], out_dir: Path, width: int, height: 
     except RuntimeError as e:
         print(f"[image] {e}", file=sys.stderr)
         return None
-    hero_path = out_dir / f"{OUTPUT_FILE_PREFIX}.png"
+    hero_path = out_dir / f"{OUTPUT_FILE_PREFIX}{_image_ext(img_bytes)}"
     _atomic_write_bytes(hero_path, img_bytes)
     _atomic_write_text(
         out_dir / "hero-credit.txt",
@@ -536,13 +591,34 @@ def _try_premium_stock(topic: str, tags: list[str], out_dir: Path, width: int, h
 
 
 def _try_openverse(topic: str, tags: list[str], out_dir: Path, width: int, height: int) -> Optional[dict]:
-    """Ladder step 4: public API, no key required, CC-licensed."""
-    query = " ".join([topic] + tags[:3] + ["editorial illustration"])
-    params = urllib.parse.urlencode({
-        "q": query, "aspect_ratio": "wide", "license": "cc0,by,by-sa",
-        "size": "large", "page_size": 10,
-    })
-    data = _http_get_json(f"{OPENVERSE_API}?{params}")
+    """Ladder step 4: public API, no key required, CC-licensed.
+
+    Openverse search terms are restrictive when combined, so try a bounded
+    sequence from specific to broad rather than making one overlong query.
+    """
+    queries: list[str] = []
+    for candidate in (
+        " ".join([topic] + tags[:3]),
+        " ".join(tags[:3]) if tags else "",
+        " ".join(topic.split()[:3]),
+        tags[0] if tags else "",
+    ):
+        query = candidate.strip()
+        if query and query not in queries:
+            queries.append(query)
+
+    data = None
+    for query in queries:
+        params = urllib.parse.urlencode({
+            "q": query, "aspect_ratio": "wide", "license": "cc0,by,by-sa",
+            "size": "large", "page_size": 10,
+        })
+        candidate_data = _http_get_json(f"{OPENVERSE_API}?{params}")
+        if candidate_data and candidate_data.get("results"):
+            data = candidate_data
+            break
+        print(f"[openverse] no results for {query!r}", file=sys.stderr)
+
     if not data or not data.get("results"):
         print("[openverse] no results", file=sys.stderr)
         return None
@@ -597,8 +673,9 @@ def main() -> int:
         return 1
 
     raw_out_dir = Path(args.out)
-    if raw_out_dir.exists() and raw_out_dir.is_symlink():
-        msg = f"ERROR: refusing symlink output directory {raw_out_dir}"
+    unsafe = _symlink_component(raw_out_dir)
+    if unsafe is not None:
+        msg = f"ERROR: refusing symlink output directory component {unsafe}"
         if args.json:
             print(json.dumps({"error": "out-dir-symlink", "message": msg}))
         else:

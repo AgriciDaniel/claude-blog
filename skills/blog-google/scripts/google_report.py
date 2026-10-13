@@ -23,18 +23,21 @@ from pathlib import Path
 from typing import Optional
 
 try:
-    import matplotlib
-    matplotlib.use("Agg")
-    import matplotlib.pyplot as plt
-    import matplotlib.patches as mpatches
-    import numpy as np
+    from google_auth import safe_exception_text, setup_hint
 except ImportError:
-    print("Error: matplotlib required. Install with: pip install matplotlib", file=sys.stderr)
-    sys.exit(1)
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from google_auth import safe_exception_text, setup_hint
+
+# matplotlib is imported lazily by _load_matplotlib() so --help and import work
+# without it; the actionable message appears only when a report is generated.
+plt = None
+mpatches = None
+np = None
 
 try:
     from weasyprint import HTML
-except ImportError:
+except (ImportError, OSError):
+    # OSError: weasyprint is installed but its native Pango/GLib libraries are not.
     HTML = None
 
 # ─── Brand Colors ────────────────────────────────────────────────────────────
@@ -80,6 +83,23 @@ def _css_string(value) -> str:
 
 # ─── Chart Setup ─────────────────────────────────────────────────────────────
 
+def _load_matplotlib():
+    """Import matplotlib on first use. Raises ImportError with a setup hint."""
+    global plt, mpatches, np
+    if plt is not None:
+        return
+    try:
+        import matplotlib
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as _plt
+        import matplotlib.patches as _mpatches
+        import numpy as _np
+    except ImportError as exc:
+        raise ImportError(f"matplotlib is required to generate charts. {setup_hint()}") from exc
+    plt, mpatches, np = _plt, _mpatches, _np
+    _setup_matplotlib()
+
+
 def _setup_matplotlib():
     plt.rcParams.update({
         "font.family": "sans-serif",
@@ -94,9 +114,6 @@ def _setup_matplotlib():
         "axes.spines.top": False,
         "axes.spines.right": False,
     })
-
-
-_setup_matplotlib()
 
 
 # ─── Chart Functions ─────────────────────────────────────────────────────────
@@ -486,7 +503,7 @@ def section_cwv_audit(psi_data, crux_data, charts, history_data=None):
 
     # CrUX History timeline
     if history_data and not history_data.get("error"):
-        html += '<h3>Core Web Vitals Trends (25-week)</h3>'
+        html += '<h3>Core Web Vitals Trends (25 weeks by default, up to 40 requested)</h3>'
         html += charts.get("timeline", "")
         trends = history_data.get("trends", {})
         if trends:
@@ -649,12 +666,18 @@ def generate_report(report_type, data, domain, output_dir, output_format="pdf"):
     Returns:
         Dictionary with output paths.
     """
+    result = {"report_type": report_type, "domain": domain, "files": [], "error": None}
+    try:
+        _load_matplotlib()
+    except ImportError as exc:
+        result["error"] = str(exc)
+        return result
+
     output_dir = Path(output_dir)
     charts_dir = output_dir / "charts"
     charts_dir.mkdir(parents=True, exist_ok=True)
 
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
-    result = {"report_type": report_type, "domain": domain, "files": [], "error": None}
 
     # Generate charts based on report type
     chart_paths = {}
@@ -758,7 +781,7 @@ def generate_report(report_type, data, domain, output_dir, output_format="pdf"):
                 result["files"].append(str(pdf_path))
             except Exception as e:
                 _write_html_once()
-                result["error"] = f"PDF generation failed: {e}. HTML report generated."
+                result["error"] = f"PDF generation failed: {safe_exception_text(e)}. HTML report generated."
 
     return result
 
@@ -822,6 +845,9 @@ def main():
     else:
         for f in result.get("files", []):
             print(f"Generated: {f}")
+
+    if result.get("error") and not result.get("files"):
+        sys.exit(1)
 
 
 if __name__ == "__main__":

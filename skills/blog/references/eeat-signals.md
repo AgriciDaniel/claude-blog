@@ -36,6 +36,31 @@ publisher and the page also exposes clear editorial ownership.
 - Same name used on social profiles linked via `sameAs`
 - One author per post (co-authors acceptable with both named)
 
+### Authorship Integrity (Google helpful-content page, updated 2026-10-05)
+
+Source: https://developers.google.com/search/docs/fundamentals/creating-helpful-content
+(page shows "Last updated 2026-10-05 UTC"; fetched 2026-10-11).
+
+- Google strongly encourages accurate authorship information, such as bylines,
+  where readers might expect it.
+- Google describes fabricating creator profiles (AI-generated headshots,
+  made-up names, false credentials) as a form of deception. Never invent an
+  author, a headshot, or a credential. If no real accountable person exists, use
+  the real publisher or editorial team and state what is true.
+- Google lists changing a page's date to look fresh, when the content has not
+  substantially changed, as a warning sign. Move `dateModified` only after a
+  substantive edit.
+- Google asks whether automation, including AI generation, is self-evident to
+  visitors through disclosures or other ways. Disclose AI assistance where
+  readers would expect it (see
+  https://developers.google.com/search/docs/fundamentals/using-gen-ai-content,
+  updated 2026-10-01).
+- Who, How, and Why: who created the content (byline, author page), how it was
+  created (method, testing, any automation), and why it exists (to help readers,
+  not to attract search traffic). Google calls Why perhaps the most important.
+- Google also says E-E-A-T is not itself a ranking factor. Treat the above as
+  editorial integrity checks, not a score hack.
+
 ---
 
 ## Author Bio Structure

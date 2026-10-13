@@ -3,9 +3,19 @@
 Blog Audio Generator - Gemini TTS
 Converts prepared text to speech using Google's Gemini TTS models.
 
-The SDK calls below use the generate_content compatibility path. Prefer the
-Interactions API for new Gemini 3.1 TTS features when the installed SDK
-supports it.
+The default model is flash38 (gemini-3.8-flash-tts). The 3.1 and 2.5 aliases
+retain the generate_content compatibility path but are deprecated: Google's
+deprecations page (https://ai.google.dev/gemini-api/docs/deprecations, checked
+2026-10-12) lists gemini-3.1-flash-tts-preview, gemini-2.5-flash-preview-tts and
+gemini-2.5-pro-preview-tts with a shutdown date of 2026-11-17 (the earliest
+possible date). Using one prints a deprecation warning on stderr. The 3.8
+aliases use unary WAV responses from the Interactions API.
+
+Cost control: each chunk is one billed API call. A run that needs more than
+--max-chunks chunks (default 12) is refused before any API call is made.
+
+The API key is read only from GOOGLE_AI_API_KEY or GEMINI_API_KEY and is never
+printed; error text passes through redact_secrets().
 
 Usage:
     python3 scripts/run.py generate_audio.py --text "Hello world" --voice Charon --json
@@ -15,16 +25,19 @@ Usage:
 
 import argparse
 import base64
+import binascii
 import html
+import io
 import json
 import mimetypes
 import os
+import re
 import shutil
 import subprocess
 import sys
 import struct
 import tempfile
-import time
+import wave
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -45,10 +58,21 @@ VOICES = {
 MODELS = {
     "flash": "gemini-3.1-flash-tts-preview",
     "flash31": "gemini-3.1-flash-tts-preview",
+    "flash38": "gemini-3.8-flash-tts",
+    "flash-lite38": "gemini-3.8-flash-lite-tts",
     "legacy-flash25": "gemini-2.5-flash-preview-tts",
     "pro": "gemini-2.5-pro-preview-tts",
     "legacy-pro25": "gemini-2.5-pro-preview-tts",
 }
+
+DEFAULT_MODEL = "flash38"
+DEFAULT_MAX_CHUNKS = 12
+# Aliases that resolve to models Google lists for shutdown on 2026-11-17.
+DEPRECATED_MODEL_ALIASES = frozenset(
+    {"flash", "flash31", "pro", "legacy-flash25", "legacy-pro25"}
+)
+DEPRECATED_SHUTDOWN_DATE = datetime(2026, 11, 17, tzinfo=timezone.utc)
+API_KEY_ENV_VARS = ("GOOGLE_AI_API_KEY", "GEMINI_API_KEY")
 
 # Audio constants (Gemini TTS output format)
 SAMPLE_RATE = 24000  # 24kHz
@@ -59,6 +83,8 @@ CHANNELS = 1         # Mono
 COST_PER_1M_OUTPUT = {
     "flash": 20.0,
     "flash31": 20.0,
+    "flash38": 9.0,
+    "flash-lite38": 6.0,
     "legacy-flash25": 10.0,
     "pro": 20.0,
     "legacy-pro25": 20.0,
@@ -66,9 +92,17 @@ COST_PER_1M_OUTPUT = {
 COST_PER_1M_INPUT = {
     "flash": 1.0,
     "flash31": 1.0,
+    "flash38": 0.50,
+    "flash-lite38": 0.50,
     "legacy-flash25": 0.50,
     "pro": 1.0,
     "legacy-pro25": 1.0,
+}
+INTERACTIONS_WAV_MODELS = frozenset({"flash38", "flash-lite38"})
+PRICE_CHANGE_2027 = datetime(2027, 1, 1, tzinfo=timezone.utc)
+POST_2026_PRICES = {
+    "flash38": (1.0, 18.0),
+    "flash-lite38": (1.0, 12.0),
 }
 AUDIO_TOKENS_PER_SECOND = 25
 MAX_INPUT_TOKENS = 8192
@@ -86,6 +120,76 @@ TEXT_FILE_EXTENSIONS = {
     ".tsv",
     ".txt",
 }
+
+
+_REDACTIONS = (
+    (re.compile(
+        r"(?i)((?:x-goog-api-key|x-api-key|authorization)[\"']?\s*[:=]\s*[\"']?)"
+        r"(?:bearer\s+)?[^\s,;\"'<>}]+"
+    ), r"\1[redacted]"),
+    (re.compile(
+        r"(?i)((?:\\*[\"'])(?:api[_-]?key|key|access_token|refresh_token|token)"
+        r"(?:\\*[\"'])\s*:\s*\\*[\"'])[^\"'\\]*"
+    ), r"\1[redacted]"),
+    (re.compile(
+        r"(?i)((?:(?<![A-Za-z0-9])|(?<=%26)|(?<=%3F))(?:api[_-]?key|key|access_token|token)%3D)"
+        r"[^%&\s\"'<>]+"
+    ), r"\1[redacted]"),
+    (re.compile(
+        r"(?i)((?<![A-Za-z0-9])(?:api[_-]?key|key|access_token|token)\s*=\s*)[^&\s\"'<>]+"
+    ), r"\1[redacted]"),
+    (re.compile(r"(?i)\bBearer\s+[A-Za-z0-9._~+/=-]+"), "Bearer [redacted]"),
+    (re.compile(r"\bAIza[0-9A-Za-z_-]{35}"), "[redacted]"),
+)
+
+
+def redact_secrets(text, secrets=()) -> str:
+    """Remove API keys and tokens from text before it reaches output.
+
+    Same coverage as blog-google's redactor: key=..., URL-encoded and HTML
+    escaped forms, JSON pairs, x-goog-api-key and Authorization headers, Bearer
+    tokens and bare AIza keys, plus any literal values passed in `secrets`.
+    """
+    out = str(text)
+    for secret in secrets or ():
+        if secret and len(str(secret)) >= 4:
+            out = out.replace(str(secret), "[redacted]")
+    for pattern, replacement in _REDACTIONS:
+        out = pattern.sub(replacement, out)
+    return out
+
+
+def get_api_key() -> str | None:
+    """Return the Gemini API key from the environment only (never from args)."""
+    for name in API_KEY_ENV_VARS:
+        value = os.environ.get(name)
+        if value and value.strip():
+            return value.strip()
+    return None
+
+
+def deprecation_warning(alias: str, now: datetime | None = None) -> str | None:
+    """Warning text for an alias whose model Google lists for shutdown, else None."""
+    if alias not in DEPRECATED_MODEL_ALIASES:
+        return None
+    current = now or datetime.now(timezone.utc)
+    shutdown = DEPRECATED_SHUTDOWN_DATE.date().isoformat()
+    state = (
+        f"was scheduled to shut down on {shutdown} and may no longer work"
+        if current >= DEPRECATED_SHUTDOWN_DATE
+        else f"is scheduled to shut down on {shutdown} (earliest possible date)"
+    )
+    return (
+        f"Warning: model alias '{alias}' ({MODELS[alias]}) is deprecated and {state}. "
+        f"Use --model {DEFAULT_MODEL} ({MODELS[DEFAULT_MODEL]}) or flash-lite38."
+    )
+
+
+def plan_chunks(text: str, voice2: str | None, model: str) -> list[str]:
+    """Return the chunks a run would send, one billed API call each."""
+    if voice2 and model in INTERACTIONS_WAV_MODELS:
+        return split_38_dialogue_for_tts(text)
+    return split_text_for_tts(text)
 
 
 def _path_contains_symlink(path: Path, root: Path) -> bool:
@@ -147,7 +251,23 @@ def resolve_output_path(path_value: str) -> Path:
     return _resolve_under_cwd(path_value, "output path", must_exist=False)
 
 
-def estimate_cost(text: str, model: str) -> dict:
+def get_token_prices(
+    model: str, as_of: datetime | None = None
+) -> tuple[float, float]:
+    """Return input and output prices per million tokens for an alias."""
+    if model not in MODELS:
+        raise ValueError(f"Unknown TTS model alias: {model}")
+    effective_at = as_of or datetime.now(timezone.utc)
+    if effective_at.tzinfo is None:
+        effective_at = effective_at.replace(tzinfo=timezone.utc)
+    if model in POST_2026_PRICES and effective_at >= PRICE_CHANGE_2027:
+        return POST_2026_PRICES[model]
+    return COST_PER_1M_INPUT[model], COST_PER_1M_OUTPUT[model]
+
+
+def estimate_cost(
+    text: str, model: str, as_of: datetime | None = None
+) -> dict:
     """Estimate generation cost from text length."""
     char_count = len(text)
     input_tokens = char_count / 4  # rough: 1 token ~ 4 chars
@@ -158,8 +278,9 @@ def estimate_cost(text: str, model: str) -> dict:
     # Rough output token estimate based on audio duration
     output_tokens = duration_seconds * AUDIO_TOKENS_PER_SECOND
 
-    input_cost = (input_tokens / 1_000_000) * COST_PER_1M_INPUT[model]
-    output_cost = (output_tokens / 1_000_000) * COST_PER_1M_OUTPUT[model]
+    input_price, output_price = get_token_prices(model, as_of)
+    input_cost = (input_tokens / 1_000_000) * input_price
+    output_cost = (output_tokens / 1_000_000) * output_price
     total_cost = input_cost + output_cost
 
     return {
@@ -302,8 +423,198 @@ def extract_audio_data(response) -> bytes:
     return base64.b64decode(data)
 
 
+def extract_interaction_wav_pcm(interaction) -> bytes:
+    """Decode and validate unary WAV output from a Gemini 3.8 interaction."""
+    output_audio = getattr(interaction, "output_audio", None)
+    data = getattr(output_audio, "data", None)
+    if not data:
+        raise ValueError("Gemini TTS response did not include output_audio.data")
+
+    mime_type = getattr(output_audio, "mime_type", None)
+    if mime_type:
+        normalized_mime = str(mime_type).split(";", 1)[0].strip().lower()
+        if normalized_mime not in {"audio/wav", "audio/wave", "audio/x-wav"}:
+            raise ValueError(
+                f"Gemini TTS returned {mime_type}; expected unary audio/wav"
+            )
+
+    if isinstance(data, bytes) and data.startswith(b"RIFF"):
+        wav_data = data
+    else:
+        try:
+            encoded = data.encode("ascii") if isinstance(data, str) else data
+            wav_data = base64.b64decode(encoded, validate=True)
+        except (
+            AttributeError,
+            binascii.Error,
+            TypeError,
+            UnicodeEncodeError,
+            ValueError,
+        ) as exc:
+            raise ValueError("Gemini TTS returned invalid base64 WAV audio data") from exc
+
+    if not wav_data.startswith(b"RIFF") or wav_data[8:12] != b"WAVE":
+        raise ValueError("Gemini TTS response was not a RIFF WAV file")
+
+    try:
+        with wave.open(io.BytesIO(wav_data), "rb") as wav_file:
+            channels = wav_file.getnchannels()
+            sample_rate = wav_file.getframerate()
+            sample_width = wav_file.getsampwidth()
+            compression = wav_file.getcomptype()
+            frame_count = wav_file.getnframes()
+            pcm_data = wav_file.readframes(frame_count)
+    except (EOFError, wave.Error) as exc:
+        raise ValueError(f"Gemini TTS returned an invalid WAV file: {exc}") from exc
+
+    if compression != "NONE":
+        raise ValueError("Gemini TTS WAV must use uncompressed PCM audio")
+    if channels != CHANNELS:
+        raise ValueError(
+            f"Gemini TTS WAV must be mono; received {channels} channels"
+        )
+    if sample_rate != SAMPLE_RATE:
+        raise ValueError(
+            f"Gemini TTS WAV must use a 24000 Hz sample rate; received {sample_rate}"
+        )
+    if sample_width != SAMPLE_WIDTH:
+        raise ValueError(
+            f"Gemini TTS WAV must use 16-bit samples; received {sample_width * 8}-bit"
+        )
+    if frame_count <= 0 or not pcm_data:
+        raise ValueError("Gemini TTS WAV contained no audio frames")
+    expected_size = frame_count * channels * sample_width
+    if len(pcm_data) != expected_size:
+        raise ValueError("Gemini TTS WAV audio data was truncated")
+    return pcm_data
+
+
+def _create_38_single_speaker_input(text: str) -> list[dict]:
+    """Build exact-text input without inventing style metadata."""
+    return [
+        {
+            "type": "user_input",
+            "content": [{"type": "text", "text": text}],
+        }
+    ]
+
+
+_DIALOGUE_LINE = re.compile(r"^(Speaker1|Speaker2):\s*(\S(?:.*\S)?)\s*$")
+
+
+def _parse_38_dialogue(text: str) -> list[tuple[str, str]]:
+    """Parse only explicit Speaker1 and Speaker2 lines without guessing turns."""
+    turns: list[tuple[str, str]] = []
+    for line_number, raw_line in enumerate(text.splitlines(), start=1):
+        line = raw_line.strip()
+        if not line:
+            continue
+        match = _DIALOGUE_LINE.fullmatch(line)
+        if not match:
+            raise ValueError(
+                "Gemini 3.8 dialogue requires every non-empty line to use "
+                f"Speaker1: or Speaker2: with text; invalid line {line_number}"
+            )
+        turns.append((match.group(1), match.group(2)))
+    if not turns:
+        raise ValueError(
+            "Gemini 3.8 dialogue requires Speaker1: and Speaker2: transcript lines"
+        )
+    return turns
+
+
+def _create_38_multi_speaker_input(text: str) -> list[dict]:
+    """Build structured speaker annotations from validated dialogue labels."""
+    content = []
+    for speaker, spoken_text in _parse_38_dialogue(text):
+        content.append(
+            {
+                "type": "text",
+                "text": spoken_text,
+                "annotations": [
+                    {"type": "speech_metadata", "speaker": speaker}
+                ],
+            }
+        )
+    return [{"type": "user_input", "content": content}]
+
+
+def split_38_dialogue_for_tts(
+    text: str, max_tokens: int = CHUNK_TARGET_TOKENS
+) -> list[str]:
+    """Split validated dialogue between turns while preserving speaker labels."""
+    turns = _parse_38_dialogue(text)
+    if {speaker for speaker, _ in turns} != {"Speaker1", "Speaker2"}:
+        raise ValueError(
+            "Gemini 3.8 dialogue requires both Speaker1: and Speaker2: turns"
+        )
+
+    chunks: list[str] = []
+    current: list[str] = []
+    for speaker, spoken_text in turns:
+        line = f"{speaker}: {spoken_text}"
+        if estimate_input_tokens(line) > max_tokens:
+            raise ValueError(
+                "Gemini 3.8 dialogue turn exceeds the safe input limit; "
+                "split that labeled turn without changing its speaker"
+            )
+        candidate = "\n".join([*current, line])
+        if current and estimate_input_tokens(candidate) > max_tokens:
+            chunks.append("\n".join(current))
+            current = [line]
+        else:
+            current.append(line)
+    if current:
+        chunks.append("\n".join(current))
+    return chunks
+
+
+def _generate_38_single_speaker(
+    client, text: str, voice: str, model: str
+) -> bytes:
+    interactions = getattr(client, "interactions", None)
+    if interactions is None or not callable(getattr(interactions, "create", None)):
+        raise RuntimeError(
+            "Gemini 3.8 TTS requires google-genai with the Interactions API"
+        )
+    interaction = interactions.create(
+        model=MODELS[model],
+        input=_create_38_single_speaker_input(text),
+        response_format={"type": "audio"},
+        generation_config={"speech_config": [{"voice": voice}]},
+    )
+    return extract_interaction_wav_pcm(interaction)
+
+
+def _generate_38_multi_speaker(
+    client, text: str, voice1: str, voice2: str, model: str
+) -> bytes:
+    interactions = getattr(client, "interactions", None)
+    if interactions is None or not callable(getattr(interactions, "create", None)):
+        raise RuntimeError(
+            "Gemini 3.8 TTS requires google-genai with the Interactions API"
+        )
+    interaction = interactions.create(
+        model=MODELS[model],
+        input=_create_38_multi_speaker_input(text),
+        response_format={"type": "audio"},
+        generation_config={
+            "speech_config": {
+                "speakers": [
+                    {"speaker": "Speaker1", "voice": voice1},
+                    {"speaker": "Speaker2", "voice": voice2},
+                ]
+            }
+        },
+    )
+    return extract_interaction_wav_pcm(interaction)
+
+
 def generate_single_speaker(client, text: str, voice: str, model: str) -> bytes:
-    """Generate audio with a single voice via the compatibility API."""
+    """Generate single-speaker PCM through the API required by the alias."""
+    if model in INTERACTIONS_WAV_MODELS:
+        return _generate_38_single_speaker(client, text, voice, model)
+
     from google.genai import types
 
     response = client.models.generate_content(
@@ -324,7 +635,10 @@ def generate_single_speaker(client, text: str, voice: str, model: str) -> bytes:
 
 
 def generate_multi_speaker(client, text: str, voice1: str, voice2: str, model: str) -> bytes:
-    """Generate audio with two speakers via the compatibility API."""
+    """Generate two-speaker PCM through the API required by the alias."""
+    if model in INTERACTIONS_WAV_MODELS:
+        return _generate_38_multi_speaker(client, text, voice1, voice2, model)
+
     from google.genai import types
 
     response = client.models.generate_content(
@@ -359,9 +673,11 @@ def generate_multi_speaker(client, text: str, voice1: str, voice2: str, model: s
     return extract_audio_data(response)
 
 
-def generate_audio_chunks(client, text: str, voice1: str, voice2: str, model: str) -> tuple[bytes, int]:
+def generate_audio_chunks(
+    client, text: str, voice1: str, voice2: str, model: str
+) -> tuple[bytes, int]:
     """Generate one or more TTS chunks and stitch the raw PCM bytes."""
-    chunks = split_text_for_tts(text)
+    chunks = plan_chunks(text, voice2, model)
     audio_parts = []
     for chunk in chunks:
         if estimate_input_tokens(chunk) > MAX_INPUT_TOKENS:
@@ -409,12 +725,31 @@ def main():
 
     parser.add_argument("--voice", default="Charon", help="Primary voice (default: Charon)")
     parser.add_argument("--voice2", help="Second voice for dialogue mode")
-    parser.add_argument("--model", choices=sorted(MODELS), default="flash", help="TTS model")
+    parser.add_argument(
+        "--model", choices=sorted(MODELS), default=DEFAULT_MODEL,
+        help=(
+            f"TTS model alias (default: {DEFAULT_MODEL}). flash, flash31, pro, legacy-flash25 and "
+            "legacy-pro25 are deprecated; Google lists their models for shutdown on 2026-11-17."
+        ),
+    )
+    parser.add_argument(
+        "--max-chunks", type=int, default=DEFAULT_MAX_CHUNKS,
+        help=(
+            f"Refuse runs that need more than this many chunks (default: {DEFAULT_MAX_CHUNKS}). "
+            "Each chunk is one billed API call."
+        ),
+    )
     parser.add_argument("--output", help="Output file path (default: auto-generated)")
     parser.add_argument("--json", action="store_true", help="Output structured JSON")
     parser.add_argument("--dry-run", action="store_true", help="Estimate cost without generating")
 
     args = parser.parse_args()
+    if args.max_chunks < 1:
+        parser.error("--max-chunks must be at least 1")
+
+    deprecation = deprecation_warning(args.model)
+    if deprecation:
+        print(deprecation, file=sys.stderr)
 
     # Validate voice names
     for voice_arg in [args.voice, args.voice2]:
@@ -439,11 +774,21 @@ def main():
         output_result(result, args.json)
         return 1
 
+    try:
+        planned_chunks = plan_chunks(text, args.voice2, args.model)
+    except ValueError as e:
+        output_result({"status": "error", "error": str(e)}, args.json)
+        return 1
+    chunk_count_planned = len(planned_chunks)
+
     # Dry run - estimate only
     if args.dry_run:
         est = estimate_cost(text, args.model)
         result = {
             "status": "dry_run",
+            "max_chunks": args.max_chunks,
+            "over_chunk_cap": chunk_count_planned > args.max_chunks,
+            "deprecation_warning": deprecation,
             "model": args.model,
             "voice": args.voice,
             "voice2": args.voice2,
@@ -455,10 +800,25 @@ def main():
         output_result(result, args.json)
         return 0
 
-    # Check API key
-    api_key = os.environ.get("GOOGLE_AI_API_KEY") or os.environ.get("GEMINI_API_KEY")
+    if chunk_count_planned > args.max_chunks:
+        result = {
+            "status": "error",
+            "error": (
+                f"Refusing to run: this text needs {chunk_count_planned} chunks, which is about "
+                f"{chunk_count_planned} billed API calls, above --max-chunks {args.max_chunks}. "
+                "Shorten the text, or raise --max-chunks after checking the estimated cost "
+                "with --dry-run."
+            ),
+            "chunk_count_est": chunk_count_planned,
+            "max_chunks": args.max_chunks,
+        }
+        output_result(result, args.json)
+        return 1
+
+    # Check API key (environment only, never a CLI argument)
+    api_key = get_api_key()
     if not api_key:
-        result = {"status": "error", "error": "GOOGLE_AI_API_KEY not set. Get one at https://aistudio.google.com/apikey"}
+        result = {"status": "error", "error": "No API key. Set GOOGLE_AI_API_KEY or GEMINI_API_KEY in the environment. Get one at https://aistudio.google.com/apikey"}
         output_result(result, args.json)
         return 1
 
@@ -475,7 +835,7 @@ def main():
         )
 
     except Exception as e:
-        result = {"status": "error", "error": f"Gemini TTS API error: {str(e)}"}
+        result = {"status": "error", "error": f"Gemini TTS API error: {redact_secrets(f'{type(e).__name__}: {e}', [api_key])}"}
         output_result(result, args.json)
         return 1
 
@@ -543,6 +903,7 @@ def main():
         "model": args.model,
         "model_id": MODELS[args.model],
         "chunk_count": chunk_count,
+        "deprecation_warning": deprecation,
         "embed_html": embed_html,
         "cost_estimate": est["cost_estimate"],
         "timestamp": datetime.now(timezone.utc).isoformat(),

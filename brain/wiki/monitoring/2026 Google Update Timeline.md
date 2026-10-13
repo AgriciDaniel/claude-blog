@@ -4,7 +4,7 @@ title: "2026 Google Update Timeline"
 domain: "Google Update Monitoring"
 status: active
 created: 2026-07-06
-updated: 2026-08-25
+updated: 2026-10-07
 tags: [monitoring, google-updates, active]
 source_urls:
   - "https://status.search.google.com/products/rGHU1u87FJnkP6W2GwMi/history"
@@ -20,13 +20,13 @@ source_urls:
 
 ## 2026 Google Update Timeline Distinct Job
 
-This spoke summarizes confirmed 2026 Google-owned ranking incidents and Search documentation changes checked through 2026-08-25. It anchors the current update memory for [[Google Algorithm Update Ledger]]. It does not claim a client impact, and it does not convert every Search documentation change into a ranking update.
+This spoke summarizes confirmed 2026 Google-owned ranking incidents and Search documentation changes reviewed against official sources on 2026-10-07. It anchors the current update memory for [[Google Algorithm Update Ledger]]. It does not claim a client impact, and it does not convert every Search documentation change into a ranking update.
 
 ## Inputs Specific To The 2026 Timeline
 
 - Search Status Dashboard entries for ranking or Discover rollouts.
 - Search Central documentation changes that alter advisory guidance for blogs.
-- Canonical `data/google-updates.json` IDs with a current `last_verified` field.
+- Historical `data/google-updates.json` IDs plus reviewed official source-ledger evidence for current facts; an old local ID is not a new official review.
 - Route decisions for core review, spam review, AI-search watch, or schema watch.
 
 ## Decisions 2026 Google Update Timeline Must Record
@@ -43,19 +43,25 @@ The 2026 record separates three lanes: ranking updates, spam enforcement, and Se
 | FAQ rich result retirement | Treat as schema guidance, not a ranking incident | `g-update-2026-05-07-faq-rich-results-retired`, `g-search-gallery` | CONFIRMED | Schema reviewer | Route to [[Schema Deprecation Watch]] and [[Blog Schema Stack]]. |
 | Generative AI guidance | Record that standard SEO remains the route for Google AI features | `g-update-2026-05-15-new-generative-ai-optimization-guide`, `g-ai-opt-guide` | CONFIRMED | AI search owner | Remove special-file or special-markup claims from briefs. |
 | May core update | Record second 2026 core update and completion boundary | `g-update-2026-05-21-may-2026-core-update`, `g-update-2026-06-02-may-2026-core-update-complete` | CONFIRMED | SEO lead | Compare page groups after the rollout window closes. |
-| Generative AI performance reports | Track measurement availability without assuming all sites have access | `g-update-2026-06-03-search-console-search-generative-ai-performance-reports`, `g-genai-reports` | CONFIRMED | Data owner | Add report-availability checks to [[Google Data Integrations]]. |
-| June spam update | Confirm latest spam rollout before any spam-response work | `g-update-2026-06-24-june-2026-spam-update`, `g-status-dashboard` | CONFIRMED | Spam reviewer | Open [[Spam Update Response Playbook]] only for plausible policy risk. |
+| Generative AI performance reports | June 3 initial subset announcement, updated August 31 to worldwide rollout | `g-update-2026-06-03-search-console-search-generative-ai-performance-reports`, `g-genai-reports` | CONFIRMED | Data owner | Add report-availability checks to [[Google Data Integrations]]. |
+| June spam update | Confirm this historical spam rollout before relating an impact window | `g-update-2026-06-24-june-2026-spam-update`, `g-status-dashboard` | CONFIRMED | Spam reviewer | Open [[Spam Update Response Playbook]] only for plausible policy risk. |
 | Review snippet integrity | Keep fake and undisclosed incentivized reviews out of pages and markup | `review-snippet-integrity-2026-07-24` | CONFIRMED guidance | Schema reviewer | Require visible review evidence and prominent incentive disclosure. |
 | Platform property availability | Preserve the conflict between Search Central and Help Center availability wording | `search-console-platform-properties-2026-07-29` | SOURCE CONFLICT | Data owner | Verify the actual account and do not promise API support. |
-| Search Console logging anomalies | Exclude or annotate affected August reporting windows | `gsc-reporting-anomalies-2026-08-13` | CONFIRMED data anomaly | Data owner | Do not attribute August 13 through August 17 reporting loss to the later spam rollout. |
-| August spam update | Record the global August 18 through August 21 rollout without inventing targets | `ranking-august-2026-spam` | CONFIRMED event, PENDING OBSERVATION | Monitoring owner | Wait through August 28 before the first complete post-update comparison. |
-| Google Ads API v25.1 | Keep API documentation and client compatibility current | `google-ads-api-v25-1-2026-08-19` | CONFIRMED API currentness | Integration owner | Require Python client 31.2.0 or newer for v25 and test offline before live access. |
+| Search Console logging anomalies | Exclude or annotate affected August reporting windows | `gsc-reporting-anomalies-2026-08-13` | CONFIRMED data anomaly | Data owner | Annotate the logging defect and August 21 restoration; do not treat missing report rows as real traffic loss. |
+| August spam update | Record the global August 18 through August 21 rollout without inventing targets | `ranking-august-2026-spam` | CONFIRMED event, PENDING OBSERVATION | Monitoring owner | The August event is historical; distinguish it from the September 24 spam update and require actual property evidence for impact. |
+| Google Ads API release sequence | v25.1 was released August 19; v25.2 followed September 23 | `google-ads-api-v25-1-2026-08-19` | CONFIRMED API currentness | Integration owner | Check language-client compatibility separately; a supported client does not authorize live account requests. |
 | Third-party tool boundary | Verify vendor ranking claims before they enter recommendations | `g-update-2026-06-05-guidance-on-third-party-seo-tools-services-and-advice` | CONFIRMED guidance | Reviewer | Send unsupported tool claims to [[Unverified Volatility Quarantine]]. |
 | Product structured-data July note | Keep product documentation changes out of ranking-incident rows | `g-search-docs-updates-2026-07-07-product-structured-data`, `g-merchant-listing-sd` | CONFIRMED docs | Schema reviewer | Route eligible product cases to [[Schema Deprecation Watch]]. |
 
-## Current Status Through 2026-08-25
+| September spam event | Official ranking history lists a September 24 start; completion needs separate incident evidence | `g-ranking-history`, `g-status-dashboard` | CONFIRMED start, impact unproven | Monitoring owner | Preserve the event boundary and recheck the incident before impact review. |
+| EEA site-reputation enforcement | August 28 announcement, effective August 30, changes manual-action effects by searcher region | `g-site-reputation-eea-2026-08-28`, `g-spam-policies` | CONFIRMED regional scope | Governance owner | Keep EEA caveats in current third-party-content advice. |
 
-As of the 2026-08-25 ledger check, the latest confirmed ranking incident is the August 2026 spam update. Google confirms the event and dates, not a target profile or site impact. The first complete one-week post-update comparison begins on August 28. Search Console logging errors from August 13 through August 17 predate the rollout and remain a separate measurement lane.
+## Current Status Reviewed 2026-10-07
+
+The official ranking history lists a September 2026 spam update beginning September 24, 2026 (`g-ranking-history`, `g-status-dashboard`). Do not infer a completion date or affected-site profile from that list row. The August 18-21 event remains a separate historical incident. The Search Console record says August 13-17 generative-AI impression logging data was restored on August 21; a reporting defect is not evidence of real traffic loss (`gsc-reporting-anomalies-2026-08-13`).
+
+Google's June reporting announcement was updated on August 31 to say the insights had rolled out to all websites worldwide (`g-genai-reports`). Platform-property availability is a separate conflict between an announcement and Help Center wording, requiring an account check. Site-reputation manual-action effects differ for EEA searchers from August 30 (`g-site-reputation-eea-2026-08-28`); preserve the regional caveat in current spam advice.
+
 
 ## 2026 Google Update Timeline Operating Procedure
 
@@ -77,7 +83,7 @@ It should output refresh, monitor, escalate, or no-action with a rollback trigge
 
 ## 2026 Timeline Edge Cases
 
-- Assuming every property has generative-AI reports overreads `g-genai-reports`, which records rollout availability.
+- Keeping the original June subset wording as current availability ignores the August 31 worldwide update in `g-genai-reports`; obtaining a property export still requires owner access.
 - Naming an August spam target conflicts with `ranking-august-2026-spam`, which records event scope but no target profile.
 - Treating August 13 through August 17 reporting loss as spam-update impact conflicts with `gsc-reporting-anomalies-2026-08-13`.
 - Calling `g-search-docs-updates-2026-07-07-product-structured-data` a ranking update puts schema maintenance in the wrong lane.

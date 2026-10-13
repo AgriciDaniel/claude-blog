@@ -47,14 +47,14 @@ every program you launch from that shell.
 | Inline SVG charts (dark-mode) | `blog-chart` internal capability + `/svg-chart` skill | Pure Python, works now |
 | Animated SVGs (SMIL) | `/svg-animate` skill | Pure SVG, works now |
 | Topic-cluster execution | `/blog cluster` | Hub-and-spoke pattern |
-| Multilingual publishing | `/blog multilingual --languages de,fr,es` | Spawns translator agent |
+| Multilingual publishing | `/blog multilingual <topic> --languages de,fr,es` | Spawns translator agent |
 
 ---
 
 ## Verification (no API calls, runnable now)
 
 ```bash
-# 1. nanobanana structural validation (8/8 should pass)
+# 1. nanobanana structural validation (all checks should pass)
 python3 skills/blog-image/scripts/validate_image_setup.py
 
 # 2. Google API tier detection
@@ -77,6 +77,11 @@ ls -la demo-output/demo-chart.svg demo-output/demo-animated.svg
 Use this in a live session to exercise every wired integration.
 Each step is one slash command. Estimated total time: 8-12 min.
 
+Commands that start with `/seo`, `/banana`, `/svg-chart` or `/svg-animate` come
+from other plugins and skills, not from this repository. Their arguments are
+defined by those projects; check their own help before relying on a flag shown
+here.
+
 ```
 1. /blog brief "AI search citations: how to win in ChatGPT and Perplexity"
    -> Generates a brief with audience, intent, competitive angles.
@@ -90,12 +95,12 @@ Each step is one slash command. Estimated total time: 8-12 min.
    -> Live SERP including AI Overviews.
       Costs DataForSEO credits.
 
-4. /blog google youtube search "AI search citations 2025" --max-results 5
+4. /blog google youtube search "AI search citations 2025"   (script flag: --limit 5)
    -> Candidate YouTube videos with editorial suitability data.
       Use a video only when it is relevant, accurate, useful, and eligible.
       Free quota.
 
-5. /blog write "AI search citations" --brief
+5. /blog write "AI search citations"   (the brief from step 1 stays in the conversation; say "use the brief above")
    -> Writes the full post. During the write, it will:
       - invoke the internal blog-chart capability to generate SVG charts inline
       - call /blog image (nanobanana) to generate the cover + hero
@@ -210,16 +215,17 @@ shred -u ~/.config/claude-seo/google-api.json
 # .mcp.json itself only has env-expansion placeholders, nothing to shred
 ```
 
-The `uninstall.{sh,ps1}` scripts (post-audit fix VULN-805) also purge
-`~/.config/claude-seo/{oauth-token,google-api}.json` automatically.
+The `uninstall.{sh,ps1}` scripts leave `~/.config/claude-seo/` intact because
+other skills share those credentials; delete the files yourself (as above) when
+you no longer need them.
 
 ---
 
 ## What was wired in this session
 
 - `.mcp.json` (mode 0600, gitignored): added `dataforseo` server
-  alongside existing `nanobanana-mcp`. Both pinned (`@1.1.1` and
-  `@2.8.10`). Both env-expansion only, no literal keys.
+  alongside existing `nanobanana-mcp`. Both pinned to exact package
+  versions (see `.mcp.example.json`). Both env-expansion only, no literal keys.
 - `.env.local` (mode 0600, gitignored): the literal credentials live
   here. Source it before launching Claude Code.
 - `~/.config/claude-seo/google-api.json` (mode 0600, user-private):

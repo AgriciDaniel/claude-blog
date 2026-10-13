@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://developers.google.com/search/docs/appearance/structured-data/product",
+  "normalized_full_document_sha256": "4e3ec0576d77fef0ebe2bb36eba9b0d568f457e2b8d913189c09d5357c699680",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "both features have their own enhancements"
+  ],
+  "records": [
+    {
+      "source_id": "g-product-sd",
+      "source_url": "https://developers.google.com/search/docs/appearance/structured-data/product",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "confirmed_by_manual_review",
+      "excerpt_index": 0
+    }
+  ]
+}

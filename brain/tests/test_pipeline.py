@@ -5,7 +5,6 @@ from __future__ import annotations
 import argparse
 import os
 import shutil
-import stat
 import subprocess
 import sys
 import tempfile
@@ -37,64 +36,21 @@ def run_cmd(args: list[str], *, env: dict[str, str] | None = None) -> subprocess
     return proc
 
 
-def audit_mutation_paths() -> list[Path]:
-    paths = [
-        REPO / ".raw" / ".manifest.json",
-        REPO / "references" / "CONFIDENCE_TAGS.md",
-        REPO / "references" / "README.md",
-        REPO / "references" / "claim-ledger.md",
-        REPO / "references" / "current-requirements.md",
-        REPO / "references" / "market-research.md",
-        REPO / "wiki" / "sources" / "Claim To Source Mapping.md",
-        REPO / "wiki" / "sources" / "Evidence Gap Register.md",
-    ]
-    canon = REPO / "references" / "canon"
-    if canon.exists():
-        paths.extend(sorted(canon.glob("*.md")))
-    return paths
-
-
-def make_tree_writable(path: Path) -> None:
-    if not path.exists():
-        return
-    for item in [path, *path.rglob("*")]:
-        try:
-            mode = item.stat().st_mode
-            if item.is_dir():
-                item.chmod(mode | stat.S_IWUSR | stat.S_IXUSR)
-            else:
-                item.chmod(mode | stat.S_IWUSR)
-        except OSError:
-            pass
-
-
-def restore_tree(target: Path, snapshot: Path | None) -> None:
-    if target.exists():
-        make_tree_writable(target)
-        shutil.rmtree(target)
-    if snapshot is not None and snapshot.exists():
-        shutil.copytree(snapshot, target, symlinks=True)
-
-
 def run_audit_report_only_hermetic() -> None:
-    files = audit_mutation_paths()
-    file_snapshots = {path: path.read_bytes() if path.exists() else None for path in files}
-    raw_sources = REPO / ".raw" / "sources"
-    with tempfile.TemporaryDirectory(prefix="claude-blog-brain-audit-snapshot-") as tmp:
-        raw_snapshot = Path(tmp) / "sources"
-        raw_snapshot_path: Path | None = None
-        if raw_sources.exists():
-            shutil.copytree(raw_sources, raw_snapshot, symlinks=True)
-            raw_snapshot_path = raw_snapshot
-        try:
-            run(["scripts/audit_brain.py", "--json", "--report-only", "--no-exec"])
-        finally:
-            for path, content in file_snapshots.items():
-                if content is None:
-                    path.unlink(missing_ok=True)
-                else:
-                    path.write_bytes(content)
-            restore_tree(raw_sources, raw_snapshot_path)
+    # Audit may evolve to write research outputs. It never runs against the
+    # original checkout, so immutable sources need no restore or replacement.
+    with tempfile.TemporaryDirectory(prefix="claude-blog-brain-audit-export-") as tmp:
+        export = Path(tmp) / "brain"
+        shutil.copytree(REPO, export, symlinks=True, ignore=shutil.ignore_patterns("__pycache__", ".pytest_cache", "dist", ".git"))
+        for path in export.rglob("*"):
+            if path.is_symlink() and not path.resolve().is_relative_to(export):
+                raise AssertionError("audit export contains a symlink outside its disposable tree")
+        proc = subprocess.run(
+            [PY, "scripts/audit_brain.py", "--json", "--report-only", "--no-exec"],
+            cwd=export, text=True, capture_output=True, check=False,
+        )
+        if proc.returncode:
+            raise AssertionError(proc.stderr or proc.stdout)
 
 
 def assert_release_local_path_scan() -> None:

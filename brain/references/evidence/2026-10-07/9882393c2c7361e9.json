@@ -1,0 +1,123 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://status.search.google.com/products/rGHU1u87FJnkP6W2GwMi/history",
+  "normalized_full_document_sha256": "b3cb7920238bb4eb73eb203a50f4caa4db3a7f07af69d9a80f8566f7ccc8db37",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "all incidents reported for ranking"
+  ],
+  "records": [
+    {
+      "source_id": "g-ranking-history",
+      "source_url": "https://status.search.google.com/products/rGHU1u87FJnkP6W2GwMi/history",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    },
+    {
+      "source_id": "g-status-dashboard",
+      "source_url": "https://status.search.google.com/products/rGHU1u87FJnkP6W2GwMi/history",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    },
+    {
+      "source_id": "g-update-2024-06-20-june-2024-spam-update",
+      "source_url": "https://status.search.google.com/products/rGHU1u87FJnkP6W2GwMi/history",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    },
+    {
+      "source_id": "g-update-2024-11-11-november-2024-core-update",
+      "source_url": "https://status.search.google.com/products/rGHU1u87FJnkP6W2GwMi/history",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    },
+    {
+      "source_id": "g-update-2024-12-12-december-2024-core-update",
+      "source_url": "https://status.search.google.com/products/rGHU1u87FJnkP6W2GwMi/history",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    },
+    {
+      "source_id": "g-update-2024-12-19-december-2024-spam-update",
+      "source_url": "https://status.search.google.com/products/rGHU1u87FJnkP6W2GwMi/history",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    },
+    {
+      "source_id": "g-update-2025-03-13-march-2025-core-update",
+      "source_url": "https://status.search.google.com/products/rGHU1u87FJnkP6W2GwMi/history",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    },
+    {
+      "source_id": "g-update-2025-06-30-june-2025-core-update",
+      "source_url": "https://status.search.google.com/products/rGHU1u87FJnkP6W2GwMi/history",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    },
+    {
+      "source_id": "g-update-2025-12-11-december-2025-core-update",
+      "source_url": "https://status.search.google.com/products/rGHU1u87FJnkP6W2GwMi/history",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    },
+    {
+      "source_id": "g-update-2026-02-05-february-2026-discover-update",
+      "source_url": "https://status.search.google.com/products/rGHU1u87FJnkP6W2GwMi/history",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    },
+    {
+      "source_id": "g-update-2026-03-24-march-2026-spam-update",
+      "source_url": "https://status.search.google.com/products/rGHU1u87FJnkP6W2GwMi/history",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    },
+    {
+      "source_id": "g-update-2026-03-27-march-2026-core-update",
+      "source_url": "https://status.search.google.com/products/rGHU1u87FJnkP6W2GwMi/history",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    },
+    {
+      "source_id": "g-update-2026-05-21-may-2026-core-update",
+      "source_url": "https://status.search.google.com/products/rGHU1u87FJnkP6W2GwMi/history",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    },
+    {
+      "source_id": "g-update-2026-06-02-may-2026-core-update-complete",
+      "source_url": "https://status.search.google.com/products/rGHU1u87FJnkP6W2GwMi/history",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    }
+  ]
+}

@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Lint Obsidian vault structure, frontmatter, raw manifest, and wikilinks."""
+"""Lint Obsidian vault structure, frontmatter, raw manifest, and wikilinks.
+
+Exit codes: 0 the vault passed, 1 lint failures (errors in the vault), 2 the
+lint could not read its input (a non-UTF-8 note, a malformed .obsidian/graph.json),
+so the result is unknown. Lint failures take priority when both occur.
+"""
 from __future__ import annotations
 
 import argparse
@@ -14,7 +19,7 @@ REPO = Path(__file__).resolve().parent.parent
 DEFAULT_VAULT = REPO / "assets" / "template-brain"
 REQUIRED_FRONTMATTER = {"type", "title", "domain", "status", "created", "updated", "tags"}
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
-ALLOWED_STATUSES = {"active", "draft", "seed", "archived", "review"}
+ALLOWED_STATUSES = {"active", "draft", "seed", "archived", "review", "evergreen"}
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -27,15 +32,25 @@ def main(argv: list[str] | None = None) -> int:
     is_template = args.template or vault == DEFAULT_VAULT.resolve()
     errors: list[str] = []
     warnings: list[str] = []
+    unreadable: list[str] = []
     for rel in ["CODEX.md", "README.md", "shipping-rules.md", ".raw/.manifest.json", "wiki/hot.md", "wiki/index.md", "wiki/overview.md", "wiki/log.md", "wiki/meta/Start Here.md", "wiki/meta/dashboard.md"]:
         if not (vault / rel).exists():
             errors.append(f"missing {rel}")
     check_raw_manifest(vault, errors)
     graph = vault / ".obsidian" / "graph.json"
     if graph.exists():
-        data = json.loads(graph.read_text(encoding="utf-8"))
-        if len(data.get("colorGroups") or []) < 4:
-            errors.append("graph.json has fewer than 4 color groups")
+        try:
+            data = json.loads(graph.read_text(encoding="utf-8"))
+            if not isinstance(data, dict):
+                raise ValueError("expected a JSON object")
+            groups = data.get("colorGroups") or []
+            if not isinstance(groups, list):
+                raise ValueError("colorGroups must be a list")
+        except (ValueError, OSError) as exc:
+            unreadable.append(f"cannot read .obsidian/graph.json: {exc}")
+        else:
+            if len(groups) < 4:
+                errors.append("graph.json has fewer than 4 color groups")
     notes = list((vault / "wiki").rglob("*.md")) if (vault / "wiki").exists() else []
     stems = {p.stem.lower(): p for p in notes}
     rels = {p.relative_to(vault).with_suffix("").as_posix().lower(): p for p in notes}
@@ -44,7 +59,11 @@ def main(argv: list[str] | None = None) -> int:
     duplicate_stems: dict[str, list[str]] = {}
     for path in notes:
         duplicate_stems.setdefault(path.stem.lower(), []).append(path.relative_to(vault).as_posix())
-        text = path.read_text(encoding="utf-8")
+        try:
+            text = path.read_text(encoding="utf-8")
+        except (UnicodeDecodeError, OSError) as exc:
+            unreadable.append(f"cannot read {path.relative_to(vault).as_posix()}: {exc}")
+            continue
         if not text.startswith("---\n"):
             errors.append(f"missing frontmatter: {path.relative_to(vault)}")
         else:
@@ -76,14 +95,28 @@ def main(argv: list[str] | None = None) -> int:
         if stem != "_index" and len(paths) > 1:
             errors.append(f"duplicate note stem {stem}: {', '.join(paths)}")
     if args.json:
-        print(json.dumps({"ok": not errors, "diagnostics": diagnostics(errors, warnings)}, indent=2, sort_keys=True))
+        rows = diagnostics(errors, warnings)
+        rows += [
+            {"severity": "error", "code": "UNREADABLE", "file": "", "line": None, "message": item}
+            for item in unreadable
+        ]
+        print(json.dumps({"ok": not errors and not unreadable, "diagnostics": rows}, indent=2, sort_keys=True))
     else:
         for warning in warnings:
             print(f"WARNING: {warning}")
         for error in errors:
             print(f"ERROR: {error}", file=sys.stderr)
-        print("Vault lint passed" if not errors else "Vault lint failed")
-    return 1 if errors else 0
+        for item in unreadable:
+            print(f"ERROR: {item}", file=sys.stderr)
+        if errors:
+            print("Vault lint failed")
+        elif unreadable:
+            print("Vault lint could not finish: unreadable input (exit 2)")
+        else:
+            print("Vault lint passed")
+    if errors:
+        return 1
+    return 2 if unreadable else 0
 
 
 def validate_frontmatter(vault: Path, path: Path, text: str, errors: list[str], warnings: list[str], *, template: bool) -> None:
@@ -105,7 +138,7 @@ def validate_frontmatter(vault: Path, path: Path, text: str, errors: list[str], 
         if value and not DATE_RE.match(value) and "{{date}}" not in value:
             errors.append(f"frontmatter invalid {key} date: {rel}")
     tags = fields.get("tags")
-    if tags is not None and not str(tags).strip().startswith("["):
+    if tags is not None and (not isinstance(tags, list) or not all(isinstance(tag, str) and tag.strip() for tag in tags)):
         errors.append(f"frontmatter tags must be an array: {rel}")
 
 
@@ -118,14 +151,58 @@ def frontmatter_block(text: str) -> str | None:
     return text[4:end]
 
 
-def parse_frontmatter(frontmatter: str) -> dict[str, str]:
-    fields: dict[str, str] = {}
+def parse_frontmatter(frontmatter: str) -> dict[str, object]:
+    """Parse the supported flat YAML fields, including scalar block sequences.
+
+    Nested mappings and arbitrary YAML objects are outside this vault contract.
+    Tag lists must be complete arrays, never just a string starting with '['.
+    """
+    fields: dict[str, object] = {}
+    current: str | None = None
     for line in frontmatter.splitlines():
-        if not line.strip() or line.lstrip().startswith("-") or ":" not in line:
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        if line[:1].isspace() or stripped.startswith("-"):
+            if current and re.match(r"^\s*-\s+", line):
+                value = tag_scalar(re.sub(r"^\s*-\s+", "", line).strip())
+                if isinstance(fields[current], list):
+                    fields[current].append(value)
+            elif current:
+                # Invalid/nested block values stay non-array so lint rejects tags.
+                fields[current] = "<unsupported block>"
+            continue
+        current = None
+        if ":" not in line:
             continue
         key, value = line.split(":", 1)
-        fields[key.strip()] = value.strip()
+        key, value = key.strip(), value.strip()
+        if not value:
+            fields[key] = []
+            current = key
+        elif value.startswith("[") and value.endswith("]"):
+            inner = value[1:-1].strip()
+            fields[key] = [tag_scalar(item.strip()) for item in inner.split(",")] if inner else []
+        else:
+            fields[key] = value
     return fields
+
+
+def tag_scalar(value: str) -> object:
+    """Reject nested or typed YAML objects where this schema needs a tag string."""
+    if len(value) >= 2 and value[0] == value[-1] == "'":
+        return value[1:-1].replace("''", "'")
+    if len(value) >= 2 and value[0] == value[-1] == '"':
+        try:
+            return json.loads(value)
+        except ValueError:
+            return None
+    value = re.split(r"\s+#", value, maxsplit=1)[0].strip()
+    if not value or any(char in value for char in "[]{}") or re.search(r":\s", value):
+        return None
+    if value.lower() in {"true", "false", "yes", "no", "on", "off", "null", "~"} or re.fullmatch(r"[-+]?\d+(?:\.\d+)?", value):
+        return None
+    return value
 
 
 def safe_link_exists(vault: Path, raw_target: str) -> bool:

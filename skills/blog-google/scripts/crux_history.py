@@ -2,8 +2,9 @@
 """
 CrUX History API for Core Web Vitals trends over time.
 
-Fetches up to 25 weekly data points from the Chrome UX Report History API
-and identifies improving, stable, or degrading trends per metric.
+Fetches 25 weekly data points by default, or up to 40 when requested, from the
+Chrome UX Report History API and identifies improving, stable, or degrading
+trends per metric.
 
 Usage:
     python crux_history.py https://example.com
@@ -18,17 +19,21 @@ from typing import Optional
 from urllib.parse import urlparse
 
 try:
-    import requests
-except ImportError:
-    print("Error: requests library required. Install with: pip install requests")
-    sys.exit(1)
-
-try:
-    from google_auth import get_api_key, request_with_retries
+    from google_auth import (
+        api_key_headers, get_api_key, request_with_retries, safe_exception_text, setup_hint,
+    )
 except ImportError:
     import os
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-    from google_auth import get_api_key, request_with_retries
+    from google_auth import (
+        api_key_headers, get_api_key, request_with_retries, safe_exception_text, setup_hint,
+    )
+
+try:
+    import requests
+except ImportError:
+    print(f"Error: requests library required. {setup_hint()}", file=sys.stderr)
+    sys.exit(1)
 
 CRUX_HISTORY_ENDPOINT = "https://chromeuxreport.googleapis.com/v1/records:queryHistoryRecord"
 
@@ -84,7 +89,8 @@ def query_history(
     try:
         resp = request_with_retries(
             "POST",
-            f"{CRUX_HISTORY_ENDPOINT}?key={api_key}",
+            CRUX_HISTORY_ENDPOINT,
+            headers=api_key_headers(api_key),
             json=body,
             timeout=30,
         )
@@ -104,7 +110,7 @@ def query_history(
         resp.raise_for_status()
         data = resp.json()
     except requests.exceptions.RequestException as e:
-        result["error"] = f"CrUX History API request failed: {e}"
+        result["error"] = f"CrUX History API request failed: {safe_exception_text(e, api_key)}"
         return result
 
     record = data.get("record", {})

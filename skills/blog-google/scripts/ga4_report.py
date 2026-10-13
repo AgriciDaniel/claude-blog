@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-GA4 Data API v1beta - organic traffic reporting.
+Google Analytics Data API v1 - organic traffic reporting.
+Uses the google.analytics.data_v1beta Python client namespace.
 
 Queries the Google Analytics Data API for organic search traffic,
 top landing pages, and session metrics with channel filtering.
@@ -18,6 +19,13 @@ from datetime import datetime, timedelta
 from typing import Optional
 
 try:
+    from google_auth import describe_google_api_error, get_oauth_credentials, load_config, safe_exception_text, setup_hint
+except ImportError:
+    import os
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from google_auth import describe_google_api_error, get_oauth_credentials, load_config, safe_exception_text, setup_hint
+
+try:
     from google.analytics.data_v1beta import BetaAnalyticsDataClient
     from google.analytics.data_v1beta.types import (
         DateRange,
@@ -29,19 +37,8 @@ try:
         RunReportRequest,
     )
 except ImportError:
-    print(
-        "Error: google-analytics-data required. "
-        "Install with: pip install google-analytics-data",
-        file=sys.stderr,
-    )
+    print(f"Error: google-analytics-data required. {setup_hint()}", file=sys.stderr)
     sys.exit(1)
-
-try:
-    from google_auth import get_oauth_credentials, load_config
-except ImportError:
-    import os
-    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-    from google_auth import get_oauth_credentials, load_config
 
 GA4_SCOPES = ["https://www.googleapis.com/auth/analytics.readonly"]
 
@@ -54,7 +51,7 @@ def _build_ga4_client():
     try:
         return BetaAnalyticsDataClient(credentials=credentials)
     except Exception as e:
-        print(f"Error building GA4 client: {e}", file=sys.stderr)
+        print(f"Error building GA4 client: {safe_exception_text(e)}", file=sys.stderr)
         return None
 
 
@@ -164,10 +161,8 @@ def organic_traffic_report(
     except Exception as e:
         error_str = str(e)
         if "403" in error_str or "PERMISSION_DENIED" in error_str:
-            result["error"] = (
-                f"Permission denied for property '{property_id}'. "
-                "Add the service account email as Viewer in "
-                "GA4 Admin > Property Access Management."
+            result["error"] = describe_google_api_error(
+                e, 'GA4', 'Add the service account as Viewer in GA4 Admin > Property Access Management.'
             )
         elif "404" in error_str or "NOT_FOUND" in error_str:
             result["error"] = (
@@ -175,7 +170,7 @@ def organic_traffic_report(
                 "Verify the numeric property ID in GA4 Admin > Property Details."
             )
         else:
-            result["error"] = f"GA4 API error: {e}"
+            result["error"] = f"GA4 API error: {safe_exception_text(e)}"
         return result
 
     # Top landing pages by organic sessions
@@ -223,7 +218,7 @@ def organic_traffic_report(
 
     except Exception as e:
         # Non-fatal: daily data succeeded, pages failed
-        result["pages_error"] = f"Error fetching top pages: {e}"
+        result["pages_error"] = f"Error fetching top pages: {safe_exception_text(e)}"
 
     # Calculate totals
     if result["daily_data"]:
@@ -327,7 +322,7 @@ def device_breakdown(
                 "engagement_rate": round(float(row.metric_values[3].value) * 100, 1),
             })
     except Exception as e:
-        result["error"] = f"GA4 device breakdown error: {e}"
+        result["error"] = f"GA4 device breakdown error: {safe_exception_text(e)}"
 
     return result
 
@@ -389,7 +384,7 @@ def country_breakdown(
                 "users": int(row.metric_values[1].value),
             })
     except Exception as e:
-        result["error"] = f"GA4 country breakdown error: {e}"
+        result["error"] = f"GA4 country breakdown error: {safe_exception_text(e)}"
 
     return result
 

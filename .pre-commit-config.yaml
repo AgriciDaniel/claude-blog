@@ -3,7 +3,10 @@ repos:
     hooks:
       - id: blog-quality-gate
         name: Blog quality gate (score >= 70)
-        entry: python3 scripts/quality_gate.py
+        # --select makes the gate skip Markdown files that are not blog posts
+        # (README, docs, skills). Without it, every file pre-commit passes is
+        # treated as a named post and a file without blog frontmatter fails.
+        entry: python3 scripts/quality_gate.py --select
         language: system
         files: \.(md|mdx)$
         pass_filenames: true

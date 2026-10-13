@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://developers.google.com/crawling/docs/crawlers-fetchers/google-common-crawlers",
+  "normalized_full_document_sha256": "14cf539dffd438814031bd08a62b998ca6313b00d18d24d2f08ec85a3cb3c915",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "google-extended does not impact a site's inclusion in google search"
+  ],
+  "records": [
+    {
+      "source_id": "g-common-crawlers",
+      "source_url": "https://developers.google.com/search/docs/crawling-indexing/google-common-crawlers",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    }
+  ]
+}

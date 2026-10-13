@@ -4,7 +4,7 @@ title: "Banned Claims And Phrases"
 domain: "Blog Voice"
 status: active
 created: 2026-07-06
-updated: 2026-07-09
+updated: 2026-10-07
 tags: [personas, voice-style, active]
 ---
 
@@ -74,3 +74,5 @@ Drafting consumer: [[Blog Write Article Contract]] uses this stoplist for intros
 ## Banned Claims And Phrases Drift Audit
 
 Review this stoplist monthly and after Google documentation changes. If a phrase is blocked only because the brain lacks evidence, label it "unsupported" rather than "false" until [[Research Pack Index]] closes the gap.
+
+For Banned Claims And Phrases, `nng-editorial-heuristics` supplies general interaction-design principles. Applying those principles to this note's editorial checks is a project adaptation, not an experimentally established SEO or AI-citation requirement.

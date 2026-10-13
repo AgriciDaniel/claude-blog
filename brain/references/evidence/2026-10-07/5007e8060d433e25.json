@@ -1,0 +1,27 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://blog.google/products-and-platforms/products/search/ai-mode-search/",
+  "normalized_full_document_sha256": "1816d1d843ea5de87a3e7fe1a8f34ed91f1218b1c2a8d74df6317558100db183",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "it uses a “query fan-out” technique"
+  ],
+  "records": [
+    {
+      "source_id": "blog-aimode",
+      "source_url": "https://blog.google/products/search/ai-mode-search/",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    },
+    {
+      "source_id": "g-update-2025-03-05-ai-mode-experimental-launch",
+      "source_url": "https://blog.google/products/search/ai-mode-search/",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "confirmed_by_manual_review",
+      "excerpt_index": 0
+    }
+  ]
+}

@@ -4,7 +4,7 @@ title: "Tone By Funnel Stage"
 domain: "Blog Voice"
 status: active
 created: 2026-07-06
-updated: 2026-07-09
+updated: 2026-10-07
 tags: [personas, voice-style, active]
 ---
 
@@ -76,3 +76,5 @@ Draft consumer: [[Blog Write Article Contract]] applies the approved CTA and cav
 ## Tone By Funnel Stage Control Points
 
 Reject stage changes that add scarcity, authority, or fear without a source. Recheck the tone when a draft moves from blog post to distribution asset.
+
+For Tone By Funnel Stage, `nng-editorial-heuristics` supplies general interaction-design principles. Applying those principles to this note's editorial checks is a project adaptation, not an experimentally established SEO or AI-citation requirement.

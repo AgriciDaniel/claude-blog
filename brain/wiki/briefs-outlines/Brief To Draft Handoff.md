@@ -4,7 +4,7 @@ title: "Brief To Draft Handoff"
 domain: "Blog Briefs"
 status: active
 created: 2026-07-06
-updated: 2026-07-09
+updated: 2026-10-07
 tags: [briefs-outlines, serp-briefs, active]
 ---
 
@@ -78,3 +78,5 @@ The repaired request gives the writer an answer-first intro, three approved clai
 - `g-update-2026-06-15-llms-txt-clarified-as-unused-by-google-search` for prohibited writer instructions
 - `g-update-2026-06-05-guidance-on-third-party-seo-tools-services-and-advice` for handoff caveats about tools
 - `sparktoro-zero-click-2026`
+
+For Brief To Draft Handoff, `nng-editorial-heuristics` supplies general interaction-design principles. Applying those principles to this note's editorial checks is a project adaptation, not an experimentally established SEO or AI-citation requirement.

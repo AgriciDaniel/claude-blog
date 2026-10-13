@@ -12,14 +12,18 @@ import hashlib
 import json
 from pathlib import Path
 
+# Load only the helper shipped beside this installed script, never from CWD.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from runtime_paths import resolve_runtime_paths
+
 
 class SkillEnvironment:
     """Manages skill-specific virtual environment"""
 
     def __init__(self):
         # Skill directory paths
-        self.skill_dir = Path(__file__).parent.parent
-        self.venv_dir = self.skill_dir / ".venv"
+        self.skill_dir = Path(__file__).resolve().parent.parent
+        self.venv_dir = resolve_runtime_paths(self.skill_dir, "blog-notebooklm").venv
         # Bug fix: requirements.txt actually lives in scripts/, not the skill
         # root. Prior path looked at skill_dir/requirements.txt which never
         # existed. Now also prefer the lock file when present (closes audit
@@ -144,6 +148,10 @@ class SkillEnvironment:
         if stamp:
             self.stamp_file.write_text(stamp)
 
+    def runtime_ready(self) -> bool:
+        """Return whether scripts can run without changing the environment."""
+        return self.venv_python.is_file() and self.dependencies_current()
+
     def resolve_script_path(self, script_name: str) -> Path:
         """Resolve a script path and require it to stay in scripts/."""
         if script_name.startswith("scripts/") or script_name.startswith("scripts\\"):
@@ -168,9 +176,13 @@ class SkillEnvironment:
             print(f"❌ Script not found: {script_path}")
             return 1
 
-        # Ensure venv is set up
-        if not self.ensure_venv():
-            print("❌ Failed to set up environment")
+        # --run must not install packages or browsers as a side effect. The
+        # default setup command is the explicit mutating entry point.
+        if not self.runtime_ready():
+            print(
+                "❌ NotebookLM setup required. Run setup_environment.py "
+                "without --run before running a script"
+            )
             return 1
 
         # Build command
@@ -230,7 +242,14 @@ def main():
 
     args = parser.parse_args()
 
-    env = SkillEnvironment()
+    try:
+        env = SkillEnvironment()
+    except ValueError as exc:
+        if args.json:
+            print(json.dumps({"status": "error", "error": str(exc)}))
+        else:
+            print(f"ERROR: {exc}")
+        return 1
 
     if args.check:
         status = {

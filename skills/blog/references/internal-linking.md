@@ -23,8 +23,11 @@ content relates, and what the site's topical structure looks like.
 John Mueller (Google): Internal linking is "supercritical for SEO": it helps
 Google understand site structure and page importance.
 
-seoClarity case study: 23% organic traffic increase from internal link
-optimization alone, with no new content published.
+seoClarity's internal-linking case-study roundup lists one retail-site result of
++23% traffic to top sales pages after internal link changes
+(https://seoclarity.net/blog/internal-linking-case-study, search result seen
+2026-10-11; baseline, window, and controls not verified). Vendor-reported, one
+client: do not present it as a general expectation.
 
 ---
 

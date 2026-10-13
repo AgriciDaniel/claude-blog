@@ -16,7 +16,7 @@ from typing import Dict, List, Optional, Any
 from datetime import datetime
 
 sys.path.insert(0, str(Path(__file__).parent))
-from config import DATA_DIR, LIBRARY_FILE, validate_notebook_url
+from config import DATA_DIR, LIBRARY_FILE, ensure_private_dir, validate_notebook_url, write_private_file
 
 
 class NotebookLibrary:
@@ -24,13 +24,9 @@ class NotebookLibrary:
 
     def __init__(self):
         """Initialize the notebook library"""
-        # Store data within the skill directory
+        # Store data at the shared configured runtime root (legacy default: skill/data)
         self.data_dir = DATA_DIR
-        self.data_dir.mkdir(parents=True, exist_ok=True)
-        try:
-            self.data_dir.chmod(0o700)
-        except OSError:
-            pass
+        ensure_private_dir(self.data_dir)
 
         self.library_file = LIBRARY_FILE
         self.notebooks: Dict[str, Dict[str, Any]] = {}
@@ -63,12 +59,7 @@ class NotebookLibrary:
                 'active_notebook_id': self.active_notebook_id,
                 'updated_at': datetime.now().isoformat()
             }
-            with open(self.library_file, 'w') as f:
-                json.dump(data, f, indent=2)
-            try:
-                self.library_file.chmod(0o600)
-            except OSError:
-                pass
+            write_private_file(self.library_file, json.dumps(data, indent=2))
         except Exception as e:
             print(f"❌ Error saving library: {e}")
 

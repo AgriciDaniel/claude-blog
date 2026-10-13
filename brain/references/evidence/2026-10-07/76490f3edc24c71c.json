@@ -1,0 +1,27 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://developers.google.com/search/blog/2025/06/simplifying-search-results",
+  "normalized_full_document_sha256": "c99f4f9bf168de48143fa50b6154124b23370f4a2dcac354cd49cafdf0f48786",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "this update won't affect how pages are ranked"
+  ],
+  "records": [
+    {
+      "source_id": "g-simplify-results",
+      "source_url": "https://developers.google.com/search/blog/2025/06/simplifying-search-results",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    },
+    {
+      "source_id": "g-update-2025-06-19-structured-data-deprecation",
+      "source_url": "https://developers.google.com/search/blog/2025/06/simplifying-search-results",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    }
+  ]
+}

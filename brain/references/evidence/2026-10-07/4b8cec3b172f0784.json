@@ -1,0 +1,19 @@
+{
+  "schema": "claude-blog-brain.reviewed-excerpt.v1",
+  "document_url": "https://github.com/AgriciDaniel/flow",
+  "normalized_full_document_sha256": "43cb420e292fe3405cfd5229d1f64bbf7729318521fc235024c941e0af0ac8c0",
+  "full_document_hash_scope": "SHA-256 of retained reviewed document after lowercase and whitespace normalization; full document is not shipped in this excerpt artifact.",
+  "excerpts": [
+    "find · leverage · optimize · win"
+  ],
+  "records": [
+    {
+      "source_id": "gh-flow-framework",
+      "source_url": "https://github.com/AgriciDaniel/flow",
+      "retrieved_on": "2026-10-07",
+      "reviewed_on": "2026-10-07",
+      "review_decision": "corrected",
+      "excerpt_index": 0
+    }
+  ]
+}
