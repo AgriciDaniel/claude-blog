@@ -2,7 +2,7 @@
   "name": "claude-blog",
   "displayName": "Claude Blog",
   "description": "AI-powered blog skill suite: 32 skill directories (1 orchestrator + 31 sub-skills) and 5 agents to write, rewrite, audit, and optimize content for Google rankings and AI citations (GEO/AEO). Includes the FLOW framework, topic clusters, multilingual publishing, Google API integration, personas, fact-checking, NotebookLM research, Gemini TTS narration, image generation, and 100-point scoring.",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "author": {
     "name": "AgriciDaniel",
     "url": "https://github.com/AgriciDaniel"

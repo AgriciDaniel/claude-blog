@@ -40,7 +40,7 @@ def test_wrappers_preserve_public_entrypoints_version_and_profile_defaults() -> 
     uninstall = _read(UNINSTALL)
     assert install.startswith("#!/usr/bin/env pwsh")
     assert uninstall.startswith("#!/usr/bin/env pwsh")
-    assert '$ClaudeBlogVersion = "2.2.0"' in install
+    assert '$ClaudeBlogVersion = "2.3.0"' in install
     assert "https://raw.githubusercontent.com/AgriciDaniel/claude-blog/main/install.ps1" in install
     assert 'Join-Path $env:USERPROFILE ".claude"' in install
     assert 'Join-Path $env:USERPROFILE ".claude"' in uninstall

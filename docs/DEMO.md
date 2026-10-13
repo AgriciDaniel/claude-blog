@@ -1,4 +1,4 @@
-# claude-blog v2.2.0: Demo Runbook
+# claude-blog v2.3.0: Demo Runbook
 
 End-to-end demo flow that exercises every wired integration: YouTube
 embedding (blog-google), keyword research (DataForSEO MCP), AI image
