@@ -498,10 +498,10 @@ requires-dist = [
     { name = "google-analytics-data", marker = "extra == 'google'", specifier = ">=0.23.3,<1.0.0" },
     { name = "google-api-python-client", marker = "extra == 'dev'", specifier = ">=2.100.0,<3.0.0" },
     { name = "google-api-python-client", marker = "extra == 'google'", specifier = ">=2.100.0,<3.0.0" },
-    { name = "google-auth", marker = "extra == 'google'", specifier = ">=2.60.0,<3.0.0" },
-    { name = "google-auth-httplib2", marker = "extra == 'google'", specifier = ">=0.2.0,<1.0.0" },
-    { name = "google-auth-oauthlib", marker = "extra == 'google'", specifier = ">=1.3.1,<2.0.0" },
-    { name = "google-genai", marker = "extra == 'presentation'", specifier = ">=2.28.0,<3.0.0" },
+    { name = "google-auth", marker = "extra == 'google'", specifier = ">=2.61.0,<3.0.0" },
+    { name = "google-auth-httplib2", marker = "extra == 'google'", specifier = ">=0.4.4,<1.0.0" },
+    { name = "google-auth-oauthlib", marker = "extra == 'google'", specifier = ">=1.5.0,<2.0.0" },
+    { name = "google-genai", marker = "extra == 'presentation'", specifier = ">=2.29.0,<3.0.0" },
     { name = "jsonschema", marker = "extra == 'advanced'", specifier = ">=4.20.0,<5.0.0" },
     { name = "language-tool-python", marker = "extra == 'advanced'", specifier = ">=2.7.1,<4.0.0" },
     { name = "lxml", marker = "extra == 'advanced'", specifier = ">=5.0.0,<7.0.0" },
@@ -982,15 +982,15 @@ wheels = [
 
 [[package]]
 name = "google-auth"
-version = "2.60.0"
+version = "2.61.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cryptography" },
     { name = "pyasn1-modules" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/6e/a0/d9a866dbcf9de983d717a969744e50492d1c9c56b10207a9f23b3fab85d7/google_auth-2.60.0.tar.gz", hash = "sha256:34aa0283ef72c99cd410e35db4417211fa3e6aaa5399183227bbe3b82bd15192", size = 387015, upload-time = "2026-10-05T16:05:09.724Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/c7/0b/9788e913f2202da49068c27ce821eebcf96319240a89d7bb11f206d6471f/google_auth-2.61.0.tar.gz", hash = "sha256:37f0815967322e8c32b12bf422531e8b637cafdaae0acbb9141117cfe6a96f23", size = 398379, upload-time = "2026-10-07T20:13:14.827Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/2c/f5/7e1770bb548086797ad936ffe7be3d0438f7066ff39982a7763bbb54ccb4/google_auth-2.60.0-py3-none-any.whl", hash = "sha256:e78414cd2e22cc02884768707def024ca32da17695f2c0e6194cdbe1316c4cd4", size = 264569, upload-time = "2026-10-05T16:05:08.053Z" },
+    { url = "https://files.pythonhosted.org/packages/1e/68/c2ff6043d93fda69e5c12a834d0be3b3fa6c762e89732160532566be621b/google_auth-2.61.0-py3-none-any.whl", hash = "sha256:ca60266a37475ae68b63bac007272f46094b3d571abe92aded329b6cfb568025", size = 268021, upload-time = "2026-10-07T20:13:13.2Z" },
 ]
 
 [package.optional-dependencies]
@@ -1026,7 +1026,7 @@ wheels = [
 
 [[package]]
 name = "google-genai"
-version = "2.28.0"
+version = "2.29.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
@@ -1040,9 +1040,9 @@ dependencies = [
     { name = "typing-extensions" },
     { name = "websockets" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/59/16/4af15d65cb72ebc21a99c5e64f09072e97334c05a48d4cede19c347e6ad2/google_genai-2.28.0.tar.gz", hash = "sha256:970cb2eaf1951949851c3e0a5b70265cfea8a408fb7361c7c980a84d90672bf2", size = 707359, upload-time = "2026-10-02T17:58:14.454Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/21/2b/977616ef350e51d3d263eb43be23a91be793544cd937b51c0fac313be233/google_genai-2.29.0.tar.gz", hash = "sha256:124d3eef9ff6b9e4ea548f95ff5b7721683e7990c0a936b006d9e2ab61ea897d", size = 706902, upload-time = "2026-10-07T22:22:57.153Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ad/4b/47278c34757293ba8d9156090d38e1c45fac9a47c50176acff7f77ae9a66/google_genai-2.28.0-py3-none-any.whl", hash = "sha256:cdee15e2fbfea08ea61bce6e5bfbb3301db4bd13a52dccfa8c8d1167e37ca1cc", size = 1168554, upload-time = "2026-10-02T17:58:12.585Z" },
+    { url = "https://files.pythonhosted.org/packages/b8/27/a3dede4a1deb21f7fde6a171daa039bf0ea149a5e7826a785e8f109a6e13/google_genai-2.29.0-py3-none-any.whl", hash = "sha256:7adda55cb6746fb46d38ad3202c3372840b96eede964b5fb3df1469cd4998570", size = 1167603, upload-time = "2026-10-07T22:22:55.215Z" },
 ]
 
 [[package]]
