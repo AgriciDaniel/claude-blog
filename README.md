@@ -18,7 +18,7 @@
   <img src="https://img.shields.io/badge/Tests-pytest%20suite-brightgreen" alt="Tests: pytest suite, run it for the current count">
 </p>
 
-**claude-blog is a Claude Code skill suite that writes, optimizes, audits, localizes, and refreshes blog content at scale.** Every article is evaluated for Google-aligned usefulness and internal AI citation readiness heuristics. Version 2.3.0 was prepared on 2026-10-13.
+**claude-blog is a Claude Code skill suite that writes, optimizes, audits, localizes, and refreshes blog content at scale.** Every article is evaluated for Google-aligned usefulness and internal AI citation readiness heuristics. Version 2.3.1 was prepared on 2026-10-13.
 
 The core promise is simple: the user is never the first reviewer. A 5-gate Blog Delivery Contract scores every draft against a 100-point rubric, blocks delivery below 90, verifies artifacts and links, and iterates up to 3 times before escalation.
 
@@ -49,7 +49,7 @@ The publishing workflow is documented in
 
 claude-blog is a full-lifecycle blog engine for strategy, briefs, outlines, writing, rewriting, analysis, schema, AI citation readiness, site audits, topic clusters, multilingual publishing, audio narration, and content decay detection.
 
-Current v2.3.0 shape: **32 skill directories = 1 orchestrator + 31 sub-skills; 30 user-facing /blog commands (`blog-chart` is internal, not a command).** It also includes 5 specialized agents, repository consistency and public-release validators, 22 core references, 12 templates, a pytest suite (run `python3 -m pytest --collect-only -q | tail -1` for the current count), and the bundled Claude Blog Brain at `./brain`.
+Current v2.3.1 shape: **32 skill directories = 1 orchestrator + 31 sub-skills; 30 user-facing /blog commands (`blog-chart` is internal, not a command).** It also includes 5 specialized agents, repository consistency and public-release validators, 22 core references, 12 templates, a pytest suite (run `python3 -m pytest --collect-only -q | tail -1` for the current count), and the bundled Claude Blog Brain at `./brain`.
 
 Every draft ships as an artifact folder with the markdown source, rendered HTML, PDF, real `hero.<ext>`, 3 viewport screenshots, `review.md`, and `preflight-report.json`. The renderer uses XSS-safe JSON-LD handling, dark-mode-aware CSS, and the same source for every output format.
 
@@ -306,7 +306,7 @@ Verify the downloaded wrapper before running it:
 
 ```bash
 curl -fsSL -o install.sh https://raw.githubusercontent.com/AgriciDaniel/claude-blog/main/install.sh
-echo "6048c4deb5075082e880c0ed61dba9d95066c11f128e7f4bd599bffc402de391  install.sh" | sha256sum -c
+echo "cd471aabcf08bd208d3377ee432add8f1addeb79d6767e6acb34518972df0164  install.sh" | sha256sum -c
 CLAUDE_BLOG_REF=<commit-sha-or-release-tag> bash install.sh
 ```
 
@@ -314,7 +314,7 @@ Integrity is only as pinned as `CLAUDE_BLOG_REF`. What the digests cover:
 each is the SHA-256 of that one file's bytes in this repository with CRLF line
 endings normalized to LF, the form `raw.githubusercontent.com` serves
 (`install.sh`: the digest above; `install.ps1`:
-`e39d21fc0e9f96f2bb65d7c06fd24a734d674009a47c00a9b8826a582093fbda`). A local
+`aa80fa99aaacc5dec3acabcbd714801b4a3e63635c09db9264041f8b8f48dd97`). A local
 copy with CRLF endings or edits will not match until normalized. They do not
 cover the code that does the work: the wrapper clones the repository at
 `CLAUDE_BLOG_REF` and hands over to that revision's own `install.sh`,
@@ -353,6 +353,24 @@ Uninstall on Windows PowerShell:
 ```
 
 Installation details: [`docs/INSTALLATION.md`](docs/INSTALLATION.md).
+
+### Blog Studio (optional companion)
+
+[`plugins/blog-studio`](plugins/blog-studio) is a separate, optional Claude Code
+mod in the same marketplace. It adds a status band, a live pipeline and five-gate
+review panel, a history of past blogs, and a **Run checks** control that runs the
+strict preflight. It is not part of the `claude-blog` plugin and the standalone
+installers never enable it.
+
+```text
+/plugin marketplace add AgriciDaniel/claude-blog
+/plugin install blog-studio@agricidaniel-blog
+/blog-studio configure /path/to/claude-blog/scripts
+```
+
+It needs a Claude Code release with mods support (checked on 2.1.294 to 2.1.296,
+Linux CLI; the Desktop app is fixture-tested only). See
+[`plugins/blog-studio/README.md`](plugins/blog-studio/README.md).
 
 ## Known Issues
 
@@ -477,7 +495,7 @@ If you use claude-blog in research or production, please cite the project:
   title        = {claude-blog: AI Blog Writing and SEO Optimization Skill for Claude Code},
   year         = {2026},
   url          = {https://github.com/AgriciDaniel/claude-blog},
-  version      = {2.3.0},
+  version      = {2.3.1},
   license      = {MIT}
 }
 ```

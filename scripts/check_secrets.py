@@ -17,6 +17,7 @@ SHA_FIELD_RE = re.compile(
     r'"(?:sha256|raw_snapshot_sha256|content_sha256|normalized_content_sha256|captured_excerpt_sha256|normalized_full_document_sha256)"\s*:\s*"[0-9a-f]{64}"',
     re.IGNORECASE,
 )
+GIT_REVISION_FIELD_RE = re.compile(r'"revision"\s*:\s*"[0-9a-f]{40}"', re.IGNORECASE)
 ACTION_PIN_RE = re.compile(r"uses:\s*[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+@[0-9a-f]{40}\b")
 ACTION_EXPECTATION_RE = re.compile(
     r'"actions/(?:checkout|setup-node|setup-python)"\s*:\s*"[0-9a-f]{40}"'
@@ -131,6 +132,7 @@ def is_adjudicated(path: str, finding: dict[str, object], line: str) -> bool:
         )
         return bool(
             SHA_FIELD_RE.search(line)
+            or GIT_REVISION_FIELD_RE.search(line)
             or ACTION_PIN_RE.search(line)
             or ACTION_EXPECTATION_RE.search(line)
             or reviewed_commit

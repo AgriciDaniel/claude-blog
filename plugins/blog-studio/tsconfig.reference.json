@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "dev/reference-state.d.ts",
+    "hooks",
+    "types"
+  ],
+  "exclude": [
+    ".claude-plugin/types"
+  ],
+  "files": [
+    ".reference-types/claude-code.d.ts"
+  ]
+}

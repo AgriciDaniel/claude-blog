@@ -1,0 +1,13 @@
+{
+  "name": "blog-studio",
+  "version": "0.2.0",
+  "description": "Optional article status band, review panel and explicit preflight controls for Claude Blog.",
+  "author": {
+    "name": "AgriciDaniel",
+    "url": "https://github.com/AgriciDaniel"
+  },
+  "homepage": "https://github.com/AgriciDaniel/claude-blog",
+  "repository": "https://github.com/AgriciDaniel/claude-blog",
+  "license": "MIT",
+  "types": "./types/index.d.ts"
+}

@@ -1,0 +1,3 @@
+node_modules/
+.reference-types/
+.claude-plugin/types/

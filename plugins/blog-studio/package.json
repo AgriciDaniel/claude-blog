@@ -1,0 +1,14 @@
+{
+  "name": "blog-studio-dev",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck:reference": "node dev/reference-types.mjs && tsc -p tsconfig.reference.json",
+    "typecheck:native": "node dev/native-types.mjs && tsc -p tsconfig.json",
+    "test": "claude plugin test ."
+  },
+  "devDependencies": {
+    "typescript": "5.9.3"
+  }
+}

@@ -14,6 +14,11 @@ Policy, implemented below and covered by tests/test_dependency_plugin_validate_t
 * Tolerated error 2: `.claude-plugin/plugin.json`, field `name`, same message.
 * Tolerated warning: the plugin-root CLAUDE.md notice. The file is the
   contributor guide for this repository and is not shipped as plugin context.
+* Tolerated warning (Claude Code 2.1.218 only, which predates mods): marketplace
+  manifest, field `plugins[1] plugin.json → types`, message starting
+  `Unknown field 'types'`. The optional blog-studio companion declares a
+  `types` manifest key that mods-era Claude Code reads and the older validator
+  reports as unknown ("Claude Code ignores it at load time").
 * Every other error or warning, in any section, fails the run. Each tolerated
   finding counts once per section, so a duplicate is also a failure.
 * A non-zero CLI exit with no parseable error block fails (an unknown output
@@ -34,6 +39,8 @@ from pathlib import Path
 
 RESERVED_NAME_PREFIX = 'Plugin name "claude-blog" is reserved'
 ROOT_CLAUDE_MD_PREFIX = "CLAUDE.md at the plugin root is not loaded as project context"
+STUDIO_TYPES_FIELD = "plugins[1] plugin.json \u2192 types"
+STUDIO_TYPES_PREFIX = "Unknown field 'types'"
 
 ANSI = re.compile(r"\x1b\[[0-9;?]*[A-Za-z]")
 SECTION = re.compile(r"^Validating (?P<kind>[^:]+): (?P<target>.+?)\s*$")
@@ -141,6 +148,13 @@ def tolerated_key(finding: Finding) -> str | None:
         and _is_root_claude_md(finding)
     ):
         return "root-claude-md-warning"
+    if (
+        finding.level == "warning"
+        and _is_marketplace(finding)
+        and finding.field == STUDIO_TYPES_FIELD
+        and finding.message.startswith(STUDIO_TYPES_PREFIX)
+    ):
+        return "blog-studio-types-field-warning"
     return None
 
 

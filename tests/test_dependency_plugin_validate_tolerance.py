@@ -35,9 +35,22 @@ def _sample(name: str) -> str:
     return (SAMPLES / name).read_text(encoding="utf-8")
 
 
-def test_old_cli_pass_is_a_pass():
+def test_old_cli_pass_tolerates_only_the_studio_types_warning():
     ok, tolerated, blocking = tolerance.evaluate(_sample("v2.1.218-shipped-tree.txt"), 0)
-    assert ok and not tolerated and not blocking
+    assert ok and not blocking
+    assert tolerated == ["blog-studio-types-field-warning"]
+
+
+def test_the_types_warning_is_tolerated_only_once_and_only_on_the_studio_entry():
+    text = _sample("v2.1.218-shipped-tree.txt")
+    ok, _t, blocking = tolerance.evaluate(text + text.split("\n", 2)[2], 0)
+    assert not ok and any("duplicate" in item or "plugins[1]" in item for item in blocking)
+    other = text.replace("plugins[1]", "plugins[0]")
+    ok, _t, blocking = tolerance.evaluate(other, 0)
+    assert not ok and any("plugins[0] plugin.json" in item for item in blocking)
+    other_field = text.replace("types: Unknown field 'types'", "hooks: Unknown field 'hooks'")
+    ok, _t, blocking = tolerance.evaluate(other_field, 0)
+    assert not ok
 
 
 @pytest.mark.parametrize("version", ["2.1.292", "2.1.296"])
