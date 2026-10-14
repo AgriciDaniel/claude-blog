@@ -12,6 +12,13 @@ version: 2
 #   artifact: nothing installs from it, CI only verifies it with
 #   `uv lock --check`, and the pip locks above are the source of truth. A uv
 #   entry would open a second, competing update PR for the same packages.
+#
+# * Version-update PRs are switched off (open-pull-requests-limit: 0 on every
+#   entry) since 2026-10-14. Each pip bump needs a maintainer relock, so the
+#   PRs only produced notifications. Vulnerability alerts stay on in the
+#   repository settings. To turn updates back on, raise the limits (the
+#   previous values were 3 for pip and 2 for github-actions) and refresh the
+#   locks by hand with the command in each lock header.
 updates:
   # Python dependencies (root pyproject.toml + requirements.txt)
   - package-ecosystem: "pip"
@@ -33,7 +40,7 @@ updates:
         update-types:
           - minor
           - patch
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 0
 
   # Nested skill venvs - audit VULN-504 (Dependabot was blind to these)
   - package-ecosystem: "pip"
@@ -55,7 +62,7 @@ updates:
         update-types:
           - minor
           - patch
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 0
 
   - package-ecosystem: "pip"
     directory: "/skills/blog-notebooklm/scripts"
@@ -76,7 +83,7 @@ updates:
         update-types:
           - minor
           - patch
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 0
 
   - package-ecosystem: "pip"
     directory: "/skills/blog-audio/scripts"
@@ -97,7 +104,7 @@ updates:
         update-types:
           - minor
           - patch
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 0
 
   # GitHub Actions versions
   - package-ecosystem: "github-actions"
@@ -111,4 +118,4 @@ updates:
         update-types:
           - minor
           - patch
-    open-pull-requests-limit: 2
+    open-pull-requests-limit: 0
