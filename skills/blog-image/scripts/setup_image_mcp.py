@@ -223,7 +223,10 @@ def save_config(path: Path, config: dict, quiet: bool = False) -> None:
     _verify_not_symlink(path)
     fd, tmp_path = _open_temp_no_follow(path)
     try:
-        os.fchmod(fd, 0o600)
+        if hasattr(os, "fchmod"):
+            os.fchmod(fd, 0o600)
+        else:  # Windows has no fchmod; the temp file is created with mode 0o600 already.
+            os.chmod(tmp_path, 0o600)
         with os.fdopen(fd, "w") as f:
             json.dump(config, f, indent=2)
             f.write("\n")

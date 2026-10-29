@@ -17,6 +17,16 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from runtime_paths import resolve_runtime_paths
 
 
+PIP_TIMEOUT_SECONDS = 900  # a hung index or build should fail, not block setup forever
+
+
+def _output_tail(text: str | bytes | None, lines: int = 20) -> str:
+    """Return the last few lines of captured process output."""
+    if isinstance(text, bytes):
+        text = text.decode("utf-8", "replace")
+    return "\n".join((text or "").strip().splitlines()[-lines:])
+
+
 class SkillEnvironment:
     """Manages skill-specific virtual environment"""
 
@@ -76,7 +86,8 @@ class SkillEnvironment:
                     [str(self.venv_pip)] + install_args,
                     check=True,
                     capture_output=True,
-                    text=True
+                    text=True,
+                    timeout=PIP_TIMEOUT_SECONDS,
                 )
                 self.write_dependency_stamp()
                 print("✅ Dependencies installed")
@@ -90,18 +101,26 @@ class SkillEnvironment:
                         [str(self.venv_python), "-m", "patchright", "install", "chrome"],
                         check=True,
                         capture_output=True,
-                        text=True
+                        text=True,
+                        timeout=PIP_TIMEOUT_SECONDS,
                     )
                     print("✅ Chrome installed")
+                except subprocess.TimeoutExpired:
+                    print(f"⚠️ Warning: Chrome install did not finish within {PIP_TIMEOUT_SECONDS} seconds")
+                    print("   You may need to run manually: python3 -m patchright install chrome")
                 except subprocess.CalledProcessError as e:
                     print(f"⚠️ Warning: Failed to install Chrome: {e}")
                     print("   You may need to run manually: python3 -m patchright install chrome")
                     print("   Chrome is required (not Chromium) for reliability!")
 
                 return True
+            except subprocess.TimeoutExpired:
+                print(f"❌ Failed to install dependencies: pip did not finish within {PIP_TIMEOUT_SECONDS} seconds")
+                return False
             except subprocess.CalledProcessError as e:
                 print(f"❌ Failed to install dependencies: {e}")
-                print(f"   Output: {e.output if hasattr(e, 'output') else 'No output'}")
+                tail = _output_tail(e.stderr)
+                print(f"   pip said:\n{tail}" if tail else "   pip printed nothing on stderr")
                 return False
         else:
             print("⚠️ No requirements.txt found, skipping dependency installation")

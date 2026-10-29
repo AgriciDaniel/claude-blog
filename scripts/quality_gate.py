@@ -15,9 +15,16 @@ Path handling is deliberately strict:
   description or date) fails, and a file inside docs/, skills/, tests/,
   templates/ or references/ is still analyzed.
 - A directory named on the command line is scanned recursively. The scan skips
-  those non-post directories and files without blog frontmatter.
+  files without blog frontmatter, and skips the docs/, skills/, tests/,
+  templates/ and references/ trees of the claude-blog repository itself.
 - Hook mode (``--select``) and ``--staged`` receive every changed Markdown file
   from Git or pre-commit, so they apply the filter and skip non-posts.
+- The docs/, skills/, tests/, templates/ and references/ exclusion applies only
+  inside a checkout of claude-blog (a ``.claude-plugin/plugin.json`` named
+  ``claude-blog`` above the file). In any other repository a post under docs/
+  is gated like any other post.
+- Whatever is skipped is counted in the output, so a pass is never silent
+  about what it did not check.
 
 Exit codes: 0 pass, 1 a post failed the gate, 2 usage error or a path that is
 missing or not a file.
@@ -48,19 +55,44 @@ MISSING_FRONTMATTER = (
 )
 
 
-def _path_for_policy(path: Path, root: Path | None = None) -> Path:
-    """Return a lexical path relative to root when possible for directory checks."""
-    root = Path(os.path.abspath(os.fspath(root or Path.cwd())))
-    absolute_path = Path(os.path.abspath(os.fspath(path)))
+def _is_claude_blog_root(directory: Path) -> bool:
+    """Return True when directory is the root of a claude-blog checkout."""
+    manifest = directory / ".claude-plugin" / "plugin.json"
     try:
-        return absolute_path.relative_to(root)
-    except ValueError:
-        return absolute_path
+        data = json.loads(manifest.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, ValueError):
+        return False
+    return isinstance(data, dict) and data.get("name") == "claude-blog"
+
+
+def _find_claude_blog_root(path: Path) -> Path | None:
+    """Return the claude-blog checkout root above path (lexically), if any."""
+    absolute_path = Path(os.path.abspath(os.fspath(path)))
+    for parent in absolute_path.parents:
+        if _is_claude_blog_root(parent):
+            return parent
+    return None
 
 
 def is_excluded_path(file_path: str | Path, root: Path | None = None) -> bool:
-    """Return True when the path is inside a non-post content tree."""
-    policy_path = _path_for_policy(Path(file_path), root)
+    """Return True when the path is inside one of claude-blog's own non-post trees.
+
+    The exclusion applies only when the file sits in a claude-blog checkout:
+    ``root`` (when given) or the nearest ancestor holding a claude-blog
+    ``.claude-plugin/plugin.json``. Everywhere else nothing is excluded.
+    """
+    absolute_path = Path(os.path.abspath(os.fspath(file_path)))
+    if root is None:
+        repo_root = _find_claude_blog_root(absolute_path)
+    else:
+        candidate = Path(os.path.abspath(os.fspath(root)))
+        repo_root = candidate if _is_claude_blog_root(candidate) else None
+    if repo_root is None:
+        return False
+    try:
+        policy_path = absolute_path.relative_to(repo_root)
+    except ValueError:
+        return False
     parent_parts = {part.lower() for part in policy_path.parts[:-1]}
     return bool(parent_parts & EXCLUDED_DIRS)
 
@@ -78,33 +110,58 @@ def has_blog_frontmatter(file_path: str | Path) -> bool:
     )
 
 
-def is_blog_post(file_path: str | Path, root: Path | None = None) -> bool:
-    """Return True when a path should be gated as a blog post."""
+def skip_reason(file_path: str | Path, root: Path | None = None) -> str | None:
+    """Return why a path is not gated as a blog post, or None when it is one."""
     path = Path(file_path)
     if path.suffix.lower() not in BLOG_SUFFIXES:
-        return False
+        return "not a Markdown file"
     if is_excluded_path(path, root):
-        return False
+        return "inside a claude-blog docs, skills, tests, templates or references tree"
     if not path.is_file():
-        return False
+        return "not a regular file"
     try:
-        return has_blog_frontmatter(path)
+        if not has_blog_frontmatter(path):
+            return "no blog frontmatter"
     except (OSError, UnicodeDecodeError):
-        return True
+        return None
+    return None
+
+
+def is_blog_post(file_path: str | Path, root: Path | None = None) -> bool:
+    """Return True when a path should be gated as a blog post."""
+    return skip_reason(file_path, root) is None
+
+
+def _git(*args: str) -> bytes:
+    """Run git and return stdout bytes, raising RuntimeError on failure."""
+    result = subprocess.run(
+        ["git", *args], check=False, capture_output=True
+    )
+    if result.returncode != 0:
+        message = result.stderr.decode("utf-8", "replace").strip()
+        raise RuntimeError(message or "Unable to read staged files")
+    return result.stdout
 
 
 def _staged_files() -> list[str]:
-    """Read staged file names from Git (deleted files are not gate inputs)."""
-    result = subprocess.run(
-        ["git", "diff", "--cached", "--name-only", "--diff-filter=ACMR"],
-        check=False,
-        capture_output=True,
-        text=True,
-    )
-    if result.returncode != 0:
-        message = result.stderr.strip() or "Unable to read staged files"
-        raise RuntimeError(message)
-    return [line.strip() for line in result.stdout.splitlines() if line.strip()]
+    """Read staged file paths from Git (deleted files are not gate inputs).
+
+    Uses NUL-separated output so names with spaces or non-ASCII characters are
+    not quoted, and resolves each name against the repository top level, since
+    Git prints paths relative to it whatever the current directory is.
+    """
+    toplevel = Path(_git("rev-parse", "--show-toplevel").decode("utf-8", "replace").strip())
+    raw = _git("diff", "--cached", "--name-only", "-z", "--diff-filter=ACMR")
+    names = [item for item in raw.decode("utf-8", "surrogateescape").split("\0") if item]
+    return [_display_path(toplevel / name) for name in names]
+
+
+def _display_path(path: Path) -> str:
+    """Prefer a path relative to the current directory; keep it absolute if that fails."""
+    try:
+        return os.path.relpath(path)
+    except ValueError:
+        return str(path)
 
 
 def _input_error(path: str, reason: str) -> dict[str, Any]:
@@ -185,11 +242,27 @@ def analyze_post(file_path: str | Path, threshold: int) -> dict[str, Any]:
     return output
 
 
-def _format_text(results: list[dict[str, Any]], failures: list[dict[str, Any]], threshold: int) -> str:
+def _skipped_summary(skipped: dict[str, str]) -> str:
+    """Describe skipped files, grouped by reason, for the text output."""
+    reasons: dict[str, int] = {}
+    for reason in skipped.values():
+        reasons[reason] = reasons.get(reason, 0) + 1
+    detail = "; ".join(f"{count} {reason}" for reason, count in sorted(reasons.items()))
+    return f"{len(skipped)} file(s) skipped ({detail})."
+
+
+def _format_text(
+    results: list[dict[str, Any]],
+    failures: list[dict[str, Any]],
+    threshold: int,
+    skipped: dict[str, str] | None = None,
+) -> str:
+    skipped = skipped or {}
+    note = f"\n{_skipped_summary(skipped)}" if skipped else ""
     if not failures:
         if results:
-            return f"Blog quality gate passed: {len(results)} post(s) checked."
-        return "Blog quality gate passed: no blog posts to check."
+            return f"Blog quality gate passed: {len(results)} post(s) checked.{note}"
+        return f"Blog quality gate passed: no blog posts to check.{note}"
 
     lines = [
         f"Blog quality gate failed: {len(failures)} post(s) below score {threshold}.",
@@ -206,17 +279,25 @@ def _format_text(results: list[dict[str, Any]], failures: list[dict[str, Any]], 
                 )
         else:
             lines.append("  No high severity issues reported.")
+    if skipped:
+        lines.append(_skipped_summary(skipped))
     return "\n".join(lines)
 
 
 def _format_json(
-    results: list[dict[str, Any]], failures: list[dict[str, Any]], threshold: int
+    results: list[dict[str, Any]],
+    failures: list[dict[str, Any]],
+    threshold: int,
+    skipped: dict[str, str] | None = None,
 ) -> str:
     errors = [result["error"] for result in results if result.get("error")]
     payload = {
         "threshold": threshold,
         "checked": results,
         "failures": failures,
+        "skipped": [
+            {"file": path, "reason": reason} for path, reason in (skipped or {}).items()
+        ],
     }
     if errors:
         payload["error"] = "; ".join(errors)
@@ -237,14 +318,12 @@ def _threshold_arg(value: str) -> int:
 
 
 def expand_directory(directory: Path) -> list[str]:
-    """Scan a directory for posts, skipping non-post trees and non-post files."""
-    found: list[str] = []
-    for candidate in sorted(directory.rglob("*")):
-        if candidate.suffix.lower() in BLOG_SUFFIXES and is_blog_post(
-            candidate, root=directory
-        ):
-            found.append(str(candidate))
-    return found
+    """List every Markdown candidate under a directory; main() filters and counts skips."""
+    return [
+        str(candidate)
+        for candidate in sorted(directory.rglob("*"))
+        if candidate.suffix.lower() in BLOG_SUFFIXES
+    ]
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -329,18 +408,22 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("no files given: name Markdown files or directories, or pass --staged")
 
     selected = list(explicit)
-    selected.extend(
-        path for path in candidates if is_blog_post(path, root=Path.cwd())
-    )
+    skipped: dict[str, str] = {}
+    for path in candidates:
+        reason = skip_reason(path)
+        if reason is None:
+            selected.append(path)
+        else:
+            skipped[path] = reason
     selected = _dedupe(selected)
     results = [analyze_post(path, args.threshold) for path in selected]
     results.extend(problems)
     failures = [result for result in results if not result["passed"]]
 
     if args.format == "json":
-        print(_format_json(results, failures, args.threshold))
+        print(_format_json(results, failures, args.threshold, skipped))
     else:
-        print(_format_text(results, failures, args.threshold))
+        print(_format_text(results, failures, args.threshold, skipped))
 
     if problems:
         return 2

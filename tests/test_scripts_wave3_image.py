@@ -173,3 +173,13 @@ def test_setup_rejects_a_multiline_key_passed_directly(setup, tmp_path, monkeypa
     with pytest.raises(SystemExit):
         setup.setup_mcp(f"{GOOGLE_KEY}\nOPENAI_API_KEY={OTHER_KEY}", True, True)
     assert not (tmp_path / "settings.json").exists()
+
+
+def test_save_config_works_without_fchmod(setup, tmp_path, monkeypatch):
+    """Windows has no os.fchmod; the config must still be written with a private mode."""
+    monkeypatch.delattr(os, "fchmod", raising=False)
+    target = tmp_path / "settings.json"
+    setup.save_config(target, {"k": "v"}, quiet=True)
+    assert json.loads(target.read_text()) == {"k": "v"}
+    if os.name == "posix":
+        assert stat.S_IMODE(target.stat().st_mode) == 0o600

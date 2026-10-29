@@ -444,7 +444,6 @@ Reader-visible evidence.
         "breakdown"
     ]["schema"]
     assert schema_points == 4
-    assert schema_points <= 4
 
 
 def test_indonesian_profile_is_declared_only_and_recognizes_supported_signals(
@@ -476,12 +475,32 @@ Lihat [tentang kami](/tentang-kami) dan [hubungi kami](/kontak).
 
     result = analyzer.analyze_file(str(declared))
     assert result["language"] == "id"
-    assert result["readability"]["reading_model"] == "flesch"
+    expected_model = "flesch" if analyzer.HAS_TEXTSTAT else "flesch-estimate"
+    assert result["readability"]["reading_model"] == expected_model
+    assert result["readability"]["estimated"] is (not analyzer.HAS_TEXTSTAT)
     assert result["ai_citation_readiness"]["has_tldr"] is True
     assert result["ai_citation_readiness"]["entity_definitions"] >= 1
     assert result["originality"]["methodology_count"] >= 1
     assert result["originality"]["unsupported_experience_claims"] == 0
     assert analyzer.analyze_file(str(undeclared))["language"] == "en"
+
+
+def test_readability_falls_back_to_estimate_without_textstat(
+    monkeypatch, tmp_path: Path
+) -> None:
+    analyzer = _load("runtime_no_textstat", "scripts/analyze_blog.py")
+    monkeypatch.setattr(analyzer, "HAS_TEXTSTAT", False)
+    post = tmp_path / "post.md"
+    post.write_text(
+        "---\ntitle: Plain Post\nauthor: Jane Doe\n---\n"
+        "# Plain Post\n\nShort sentences read well. Readers like that.\n",
+        encoding="utf-8",
+    )
+
+    readability = analyzer.analyze_file(str(post))["readability"]
+
+    assert readability["reading_model"] == "flesch-estimate"
+    assert readability["estimated"] is True
 
 
 def test_runtime_wrappers_require_explicit_setup_without_installing(

@@ -314,7 +314,7 @@ Integrity is only as pinned as `CLAUDE_BLOG_REF`. What the digests cover:
 each is the SHA-256 of that one file's bytes in this repository with CRLF line
 endings normalized to LF, the form `raw.githubusercontent.com` serves
 (`install.sh`: the digest above; `install.ps1`:
-`aa80fa99aaacc5dec3acabcbd714801b4a3e63635c09db9264041f8b8f48dd97`). A local
+`133d49c1ac5723605ee53ca140b9f17c30db9b980a712a3d1938f71cea17139a`). A local
 copy with CRLF endings or edits will not match until normalized. They do not
 cover the code that does the work: the wrapper clones the repository at
 `CLAUDE_BLOG_REF` and hands over to that revision's own `install.sh`,

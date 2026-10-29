@@ -1,21 +1,29 @@
 #!/usr/bin/env python3
 """Generate or fetch a 1200x630 hero image for a blog post.
 
-Implements the v1.9.0 Blog Delivery Contract hero-image ladder. The
-orchestrator handles step 1 (Banana MCP) when available; this script
-handles steps 2-4 and produces the final `hero.<ext>` + `hero-credit.txt`
+Implements the v1.9.0 Blog Delivery Contract hero-image ladder. Banana MCP
+is step 1 of the contract, but it runs in the orchestrator before this script
+is called and this script never calls it. The script itself starts at step 2
+(direct Gemini API) and produces the final `hero.<ext>` + `hero-credit.txt`
 in the requested output directory.
 
 Ladder:
-  1. (Orchestrator only) Banana MCP via nanobanana-mcp
+  1. (Orchestrator only, not run by this script) Banana MCP via nanobanana-mcp
   2. Direct Gemini API via google-genai SDK (requires GOOGLE_AI_API_KEY or GEMINI_API_KEY)
   3. Premium stock APIs: Unsplash, Pexels, Pixabay (any one key suffices)
   4. Openverse public API (CC-licensed; no key required)
   5. Exit nonzero with setup instructions
 
+A hero already in the output directory (`hero.png`, `.jpg`, `.jpeg` or
+`.webp`, for example one the user placed by hand) is kept and reported with
+source `existing`; no provider runs. `--replace` generates a new one instead.
+A downloaded or generated image that cannot be decoded (corrupt, truncated,
+oversized) is skipped and the next step runs. A successful write removes any
+stale `hero.*` file of another extension so the renderer cannot pick it.
+
 Usage:
     python3 scripts/generate_hero.py --topic "<title>" --tags "a,b,c" \\
-        --out <draft-folder> [--width 1200] [--height 630] [--json]
+        --out <draft-folder> [--width 1200] [--height 630] [--replace] [--json]
 
 Returns 0 on success (hero.<ext> + hero-credit.txt written). Returns 1
 when every ladder step is exhausted with no successful generation.
@@ -332,24 +340,64 @@ def _validate_dimensions(width: int, height: int) -> tuple[bool, str | None]:
     return True, None
 
 
+class _ImageUnusable(RuntimeError):
+    """The image bytes could not be decoded or resized; the caller moves to the next source."""
+
+
 def _fit_image_bytes(data: bytes, width: int, height: int) -> bytes:
-    """Resize and center-crop image bytes to exact output dimensions."""
+    """Resize and center-crop image bytes to exact output dimensions.
+
+    Raises RuntimeError when Pillow is missing and its subclass _ImageUnusable
+    when the bytes cannot be decoded (corrupt, truncated, decompression bomb).
+    Both make the ladder skip this source; neither is a write error.
+    """
     try:
         from PIL import Image, ImageOps  # type: ignore
     except ImportError as e:
         raise RuntimeError("Pillow is required to enforce --width/--height") from e
 
-    with Image.open(io.BytesIO(data)) as img:
-        fmt = (img.format or "PNG").upper()
-        fitted = ImageOps.fit(img, (width, height), method=Image.Resampling.LANCZOS)
-        if fmt in {"JPEG", "JPG"} and fitted.mode in {"RGBA", "LA", "P"}:
-            fitted = fitted.convert("RGB")
-        out = io.BytesIO()
-        save_format = "JPEG" if fmt == "JPG" else fmt
-        if save_format not in {"JPEG", "PNG", "WEBP"}:
-            save_format = "PNG"
-        fitted.save(out, format=save_format)
-        return out.getvalue()
+    try:
+        with Image.open(io.BytesIO(data)) as img:
+            fmt = (img.format or "PNG").upper()
+            fitted = ImageOps.fit(img, (width, height), method=Image.Resampling.LANCZOS)
+            if fmt in {"JPEG", "JPG"} and fitted.mode in {"RGBA", "LA", "P"}:
+                fitted = fitted.convert("RGB")
+            out = io.BytesIO()
+            save_format = "JPEG" if fmt == "JPG" else fmt
+            if save_format not in {"JPEG", "PNG", "WEBP"}:
+                save_format = "PNG"
+            fitted.save(out, format=save_format)
+            return out.getvalue()
+    except Exception as e:  # PIL raises OSError, ValueError, SyntaxError, DecompressionBombError, ...
+        raise _ImageUnusable(f"image could not be decoded ({type(e).__name__}: {e})") from e
+
+
+HERO_EXTENSIONS = (".png", ".jpg", ".jpeg", ".webp")
+
+
+def _existing_hero(out_dir: Path) -> Optional[Path]:
+    """Return the hero file already in out_dir, if any (symlinks do not count)."""
+    for extension in HERO_EXTENSIONS:
+        candidate = out_dir / f"{OUTPUT_FILE_PREFIX}{extension}"
+        if candidate.is_file() and not candidate.is_symlink():
+            return candidate
+    return None
+
+
+def _write_hero(out_dir: Path, img_bytes: bytes) -> Path:
+    """Write hero.<ext> and remove stale hero.* siblings of other extensions.
+
+    scripts/blog_render.py prefers hero.png, so an older hero.png left beside a
+    fresh hero.jpg would silently win. Cleanup runs only after the write
+    succeeded, and never touches the file just written.
+    """
+    hero_path = out_dir / f"{OUTPUT_FILE_PREFIX}{_image_ext(img_bytes)}"
+    _atomic_write_bytes(hero_path, img_bytes)
+    for extension in HERO_EXTENSIONS:
+        stale = out_dir / f"{OUTPUT_FILE_PREFIX}{extension}"
+        if stale != hero_path and (stale.is_symlink() or stale.is_file()):
+            stale.unlink()
+    return hero_path
 
 
 def _build_prompt(topic: str, tags: list[str], width: int, height: int) -> str:
@@ -472,8 +520,7 @@ def _try_gemini(topic: str, tags: list[str], out_dir: Path, width: int, height: 
     except RuntimeError as e:
         print(f"[image] {e}", file=sys.stderr)
         return None
-    hero_path = out_dir / f"{OUTPUT_FILE_PREFIX}{_image_ext(img_bytes)}"
-    _atomic_write_bytes(hero_path, img_bytes)
+    hero_path = _write_hero(out_dir, img_bytes)
     _atomic_write_text(
         out_dir / "hero-credit.txt",
         f"AI-generated via {used_model}. No attribution required.\nPrompt: {prompt}\n",
@@ -503,8 +550,7 @@ def _try_unsplash(query: str, out_dir: Path, width: int, height: int) -> Optiona
     except RuntimeError as e:
         print(f"[image] {e}", file=sys.stderr)
         return None
-    hero_path = out_dir / f"{OUTPUT_FILE_PREFIX}{_image_ext(img_bytes)}"
-    _atomic_write_bytes(hero_path, img_bytes)
+    hero_path = _write_hero(out_dir, img_bytes)
     user = item.get("user", {})
     credit = (
         f'Photo by {user.get("name", "Unsplash contributor")} on Unsplash\n'
@@ -535,8 +581,7 @@ def _try_pexels(query: str, out_dir: Path, width: int, height: int) -> Optional[
     except RuntimeError as e:
         print(f"[image] {e}", file=sys.stderr)
         return None
-    hero_path = out_dir / f"{OUTPUT_FILE_PREFIX}{_image_ext(img_bytes)}"
-    _atomic_write_bytes(hero_path, img_bytes)
+    hero_path = _write_hero(out_dir, img_bytes)
     credit = (
         f'Photo by {item.get("photographer", "Pexels contributor")} on Pexels\n'
         f'License: Pexels License (free for commercial use)\n'
@@ -569,8 +614,7 @@ def _try_pixabay(query: str, out_dir: Path, width: int, height: int) -> Optional
     except RuntimeError as e:
         print(f"[image] {e}", file=sys.stderr)
         return None
-    hero_path = out_dir / f"{OUTPUT_FILE_PREFIX}{_image_ext(img_bytes)}"
-    _atomic_write_bytes(hero_path, img_bytes)
+    hero_path = _write_hero(out_dir, img_bytes)
     credit = (
         f'Image by {item.get("user", "Pixabay contributor")} on Pixabay\n'
         f'License: Pixabay Content License (free for commercial use)\n'
@@ -636,9 +680,7 @@ def _try_openverse(topic: str, tags: list[str], out_dir: Path, width: int, heigh
         print(f"[image] {e}", file=sys.stderr)
         return None
 
-    ext = _image_ext(img_bytes)
-    hero_path = out_dir / f"{OUTPUT_FILE_PREFIX}{ext}"
-    _atomic_write_bytes(hero_path, img_bytes)
+    hero_path = _write_hero(out_dir, img_bytes)
 
     title = item.get("title") or "untitled"
     creator = item.get("creator") or "Unknown"
@@ -660,6 +702,11 @@ def main() -> int:
     parser.add_argument("--width", type=int, default=DEFAULT_WIDTH)
     parser.add_argument("--height", type=int, default=DEFAULT_HEIGHT)
     parser.add_argument("--model", default=DEFAULT_GEMINI_MODEL, help="Gemini image model name")
+    parser.add_argument(
+        "--replace",
+        action="store_true",
+        help="Generate a new hero even when the output directory already has one (default: keep it)",
+    )
     parser.add_argument("--json", action="store_true", help="Emit JSON result to stdout")
     args = parser.parse_args()
 
@@ -698,6 +745,16 @@ def main() -> int:
         else:
             print(msg, file=sys.stderr)
         return 1
+    existing = _existing_hero(out_dir)
+    if existing is not None and not args.replace:
+        # Never overwrite or delete a hero that is already there (the contract
+        # lets the user place one by hand), and never spend on a second one.
+        result = {"source": "existing", "path": str(existing)}
+        if args.json:
+            print(json.dumps(result))
+        else:
+            print(f"OK: kept existing hero {existing} (pass --replace to generate a new one)")
+        return 0
     tags = [t.strip() for t in args.tags.split(",") if t.strip()]
 
     ladder: list[tuple[str, Callable[[], Optional[dict]]]] = [

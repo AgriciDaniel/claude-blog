@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import time
 import urllib.error
 import urllib.request
 import xml.etree.ElementTree as ET
@@ -24,22 +25,39 @@ AUTOMATED_SOURCES = {
 }
 
 
+RETRY_DELAY_SECONDS = 1.0
+
+
 def _fetch(url: str, timeout: float) -> bytes:
     request = urllib.request.Request(
         url,
         headers={"User-Agent": "claude-blog-currentness-check/1.0"},
     )
-    with urllib.request.urlopen(request, timeout=timeout) as response:
-        return response.read()
+    # One retry on a network error absorbs a transient blip without hiding an outage.
+    for attempt in range(2):
+        try:
+            with urllib.request.urlopen(request, timeout=timeout) as response:
+                return response.read()
+        except urllib.error.URLError:
+            if attempt == 1:
+                raise
+            time.sleep(RETRY_DELAY_SECONDS)
+    raise AssertionError("unreachable")
 
 
 def latest_ranking_incident(payload: bytes) -> date:
-    incidents = json.loads(payload)
-    dates = [
-        datetime.fromisoformat(item["begin"]).date()
-        for item in incidents
-        if item.get("service_name") == "Ranking" and item.get("begin")
-    ]
+    try:
+        incidents = json.loads(payload)
+        dates = [
+            datetime.fromisoformat(item["begin"]).date()
+            for item in incidents
+            if item.get("service_name") == "Ranking" and item.get("begin")
+        ]
+    except (AttributeError, KeyError, TypeError) as exc:
+        raise ValueError(
+            "official status feed has an unexpected shape "
+            f"(expected a JSON list of incident objects): {type(exc).__name__}: {exc}"
+        ) from exc
     if not dates:
         raise ValueError("official status feed has no Ranking incidents")
     return max(dates)
@@ -47,11 +65,17 @@ def latest_ranking_incident(payload: bytes) -> date:
 
 def latest_documentation_update(payload: bytes) -> date:
     root = ET.fromstring(payload)
-    dates = [
-        parsedate_to_datetime(item.text).date()
-        for item in root.findall("./channel/item/pubDate")
-        if item.text
-    ]
+    try:
+        dates = [
+            parsedate_to_datetime(item.text).date()
+            for item in root.findall("./channel/item/pubDate")
+            if item.text
+        ]
+    except (AttributeError, KeyError, TypeError) as exc:
+        raise ValueError(
+            "official documentation feed has an unexpected shape "
+            f"(expected RSS items with an RFC 2822 pubDate): {type(exc).__name__}: {exc}"
+        ) from exc
     if not dates:
         raise ValueError("official documentation feed has no dated items")
     return max(dates)
@@ -158,6 +182,7 @@ def main() -> int:
             source_dates=source_dates,
         )
     except (
+        AttributeError,
         FileNotFoundError,
         json.JSONDecodeError,
         KeyError,

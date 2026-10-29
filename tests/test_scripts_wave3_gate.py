@@ -58,7 +58,10 @@ def test_explicit_file_in_excluded_dir_is_still_checked(tmp_path, subdir):
     assert "post.md" in result.stdout
 
 
-def test_directory_scan_still_skips_excluded_dirs_and_non_posts(tmp_path):
+def test_directory_scan_skips_claude_blog_own_trees_and_non_posts(tmp_path):
+    manifest = tmp_path / ".claude-plugin" / "plugin.json"
+    manifest.parent.mkdir()
+    manifest.write_text(json.dumps({"name": "claude-blog"}), encoding="utf-8")
     good = tmp_path / "posts" / "a.md"
     good.parent.mkdir()
     good.write_text((FIXTURES / "blog_pass.md").read_text(encoding="utf-8"), encoding="utf-8")
@@ -69,7 +72,18 @@ def test_directory_scan_still_skips_excluded_dirs_and_non_posts(tmp_path):
     result = _run(str(tmp_path), "--format", "json", cwd=tmp_path)
     payload = json.loads(result.stdout)
     assert [Path(item["file"]).name for item in payload["checked"]] == ["a.md"]
+    assert {Path(item["file"]).name for item in payload["skipped"]} == {"b.md", "notes.md"}
     assert result.returncode == 0
+
+
+def test_directory_scan_gates_docs_posts_outside_a_claude_blog_checkout(tmp_path):
+    failing = tmp_path / "docs" / "b.md"
+    failing.parent.mkdir()
+    failing.write_text((FIXTURES / "blog_fail.md").read_text(encoding="utf-8"), encoding="utf-8")
+    result = _run(str(tmp_path), "--format", "json", cwd=tmp_path)
+    payload = json.loads(result.stdout)
+    assert [Path(item["file"]).name for item in payload["checked"]] == ["b.md"]
+    assert result.returncode == 1
 
 
 def test_select_mode_skips_non_posts_for_the_pre_commit_hook(tmp_path):

@@ -190,7 +190,10 @@ def _write_secret_atomic(path: str, content: str) -> None:
     os.makedirs(parent, mode=0o700, exist_ok=True)
     fd, tmp = tempfile.mkstemp(dir=parent, prefix=".tmp-")
     try:
-        os.fchmod(fd, 0o600)
+        if hasattr(os, "fchmod"):
+            os.fchmod(fd, 0o600)
+        else:  # Windows has no fchmod; mkstemp already creates the file owner-only.
+            os.chmod(tmp, 0o600)
         with os.fdopen(fd, "w") as f:
             f.write(content)
         os.replace(tmp, path)
@@ -517,6 +520,72 @@ def get_oauth_credentials(scopes: list):
     return get_service_account_credentials(scopes)
 
 
+def _open_browser(url: str) -> None:
+    import webbrowser
+
+    try:
+        webbrowser.open(url)
+    except Exception:
+        pass
+
+
+def _listen_for_oauth_code(
+    state_token: str,
+    timeout: float = 300.0,
+    host: str = "127.0.0.1",
+    port: int = 8085,
+    webbrowser_open=None,
+) -> Optional[str]:
+    """Serve the loopback redirect until a request carries a valid code or time runs out.
+
+    Requests with a wrong state or no code (browser favicon fetches, scanners,
+    a forged callback) are answered and ignored; the loop keeps waiting until
+    the deadline. Raises OSError when the port cannot be bound.
+    """
+    import http.server
+    import urllib.parse
+
+    auth_code = [None]
+
+    class Handler(http.server.BaseHTTPRequestHandler):
+        def do_GET(self):
+            params = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
+            received_state = params.get("state", [""])[0]
+            if not secrets.compare_digest(received_state.encode(), state_token.encode()):
+                self.send_response(403)
+                self.send_header("Content-Type", "text/plain")
+                self.end_headers()
+                self.wfile.write(b"State mismatch - possible CSRF. Aborted.")
+                return
+            if "code" in params:
+                auth_code[0] = params["code"][0]
+                self.send_response(200)
+                self.send_header("Content-Type", "text/html")
+                self.end_headers()
+                self.wfile.write(b"<html><body><h1>Authorization complete.</h1>You can close this tab.</body></html>")
+            else:
+                self.send_response(400)
+                self.end_headers()
+
+        def log_message(self, *a):
+            pass
+
+    server = http.server.HTTPServer((host, port), Handler)
+    try:
+        if webbrowser_open:
+            webbrowser_open()
+        deadline = time.monotonic() + timeout
+        while auth_code[0] is None:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                break
+            server.timeout = remaining
+            server.handle_request()
+    finally:
+        server.server_close()
+    return auth_code[0]
+
+
 def run_oauth_flow(creds_path: str, services: list = None):
     """
     Run OAuth browser-based authentication flow.
@@ -529,10 +598,7 @@ def run_oauth_flow(creds_path: str, services: list = None):
         services: Optional list of scope service keys (see SCOPES). Defaults to
             the read-only set built by `_scopes_for(None)`.
     """
-    import http.server
     import urllib.parse
-    import urllib.request
-    import webbrowser
 
     client = _load_oauth_client(creds_path)
     if not client:
@@ -557,45 +623,20 @@ def run_oauth_flow(creds_path: str, services: list = None):
         f"?{urllib.parse.urlencode(auth_params)}"
     )
 
-    auth_code = [None]
-
-    class Handler(http.server.BaseHTTPRequestHandler):
-        def do_GET(self):
-            params = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
-            received_state = params.get("state", [""])[0]
-            if received_state != state_token:
-                self.send_response(403)
-                self.send_header("Content-Type", "text/plain")
-                self.end_headers()
-                self.wfile.write(b"State mismatch - possible CSRF. Aborted.")
-                return
-            if "code" in params:
-                auth_code[0] = params["code"][0]
-                self.send_response(200)
-                self.send_header("Content-Type", "text/html")
-                self.end_headers()
-                self.wfile.write(b"<html><body><h1>Authorization complete.</h1>You can close this tab.</body></html>")
-            else:
-                self.send_response(400)
-                self.end_headers()
-        def log_message(self, *a):
-            pass
-
-    server = http.server.HTTPServer(("127.0.0.1", 8085), Handler)
-    server.timeout = 300
-
     print(f"\nOpen this URL in your browser:\n\n{auth_url}\n")
     print("Waiting up to 5 minutes for authentication...")
 
     try:
-        webbrowser.open(auth_url)
-    except Exception:
-        pass
+        auth_code = _listen_for_oauth_code(state_token, webbrowser_open=lambda: _open_browser(auth_url))
+    except OSError as exc:
+        print(
+            f"\nError: could not listen on {OAUTH_REDIRECT_URI} ({exc}). "
+            "Another process is probably using port 8085; stop it and retry.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
 
-    server.handle_request()
-    server.server_close()
-
-    if not auth_code[0]:
+    if not auth_code:
         print("\nAuthentication failed or timed out.", file=sys.stderr)
         print("If the browser showed '127.0.0.1 refused to connect', copy the full URL")
         print("from the browser address bar and run:")
@@ -603,7 +644,7 @@ def run_oauth_flow(creds_path: str, services: list = None):
         sys.exit(1)
 
     # Exchange code for tokens
-    _exchange_code(client, auth_code[0], creds_path=creds_path)
+    _exchange_code(client, auth_code, creds_path=creds_path)
 
 
 def _exchange_code(client: dict, code: str, creds_path: str | None = None):
