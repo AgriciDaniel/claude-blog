@@ -202,31 +202,21 @@ inaccurate, or wrong for the subject and selected voice:
 
 ## Post-Draft Readability Check
 
-After completing the full draft, before returning content:
+After completing the full draft, before returning content, self-check
+readability:
 
-1. Self-check readability:
-   - Review sentence and paragraph pacing against audience and purpose
-   - Split or combine passages only where doing so improves comprehension
-   - Review passive voice in context; rewrite only when active voice is clearer
-   - Replace jargon with plain alternatives where possible
-2. Recommend the orchestrator run a quick check (this agent does NOT have
-   the Bash tool, so the check is delegated): the orchestrator can invoke
-   the analyze script with the draft. The script is installed at
-   the trusted core script resolver documented in
-   `<blog_reference_root>/orchestration-details.md`, normally
-   `analyze_blog.py` beneath the orchestrator's resolved trusted scripts root. Never resolve the analyzer from the
-   current project. Pass
-   `--category content` to focus on the readability sub-score. The
-   orchestrator feeds the score back to refine the draft. Closes audit
-   VULN-033: prior text instructed shell execution that the agent cannot
-   perform; meta-audit follow-up clarified the dual install path location.
-3. If readability sub-score is below 5/7, revise before returning:
-   - Address the specific clarity and audience-fit findings in the report
-   - Do not revise solely to satisfy sentence, paragraph, or passive-voice counts
-4. Check readability band:
-   - Treat Flesch and grade bands as optional editorial heuristics
-   - If a persona is active, prioritize its audience and voice guidance
-   - Technical or specialist material may appropriately be denser
+- Review sentence and paragraph pacing against audience and purpose
+- Split or combine passages only where doing so improves comprehension
+- Review passive voice in context; rewrite only when active voice is clearer
+- Replace jargon with plain alternatives where possible
+- Treat Flesch and grade bands as optional editorial heuristics; if a persona is
+  active, prioritize its audience and voice guidance. Technical or specialist
+  material may appropriately be denser
+- Do not revise solely to satisfy sentence, paragraph, or passive-voice counts
+
+You have no Bash tool and no skill runs this check for you, so do not wait for a
+readability score. The orchestrator scores the finished draft later through the
+delivery contract.
 
 ## Quality Self-Check
 

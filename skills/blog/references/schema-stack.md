@@ -53,13 +53,13 @@ and `@type` are required by the JSON-LD spec itself.
 | `@context` | JSON-LD required | URL | Always `"https://schema.org"` |
 | `@type` | JSON-LD required | String | `"Article"` or `"BlogPosting"` |
 | `@id` | Recommended | URI | Stable identifier: `{siteUrl}/blog/{slug}#article` |
-| `headline` | Recommended | String | Post title, max 110 characters |
+| `headline` | Recommended | String | Post title; Google documents no length limit, so keep it concise and matching the visible title |
 | `description` | Recommended | String | Accurate description that matches visible content |
 | `datePublished` | Recommended | ISO 8601 | Original publish date |
 | `dateModified` | Recommended | ISO 8601 | Last content update date |
 | `author` | Recommended | Person | Author entity (use @id reference) |
 | `publisher` | Recommended | Organization | Site/company entity (use @id reference) |
-| `image` | Recommended | ImageObject or URL | Featured image, min 1200x630px |
+| `image` | Recommended | ImageObject or URL | Google recommends high-resolution images of at least 50K pixels (width x height) in 16x9, 4x3 and 1x1 ratios; this project's hero is 1200x630 |
 | `mainEntityOfPage` | Recommended | WebPage | The page URL |
 | `wordCount` | Recommended | Integer | Total word count of article body |
 | `articleSection` | Recommended | String | Category/topic (e.g., "SEO") |
@@ -170,7 +170,7 @@ Represents the publishing entity. Referenced by every BlogPosting via the
 | `@id` | Yes | URI | Stable: `{siteUrl}#organization` |
 | `name` | Yes | String | Company/brand name |
 | `url` | Yes | URL | Homepage URL |
-| `logo` | Yes | ImageObject | Company logo (min 112x112px, max 600px wide) |
+| `logo` | Yes | ImageObject | Company logo (min 112x112px) |
 | `sameAs` | Recommended | Array | Social media profile URLs |
 | `contactPoint` | Recommended | ContactPoint | Support/contact info |
 | `description` | Optional | String | Brief company description |

@@ -28,8 +28,8 @@ context; pass only its helper-fenced output to downstream agents.
 Generate professional audio narration of blog content using Google's Gemini TTS.
 Three modes: summary (200-300 word spoken overview), full article read-aloud,
 or two-speaker podcast dialogue. 30 prebuilt voices, over 130 languages on
-Gemini 3.8 Flash TTS (over 100 on Flash-Lite; Google's speech-generation page,
-checked 2026-10-12), HTML5 embed output.
+Gemini 3.8 Flash TTS (over 100 on Flash-Lite), HTML5 embed output. Dated model,
+pricing and language facts live in `${CLAUDE_SKILL_DIR}/references/models.md`.
 
 ## Cost and consent gate (mandatory, read first)
 
@@ -39,12 +39,10 @@ This skill spends the user's Google AI credit and writes audio files.
   split into chunks, so a full read-aloud costs several calls. The script's
   `--max-chunks` flag caps the chunks per run (default 12); never raise it
   without telling the user the new worst-case cost.
-- **Cost basis:** audio output tokens at 25 tokens per second of audio.
-  On 2026-10-12 https://ai.google.dev/gemini-api/docs/pricing listed
-  `gemini-3.8-flash-tts` at $9.00 per 1M audio tokens (about $0.00225 per 10
-  seconds) and `gemini-3.8-flash-lite-tts` at $6.00 (about $0.0015 per 10
-  seconds), both through 2026-12-31 with higher listed rates from 2027-01-01.
-  Run `--dry-run --json` first for the script's estimate.
+- **Cost basis:** audio output tokens at 25 tokens per second of audio, priced
+  per model (rates and their checked date are in `references/models.md`;
+  re-read https://ai.google.dev/gemini-api/docs/pricing before quoting a
+  number). Run `--dry-run --json` first for the script's estimate.
 - **What it writes:** the audio file under `audio/` (or `--output`) and, in
   setup only, the managed `.venv`.
 - **Consent:** before the FIRST paid call in a session, state the mode, model,
@@ -104,8 +102,12 @@ rules; preserve it explicitly when uninstalling if it is still needed.
 BLOG_SKILLS_DIR="${CLAUDE_BLOG_SKILLS_DIR:-${CLAUDE_SKILL_DIR}/..}"
 case "$BLOG_SKILLS_DIR" in /*) ;; *) echo "ERROR: skills dir must be absolute" >&2; exit 1 ;; esac
 AUDIO_RUN="$BLOG_SKILLS_DIR/blog-audio/scripts/run.py"
-python3 "$AUDIO_RUN" generate_audio.py --text "..." --voice Charon --model flash38 --json
+python3 "$AUDIO_RUN" generate_audio.py --text-file blog_audio_prepared.txt --voice Charon --model flash38 --json
 ```
+
+Put prepared narration in a file and pass `--text-file`. If you must use
+`--text`, follow the shell argument rule in `${CLAUDE_SKILL_DIR}/../blog/SKILL.md`
+(single quotes, embedded `'` written as `'\''`).
 
 Ordinary generate and voices commands perform a nonmutating capability check.
 If the managed environment is absent, return a setup-required result. Only
@@ -126,8 +128,8 @@ if [ -n "${GOOGLE_AI_API_KEY:-}" ] || [ -n "${GEMINI_API_KEY:-}" ]; then echo "A
   "Audio generation requires a Google AI API key. Get one at https://aistudio.google.com/apikey
    Then export it in the shell: `export GOOGLE_AI_API_KEY=your-key` (or `GEMINI_API_KEY`).
    This can be the same key used by `/blog image`."
-- **When called internally** (from blog-write): return a one-line skip note (what, why) if
-  the key is missing, for the caller's final summary. Never block the writing workflow.
+- **When offered by the orchestrator** after a write: return a one-line skip note (what, why) if
+  the key is missing, for the final summary. Never block the writing workflow.
 
 ## Setup
 
@@ -141,7 +143,7 @@ For `/blog audio setup`:
    `python3 "$BLOG_SKILLS_DIR/blog-audio/scripts/setup_environment.py"`
    (add `--check --json` to inspect without installing)
 5. Verify with a dry run (no API call):
-   `python3 "$AUDIO_RUN" generate_audio.py --text "Test" --dry-run --json`
+   `python3 "$AUDIO_RUN" generate_audio.py --text 'Test' --dry-run --json`
 
 ## Voice Selection
 
@@ -244,20 +246,16 @@ python3 "$AUDIO_RUN" generate_audio.py \
   one used in the examples above. Over 130 languages.
 - `flash-lite38`: `gemini-3.8-flash-lite-tts`, the cheaper stable model. Over
   100 languages; a few (for example Finnish and Thai) are Flash-only.
-- Legacy aliases `flash`, `flash31`, `pro`, `legacy-flash25`, `legacy-pro25`
-  map to `gemini-3.1-flash-tts-preview`, `gemini-2.5-pro-preview-tts`, and
-  `gemini-2.5-flash-preview-tts`. Google's deprecations page (checked
-  2026-10-12) lists their earliest shutdown as 2026-11-17, so do not use them
-  for new work. Confirm the resolved model ID in the `--dry-run --json` output
-  before spending.
+- Legacy aliases (`flash`, `flash31`, `pro`, `legacy-flash25`, `legacy-pro25`)
+  shut down 2026-11-17 at the earliest (details in `references/models.md`), so
+  do not use them for new work. Confirm the resolved model ID in the
+  `--dry-run --json` output before spending.
 
 The 3.8 aliases have offline SDK schema and WAV parsing checks; authenticated
 availability and voice quality still require provider testing. For 3.8, pass a
 verbatim transcript, not embedded narration directions. Dialogue must use
 explicit `Speaker1:` and `Speaker2:` lines; the helper does not infer
-speakers. Cost estimates use the reviewed 2026 rates through December 31 and
-the published 2027 rates from January 1. They remain estimates, not a billing
-quote.
+speakers. Cost estimates are not a billing quote.
 
 ### Step 6: Deliver
 
@@ -294,30 +292,12 @@ Present the result to the user:
 Insert the audio player after the introduction (below the first H2) or at the
 very top of the article with a label: "Listen to this article" or "Audio version".
 
-## Internal API (for blog-write)
+## Use from blog-write
 
-When invoked internally from blog-write:
-
-**Input:**
-- `text`: Prepared text (already cleaned by Claude)
-- `voice`: Voice name (default: Charon)
-- `voice2`: Second voice for dialogue (optional)
-- `model`: `flash38` (default for new work) or `flash-lite38`; legacy aliases (`flash`, `flash31`, `pro`, `legacy-*`) shut down 2026-11-17 at the earliest
-- `output_path`: Where to save the file
-
-**Output:**
-```markdown
-### Audio Narration
-- **Path:** /path/to/audio/post-slug.mp3
-- **Duration:** 3:42
-- **Voice:** Charon
-- **Embed:** `<audio controls preload="metadata"><source src="audio/post-slug.mp3" type="audio/mpeg"></audio>`
-```
-
-**Graceful fallback:** If neither `GOOGLE_AI_API_KEY` nor `GEMINI_API_KEY` is
-set, or the user declines the cost gate, return immediately with no error and
-a one-line skip note for the caller's final summary. The writing workflow continues without audio. Never block
-blog-write because audio generation is unavailable.
+`blog-write` does not call this skill. The orchestrator may offer audio after
+delivery, and never runs it without the consent gate above. If the key is
+missing or the user declines, return one skip line for "Fallbacks and skips"
+and carry on without audio.
 
 ## Error Handling
 
@@ -335,3 +315,4 @@ blog-write because audio generation is unavailable.
 
 Load on-demand: do NOT load all at startup:
 - `${CLAUDE_SKILL_DIR}/references/voices.md`: Full 30-voice catalog, recommendations by content type, dialogue pairings
+- `${CLAUDE_SKILL_DIR}/references/models.md`: Model IDs, per-model pricing, language counts and legacy shutdown dates, each with a checked date

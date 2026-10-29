@@ -200,19 +200,26 @@ This skill does not give legal advice.
    When invoked by blog-multilingual (orchestrated mode), skip the delivery contract; blog-multilingual runs it once per locale on the final text.
    Orchestrated mode is signaled by the literal line `Mode: orchestrated` at the top of the invocation.
    When this skill runs standalone, it is the last text change for the locale,
-   so run the canonical sequence once on the final localized file before
-   reporting complete. Resolve
-   `BLOG_SCRIPT_DIR="${CLAUDE_BLOG_SCRIPTS_DIR:-${CLAUDE_SKILL_DIR}/../../scripts}"`, reject
-   it unless absolute, and never use the current project's `scripts/`
-   directory. Create a per-locale delivery staging directory beneath the output
-   root, copy the final file there under its lowercase localized slug, then:
+   so run the canonical sequence in
+   `${CLAUDE_SKILL_DIR}/../blog/references/blog-delivery-contract.md` once on the
+   final localized file before reporting complete. Localization-specific rules:
+   - Resolve
+     `BLOG_SCRIPT_DIR="${CLAUDE_BLOG_SCRIPTS_DIR:-${CLAUDE_SKILL_DIR}/../../scripts}"`, reject
+     it unless absolute, and never use the current project's `scripts/`
+     directory.
+   - Draft folder: create a per-locale delivery staging directory beneath the
+     output root and copy the final file there under its lowercase localized
+     slug. Pass `--slug <localized-slug>` to the gates.
    - Resolve every draft marker (`[INTERNAL-LINK`, `[IMAGE`, `[CHART`): none may
      remain. Reuse the source hero by copying it as `hero.<ext>` into the staging
      directory; a new locale-specific hero is a paid call and needs the
      `blog-image` cost and consent gate first.
-   - Run `python3 "$BLOG_SCRIPT_DIR/blog_render.py" --md <localized-file> --out-dir <locale-delivery-dir>`.
-   - Run `python3 "$BLOG_SCRIPT_DIR/blog_preflight.py" --draft <locale-delivery-dir> --init-review-nonce` and pass the printed nonce to a fresh `blog-reviewer` invocation against the rendered locale HTML. The reviewer returns text; save it verbatim to `<locale-delivery-dir>/review.md`.
-   - Run `python3 "$BLOG_SCRIPT_DIR/blog_preflight.py" --draft <locale-delivery-dir> --strict --slug <localized-slug>`.
+   - Render with `blog_render.py --md <localized-file> --out-dir <locale-delivery-dir>`,
+     run `blog_preflight.py --draft <locale-delivery-dir> --init-review-nonce`
+     and pass the printed nonce to a fresh `blog-reviewer` invocation against
+     the rendered locale HTML (it returns text; save it verbatim to
+     `<locale-delivery-dir>/review.md`), then run
+     `blog_preflight.py --draft <locale-delivery-dir> --strict --slug <localized-slug>`.
    - Require 90+/100, zero P0, matching nonce, final `BLOCKING: false`, and all
      other gates. After ANY later change to the file, hero, HTML, or PDF,
      re-render, re-init the nonce, and re-review (max 3 iterations). On failure,

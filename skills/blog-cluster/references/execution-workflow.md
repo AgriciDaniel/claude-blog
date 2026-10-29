@@ -200,7 +200,8 @@ skipped), produce `cluster-<slug>/cluster-scorecard.md`:
 1. **Summary**: seed keyword, total posts attempted, total written, total
    failed, total words, total internal links, approximate execution time.
 2. **Per-post quality scores**: call `/blog analyze` on each successful post
-   in parallel via Task. Record the 5-category score and the cluster average.
+   one at a time, invoked by the orchestrator itself rather than inside an
+   agent. Record the 5-category score and the cluster average.
 3. **Cluster cohesion score** (0 to 100, formula below).
 4. **Link audit**: per-post outgoing and incoming counts; orphan-spoke flags
    (less than 2 incoming links); list of unresolved `[INTERNAL-LINK]` markers.

@@ -29,6 +29,13 @@ from `${CLAUDE_SKILL_DIR}/../blog/references`, `blog_template_root` from
 Read the main reference `orchestration-details.md` before loading project
 context; pass only its helper-fenced output to downstream agents.
 
+**Shell argument rule (all sub-skills).** Pass model-written or user-supplied
+text (titles, tags, questions, narration, URLs) to a command only as a
+single-quoted argument, writing an embedded `'` as `'\''`, or through a
+`--text-file`/`--topic-file` option where the script has one. Never put such
+text inside double quotes, and always quote URL placeholders. Examples in this
+suite use `'<placeholder>'` for these arguments.
+
 Full-lifecycle blog management: strategy, briefs, outlines, writing, analysis,
 optimization, schema generation, repurposing, and editorial planning. Use
 foundational Google Search guidance and evidence-supported AI citation
@@ -257,24 +264,35 @@ Preparation for `/blog write` (no files in the draft folder yet):
 - **Research**: spawn `blog-researcher` for statistics, sources, SERP data.
 - **Outline**: build section structure from template + research gaps.
 
-Then run the **canonical delivery sequence**. The full version, with the gate
-behavior, is in `${CLAUDE_SKILL_DIR}/../blog/references/blog-delivery-contract.md`
-and wins on any disagreement. Draft folder `D`, slug `S`:
+Then run the **canonical delivery sequence** in
+`${CLAUDE_SKILL_DIR}/../blog/references/blog-delivery-contract.md`. That file is
+the single source of truth (capability discovery with `blog_preflight.py
+--gate 1`, draft, visuals with the optional hygiene helper, render, nonce,
+review, gates, loop) and wins on any disagreement. Draft folder `D`, slug `S`.
+The orchestrator's part of it, in order:
 
 ```bash
 BLOG_SCRIPT_DIR="${CLAUDE_BLOG_SCRIPTS_DIR:-${CLAUDE_SKILL_DIR}/../../scripts}"
 case "$BLOG_SCRIPT_DIR" in /*) ;; *) echo "ERROR: script dir must be absolute" >&2; exit 1 ;; esac
+# visuals: hero (resolve every marker, then optional blog-seo and blog_hygiene.py);
+# drop the env -u prefix only after the blog-image cost and consent gate
+env -u GOOGLE_AI_API_KEY -u GEMINI_API_KEY \
+  python3 "$BLOG_SCRIPT_DIR/generate_hero.py" --topic '<title>' --tags '<tags>' --out "$D"
+# render
+python3 "$BLOG_SCRIPT_DIR/blog_render.py" --md "$D/S.md" --out-dir "$D"
+# nonce
+NONCE=$(python3 "$BLOG_SCRIPT_DIR/blog_preflight.py" --init-review-nonce --draft "$D")
+# review: spawn blog-reviewer with the draft path, reference roots and $NONCE;
+# it returns text and you save it verbatim to "$D/review.md"
+# gates (add --repair-attempt inside the repair loop)
+python3 "$BLOG_SCRIPT_DIR/blog_preflight.py" --draft "$D" --strict
 ```
 
-Never run a helper through a path relative to the current project.
-
-1. **Draft**: spawn `blog-writer` to write `D/S.md`. Markers `[INTERNAL-LINK: ...]`, `[IMAGE: ...]`, `[CHART: ...]` are allowed here only.
-2. **Visuals**: you resolve every marker. Hero: `python3 "$BLOG_SCRIPT_DIR/generate_hero.py" --topic "<title>" --tags "<tags>" --out "$D"`. Charts: the `blog-chart` skill, inline SVG. Internal links: real links or remove the marker. Images: local files or remove. Optionally run `blog-seo` on the resolved `S.md`. No marker may remain.
-3. **Render**: `python3 "$BLOG_SCRIPT_DIR/blog_render.py" --md "$D/S.md" --out-dir "$D"`.
-4. **Init nonce**: `NONCE=$(python3 "$BLOG_SCRIPT_DIR/blog_preflight.py" --init-review-nonce --draft "$D")`.
-5. **Review**: spawn `blog-reviewer` with the draft path, the reference roots and `$NONCE`. It returns text; you save it verbatim to `D/review.md`. The reviewer never writes files.
-6. **Gates**: `python3 "$BLOG_SCRIPT_DIR/blog_preflight.py" --draft "$D" --strict` (add `--repair-attempt` inside the repair loop).
-7. **Loop**: on a block, fix and repeat from step 2 or 3. Any change to `S.md`, `S.html`, `S.pdf` or the hero requires a re-render, a re-init of the nonce and a re-review (the gate checks stored digests and fails otherwise). Maximum 3 iterations; on the third failure stop and present the diagnostic instead of the draft.
+Never run a helper through a path relative to the current project. Spawn
+`blog-writer` for the draft. After any change to `S.md`, `S.html`, `S.pdf` or the
+hero, re-render, re-init the nonce and re-review; maximum 3 iterations. A paid
+image call needs the `blog-image` cost and consent gate first; otherwise run
+the hero step with the Gemini key variables unset (see `blog-write`).
 
 Deliver the content, scorecard, `preview/*.png` and improvement notes ONLY when all gates pass. The gates review first, not the user. The nonce stops accidents and casual forgery; it does not stop a process running as the same user that can read the verifier state file.
 

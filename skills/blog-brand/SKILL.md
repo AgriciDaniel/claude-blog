@@ -112,7 +112,7 @@ Ask:
 - **Pronoun stance**: first-person (we / I), second-person (you), third-person (the team), or mixed
 - **Acceptable contractions**: full / partial / none
 - **Sentence ceiling**: max words per sentence as a hard cap
-- **Paragraph ceiling**: max words per paragraph (default 150)
+- **Paragraph ceiling**: max words per paragraph (optional; only if the brand sets one, no default)
 - **Headline patterns to favor**: numbered / question / promise / statement
 - **Headline patterns to avoid**: any patterns banned for this brand
 - **Summary box label**: from blog-persona, or pick one
@@ -200,7 +200,7 @@ Write to project root as:
 ## Lexical rules
 - **Contractions**: [full / partial / none]
 - **Sentence ceiling**: [N words max]
-- **Paragraph ceiling**: [N words max, default 150]
+- **Paragraph ceiling**: [N words max, or "none"]
 - **Summary label**: [Key Takeaways / TL;DR / etc.]
 
 ## Headline patterns

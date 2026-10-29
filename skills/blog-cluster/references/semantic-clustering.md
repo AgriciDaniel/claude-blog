@@ -114,7 +114,7 @@ Promote a keyword to pillar candidate when it scores highest on:
 
 Label each keyword as `high`, `medium`, or `low`. This is sufficient for
 relative prioritization within a cluster. For absolute numbers, the user can
-run `/blog google` (Keyword Insights) or use DataForSEO via `seo-dataforseo`.
+run `/blog google` (Keyword Insights) or use DataForSEO via `seo-dataforseo` (from the separate claude-seo plugin, if installed).
 
 ## Cluster naming convention
 

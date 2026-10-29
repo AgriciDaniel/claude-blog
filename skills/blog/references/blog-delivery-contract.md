@@ -44,8 +44,13 @@ capability discovery once before step 1:
    nowhere later. The `blog-writer` agent can only leave markers; it cannot call
    skills or helpers.
 2. **Visuals.** The orchestrator resolves every marker. Hero:
-   `python3 "$BLOG_SCRIPT_DIR/generate_hero.py" --topic "<title>" --tags "<tags>" --out "$D"`
-   writes `D/hero.<ext>`. Charts: the `blog-chart` skill, embedded as inline SVG.
+   `python3 "$BLOG_SCRIPT_DIR/generate_hero.py" --topic '<title>' --tags '<tags>' --out "$D"`
+   writes `D/hero.<ext>`, or keeps a hero already in `D` (`--replace` generates
+   a new one instead). Quote model-written text as in the Shell argument rule
+   in `skills/blog/SKILL.md`. With `GOOGLE_AI_API_KEY` or `GEMINI_API_KEY` set the
+   script tries the paid Gemini rung first, so get consent through the
+   `blog-image` cost gate first, or run it with both variables unset
+   (`env -u GOOGLE_AI_API_KEY -u GEMINI_API_KEY`). Charts: the `blog-chart` skill, embedded as inline SVG.
    Internal links: replaced with real links, or the marker removed. Images:
    replaced with local files in `D`, or removed. No marker may remain after this
    step. An optional `blog-seo` pass runs here, on the resolved `S.md`, and its
@@ -118,7 +123,7 @@ Runs once at the start of `/blog write` or `/blog rewrite`. Enumerates the proje
 ### What gets enumerated
 
 - **MCP servers loaded**: `nanobanana-mcp`, `dataforseo-mcp`, others. Detected via tool availability, not by reading `.mcp.json` (the file may declare servers that failed to start).
-- **Env vars present**: `GOOGLE_AI_API_KEY`, `UNSPLASH_ACCESS_KEY`, `PEXELS_API_KEY`, `PIXABAY_API_KEY`. Key names only; values never read or logged.
+- **Env vars present**: `GOOGLE_AI_API_KEY` or `GEMINI_API_KEY`, `UNSPLASH_ACCESS_KEY`, `PEXELS_API_KEY`, `PIXABAY_API_KEY`. Key names only; values never read or logged.
 - **Optional Python deps**: `patchright`, `weasyprint`, `google-genai`, `requests`. Probed via `importlib.util.find_spec()`.
 - **Project-root context files**: `BRAND.md`, `VOICE.md`, `DISCOURSE.md`. Loaded only via the trusted installed `load_untrusted_root.py` helper.
 - **Agents available**: `blog-reviewer` is mandatory; `blog-researcher`, `blog-writer`, `blog-seo`, `blog-translator` are optional.
@@ -211,7 +216,7 @@ The blocking decision is emitted as the last line of the reviewer scorecard, in 
 
 ```
 BLOCKING: true (Overall 87/100 below threshold; P0 on heuristic 5)
-BLOCKING: false (cleared all gates)
+BLOCKING: false (cleared review gate)
 ```
 
 Machine-readable by `scripts/blog_preflight.py` so the orchestrator does not have to parse the human-readable scorecard.
@@ -239,7 +244,7 @@ the numeric score and are never machine-enforced as evidence of AI authorship.
 
 Tried in order. First success wins. Skip steps for capabilities not available per Gate 1's `capabilities.json`.
 
-1. **Banana MCP** (`nanobanana-mcp` loaded as a tool, not just declared in `.mcp.json`): call its `generate_image` tool with an optimized six-component prompt (Subject + Action + Context + Composition + Lighting + Style) targeting 1200×630.
+1. **Banana MCP** (`nanobanana-mcp` loaded as a tool, not just declared in `.mcp.json`): call its `gemini_generate_image` tool with an optimized six-component prompt (Subject + Action + Context + Composition + Lighting + Style) targeting 1200×630.
 2. **Direct Gemini API** (`GOOGLE_AI_API_KEY` present, MCP not loaded): call the `google-genai` SDK with the default image model and fallback order that `generate_hero.py --help` and the `blog-image` skill's Gemini model reference currently document; this contract does not pin a model ID. See `https://ai.google.dev/gemini-api/docs/image-generation`.
 3. **Premium stock APIs** (`UNSPLASH_ACCESS_KEY`, `PEXELS_API_KEY`, or `PIXABAY_API_KEY` present): search via the official API using post title + top tags as query. Do not scrape or construct raw CDN URLs. Capture each source's license metadata and attribution requirements, download the asset locally, and write `hero-credit.txt`. Unsplash, Pexels, and Pixabay use their own licenses; do not treat them as CC sources.
 4. **Openverse public API** (no key required): `GET https://api.openverse.org/v1/images/?q=<query>&aspect_ratio=wide&license=cc0,by,by-sa` (the licenses `generate_hero.py` sends, with `size=large` and `page_size=10`). Pick the top relevance match with complete attribution. Always download to `hero.<ext>` plus `hero-credit.txt` for CC attribution. CC BY and BY-SA images require visible attribution, and the renderer does not publish it: the orchestrator must add the credit line from `hero-credit.txt` to the article's Sources section or the hero caption in `S.md` (step 2) before the render. The same applies to any stock image whose license asks for credit.

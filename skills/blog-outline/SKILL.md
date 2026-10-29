@@ -78,7 +78,7 @@ Create a structured outline with the following format:
 # Outline: [Topic]
 
 ## Title Suggestions
-1. [Primary title - 40-60 chars, front-loaded keyword, power word]
+1. [Primary title - clear, accurate, specific to the page]
 2. [Alternative title - different angle]
 3. [Alternative title - question format]
 
@@ -87,14 +87,14 @@ Create a structured outline with the following format:
 - **Search intent**: [Informational/Commercial/Transactional]
 - **Optional planning estimate**: [X,XXX] words, adjusted to intent and never
   used as a score or gate
-- **H2 sections**: [6-8]
-- **Target reading level**: Flesch 60-70
+- **H2 sections**: [as many as the subject needs; no fixed count]
+- **Target reading level**: [audience-matched; the active persona's band, else the `quality-scoring.md` range]
 
 ---
 
 ## Outline
 
-### H2: [Section Title - Question Format] (~300-400 words)
+### H2: [Section Title - question form only when it fits the intent]
 - **Answer-first opener**: [What stat or fact should open this section?]
 - **Key points to cover**:
   - [Point 1]
@@ -106,16 +106,16 @@ Create a structured outline with the following format:
 - **Chart suggestion**: [Bar/Line/Donut/None] - [What data to visualize]
 - **Image placement**: [Yes/No] - [Description of recommended image]
 
-### H2: [Section Title] (~300-400 words)
-[... repeat for 6-8 sections ...]
+### H2: [Section Title]
+[... repeat for each section the subject needs ...]
 
-### Optional FAQ Section (3-5 items)
+### Optional FAQ Section (only when real reader questions warrant it)
 1. [Question from People Also Ask] - [Brief answer direction]
 2. [Question from People Also Ask] - [Brief answer direction]
 3. [Question from People Also Ask] - [Brief answer direction]
 4. [Question from SERP analysis] - [Brief answer direction]
 
-### Conclusion (~100-150 words)
+### Conclusion
 - Key takeaways to summarize
 - Call to action direction
 

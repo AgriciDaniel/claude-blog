@@ -36,7 +36,7 @@ keyword. Three layers: Semantic Clustering (the brain), Cluster Architecture
 
 > Adapted from the **semantic-cluster-engine** submission by Lutfiya Miller
 > (winner, AI Marketing Hub Pro Challenge, March 2026, 95/100 Exemplary).
-> Original repository: no longer available as of 2026-10-12
+> Original repository: no longer available as of 2026-10-12.
 > This port keeps the Plan + Execute architecture and the cluster context
 > innovation, removes brand-specific (ScienceExperts.ai) styling and image
 > prompts, and routes through claude-blog's existing sub-skills.
@@ -62,13 +62,13 @@ keyword. Three layers: Semantic Clustering (the brain), Cluster Architecture
 |-------|--------------------------|
 | `/blog strategy` | Upstream planning. `plan --from strategy` consumes its Cluster Build Plan tables. |
 | `/blog write` | Per-post execution. Each spoke and the pillar are produced by `blog-write` with a prepended cluster-context block. |
-| `/blog chart` | Invoked internally by `blog-write` for inline SVG charts. No direct call from this skill. |
+| `blog-chart` (internal) | Invoked by the orchestrator during `blog-write` for inline SVG charts. No direct call from this skill. |
 | `/blog image` | Not called by this skill. Each post's hero is created once by `blog-write`'s delivery contract (via `generate_hero.py`); see Step 4. |
 | `/blog seo-check` | Recommended after execution for per-post on-page validation. |
 | `/blog cannibalization` | Recommended after execution to confirm zero keyword overlap across the cluster. |
 | `/blog schema` | Recommended after execution to add `BreadcrumbList`, `ItemList`, and `Article` schema. |
 
-This skill never modifies files belonging to other skills. It calls them via the Task tool or as orchestrated sub-skills.
+This skill never modifies files belonging to other skills. The orchestrator invokes the sub-skills (`blog-write`, `blog-analyze`) itself, one post at a time, never inside an agent: `blog-write` starts its own agents (researcher, writer, reviewer), and an agent cannot start another agent.
 
 ## Command Routing
 
@@ -110,8 +110,8 @@ Reference: `${CLAUDE_SKILL_DIR}/references/cluster-architecture.md`
 
 Build the hub and spoke:
 
-- **Pillar (hub)**: targets the broadest keyword. Word count 2,500 to 4,000. Template `pillar-page`. Links down to every spoke.
-- **Spokes**: each targets a long-tail cluster. Word count 1,200 to 1,800. Template auto-selected by intent. Links up to the pillar and across to siblings.
+- **Pillar (hub)**: targets the broadest keyword. Planning estimate (optional): 2,500 to 4,000 words. Template `pillar-page`. Links down to every spoke.
+- **Spokes**: each targets a long-tail cluster. Planning estimate (optional): 1,200 to 1,800 words. Template auto-selected by intent. Links up to the pillar and across to siblings.
 
 Cluster formation rules:
 
@@ -186,7 +186,7 @@ All plan and execute artifacts go into a single subdirectory of the current work
 }
 ```
 
-Note: volume estimates are relative indicators (high, medium, low) derived from SERP signals, not absolute search volumes. For precise data, the user should consult Ahrefs, SEMrush, or DataForSEO (claude-blog provides the `seo-dataforseo` companion sibling).
+Note: volume estimates are relative indicators (high, medium, low) derived from SERP signals, not absolute search volumes. For precise data, the user should consult Ahrefs, SEMrush, or DataForSEO (`seo-dataforseo` comes from the separate claude-seo plugin, if installed).
 
 #### `cluster-map.html` (XSS-safe)
 
@@ -250,7 +250,7 @@ The yes covers exactly N heroes; never regenerate in a loop. Report each
 fallback or skip (a stock hero, a skipped post) as one line under
 "Fallbacks and skips" in the final report.
 
-Construct the cluster context block (full schema in `${CLAUDE_SKILL_DIR}/references/execution-workflow.md`) and prepend it to the topic prompt passed to the Task tool invoking `blog-write`. The context tells `blog-write` the cluster name, the post's role (pillar or spoke), the primary and secondary keywords, the chosen template, the word count target, the list of already-written posts (link to these), the list of upcoming posts (use `[INTERNAL-LINK]` placeholders), and the linking requirements for this post.
+Construct the cluster context block (full schema in `${CLAUDE_SKILL_DIR}/references/execution-workflow.md`) and prepend it to the topic prompt when you invoke the `blog-write` skill directly (not through a Task). The context tells `blog-write` the cluster name, the post's role (pillar or spoke), the primary and secondary keywords, the chosen template, the optional length estimate, the list of already-written posts (link to these), the list of upcoming posts (use `[INTERNAL-LINK]` placeholders), and the linking requirements for this post.
 
 **Evidence provenance propagation.** The cluster context includes this directive
 for every spoke and the pillar: "Keep material claims traceable to sources that
@@ -326,7 +326,7 @@ If the user cancels mid-execution, save progress and note completed posts. On th
 After all attempted posts complete, produce a markdown scorecard covering:
 
 - Per-post status (written, failed, skipped) with file path and word count.
-- Per-post quality score (call `/blog analyze` on each in parallel via Task) and the cluster average.
+- Per-post quality score (invoke `blog-analyze` on each post, one at a time) and the cluster average.
 - Cluster cohesion score: a 0 to 100 composite of link reciprocity, intent diversity, template diversity, and keyword coverage (formula in `${CLAUDE_SKILL_DIR}/references/execution-workflow.md`).
 - Internal-link audit: outgoing and incoming counts per post, orphan flags, unresolved `[INTERNAL-LINK]` markers.
 - Cannibalization check: any two posts sharing primary keyword, or any pair with greater than 70% keyword overlap. Recommend running `/blog cannibalization` for a deeper pass.
@@ -362,7 +362,7 @@ Return a concise summary to the user with totals, the scorecard path, and the ne
 | Link completeness | Every post has 2 or more incoming internal links | Warn in scorecard |
 | Length estimate | Pillars often need more depth than spokes | Pass to `blog-write` as optional planning context; never enforce a raw word minimum |
 | Intent diversity | At least 2 distinct intents across clusters | Warn in scorecard |
-| Template diversity | At least 3 distinct templates across the cluster | Warn in scorecard |
+| Template diversity | Templates follow each post's intent; a cluster of one repeated template is worth a look | Note in scorecard, never a fail |
 
 ---
 

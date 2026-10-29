@@ -149,11 +149,13 @@ BLOG_SCRIPT_DIR="${CLAUDE_BLOG_SCRIPTS_DIR:-${CLAUDE_SKILL_DIR}/../../scripts}"
 case "$BLOG_SCRIPT_DIR" in /*) ;; *) echo "ERROR: script dir must be absolute" >&2; exit 1 ;; esac
 python3 "$BLOG_SCRIPT_DIR/discourse_research.py" \
   --input "$RESULTS_JSON" \
-  --topic "<original topic>" \
+  --topic '<original topic>' \
   --days 30 \
   --output "<chosen output path>"
 ```
 
+`discourse_research.py` has no topic-file option, so the topic is a
+single-quoted argument (shell argument rule in `${CLAUDE_SKILL_DIR}/../blog/SKILL.md`).
 All flags above are accepted by `discourse_research.py` (`--input`, `--topic`,
 `--days`, `--output`, `--format {markdown,json}`, `--decomposition`).
 

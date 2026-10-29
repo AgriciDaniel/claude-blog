@@ -110,7 +110,7 @@ Safe WebFetch rule: allow `http` and `https` only, reject `javascript:`, `data:`
 ### Step 4: Statistics Research
 
 Find the statistics the article should include (a pool of about 8-12 candidates is a reasonable start; keep only those you can verify and that the article needs):
-1. Search: `[topic] study 2025 2026 data statistics research`
+1. Search: `[topic] study <current year> data statistics research` (year from the system date)
 2. Prioritize tier 1-3 sources
 3. For each statistic, record enough provenance to verify it: publisher and
    title, URL, relevant date or study period, and methodology or retrieval date
@@ -140,10 +140,10 @@ Output format:
 what the searcher wants]
 
 ## Content Parameters
-- **Word count**: [2,000-2,500] words
-- **Reading level**: Flesch 60-70 (expert-accessible)
+- **Length**: [optional planning estimate if the intent calls for one; subject-led, no quota]
+- **Reading level**: [audience-matched; the active persona's band, else the `quality-scoring.md` range]
 - **Format**: [Markdown/MDX/HTML]
-- **H2 sections**: [6-8]
+- **H2 sections**: [as the subject needs; no fixed count]
 - **Images**: as the topic needs (original assets, product screenshots, diagrams, or licensed stock); no fixed count
 - **Charts**: as the evidence needs, via built-in blog-chart, choosing the clearest chart type; no fixed count
 - **FAQ items**: Optional 3-5 when People Also Ask or user questions warrant them; not a Google rich-result target
@@ -208,8 +208,8 @@ Alternative titles:
 
 | # | Statistic | Source | Year | Section |
 |---|-----------|--------|------|---------|
-| 1 | [stat] | [source + URL] | 2025 | H2: Section 1 |
-| 2 | [stat] | [source + URL] | 2026 | H2: Section 2 |
+| 1 | [stat] | [source + URL] | [year] | H2: Section 1 |
+| 2 | [stat] | [source + URL] | [year] | H2: Section 2 |
 | ... | ... | ... | ... | ... |
 
 ## Evidence-Backed Section Plan

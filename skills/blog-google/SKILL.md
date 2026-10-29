@@ -154,13 +154,16 @@ a separately reviewed compatibility change.
 
 ---
 
+Quote every placeholder in the commands below as shown (single quotes, URLs
+included), following the shell argument rule in `${CLAUDE_SKILL_DIR}/../blog/SKILL.md`.
+
 ## PageSpeed + CrUX
 
 ### `/blog google pagespeed <url>`
 
 Combined Lighthouse lab data + CrUX field data for a published blog post.
 
-**Script:** `python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" pagespeed_check <url> --json`
+**Script:** `python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" pagespeed_check '<url>' --json`
 **Reference:** `${CLAUDE_SKILL_DIR}/references/api-reference.md`
 
 Output merges lab scores (point-in-time Lighthouse) with field data (28-day
@@ -170,14 +173,14 @@ Chrome user metrics). CrUX tries URL-level first, falls back to origin-level.
 
 CrUX field data only (no Lighthouse run). Faster.
 
-**Script:** `python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" pagespeed_check <url> --crux-only --json`
+**Script:** `python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" pagespeed_check '<url>' --crux-only --json`
 
 ### `/blog google crux-history <url>`
 
 CrUX History trends use 25 weekly periods by default and accept up to 40 with
 `--periods`. They show whether CWV metrics are improving, stable, or degrading.
 
-**Script:** `python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" crux_history <url> --json`
+**Script:** `python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" crux_history '<url>' --json`
 
 ---
 
@@ -187,7 +190,7 @@ CrUX History trends use 25 weekly periods by default and accept up to 40 with
 
 Search Analytics: clicks, impressions, CTR, position for last 28 days.
 
-**Script:** `python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" gsc_query --property <property> --json`
+**Script:** `python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" gsc_query --property '<property>' --json`
 **Default:** 28 days, dimensions=query,page, type=web, limit=1000.
 
 Includes quick-win detection: queries at position 4-10 with high impressions.
@@ -208,7 +211,7 @@ conflict, verify availability in the user's account, and do not claim that
 
 URL Inspection: real indexation status from Google.
 
-**Script:** `python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" gsc_inspect <url> --json`
+**Script:** `python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" gsc_inspect '<url>' --json`
 
 Returns: verdict (PASS/FAIL), coverage state, robots.txt status, indexing state,
 page fetch state, canonical selection, mobile usability, rich results.
@@ -219,7 +222,7 @@ that window, report `PENDING_REEVALUATION` rather than an immediate failure.
 Search Console's Request Indexing feature is quota-limited; reserve it for
 important URLs.
 
-For batch inspection: `python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" gsc_inspect --batch <file> --json`
+For batch inspection: `python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" gsc_inspect --batch '<file>' --json`
 
 ---
 
@@ -241,7 +244,7 @@ If the user names a URL anyway, first ask whether it is a JobPosting page or
 a livestream (BroadcastEvent in VideoObject) page. Only if the user confirms
 that explicitly, say what will be sent and get a second explicit yes, then run:
 
-**Script:** `python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" indexing_notify <url> --confirm-eligible --json`
+**Script:** `python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" indexing_notify '<url>' --confirm-eligible --json`
 **Reference:** `${CLAUDE_SKILL_DIR}/references/api-reference.md`
 
 The script refuses to submit without `--confirm-eligible`; never add that flag
@@ -249,7 +252,7 @@ on your own. Daily quota: 200 publish requests. Do not present this as a
 replacement for URL Inspection's Request Indexing feature.
 
 For batch (same eligibility confirmation, applies to every URL in the file):
-`python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" indexing_notify --batch <file> --confirm-eligible --json`
+`python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" indexing_notify --batch '<file>' --confirm-eligible --json`
 
 ---
 
@@ -259,10 +262,10 @@ For batch (same eligibility confirmation, applies to every URL in the file):
 
 Organic traffic report: daily sessions, users, pageviews, bounce rate, engagement.
 
-**Script:** `python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" ga4_report --property <id> --json`
+**Script:** `python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" ga4_report --property '<id>' --json`
 **Default:** 28 days, filtered to Organic Search channel group.
 
-For top landing pages: `python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" ga4_report --property <id> --report top-pages --json`
+For top landing pages: `python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" ga4_report --property '<id>' --report top-pages --json`
 
 ---
 
@@ -277,7 +280,7 @@ for video embedding.
 
 Search YouTube for videos relevant to a blog topic.
 
-**Script:** `python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" youtube_search search "<query>" --json`
+**Script:** `python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" youtube_search search '<query>' --json`
 **Quota:** `search.list` has its own quota bucket: by default 100 calls per day at 1 unit per call (Google's quota-cost page, read 2026-10-12). Other YouTube endpoints share a separate 10,000 units per day. Run one search per distinct need and stop at the first quota error.
 
 Returns: title, channel, views, likes, duration, description, tags.
@@ -296,10 +299,10 @@ ranking factor.
 
 Full NLP analysis: entities, sentiment, content classification.
 
-**Script:** `python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" nlp_analyze --url <url> --json`
+**Script:** `python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" nlp_analyze --url '<url>' --json`
 **Free tier:** 5,000 units/month. Requires billing enabled on GCP project.
 
-For entity extraction only: `python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" nlp_analyze --url <url> --features entities --json`
+For entity extraction only: `python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" nlp_analyze --url '<url>' --features entities --json`
 
 ---
 
@@ -311,7 +314,7 @@ Gold-standard keyword volume data. Requires Google Ads account (Tier 3).
 
 Generate keyword ideas from seed terms for blog topic research.
 
-**Script:** `python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" keyword_planner ideas "<seed>" --json`
+**Script:** `python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" keyword_planner ideas '<seed>' --json`
 
 For volume lookup: `python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" keyword_planner volume "<kw1>,<kw2>" --json`
 
@@ -323,7 +326,7 @@ For volume lookup: `python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" keywor
 
 Generate a PDF/HTML report with charts and tables.
 
-**Script:** `python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" google_report --type <type> --data <json> --domain <domain> --format pdf`
+**Script:** `python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" google_report --type '<type>' --data '<json>' --domain '<domain>' --format pdf`
 
 | Type | Input | Output |
 |------|-------|--------|

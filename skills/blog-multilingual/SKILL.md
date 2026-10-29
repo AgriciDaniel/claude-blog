@@ -132,8 +132,9 @@ For each target language, invoke `blog-translate`:
 - Mode: orchestrated. Put the literal line `Mode: orchestrated` at the top of
   the invocation. In orchestrated mode `blog-translate` skips its own delivery
   contract (see its Phase 7); this orchestrator runs it once in Phase 6.
-- Run targets in parallel where the runtime supports it (one Task per
-  language) to reduce wall-clock time.
+- Invoke the skill from this orchestrator, one language at a time, never inside
+  an agent: `blog-translate` starts its own `blog-translator` agents, and an
+  agent cannot start another agent.
 
 Save translations to `multilingual/{lang}/{localized-slug}.{ext}`.
 
@@ -312,25 +313,28 @@ translation when `--no-localize` is set). The source locale keeps the
 successful `/blog write` review. Do not start this phase until the last
 translation or localization change for the locale is saved.
 
-For each target locale, run the canonical sequence independently:
+For each target locale, run the canonical sequence in
+`${CLAUDE_SKILL_DIR}/../blog/references/blog-delivery-contract.md`
+independently. Multilingual-specific rules:
 
-1. Resolve `BLOG_SCRIPT_DIR="${CLAUDE_BLOG_SCRIPTS_DIR:-${CLAUDE_SKILL_DIR}/../../scripts}"`
-   and reject it unless absolute. Never resolve helpers from the current
-   project's `scripts/` directory.
-2. Visuals: create `multilingual/{lang}/delivery/{localized-slug}/` as the
-   isolated artifact directory and copy the final locale source into it under
-   its lowercase localized slug. Resolve every draft marker (`[INTERNAL-LINK`,
-   `[IMAGE`, `[CHART`): none may remain. Reuse the source hero by copying it
-   as `hero.<ext>`; a new locale-specific hero is a paid call and needs the
-   `blog-image` cost and consent gate first.
-3. Render: `python3 "$BLOG_SCRIPT_DIR/blog_render.py" --md <locale-file> --out-dir <locale-delivery-dir>`.
-4. Init nonce: `python3 "$BLOG_SCRIPT_DIR/blog_preflight.py" --draft <locale-delivery-dir> --init-review-nonce`.
-5. Review: pass only the printed nonce to a fresh `blog-reviewer` invocation
-   against the rendered locale HTML. The reviewer returns text; save it
-   verbatim to `<locale-delivery-dir>/review.md`.
-6. Gates: `python3 "$BLOG_SCRIPT_DIR/blog_preflight.py" --draft <locale-delivery-dir> --strict --slug <localized-slug>`.
-7. Loop: after ANY change to the locale file, hero, HTML, or PDF, re-render,
-   re-init the nonce, and re-review. Maximum 3 iterations per locale.
+- Resolve `BLOG_SCRIPT_DIR="${CLAUDE_BLOG_SCRIPTS_DIR:-${CLAUDE_SKILL_DIR}/../../scripts}"`
+  and reject it unless absolute. Never resolve helpers from the current
+  project's `scripts/` directory.
+- Draft folder: create `multilingual/{lang}/delivery/{localized-slug}/` as the
+  isolated artifact directory and copy the final locale source into it under
+  its lowercase localized slug. Pass `--slug <localized-slug>` to the gates.
+- Visuals: resolve every draft marker (`[INTERNAL-LINK`, `[IMAGE`, `[CHART`):
+  none may remain. Reuse the source hero by copying it as `hero.<ext>`; a new
+  locale-specific hero is a paid call and needs the `blog-image` cost and
+  consent gate first.
+- Render: `blog_render.py --md <locale-file> --out-dir <locale-delivery-dir>`.
+- Init nonce: `blog_preflight.py --draft <locale-delivery-dir> --init-review-nonce`.
+- Review: pass only the printed nonce to a fresh `blog-reviewer` invocation
+  against the rendered locale HTML; it returns text and you save it verbatim to
+  `<locale-delivery-dir>/review.md`.
+- Gates: `blog_preflight.py --draft <locale-delivery-dir> --strict --slug <localized-slug>`.
+- Loop: after ANY change to the locale file, hero, HTML, or PDF, re-render,
+  re-init the nonce, and re-review. Maximum 3 iterations per locale.
 
 Mark the locale passed only at 90+/100, zero P0, matching nonce, final
 `BLOCKING: false`, and all other gates. A failed locale remains

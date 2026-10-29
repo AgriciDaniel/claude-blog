@@ -86,8 +86,10 @@ Extract the translatable surface:
 - All headings (H1, H2, H3).
 - Body paragraphs.
 - Image `alt` text and `<figcaption>` content.
-- Chart `<text>` and `<tspan>` content; preserve every SVG attribute (`x`,
-  `y`, `font-size`, `fill`, `transform`).
+- Chart `<text>` and `<tspan>` content; preserve SVG attributes (`x`, `y`,
+  `fill`, `transform`), except under the overflow rule: if text overflows,
+  widen the `viewBox` or reduce `font-size`; never truncate (see
+  `${CLAUDE_SKILL_DIR}/references/translation-rules.md`).
 - FAQ questions and answers.
 - Evidence-backed explanation text.
 - Key Takeaways or summary box.
@@ -123,7 +125,7 @@ For each target language:
 
 ### Phase 4: Translation
 
-Spawn the `blog-translator` agent (via Task) for each target language with:
+Spawn the `blog-translator` agent (Agent tool, one call per target language) with:
 
 - The source content.
 - The keyword localization map from Phase 3.
@@ -149,13 +151,18 @@ For each translated version:
    lang: "de"
    translatedFrom: "en"
    translatedDate: "YYYY-MM-DD"
+   sourceHash: "<sha256 of the source file bytes>"
+   translationHash: "<sha256 of the translated body, after the closing frontmatter>"
    slug: "wie-man-ki-slop-vermeidet"
    ```
+   The agent cannot compute hashes (no Bash), so you add `sourceHash` and
+   `translationHash` here; `blog-locale-audit` relies on them. Provenance lives
+   in frontmatter only, with no appended HTML comment.
 2. Verify structural integrity:
    - Same number of H2 and H3 sections as the original.
    - All images present with translated alt text.
    - All SVG charts present with translated text labels (length-adjusted:
-     DE +30%, FR +15%, JA -20%, others see `${CLAUDE_SKILL_DIR}/references/translation-rules.md`).
+     DE +30%, FR +15%, JA -20%, others and the overflow rule in `${CLAUDE_SKILL_DIR}/references/translation-rules.md`).
    - FAQ count matches.
    - Evidence-backed explanations from the source remain intact where present.
 3. Save translated files. Exactly one output root applies per run:
@@ -196,25 +203,28 @@ In that mode report each locale's status as `pending (contract deferred to
 blog-multilingual)` and never call a translation complete or publication-ready.
 
 **Standalone runs.** Before calling any translated file complete or
-publication-ready, run the canonical sequence against each final locale
-independently (this skill is the last text change for the locale):
+publication-ready, run the canonical sequence in
+`${CLAUDE_SKILL_DIR}/../blog/references/blog-delivery-contract.md` against each
+final locale independently (this skill is the last text change for the locale).
+Translation-specific rules:
 
-1. Resolve `BLOG_SCRIPT_DIR="${CLAUDE_BLOG_SCRIPTS_DIR:-${CLAUDE_SKILL_DIR}/../../scripts}"`
-   and reject it unless absolute. Never resolve a helper from the current
-   project's `scripts/` directory.
-2. Visuals: create a per-locale delivery staging directory under the intended
-   language output and copy the final locale file there under its lowercase
-   localized slug. Resolve every draft marker (`[INTERNAL-LINK`, `[IMAGE`,
-   `[CHART`): none may remain. Reuse the source hero (copy it as
-   `hero.<ext>`); a new paid hero needs the `blog-image` cost and consent gate.
-3. Render: `python3 "$BLOG_SCRIPT_DIR/blog_render.py" --md <locale-file> --out-dir <locale-delivery-dir>`.
-4. Init nonce: `python3 "$BLOG_SCRIPT_DIR/blog_preflight.py" --draft <locale-delivery-dir> --init-review-nonce`.
-5. Review: pass only the printed nonce to a fresh `blog-reviewer` invocation
-   against the rendered locale HTML. The reviewer returns text; save it
-   verbatim to `<locale-delivery-dir>/review.md`.
-6. Gates: `python3 "$BLOG_SCRIPT_DIR/blog_preflight.py" --draft <locale-delivery-dir> --strict --slug <localized-slug>`.
-7. Loop: after ANY change to the file, hero, HTML, or PDF, re-render, re-init
-   the nonce, and re-review. Maximum 3 iterations.
+- Resolve `BLOG_SCRIPT_DIR="${CLAUDE_BLOG_SCRIPTS_DIR:-${CLAUDE_SKILL_DIR}/../../scripts}"`
+  and reject it unless absolute. Never resolve a helper from the current
+  project's `scripts/` directory.
+- Draft folder: create a per-locale delivery staging directory under the
+  intended language output and copy the final locale file there under its
+  lowercase localized slug. Pass `--slug <localized-slug>` to the gates.
+- Visuals: resolve every draft marker (`[INTERNAL-LINK`, `[IMAGE`, `[CHART`):
+  none may remain. Reuse the source hero (copy it as `hero.<ext>`); a new paid
+  hero needs the `blog-image` cost and consent gate first.
+- Render: `blog_render.py --md <locale-file> --out-dir <locale-delivery-dir>`.
+- Init nonce: `blog_preflight.py --draft <locale-delivery-dir> --init-review-nonce`.
+- Review: pass only the printed nonce to a fresh `blog-reviewer` against the
+  rendered locale HTML; it returns text and you save it verbatim to
+  `<locale-delivery-dir>/review.md`.
+- Gates: `blog_preflight.py --draft <locale-delivery-dir> --strict --slug <localized-slug>`.
+- Loop: after ANY change to the file, hero, HTML, or PDF, re-render, re-init the
+  nonce, and re-review (maximum 3 iterations).
 
 Require 90+/100, zero P0, the matching nonce, final `BLOCKING: false`, and all
 other gates. A failed locale remains `draft-blocked`; report its diagnostic and

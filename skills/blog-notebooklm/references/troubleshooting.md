@@ -159,7 +159,7 @@ python3 "$NOTEBOOKLM_RUN" auth_manager.py setup
 
 ```bash
 # Enable visible browser for debugging
-python3 "$NOTEBOOKLM_RUN" ask_question.py --question "test" --show-browser
+python3 "$NOTEBOOKLM_RUN" ask_question.py --question 'test' --show-browser
 
 # Check individual components
 python3 "$NOTEBOOKLM_RUN" auth_manager.py status

@@ -303,8 +303,8 @@ Default output format (Markdown):
 
 ### Quick Stats
 - Word count: [N]
-- Paragraphs: [N] (X over 150 words)
-- H2 sections: [N] (X as questions, X with answer-first formatting)
+- Paragraphs: [N] (longest: [N] words; descriptive, not a threshold)
+- H2 sections: [N] (X with answer-first formatting)
 - Statistics: [N] sourced / [N] unsourced
 - Images: [N] (X with alt text, formats: ...)
 - Charts: [N] (types: ...)

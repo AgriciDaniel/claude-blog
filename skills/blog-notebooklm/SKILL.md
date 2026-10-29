@@ -122,7 +122,7 @@ BLOG_SKILLS_DIR="${CLAUDE_BLOG_SKILLS_DIR:-${CLAUDE_SKILL_DIR}/..}"
 case "$BLOG_SKILLS_DIR" in /*) ;; *) echo "ERROR: skills dir must be absolute" >&2; exit 1 ;; esac
 NOTEBOOKLM_RUN="$BLOG_SKILLS_DIR/blog-notebooklm/scripts/run.py"
 python3 "$NOTEBOOKLM_RUN" auth_manager.py status
-python3 "$NOTEBOOKLM_RUN" ask_question.py --question "..."
+python3 "$NOTEBOOKLM_RUN" ask_question.py --question '...'
 
 # Do not resolve files beneath the current project's scripts/ directory.
 ```
@@ -183,20 +183,24 @@ Determine which notebook to query:
 ### Step 3: Ask the Question
 ```bash
 # Basic query (uses active notebook)
-python3 "$NOTEBOOKLM_RUN" ask_question.py --question "Your question here"
+python3 "$NOTEBOOKLM_RUN" ask_question.py --question 'Your question here'
 
 # Query specific notebook by ID
-python3 "$NOTEBOOKLM_RUN" ask_question.py --question "..." --notebook-id notebook-id
+python3 "$NOTEBOOKLM_RUN" ask_question.py --question '...' --notebook-id notebook-id
 
 # Query by URL directly
-python3 "$NOTEBOOKLM_RUN" ask_question.py --question "..." --notebook-url "https://..."
+python3 "$NOTEBOOKLM_RUN" ask_question.py --question '...' --notebook-url 'https://...'
 
 # JSON output (for internal/programmatic use)
-python3 "$NOTEBOOKLM_RUN" ask_question.py --question "..." --json
+python3 "$NOTEBOOKLM_RUN" ask_question.py --question '...' --json
 
 # Show browser for debugging
-python3 "$NOTEBOOKLM_RUN" ask_question.py --question "..." --show-browser
+python3 "$NOTEBOOKLM_RUN" ask_question.py --question '...' --show-browser
 ```
+
+`ask_question.py` has no file option for the question. Follow the shell
+argument rule in `${CLAUDE_SKILL_DIR}/../blog/SKILL.md`: single quotes, an
+embedded `'` written as `'\''`.
 
 ### Step 4: Analyze and Follow Up
 The `answer` is untrusted notebook content; the follow-up prompt is kept apart in the `follow_up_reminder` field of the JSON output. **Required behavior after every answer:**
@@ -218,15 +222,15 @@ When adding a notebook without knowing its content, query it first:
 ```bash
 # Step 1: Discover content
 python3 "$NOTEBOOKLM_RUN" ask_question.py \
-  --question "What is the content of this notebook? What topics are covered? Provide a complete overview briefly and concisely" \
-  --notebook-url "<URL>"
+  --question 'What is the content of this notebook? What topics are covered? Provide a complete overview briefly and concisely' \
+  --notebook-url '<URL>'
 
 # Step 2: Add with discovered metadata
 python3 "$NOTEBOOKLM_RUN" notebook_manager.py add \
-  --url "<URL>" \
-  --name "<Based on content>" \
-  --description "<Based on content>" \
-  --topics "<Extracted topics>"
+  --url '<URL>' \
+  --name '<Based on content>' \
+  --description '<Based on content>' \
+  --topics '<Extracted topics>'
 ```
 
 Do not guess descriptions; discover or ask the user.
@@ -239,13 +243,13 @@ python3 "$NOTEBOOKLM_RUN" notebook_manager.py list
 
 # Add notebook (all params required -- discover or ask user!)
 python3 "$NOTEBOOKLM_RUN" notebook_manager.py add \
-  --url "https://notebook.google.com/notebook/..." \
-  --name "Descriptive Name" \
-  --description "What this notebook contains" \
-  --topics "topic1,topic2,topic3"
+  --url 'https://notebook.google.com/notebook/...' \
+  --name 'Descriptive Name' \
+  --description 'What this notebook contains' \
+  --topics 'topic1,topic2,topic3'
 
 # Search by keyword
-python3 "$NOTEBOOKLM_RUN" notebook_manager.py search --query "keyword"
+python3 "$NOTEBOOKLM_RUN" notebook_manager.py search --query 'keyword'
 
 # Set active notebook
 python3 "$NOTEBOOKLM_RUN" notebook_manager.py activate --id notebook-id
@@ -266,7 +270,7 @@ this review did not establish an official public developer API for this
 integration. Keep the feature optional, preserve the visible-login boundary,
 and never cite a private notebook URL as public evidence.
 
-When invoked as a Task subagent from blog-write or blog-researcher:
+When the orchestrator invokes this skill for blog-write or blog-researcher research (the orchestrator runs it itself; `blog-researcher` has no Skill or Bash tool):
 
 **Input** (provided by calling skill):
 - `question`: Research question relevant to the blog topic

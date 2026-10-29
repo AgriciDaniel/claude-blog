@@ -22,11 +22,13 @@ Draft folder `D`, slug `S`. Run capability discovery once first:
 
 1. Draft: `D/S.md` exists. Draft markers `[INTERNAL-LINK: ...]`, `[IMAGE: ...]`, `[CHART: ...]` are allowed here only.
 2. Visuals, done by the orchestrator (the `blog-writer` agent cannot call skills):
-   - Hero: keep a valid local `hero.<ext>`; otherwise run `python3 "$BLOG_SCRIPT_DIR/generate_hero.py" --topic "<title>" --tags "<tags>" --out "$D"` or use `blog-image`. Record provider, model ID, prompt, license and attribution.
+   - Hero: keep a valid local `hero.<ext>`; otherwise run `python3 "$BLOG_SCRIPT_DIR/generate_hero.py" --topic '<title>' --tags '<tags>' --out "$D"` or use `blog-image`. A paid image call needs the `blog-image` cost and consent gate first; without that consent, prefix the command with `env -u GOOGLE_AI_API_KEY -u GEMINI_API_KEY` so the script uses its free rungs. `blog-write` produces one hero, in this step. Record provider, model ID, prompt, license and attribution.
+   - Quote model or user text as in the shell argument rule of `skills/blog/SKILL.md` (single quotes, embedded `'` as `'\''`).
    - Charts: run `blog-chart` for each `[CHART]` marker and embed the SVG in a `<figure>`.
    - Internal links: replace each `[INTERNAL-LINK]` with a real link to a page that exists, or remove the marker and keep the plain text.
    - Images: replace each `[IMAGE]` with a local file in `D`, or remove it.
    - Attribution: if `hero-credit.txt` names a license that needs visible credit (CC BY, BY-SA, or a stock license that asks for it), add the credit line to the article's Sources section or the hero caption. The renderer does not publish it.
+   - Optional: `blog-seo` on the resolved `S.md`, then `blog_hygiene.py --md "$D/S.md" --apply` on the markdown only, never on rendered files.
    - Confirm no marker remains: search `S.md` for `[INTERNAL-LINK`, `[IMAGE` and `[CHART`.
 3. Render: `python3 "$BLOG_SCRIPT_DIR/blog_render.py" --md "$D/S.md" --out-dir "$D"`.
 4. Init nonce: `NONCE=$(python3 "$BLOG_SCRIPT_DIR/blog_preflight.py" --init-review-nonce --draft "$D")`.
