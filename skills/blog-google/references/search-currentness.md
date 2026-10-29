@@ -1,8 +1,11 @@
 # Google Search Currentness Playbook
 
-Verified against Google-owned sources on 2026-10-11. Treat product
-announcements as product context, not evidence of a ranking factor. Use
-`data/google-updates.json` for the machine-readable source ledger.
+Verified against Google-owned sources on 2026-10-11. The ledger was reviewed
+again on 2026-10-29 for Search Central documentation updates through
+2026-10-26; sections below that this review did not touch keep the earlier
+date. Treat product announcements as product context, not evidence of a
+ranking factor. Use `data/google-updates.json` for the machine-readable source
+ledger.
 
 Resolve the ledger in this order:
 
@@ -80,6 +83,25 @@ Indexing feature is quota-limited; reserve it for important URLs.
 Request Indexing in URL Inspection is separate from the Indexing API. The
 Indexing API remains restricted to eligible JobPosting and
 BroadcastEvent/VideoObject pages.
+
+## October 2026 Documentation Updates
+
+Documentation changes, not ranking events. Cite the ledger entries for detail.
+
+- URL structure (October 23): hyphens, not underscores, between words; readable
+  words over ID numbers; URLs are case sensitive; no slug length limit is given.
+- Control what you share (October 21): one page now lists noindex, robots.txt
+  for images and video, robots meta, `data-nosnippet`, `X-Robots-Tag` and a
+  site-wide Search generative AI control in Search Console. The page does not
+  describe how that control works, so do not claim a mechanism.
+- User-generated spam (October 26): consider `noindex` for posts from new
+  users, `nofollow` or `ugc` on links in untrusted content, and watch the Page
+  Indexing report for spikes. Relevant to comment sections.
+- Indexing API quota (October 16): 200 publish requests per day, 180 metadata
+  requests per minute, 380 requests per minute overall. Eligibility is
+  unchanged, so blog posts are still not eligible.
+- UGC Fresh Data Program (October 8): application-only pipeline for platforms
+  that primarily host user-generated content. Not relevant to ordinary blogs.
 
 ## Generative AI Performance Reports
 
