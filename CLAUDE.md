@@ -67,17 +67,21 @@ claude-blog/
     blog-strategy/SKILL.md        # Blog positioning and planning
     blog-seo-check/SKILL.md      # Post-writing SEO validation
     blog-schema/SKILL.md          # JSON-LD schema generation
-    blog-chart/SKILL.md           # Inline SVG data visualizations
+    blog-chart/                    # Inline SVG data visualizations
+      SKILL.md
+      references/                 # 1 reference doc (chart input schema)
     blog-repurpose/SKILL.md       # Multi-platform repurposing
     blog-geo/SKILL.md             # AI citation optimization
     blog-audit/SKILL.md           # Full-site blog health assessment
     blog-image/                    # AI image generation via Gemini
       SKILL.md                    # Image generation sub-skill
-      references/                 # 3 reference docs (models, tools, prompts)
+      references/                 # 4 reference docs (models, tools, prompts, MCP route)
       scripts/                    # MCP setup and validation scripts
     blog-cannibalization/SKILL.md # Keyword overlap detection
     blog-factcheck/SKILL.md       # Statistics verification
-    blog-persona/SKILL.md         # Writing persona management
+    blog-persona/                  # Writing persona management
+      SKILL.md
+      references/                 # personas/ directory for saved personas
     blog-taxonomy/SKILL.md        # CMS taxonomy management
     blog-notebooklm/               # NotebookLM source-grounded research
       SKILL.md                    # NotebookLM query sub-skill
@@ -85,7 +89,7 @@ claude-blog/
       scripts/                    # 11 Python modules + requirements.txt/lock
     blog-audio/                    # Audio narration via Gemini TTS
       SKILL.md                    # Audio generation sub-skill
-      references/                 # 1 reference doc (30 voice catalog)
+      references/                 # 2 reference docs (30 voice catalog, dated models and pricing)
       scripts/                    # 5 Python scripts + requirements.txt
     blog-google/                   # Google API integration
       SKILL.md                    # Google API sub-skill (13 commands, 4 tiers)
@@ -98,6 +102,7 @@ claude-blog/
     blog-flow/                     # FLOW framework prompts (v1.7.0)
       SKILL.md                    # FLOW orchestrator (find/optimize/win/prompts/sync)
       references/                 # Synced from github.com/AgriciDaniel/flow (CC BY 4.0)
+      scripts/                    # sync_flow.py wrapper around the core scripts/sync_flow.py
     blog-multilingual/             # One-command international publishing (v1.7.0)
       SKILL.md                    # Multilingual orchestrator
     blog-translate/                # SEO-optimized translation (v1.7.0)

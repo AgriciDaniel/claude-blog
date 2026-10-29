@@ -6,11 +6,9 @@ blog-write/blog-rewrite.
 Every command is invoked through the main orchestrator
 (`skills/blog/SKILL.md`), which routes to the appropriate sub-skill.
 
-> **For detailed command flows beyond the overview table below, see each
-> sub-skill's `SKILL.md` directly. Sections in this file are abbreviated
-> for the v1.7.0 and v1.8.0 commands that joined after this doc was
-> originally written; the full overview table below is the canonical
-> command list.**
+> **The overview table below is the canonical command list. The sections
+> after it are short summaries; the full flow, options and limits of every
+> command live in its sub-skill's `SKILL.md`.**
 
 ## Command Overview
 
@@ -854,6 +852,45 @@ correctness, meta-tag parity, freshness).
 
 ---
 
+## /blog style
+
+**Purpose**: learn a measurable author voice profile from 5 to 10 existing
+posts, to feed `VOICE.md`, `/blog persona` and `/blog write`. The profile
+describes style (sentence length, vocabulary, transitions, phrasing); it does
+not detect or attribute authorship.
+
+```
+/blog style learn <paths>
+```
+
+The learner is `scripts/style_learn.py`; it accepts files or directories and
+the options `--min`, `--format {json,markdown}` and `--output`. Fewer samples
+than the minimum (default 5) produce a warning, not a failure.
+
+**Flow**: See `skills/blog-style/SKILL.md`.
+
+---
+
+## /blog decay
+
+**Purpose**: compare two Google Search Console page exports (current and
+previous period) and flag pages whose clicks or impressions fell by at least a
+threshold (default 20%), with a triage hint. The threshold is a screening
+heuristic, not proof of decay.
+
+```
+/blog decay <current-gsc.json> <previous-gsc.json>
+/blog decay <current-gsc.json> <previous-gsc.json> --threshold 0.30 --metric impressions
+```
+
+The analyzer is `scripts/content_decay.py` (`--threshold`, `--metric
+{clicks,impressions}`, `--format {json,markdown}`, `--output`). Both exports
+must come from the same property and use one URL form.
+
+**Flow**: See `skills/blog-decay/SKILL.md`.
+
+---
+
 ## Command Routing
 
 The main orchestrator (`skills/blog/SKILL.md`) parses user input and routes to
@@ -892,6 +929,8 @@ User Input                                  Routes To
 /blog translate <file> --to             --> blog-translate
 /blog localize <file> --locale          --> blog-localize
 /blog locale-audit <directory>          --> blog-locale-audit
+/blog style learn <paths>               --> blog-style               (v1.10.0)
+/blog decay <current> <previous>        --> blog-decay               (v1.10.0)
 /blog flow [find|optimize|win|prompts|sync] --> blog-flow
 ```
 

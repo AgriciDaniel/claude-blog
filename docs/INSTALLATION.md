@@ -160,12 +160,8 @@ If you prefer not to run the installer, copy files to these paths manually.
 ├── skills/
 │   ├── blog/
 │   │   ├── SKILL.md                          # Main orchestrator
-│   │   ├── references/
-│   │   │   ├── content-rules.md
-│   │   │   ├── geo-optimization.md
-│   │   │   ├── google-landscape-2026.md
-│   │   │   ├── quality-scoring.md
-│   │   │   └── visual-media.md
+│   │   ├── references/                   # 22 files; copy the whole directory
+│   │   │   └── *.md
 │   │   ├── templates/                        # 12 content type templates
 │   │   │   └── *.md
 │   │   └── scripts/

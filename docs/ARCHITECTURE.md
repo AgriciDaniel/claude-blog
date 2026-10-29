@@ -216,7 +216,7 @@ dependencies are stdlib-only or narrowly pinned.
 | `dependency_smoke.py` | Offline initialization smoke checks for the optional runtimes | Maintenance |
 | `discourse_research.py` | Discourse-brief synthesis from SERP JSON; depth-bounded parsing; path-traversal guards | v1.8.0 |
 | `generate_hero.py` | Hero image ladder: Banana MCP -> Gemini API -> Unsplash/Pexels/Pixabay -> Openverse | v1.9.0 |
-| `installer_ownership.py` | Shared Unix legacy/v2 ownership verification, migration and rollback | Unreleased |
+| `installer_ownership.py` | Shared Unix legacy/v2 ownership verification, migration and rollback | v2.3.0 |
 | `lint_prose.py` | Fence-aware prose-hygiene linter (no em-dash, en-dash, ` -- `); CI-enforced | v1.8.4 |
 | `load_untrusted_root.py` | Code-enforced BRAND/VOICE/DISCOURSE fencing with CSPRNG nonces; O_NOFOLLOW + size cap | v1.8.3 |
 | `quality_gate.py` | Pre-commit gate: block posts scoring < 70; fail-closed on bad paths and missing frontmatter; `--select` is the pre-commit hook mode that skips Markdown files that are not blog posts | v1.10.0 |
@@ -278,8 +278,8 @@ dependencies are stdlib-only or narrowly pinned.
       +-- Writes file to user's project
       |
       v
-  Delivery summary: md, html, pdf, hero, 3 viewport screenshots (preview/),
-  review.md, preflight-report.json
+  Delivery summary: md, html, pdf, hero, 3 viewport screenshots plus a dark-mode
+  screenshot (preview/), review.md, preflight-report.json
 ```
 
 The authoritative sequence and the full list of what each gate enforces live
