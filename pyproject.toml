@@ -78,7 +78,7 @@ presentation = [
     "google-genai>=2.29.0,<3.0.0",
     "requests>=2.34.2,<3.0.0",
     "markdown>=3.5,<4.0",
-    "Pillow>=12.3.0,<13.0.0",
+    "Pillow>=13.0.0,<14.0.0",
 ]
 dev = [
     "PyYAML>=6.0.3,<7.0",
@@ -94,7 +94,7 @@ dev = [
     "google-api-python-client>=2.100.0,<3.0.0",
     "markdown>=3.5,<4.0",
     "google-analytics-data>=0.23.3,<1.0.0",
-    "Pillow>=12.3.0,<13.0.0",
+    "Pillow>=13.0.0,<14.0.0",
 ]
 
 [tool.pytest.ini_options]
