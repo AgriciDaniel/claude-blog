@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Make Blog Studio 0.2.0 work with the real engine (#102). The plugin called a status script and a preflight flag that did not exist, so it could never show a passing result. `scripts/blog_studio_status.py` is new (read-only; prints the status JSON the plugin parses, with `--draft`, `--project-root` and `--expected-run`). `scripts/blog_preflight.py` gains `--project-root` and writes an additive `evidence` object (including a 32-hex `run_id`) into `preflight-report.json`. Stdout modes, other flags and exit codes are unchanged, and the report `draft` field keeps the path as given under `--project-root`. An unfinished or iteration-capped run shows as Blocked, never as passed or stale.
+- Add `tests/test_blog_studio.py` and `tests/test_blog_studio_integration.py`, which run the real scripts the way the plugin does and mirror its response parser, plus a `blog-studio` CI job (strict plugin validation and the 59 test-kit tests on a pinned Claude Code release). The companion's reference type check still reports 3 errors in `hooks/view.ts`, so CI does not run it yet.
+- Extend `scripts/consistency_check.py` and `scripts/validate_public_release.py` to cover `plugins/` (the studio version must match its marketplace entry), and correct the script, reference and screenshot counts in the docs, the `installer_ownership.py` release note and the `/blog style` and `/blog decay` command sections.
+
+Other fixes in this release are listed below by their owners.
+
 ### Changed
 
 - Turn off Dependabot version-update PRs (`open-pull-requests-limit: 0`). Hash-locked pip bumps need a maintainer relock, so the PRs only added notifications. Vulnerability alerts stay on.

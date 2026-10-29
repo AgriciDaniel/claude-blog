@@ -24,6 +24,7 @@ Exit codes: 0 = all gates passed; 1 = at least one gate blocked
 from __future__ import annotations
 
 import argparse
+import contextlib
 import datetime as dt
 import hashlib
 import ipaddress
@@ -38,9 +39,19 @@ import tempfile
 import urllib.error
 import urllib.parse
 import urllib.request
+import uuid
 from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any, Optional
+
+# The sibling module must load under `python3 -I` too, which drops the script
+# directory from sys.path.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+try:  # Optional: evidence and --project-root need the Blog Studio inspector module.
+    from blog_studio_status import anchored_draft as _anchored_draft
+    from blog_studio_status import capture_inputs, capture_outputs, engine_identity
+except ImportError:  # pragma: no cover - exercised by a test that blocks the import
+    _anchored_draft = capture_inputs = capture_outputs = engine_identity = None
 
 
 def _project_version() -> str:
@@ -3069,7 +3080,7 @@ GATE_NAMES = {
 }
 
 
-def _incomplete_report(draft: Path, strict: bool, reason: str) -> dict[str, Any]:
+def _incomplete_report(draft: Path | str, strict: bool, reason: str) -> dict[str, Any]:
     """Blocked placeholder report written before any gate runs."""
     return {
         "draft": str(draft),
@@ -3101,6 +3112,10 @@ def _previous_report_gates(report_path: Path) -> list[Any]:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("--draft", required=True, help="Draft folder containing the .md/.html/.pdf/hero artifacts")
+    parser.add_argument(
+        "--project-root",
+        help="Anchor execution inside this project directory (Unix only); the report then records the draft path as given",
+    )
     parser.add_argument("--gate", type=int, choices=[1, 2, 3, 4, 5], help="Run only this gate (default: all)")
     parser.add_argument("--slug", help="Require all source/rendered artifacts to match this stem")
     parser.add_argument("--strict", dest="strict", action="store_true", default=True)
@@ -3126,11 +3141,27 @@ def main() -> int:
     )
     args = parser.parse_args()
 
+    if args.project_root is not None:
+        if _anchored_draft is None:
+            print("ERROR: --project-root needs scripts/blog_studio_status.py next to this script", file=sys.stderr)
+            return 1
+        with contextlib.ExitStack() as stack:
+            try:
+                draft, identity = stack.enter_context(_anchored_draft(args.draft, args.project_root))
+            except (OSError, ValueError) as exc:
+                print(f"ERROR: project-contained preflight refused: {exc}", file=sys.stderr)
+                return 1
+            return _run_preflight(args, draft, identity)
+
     draft = Path(args.draft).resolve()
     if not draft.is_dir():
         print(f"ERROR: {draft} is not a directory", file=sys.stderr)
         return 1
+    return _run_preflight(args, draft, str(draft))
 
+
+def _run_preflight(args: argparse.Namespace, draft: Path, draft_identity: str) -> int:
+    """Run the requested gates. ``draft_identity`` is the path recorded in the report."""
     if args.init_review_nonce:
         nonce = _init_review_nonce(draft)
         print(nonce)
@@ -3141,7 +3172,7 @@ def main() -> int:
     report_path = draft / "preflight-report.json"
     previous_gates = _previous_report_gates(report_path)
     try:
-        started = _incomplete_report(draft, args.strict, "run started and has not finished")
+        started = _incomplete_report(draft_identity, args.strict, "run started and has not finished")
         if previous_gates:
             # Crash safety must not erase the last diagnostic.
             started["previous_gates"] = previous_gates
@@ -3160,7 +3191,7 @@ def main() -> int:
         # Keep the diagnostic the cap exists to hand over, but never as a
         # current result: the report stays blocked and incomplete.
         capped = _incomplete_report(
-            draft, args.strict,
+            draft_identity, args.strict,
             "iteration cap exceeded; the last complete run's gates are in previous_gates",
         )
         capped["iteration_cap_exceeded"] = True
@@ -3195,6 +3226,9 @@ def main() -> int:
 
     results: list[dict] = []
     blocked = False
+    started_at = dt.datetime.now(dt.timezone.utc).isoformat()
+    evidence_engine = engine_identity() if engine_identity else None
+    inputs_before = capture_inputs(draft, _review_state_path(draft)) if capture_inputs else None
     for n, fn in gates:
         try:
             r = fn(draft)
@@ -3207,11 +3241,28 @@ def main() -> int:
                 break
 
     report = {
-        "draft": str(draft),
+        "draft": draft_identity,
         "strict": args.strict,
         "blocked": blocked,
         "gates": results,
     }
+    if inputs_before is not None:
+        # Additive freshness evidence for Blog Studio. Fingerprints show what
+        # was checked; they are not an approval and add no new gate.
+        inputs_after = capture_inputs(draft, _review_state_path(draft))
+        report["evidence"] = {
+            "schema_version": 1,
+            "run_id": uuid.uuid4().hex,
+            "contract_version": CONTRACT_VERSION,
+            "engine": evidence_engine,
+            "started_at": started_at,
+            "finished_at": dt.datetime.now(dt.timezone.utc).isoformat(),
+            "requested_gates": [n for n, _fn in gates],
+            "completed_gates": [r["gate"] for r in results],
+            "inputs": inputs_before,
+            "inputs_unchanged": not inputs_before["errors"] and inputs_before == inputs_after,
+            "outputs": capture_outputs(draft),
+        }
     try:
         _atomic_write_json(draft / "preflight-report.json", report, indent=2)
     except (OSError, ValueError) as e:

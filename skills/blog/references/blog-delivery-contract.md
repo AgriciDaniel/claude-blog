@@ -318,3 +318,16 @@ Category lines use the fixed rubric maxima (30, 25, 15, 15, 15) and the overall
 equals the sum of the five category scores; Gate 4 rejects a card whose numbers
 disagree. See the draft-stage rule in `quality-scoring.md` for items a draft
 cannot evidence.
+
+## Optional status companion
+
+Blog Studio reads the additive `evidence` object in `preflight-report.json`
+(`schema_version`, `run_id`, `contract_version`, `engine`, `started_at`,
+`finished_at`, `requested_gates`, `completed_gates`, `inputs`, `inputs_unchanged`,
+`outputs`). The `scripts/blog_studio_status.py` inspector checks run scope and
+local fingerprints without executing gates. Missing, legacy, partial or stale
+evidence cannot establish full preflight success. Fingerprints describe
+freshness, not authenticated approval. The five gates and the reviewer remain
+the delivery authority. Manual checks do not reset nonces or consume repair
+iterations. Run `blog_preflight.py --project-root <dir>` to anchor a run inside
+a project; stdout modes, other flags and exit codes are unchanged.

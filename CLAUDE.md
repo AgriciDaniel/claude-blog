@@ -30,6 +30,7 @@ claude-blog/
   brain/                             # Vendored self-contained evidence-gated Obsidian brain; not plugin payload; tooling stays under skills/
   scripts/analyze_blog.py            # 5-category quality scoring (stdlib)
   scripts/blog_preflight.py          # 5-gate delivery contract runner (v1.9.0)
+  scripts/blog_studio_status.py      # Read-only preflight evidence inspector for the optional blog-studio plugin
   scripts/blog_render.py             # md -> html -> pdf renderer; XSS-safe JSON-LD (v1.9.0)
   scripts/blog_hygiene.py            # Optional deterministic hygiene: lazy-load imgs + auto-TOC (v1.11.0)
   scripts/cognitive_load.py          # Per-section concept-density analyzer (v1.8.0)
@@ -50,12 +51,14 @@ claude-blog/
   scripts/check_google_currentness.py # Google update ledger vs official feeds
   scripts/sync_google_updates.py     # Google update ledger sync into the Blog Brain
   scripts/installer_ownership.py     # Shared Unix installer ownership engine
-  # 22 scripts/*.py in total: `ls scripts/*.py | wc -l`
+  # 23 scripts/*.py in total: `ls scripts/*.py | wc -l`
   skills/                            # 32 skill directories (1 orchestrator + 31 sub-skills)
     blog/SKILL.md                   # Main orchestrator, routing, scoring
       references/                   # 22 on-demand knowledge files (5 in v1.8.0, 1 in v1.9.0)
       templates/                    # 12 content templates
-    blog-write/SKILL.md            # Write new articles from scratch
+    blog-write/                    # Write new articles from scratch
+      SKILL.md
+      references/                 # 2 reference docs (delivery, drafting)
     blog-rewrite/SKILL.md         # Optimize existing blog posts
     blog-analyze/SKILL.md         # 5-category 100-point scoring
     blog-brief/SKILL.md           # Detailed content briefs

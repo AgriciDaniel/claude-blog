@@ -53,7 +53,7 @@ The Claude Blog Brain is vendored at `./brain` as a self-contained, evidence-gat
        |          |
        v          v
 +------------------+  +------------------------+
-|  5 Subagents     |  |  22 root-level Scripts  |
+|  5 Subagents     |  |  23 root-level Scripts  |
 |  agents/*.md     |  |  scripts/*.py          |
 |                  |  |                        |
 |  blog-researcher |  |  analyze_blog          |
@@ -189,11 +189,11 @@ Structural templates for different content types. Each template defines
 section structure, word count targets, and format-specific guidance.
 See [TEMPLATES.md](TEMPLATES.md) for the full reference.
 
-### 6. Root-Level Python Scripts (22)
+### 6. Root-Level Python Scripts (23)
 
 **Location**: `scripts/*.py`
 
-Twenty-two Python helpers live at the repository root (count them with
+Twenty-three Python helpers live at the repository root (count them with
 `ls scripts/*.py | wc -l`; `scripts/windows_installer_ownership.ps1` is the
 PowerShell twin of the ownership engine and is not counted). They support the
 orchestrator, the delivery contract, the installers and the CI checks.
@@ -207,6 +207,7 @@ dependencies are stdlib-only or narrowly pinned.
 | `blog_hygiene.py` | Optional deterministic hygiene: lazy-load images and auto-TOC | v1.11.0 |
 | `blog_preflight.py` | Runs the 5-gate Blog Delivery Contract (Gates 1, 2, 3, 5 plus the Gate 4 nonce and digest checks); `--init-review-nonce` issues the review nonce | v1.9.0 |
 | `blog_render.py` | md -> html -> pdf renderer; XSS-safe JSON-LD via `</`->`<\/`; O_NOFOLLOW symlink refusal; frontmatter validation; embeds `blog-source-sha256`; refuses `.html` input | v1.9.0 |
+| `blog_studio_status.py` | Read-only inspector for the saved preflight report's `evidence` object; prints the status JSON the optional Blog Studio plugin displays (`--draft`, `--project-root`, `--expected-run`) | Unreleased |
 | `check_google_currentness.py` | Checks the reviewed Google update ledger against official machine-readable feeds | Maintenance |
 | `check_secrets.py` | Fails on unadjudicated detect-secrets findings without printing raw values | Maintenance |
 | `cognitive_load.py` | Per-section concept-density analyzer (entities, numerics, jargon, forward refs, clause depth) | v1.8.0 |

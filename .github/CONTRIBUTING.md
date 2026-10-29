@@ -25,7 +25,7 @@ claude-blog/
 │   ├── blog-rewrite/
 │   └── ...                  # 31 sub-skill dirs: 30 user-facing + 1 internal
 ├── agents/                  # 5 specialized agents
-├── scripts/                 # 20 root-level Python helper scripts
+├── scripts/                 # 23 root-level Python helper scripts
 ├── tests/                   # pytest test suite (security guardrails + script tests)
 ├── docs/                    # Documentation (installation, commands, architecture, templates, troubleshooting, MCP)
 └── .github/workflows/       # CI pipeline

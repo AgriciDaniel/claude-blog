@@ -20,7 +20,7 @@ loads until you install it.
 
 Blog Studio is a Claude Code mod (function-hook plugin), so it needs a Claude Code
 release with mods support. It was developed and checked on the Linux CLI,
-2.1.294 to 2.1.296. The panel uses host theme colors and the shared
+2.1.294 to 2.1.296, and re-run (strict validation and the 59 test-kit tests) on 2.1.312. The panel uses host theme colors and the shared
 terminal/Desktop element set. Desktop fixture tests do not establish native
 Desktop support. Codex does not run Claude Code mods.
 

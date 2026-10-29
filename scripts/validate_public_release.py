@@ -116,11 +116,17 @@ def validate(root: Path) -> dict:
         "agents": ("*.md",),
         "scripts": ("*.py", "*.ps1"),
         "data": ("*.json",),
+        "plugins": ("*.md", "*.ts", "*.mjs", "*.json"),
         ".github/workflows": ("*.yml", "*.yaml"),
     }.items():
         for pattern in patterns:
             for path in (root / directory).rglob(pattern):
-                if path.is_symlink() or any(part in {".venv", "__pycache__"} for part in path.parts):
+                if path.is_symlink() or any(
+                    part in {".venv", "__pycache__", "node_modules", ".reference-types"}
+                    for part in path.parts
+                ):
+                    continue
+                if ".claude-plugin/types/" in path.as_posix():
                     continue
                 relative = path.relative_to(root).as_posix()
                 contents.setdefault(relative, path.read_text(encoding="utf-8"))
@@ -343,9 +349,13 @@ def validate(root: Path) -> dict:
             )
 
     marketplace_text = contents.get(".claude-plugin/marketplace.json", "")
+    marketplace: dict = {}
     try:
         marketplace = json.loads(marketplace_text)
-    except json.JSONDecodeError:
+        if not isinstance(marketplace, dict):
+            raise ValueError("marketplace must be an object")
+    except ValueError:  # JSONDecodeError is a ValueError
+        marketplace = {}
         errors.append(
             {"kind": "invalid_json", "file": ".claude-plugin/marketplace.json"}
         )
@@ -383,6 +393,35 @@ def validate(root: Path) -> dict:
                 {
                     "kind": "invalid_public_marketplace_plugin",
                     "file": ".claude-plugin/marketplace.json",
+                }
+            )
+
+    # The optional Blog Studio companion versions independently of claude-blog:
+    # the manifest, its marketplace entry and the repository must agree.
+    studio_manifest = root / "plugins/blog-studio/.claude-plugin/plugin.json"
+    entries = marketplace.get("plugins")
+    studio_entries = [
+        entry for entry in entries
+        if isinstance(entry, dict) and entry.get("name") == "blog-studio"
+    ] if isinstance(entries, list) else []
+    if studio_manifest.exists() or studio_entries:
+        try:
+            studio = json.loads(studio_manifest.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            studio = None
+        if (
+            not isinstance(studio, dict)
+            or studio.get("name") != "blog-studio"
+            or not isinstance(studio.get("version"), str)
+            or studio.get("repository") != PUBLIC_REPOSITORY
+            or len(studio_entries) != 1
+            or studio_entries[0].get("source") != "./plugins/blog-studio"
+            or studio_entries[0].get("version") != studio.get("version")
+        ):
+            errors.append(
+                {
+                    "kind": "invalid_studio_distribution",
+                    "file": "plugins/blog-studio/.claude-plugin/plugin.json",
                 }
             )
 
