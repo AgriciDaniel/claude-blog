@@ -317,7 +317,7 @@ def test_gemini_requests_jpeg_and_names_output_from_actual_bytes(
     monkeypatch.setenv("GOOGLE_AI_API_KEY", "test-key")
     monkeypatch.setattr(hero, "_fit_image_bytes", lambda data, _w, _h: data)
 
-    result = hero._try_gemini("Fixture", [], tmp_path, 1200, 630, "test-model")
+    result = hero._try_gemini("Fixture", [], tmp_path, 1200, 630, "test-model", allow_paid=True)
 
     assert result is not None and result["path"].endswith("hero.jpg")
     assert captured["response_format"]["mime_type"] == "image/jpeg"

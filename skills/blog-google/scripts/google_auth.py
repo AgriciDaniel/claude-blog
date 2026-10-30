@@ -51,6 +51,8 @@ SERVICE_AUTH = {
 }
 
 OAUTH_REDIRECT_URI = "http://127.0.0.1:8085"
+# Seconds an accepted loopback connection may stay silent before it is dropped.
+OAUTH_CONNECTION_TIMEOUT = 10.0
 
 
 _SECRET_NAMES = (
@@ -580,6 +582,11 @@ def _listen_for_oauth_code(
             if remaining <= 0:
                 break
             server.timeout = remaining
+            # server.timeout only bounds the wait for a connection. The handler
+            # applies its own timeout to the accepted socket, so a client that
+            # connects and sends nothing (or a browser preconnect) is dropped
+            # instead of blocking handle_request past the deadline.
+            Handler.timeout = min(remaining, OAUTH_CONNECTION_TIMEOUT)
             server.handle_request()
     finally:
         server.server_close()

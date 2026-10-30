@@ -106,3 +106,42 @@ def test_run_oauth_flow_prints_a_clear_message_when_the_port_is_busy(auth, tmp_p
     assert exc.value.code == 1
     err = capsys.readouterr().err
     assert "8085" in err and "Address already in use" in err
+
+
+def _listen_daemon(auth, state, port, timeout):
+    """Like _listen_in_thread, but a daemon thread so a regression cannot hang pytest."""
+    box = {}
+
+    def run():
+        box["code"] = auth._listen_for_oauth_code(state, timeout=timeout, port=port)
+
+    thread = threading.Thread(target=run, daemon=True)
+    thread.start()
+    for _ in range(100):
+        with socket.socket() as probe:
+            if probe.connect_ex(("127.0.0.1", port)) == 0:
+                break
+        time.sleep(0.05)
+    return thread, box
+
+
+def test_a_silent_client_cannot_hold_the_listener_past_the_deadline(auth):
+    port = _free_port()
+    started = time.monotonic()
+    thread, box = _listen_daemon(auth, "s", port, timeout=1.0)
+    with socket.create_connection(("127.0.0.1", port)):
+        thread.join(timeout=8)  # connected and silent for the whole window
+        assert not thread.is_alive(), "listener blocked on a silent connection"
+    assert box["code"] is None
+    assert time.monotonic() - started < 6
+
+
+def test_a_silent_client_is_dropped_and_the_real_callback_still_lands(auth, monkeypatch):
+    monkeypatch.setattr(auth, "OAUTH_CONNECTION_TIMEOUT", 0.3)
+    port = _free_port()
+    thread, box = _listen_daemon(auth, "good-state", port, timeout=20.0)
+    with socket.create_connection(("127.0.0.1", port)):
+        assert _get(port, "state=good-state&code=the-code") == 200
+    thread.join(timeout=8)
+    assert not thread.is_alive()
+    assert box["code"] == "the-code"

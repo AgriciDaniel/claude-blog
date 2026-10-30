@@ -78,18 +78,29 @@ def test_environment_override_still_wins(monkeypatch):
 
 def test_gemini_api_key_variable_is_accepted(hero, monkeypatch, tmp_path):
     monkeypatch.delenv("GOOGLE_AI_API_KEY", raising=False)
-    monkeypatch.setenv("GEMINI_API_KEY", "fake-key-for-test")
+    monkeypatch.setenv("GEMINI_API_KEY", "your-test-key")
     calls = _fake_genai(monkeypatch, {"gemini-nano-banana-2.1": PNG_1X1})
-    result = hero._try_gemini("topic", ["tag"], tmp_path, 1200, 630, hero.DEFAULT_GEMINI_MODEL)
+    result = hero._try_gemini("topic", ["tag"], tmp_path, 1200, 630, hero.DEFAULT_GEMINI_MODEL, allow_paid=True)
     assert calls == ["gemini-nano-banana-2.1"]
     assert result and result["model"] == "gemini-nano-banana-2.1"
+
+
+@pytest.mark.parametrize("variable", ["GOOGLE_AI_API_KEY", "GEMINI_API_KEY"])
+def test_a_set_key_without_allow_paid_means_no_call(hero, monkeypatch, tmp_path, variable):
+    monkeypatch.delenv("GOOGLE_AI_API_KEY", raising=False)
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    monkeypatch.setenv(variable, "your-test-key")
+    calls = _fake_genai(monkeypatch, {"gemini-nano-banana-2.1": PNG_1X1})
+    assert hero._try_gemini("topic", [], tmp_path, 1200, 630, hero.DEFAULT_GEMINI_MODEL) is None
+    assert calls == []
+    assert list(tmp_path.iterdir()) == []
 
 
 def test_no_key_means_no_call(hero, monkeypatch, tmp_path):
     monkeypatch.delenv("GOOGLE_AI_API_KEY", raising=False)
     monkeypatch.delenv("GEMINI_API_KEY", raising=False)
     calls = _fake_genai(monkeypatch, {})
-    assert hero._try_gemini("topic", [], tmp_path, 1200, 630, hero.DEFAULT_GEMINI_MODEL) is None
+    assert hero._try_gemini("topic", [], tmp_path, 1200, 630, hero.DEFAULT_GEMINI_MODEL, allow_paid=True) is None
     assert calls == []
 
 
@@ -103,14 +114,14 @@ def test_no_key_means_no_call(hero, monkeypatch, tmp_path):
     ],
 )
 def test_unfixable_errors_stop_the_ladder(hero, monkeypatch, tmp_path, message):
-    monkeypatch.setenv("GOOGLE_AI_API_KEY", "fake-key-for-test")
+    monkeypatch.setenv("GOOGLE_AI_API_KEY", "your-test-key")
     calls = _fake_genai(monkeypatch, {"gemini-nano-banana-2.1": RuntimeError(message)})
-    assert hero._try_gemini("topic", [], tmp_path, 1200, 630, hero.DEFAULT_GEMINI_MODEL) is None
+    assert hero._try_gemini("topic", [], tmp_path, 1200, 630, hero.DEFAULT_GEMINI_MODEL, allow_paid=True) is None
     assert calls == ["gemini-nano-banana-2.1"]
 
 
 def test_model_specific_errors_still_fall_back_to_the_next_model(hero, monkeypatch, tmp_path):
-    monkeypatch.setenv("GOOGLE_AI_API_KEY", "fake-key-for-test")
+    monkeypatch.setenv("GOOGLE_AI_API_KEY", "your-test-key")
     calls = _fake_genai(
         monkeypatch,
         {
@@ -118,7 +129,7 @@ def test_model_specific_errors_still_fall_back_to_the_next_model(hero, monkeypat
             "gemini-3.1-flash-image": PNG_1X1,
         },
     )
-    result = hero._try_gemini("topic", [], tmp_path, 1200, 630, hero.DEFAULT_GEMINI_MODEL)
+    result = hero._try_gemini("topic", [], tmp_path, 1200, 630, hero.DEFAULT_GEMINI_MODEL, allow_paid=True)
     assert calls[:2] == ["gemini-nano-banana-2.1", "gemini-3.1-flash-image"]
     assert result and result["model"] == "gemini-3.1-flash-image"
 
@@ -128,6 +139,6 @@ def test_error_text_never_contains_the_key(hero, monkeypatch, tmp_path, capsys):
     fake_value = "AI" + "za" + "FAKE" * 8 + "abc"
     monkeypatch.setenv("GOOGLE_AI_API_KEY", fake_value)
     _fake_genai(monkeypatch, {"gemini-nano-banana-2.1": RuntimeError(f"bad request key={fake_value}")})
-    hero._try_gemini("topic", [], tmp_path, 1200, 630, hero.DEFAULT_GEMINI_MODEL)
+    hero._try_gemini("topic", [], tmp_path, 1200, 630, hero.DEFAULT_GEMINI_MODEL, allow_paid=True)
     captured = capsys.readouterr()
     assert fake_value not in captured.out + captured.err

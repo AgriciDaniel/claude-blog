@@ -127,7 +127,7 @@ def test_write_errors_are_still_reported_as_write_refused(hero, monkeypatch, tmp
     def refuse(path, data):
         raise OSError("disk full")
 
-    monkeypatch.setattr(hero, "_atomic_write_bytes", refuse)
+    monkeypatch.setattr(hero, "_stage_temp", refuse)
     code, out = _run_main(hero, monkeypatch, tmp_path, capsys)
 
     assert code == 1
@@ -142,9 +142,10 @@ def test_successful_write_removes_stale_sibling_heroes(hero, tmp_path):
     unrelated = tmp_path / "hero2.png"
     unrelated.write_bytes(b"keep")
 
-    path = hero._write_hero(tmp_path, _jpeg())
+    path = hero._write_hero(tmp_path, _jpeg(), "new credit")
 
     assert path == tmp_path / "hero.jpg"
+    assert other.read_text() == "new credit"
     assert sorted(p.name for p in tmp_path.iterdir()) == ["hero-credit.txt", "hero.jpg", "hero2.png"]
 
 
@@ -154,15 +155,15 @@ def test_failed_write_keeps_the_existing_hero(hero, monkeypatch, tmp_path):
     def refuse(path, data):
         raise OSError("disk full")
 
-    monkeypatch.setattr(hero, "_atomic_write_bytes", refuse)
+    monkeypatch.setattr(hero, "_stage_temp", refuse)
     with pytest.raises(OSError):
-        hero._write_hero(tmp_path, _jpeg())
+        hero._write_hero(tmp_path, _jpeg(), "credit")
     assert (tmp_path / "hero.png").read_bytes() == b"existing"
 
 
 def test_rewriting_the_same_extension_replaces_in_place(hero, tmp_path):
     (tmp_path / "hero.png").write_bytes(b"old")
-    path = hero._write_hero(tmp_path, _png())
+    path = hero._write_hero(tmp_path, _png(), "credit")
     assert path == tmp_path / "hero.png"
     assert path.read_bytes() == _png()
 
@@ -170,7 +171,8 @@ def test_rewriting_the_same_extension_replaces_in_place(hero, tmp_path):
 def test_a_hero_already_in_the_folder_is_kept_and_no_provider_runs(hero, monkeypatch, tmp_path, capsys):
     out_dir = tmp_path / "out"
     out_dir.mkdir()
-    (out_dir / "hero.png").write_bytes(b"placed by the user")
+    placed = _png(1200, 630)
+    (out_dir / "hero.png").write_bytes(placed)
     monkeypatch.setenv("UNSPLASH_ACCESS_KEY", "fake")
     monkeypatch.setattr(hero, "_http_get_json", lambda *a, **k: pytest.fail("no provider may run"))
 
@@ -178,14 +180,14 @@ def test_a_hero_already_in_the_folder_is_kept_and_no_provider_runs(hero, monkeyp
 
     assert code == 0
     assert '"source": "existing"' in out.out
-    assert (out_dir / "hero.png").read_bytes() == b"placed by the user"
+    assert (out_dir / "hero.png").read_bytes() == placed
     assert sorted(p.name for p in out_dir.iterdir()) == ["hero.png"]
 
 
 def test_replace_generates_a_new_hero_and_removes_the_old_one(hero, monkeypatch, tmp_path, capsys):
     out_dir = tmp_path / "out"
     out_dir.mkdir()
-    (out_dir / "hero.webp").write_bytes(b"old")
+    (out_dir / "hero.webp").write_bytes(b"old")  # invalid too; --replace runs either way
     monkeypatch.setattr(
         hero, "_http_get_json",
         lambda url, headers=None: {"results": [{"url": "https://img.example/good", "title": "T", "creator": "C", "license": "by"}]},
