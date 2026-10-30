@@ -22,7 +22,7 @@ claude-blog/
   CLAUDE.md                          # Project instructions (this file)
   docs/CONTRIBUTORS.md               # Pro Hub Challenge attribution and integration decisions
   CHANGELOG.md                       # Keep a Changelog format
-  .claude-plugin/plugin.json         # Plugin manifest (v2.3.1)
+  .claude-plugin/plugin.json         # Plugin manifest (v2.3.2)
   .claude-plugin/marketplace.json    # Marketplace catalog for distribution (claude-blog + optional blog-studio)
   plugins/blog-studio/               # Optional Claude Code mod companion (status band, pipeline panel); own README, tests, version 0.2.0
   .mcp.example.json                  # MCP config example (tracked; .mcp.json is gitignored)
@@ -35,7 +35,7 @@ claude-blog/
   scripts/blog_hygiene.py            # Optional deterministic hygiene: lazy-load imgs + auto-TOC (v1.11.0)
   scripts/cognitive_load.py          # Per-section concept-density analyzer (v1.8.0)
   scripts/discourse_research.py      # Discourse brief synthesis from SERP JSON (v1.8.0)
-  scripts/generate_hero.py           # Hero image ladder: Banana -> Gemini -> stock -> Openverse (v1.9.0)
+  scripts/generate_hero.py           # Hero image ladder: Banana -> Gemini (--allow-paid) -> stock -> Openverse (v1.9.0)
   scripts/load_untrusted_root.py     # Code-enforced fence helper for BRAND/VOICE/DISCOURSE (v1.8.3)
   scripts/lint_prose.py              # Fence-aware prose-hygiene linter (v1.8.4; CI-enforced)
   scripts/sync_flow.py               # Pulls FLOW references (stdlib, sandboxed)

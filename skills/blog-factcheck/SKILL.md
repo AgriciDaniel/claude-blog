@@ -12,7 +12,7 @@ description: >
   experience. Use when the user says "fact check", "verify statistics", "check
   sources", "factcheck". Report only; not for rewriting posts (blog-rewrite).
 user-invocable: true
-argument-hint: "[file]"
+argument-hint: "<file-path>"
 license: MIT
 ---
 

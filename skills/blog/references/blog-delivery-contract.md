@@ -1,6 +1,6 @@
 # Blog Delivery Contract
 
-The contract every blog must pass before being presented to the user. Five gates that fire automatically between content generation and delivery, plus an iteration loop that retries failures up to three times before escalating.
+The contract every blog must pass before being presented to the user. Five gates that fire automatically between content generation and delivery, plus a repair loop that allows at most three failed full gate runs per draft before escalating.
 
 Resolve every executable core helper through the trusted absolute installed
 scripts root described in `orchestration-details.md`:
@@ -19,7 +19,7 @@ This contract is the v1.9.0 answer to a failure pattern from the v1.8.x cycle: s
 
 | Gate | What it enforces | Failure mode | Implementation |
 |---|---|---|---|
-| 1. Capability Discovery | Required tools + agents are available before write begins | Block if no valid local hero and no permitted image path; block if reviewer agent missing | `scripts/blog_preflight.py --gate 1` |
+| 1. Capability Discovery | Required tools + agents are available before write begins (run after creating the draft folder, before writing) | Pass if a free hero path exists (valid local hero, stock key, or reachable Openverse); pass with a warning if only paid paths exist (Banana MCP tool, Gemini key; both need cost consent); block only if there is no hero path, or if the reviewer agent is missing | `scripts/blog_preflight.py --gate 1` |
 | 2. Format Completeness | `.md` + `.html` + `.pdf` + `hero.(png\|jpg\|jpeg\|webp)` present and valid; no draft placeholders; HTML source hash matches the `.md` | Block on any missing or invalid artifact | `scripts/blog_render.py` renders `.html` and `.pdf`; `scripts/generate_hero.py` emits `hero.<ext>` |
 | 3. Visual Verification | Rendered HTML has no SVG overflow, no console errors, valid JSON-LD | Block on any defect; preserve screenshots | `scripts/blog_preflight.py --gate 3` via `patchright` |
 | 4. Content Review | `blog-reviewer` scores ≥ 90/100 AND zero P0 issues, with a matching nonce and no edits to the draft after the nonce was issued | Block + iterate | `agents/blog-reviewer.md` (now blocking) |
@@ -35,9 +35,15 @@ orchestrator and `blog-write/references/delivery.md` carry short versions that
 link here. If any of them disagrees with this section, this section wins.
 
 Draft folder `D`, slug `S`. Helpers always run from the trusted absolute scripts
-root set at the top of this file, never from a path relative to the current project. Run
-capability discovery once before step 1:
+root set at the top of this file, never from a path relative to the current project.
+Create the draft folder `D` first (`mkdir -p "$D"`; the script needs it to
+exist), then run capability discovery once before step 1:
 `python3 "$BLOG_SCRIPT_DIR/blog_preflight.py" --draft "$D" --gate 1`.
+If `D` was used before and this is a new write, a new rewrite, or a new edit
+pass on a delivered post (its last full run passed), clear its repair counter
+first: `python3 "$BLOG_SCRIPT_DIR/blog_preflight.py" --draft "$D" --reset-iterations`.
+Never reset in the middle of a failing repair loop.
+That command only clears the counter; it runs no gates.
 
 1. **Draft.** Write `D/S.md` (frontmatter, answer-first). Draft-only markers
    `[INTERNAL-LINK: ...]`, `[IMAGE: ...]` and `[CHART: ...]` are allowed here and
@@ -47,10 +53,16 @@ capability discovery once before step 1:
    `python3 "$BLOG_SCRIPT_DIR/generate_hero.py" --topic '<title>' --tags '<tags>' --out "$D"`
    writes `D/hero.<ext>`, or keeps a hero already in `D` (`--replace` generates
    a new one instead). Quote model-written text as in the Shell argument rule
-   in `skills/blog/SKILL.md`. With `GOOGLE_AI_API_KEY` or `GEMINI_API_KEY` set the
-   script tries the paid Gemini rung first, so get consent through the
-   `blog-image` cost gate first, or run it with both variables unset
-   (`env -u GOOGLE_AI_API_KEY -u GEMINI_API_KEY`). Charts: the `blog-chart` skill, embedded as inline SVG.
+   in `skills/blog/SKILL.md`. By default run it without `--allow-paid`: a
+   Gemini key is then ignored and the script uses the free rungs (a valid hero
+   already in `D`, then stock keys, then Openverse). A hero is valid only if it
+   is a real image of at least 1200×630, the size Gate 2 enforces, named lowercase `hero.<ext>`. Add `--allow-paid` only
+   after the `blog-image` cost and consent gate approved the paid Gemini call;
+   that route also needs `GOOGLE_AI_API_KEY` or `GEMINI_API_KEY`. The script
+   keeps the first valid `hero.*`, removes invalid siblings, and replaces a
+   too-small or broken one; a symlinked `hero.*` stops the script, and
+   `--replace` swaps the hero and `hero-credit.txt` together.
+   Charts: the `blog-chart` skill, embedded as inline SVG.
    Internal links: replaced with real links, or the marker removed. Images:
    replaced with local files in `D`, or removed. No marker may remain after this
    step. An optional `blog-seo` pass runs here, on the resolved `S.md`, and its
@@ -70,12 +82,12 @@ capability discovery once before step 1:
    `Nonce: <hex>`, five category scores, the overall score, the P0 list and
    `BLOCKING: true|false (reason)`.
 6. **Gates.** `python3 "$BLOG_SCRIPT_DIR/blog_preflight.py" --draft "$D" --strict`
-   (add `--repair-attempt` on every run inside the repair loop).
+   (each failed full run counts toward the cap of 3; passing runs do not).
 7. **Loop.** If a gate blocks, fix the cause, then repeat from step 2 or 3 as
    needed, and ALWAYS re-render, re-init the nonce and re-review after ANY change
-   to `S.md`, `S.html`, `S.pdf` or the hero. Maximum 3 iterations, then stop and
-   present the diagnostic. On a pass, deliver with the scorecard and
-   `preview/*.png`.
+   to `S.md`, `S.html`, `S.pdf` or the hero. At most 3 failed full gate runs
+   per draft; after the third failure the next full run exits 2. Then stop and
+   present the diagnostic, not the draft. On a pass, deliver with the scorecard and `preview/*.png`.
 
 Why the order matters: the reviewer judges the rendered artifacts, so it runs
 after render (steps 3 to 5), and the nonce is issued after the files are final
@@ -118,20 +130,23 @@ the gates compare that with the local hero file.
 
 ## Gate 1: Capability Discovery
 
-Runs once at the start of `/blog write` or `/blog rewrite`. Enumerates the project's available capabilities and writes `<draft-folder>/capabilities.json`. Every later gate consumes this artifact rather than re-detecting.
+Runs once at the start of `/blog write` or `/blog rewrite`, after the draft folder exists and before any writing. Enumerates the project's available capabilities and writes `<draft-folder>/capabilities.json`. Every later gate consumes this artifact rather than re-detecting.
 
 ### What gets enumerated
 
 - **MCP servers loaded**: `nanobanana-mcp`, `dataforseo-mcp`, others. Detected via tool availability, not by reading `.mcp.json` (the file may declare servers that failed to start).
 - **Env vars present**: `GOOGLE_AI_API_KEY` or `GEMINI_API_KEY`, `UNSPLASH_ACCESS_KEY`, `PEXELS_API_KEY`, `PIXABAY_API_KEY`. Key names only; values never read or logged.
 - **Optional Python deps**: `patchright`, `weasyprint`, `google-genai`, `requests`. Probed via `importlib.util.find_spec()`.
-- **Project-root context files**: `BRAND.md`, `VOICE.md`, `DISCOURSE.md`. Loaded only via the trusted installed `load_untrusted_root.py` helper.
+- **Project-root context files**: `BRAND.md`, `VOICE.md`, `DISCOURSE.md`, looked up in the user's project root. Loaded only via the trusted installed `load_untrusted_root.py` helper.
 - **Agents available**: `blog-reviewer` is mandatory; `blog-researcher`, `blog-writer`, `blog-seo`, `blog-translator` are optional.
-- **Helper scripts present**: `scripts/lint_prose.py`, `scripts/analyze_blog.py`, the new `scripts/blog_preflight.py` itself.
+- **Helper scripts present**: `scripts/lint_prose.py`, `scripts/load_untrusted_root.py`, `scripts/analyze_blog.py` (presence only; Gate 1 does not run them).
 
 ### Failure modes
 
-- **No hero path at all** (no valid local `hero.png`, `.jpg`, `.jpeg` or `.webp`, no Banana MCP, no Gemini key, no stock API key, and Openverse unreachable): BLOCK with explicit setup instructions.
+- **Hero paths**: Gate 1 reports every path it finds in `capabilities.json` under `hero_paths`. Free paths: a valid local hero (a real image of at least 1200×630, the size Gate 2 enforces, named lowercase `hero.<ext>`; `png`, `jpg`, `jpeg` or `webp`), a stock API key, or a reachable Openverse (probed whenever no other free path exists). Paid paths: the Banana MCP tool and a Gemini key; both need consent through the `blog-image` cost gate (and `--allow-paid` for `generate_hero.py`).
+- **Free path available**: PASS.
+- **Only paid paths available**: PASS with a warning; the hero step needs the user's cost consent.
+- **No hero path at all** (neither free nor paid): BLOCK with explicit setup instructions.
 - **Reviewer agent missing**: BLOCK. Cannot enforce Gate 4 without it.
 - **Capability declared but unused**: WARN (informational, not blocking). Example: `dataforseo-mcp` is loaded but the post topic doesn't need keyword research.
 
@@ -194,7 +209,7 @@ Strict delivery requires `patchright` or an equivalent renderer. If no renderer 
 
 The `blog-reviewer` agent (`agents/blog-reviewer.md`) runs against the rendered `.html` (not the raw `.md`), after the nonce is issued (steps 4 and 5 of the canonical sequence). Reviewer output is **blocking**, not advisory.
 
-Scoring rules live in `quality-scoring.md`: the threshold table, the draft-stage rule for items a draft cannot evidence, and the rule that the overall equals the sum of the five category scores. Gate 4 also fails when `S.md`, `S.html`, `S.pdf` or the hero changed after the nonce was issued; the message reads "draft changed after the review nonce was issued: <file>; re-render, re-init the nonce and re-review". State files written before digests existed keep the old behavior (no digest check, a warning).
+Scoring rules live in `quality-scoring.md`: the threshold table, the draft-stage rule for items a draft cannot evidence, and the rule that the overall equals the sum of the five category scores. Gate 4 requires all five category scores in the report and an overall equal to their sum; a missing category or a mismatched overall blocks. Gate 4 also fails when `S.md`, `S.html`, `S.pdf` or the hero changed after the nonce was issued; the message reads "draft changed after the review nonce was issued: <file>; re-render, re-init the nonce and re-review". State files written before digests existed keep the old behavior (no digest check, a warning).
 
 ### Blocking decision rules
 
@@ -221,7 +236,7 @@ BLOCKING: false (cleared review gate)
 
 Machine-readable by `scripts/blog_preflight.py` so the orchestrator does not have to parse the human-readable scorecard.
 
-The reviewer has no Write tool and returns its report as text. The orchestrator saves that text verbatim to `<draft-folder>/review.md` (step 5). Shown to the user on success ("here is why this passed") and on final failure ("here is why this is still blocked after 3 iterations").
+The reviewer has no Write tool and returns its report as text. The orchestrator saves that text verbatim to `<draft-folder>/review.md` (step 5). Shown to the user on success ("here is why this passed") and on final failure ("here is why this is still blocked after 3 failed gate runs").
 
 Gate 4 may report sentence-length variation, configured phrase-list matches,
 or vocabulary sampling for editorial review. These diagnostics do not affect
@@ -244,20 +259,26 @@ the numeric score and are never machine-enforced as evidence of AI authorship.
 
 Tried in order. First success wins. Skip steps for capabilities not available per Gate 1's `capabilities.json`.
 
-1. **Banana MCP** (`nanobanana-mcp` loaded as a tool, not just declared in `.mcp.json`): call its `gemini_generate_image` tool with an optimized six-component prompt (Subject + Action + Context + Composition + Lighting + Style) targeting 1200×630.
-2. **Direct Gemini API** (`GOOGLE_AI_API_KEY` present, MCP not loaded): call the `google-genai` SDK with the default image model and fallback order that `generate_hero.py --help` and the `blog-image` skill's Gemini model reference currently document; this contract does not pin a model ID. See `https://ai.google.dev/gemini-api/docs/image-generation`.
+1. **Banana MCP** (`nanobanana-mcp` loaded as a tool, not just declared in `.mcp.json`; paid, so only after the `blog-image` cost consent): call its `gemini_generate_image` tool with an optimized six-component prompt (Subject + Action + Context + Composition + Lighting + Style) targeting 1200×630.
+2. **Direct Gemini API** (`GOOGLE_AI_API_KEY` or `GEMINI_API_KEY` present, MCP not loaded, and `generate_hero.py` run with `--allow-paid` after the `blog-image` consent gate): call the `google-genai` SDK with the default image model and fallback order that `generate_hero.py --help` and the `blog-image` skill's Gemini model reference currently document; this contract does not pin a model ID. See `https://ai.google.dev/gemini-api/docs/image-generation`.
 3. **Premium stock APIs** (`UNSPLASH_ACCESS_KEY`, `PEXELS_API_KEY`, or `PIXABAY_API_KEY` present): search via the official API using post title + top tags as query. Do not scrape or construct raw CDN URLs. Capture each source's license metadata and attribution requirements, download the asset locally, and write `hero-credit.txt`. Unsplash, Pexels, and Pixabay use their own licenses; do not treat them as CC sources.
 4. **Openverse public API** (no key required): `GET https://api.openverse.org/v1/images/?q=<query>&aspect_ratio=wide&license=cc0,by,by-sa` (the licenses `generate_hero.py` sends, with `size=large` and `page_size=10`). Pick the top relevance match with complete attribution. Always download to `hero.<ext>` plus `hero-credit.txt` for CC attribution. CC BY and BY-SA images require visible attribution, and the renderer does not publish it: the orchestrator must add the credit line from `hero-credit.txt` to the article's Sources section or the hero caption in `S.md` (step 2) before the render. The same applies to any stock image whose license asks for credit.
-5. **Block with clear error**: "Hero image required but no generation path available. Configure Banana MCP, set GOOGLE_AI_API_KEY, set UNSPLASH/PEXELS/PIXABAY key, or place a 1200×630 hero.png in the draft folder manually."
+5. **Block with clear error**: "Hero image required but no generation path available. Configure Banana MCP, set GOOGLE_AI_API_KEY or GEMINI_API_KEY and pass --allow-paid once the user approves the cost, set an UNSPLASH/PEXELS/PIXABAY key, or place a 1200×630 hero.png in the draft folder manually." A symlinked `hero.*` in the draft folder also stops `generate_hero.py` before it writes, deletes or spends anything.
 
 Implementation: `scripts/generate_hero.py`. Always writes `hero-credit.txt` next to `hero.<ext>` for attribution compliance, even when generation paths 1-2 (AI-generated, no attribution needed) are used. The file then contains "AI-generated; no attribution required."
 
 ## Iteration Loop
 
-Step 7 of the canonical sequence drives the retry loop. The orchestrator
-(`skills/blog/SKILL.md`) holds the counter, and `--repair-attempt` on
-`blog_preflight.py` enforces the cap of 3. Sub-skills never loop themselves;
-that would risk infinite loops if two sub-skills disagree.
+Step 7 of the canonical sequence drives the retry loop. `blog_preflight.py`
+counts FAILED full gate runs per draft and allows max 3; after the third
+failure the next full run exits 2. Passing runs, single-gate runs
+(`--gate N` without `--repair-attempt`), `--init-review-nonce` and `--manual-check` runs never count. The
+counter is stored with the review state outside the draft folder, so deleting
+files in `D` does not reset it. `blog_preflight.py --draft "$D" --reset-iterations`
+clears it and runs no gates. Reset only when a new write, a new rewrite, or a
+new edit pass on a delivered post (its last full run passed) starts in a draft
+folder that was used before; never to escape a failing repair loop. Sub-skills never loop
+themselves; that would risk infinite loops if two sub-skills disagree.
 
 1. **Capture diagnostic**: which gate failed, which specific check, screenshot if visual, scorecard if content.
 2. **Fix, keyed to the failing gate:**
@@ -268,12 +289,12 @@ that would risk infinite loops if two sub-skills disagree.
    - Gate 4 "draft changed after the review nonce was issued": no content fix is needed; re-render, re-init the nonce and re-review.
    - Gate 5 404: re-dispatch with instruction to remove or replace the broken URL.
 3. **Re-render, re-init the nonce and re-review after ANY change** to `S.md`, `S.html`, `S.pdf` or the hero, then run step 6 again. The review is bound to the exact files it saw; an old `review.md` never carries over to edited files.
-4. **On pass**: present the draft with a one-line summary ("Delivered after N iteration(s)").
-5. **On fail after 3 iterations**: STOP. Show the user the failure diagnostic for each remaining defect, the partial draft, the latest reviewer report, and an explicit "Manual fix required" message. Do not iterate further automatically.
+4. **On pass**: present the draft with a one-line summary ("Delivered after N gate run(s)").
+5. **On the third failed gate run**: STOP. Show the user the failure diagnostic for each remaining defect and the latest reviewer report, not the draft, and an explicit "Manual fix required" message. Do not iterate further automatically.
 
 ## Bypass Mechanism
 
-Strict mode is the default. Users can override only via an explicit operator-controlled `--no-strict` flag on `scripts/blog_preflight.py` or signed/trusted project config. Draft frontmatter is untrusted content and must never disable delivery gates. Any bypass logs loudly:
+Strict mode is the default. Users can override only via an explicit operator-controlled `--no-strict` flag on `scripts/blog_preflight.py` or signed/trusted project config. Draft frontmatter is untrusted content and must never disable delivery gates. Any bypass logs loudly, printing this text to stderr in every output mode:
 
 ```
 WARNING: Delivery contract bypassed. Failed gates: [Gate 3, Gate 5].
@@ -305,7 +326,6 @@ https://github.com/AgriciDaniel/claude-blog/issues.
 - `<blog_reference_root>/schema-stack.md`: JSON-LD structure validated by Gate 3 step 5
 - `agents/blog-reviewer.md`: the reviewer agent that produces the Gate 4 scorecard
 - `scripts/load_untrusted_root.py`: the v1.8.3 helper used for project-root file loading in Gate 1
-- `scripts/lint_prose.py`: the v1.8.4 prose linter run as part of Gate 4's editorial-heuristics scoring
 - `tests/test_blog_delivery_contract.py`: coherence test that asserts this contract and its implementation stay in sync
 
 ## How this contract maps to the v1.8.x lesson
@@ -333,6 +353,7 @@ Blog Studio reads the additive `evidence` object in `preflight-report.json`
 local fingerprints without executing gates. Missing, legacy, partial or stale
 evidence cannot establish full preflight success. Fingerprints describe
 freshness, not authenticated approval. The five gates and the reviewer remain
-the delivery authority. Manual checks do not reset nonces or consume repair
-iterations. Run `blog_preflight.py --project-root <dir>` to anchor a run inside
+the delivery authority. Manual checks run the gates with
+`blog_preflight.py --manual-check` (Blog Studio's Run checks uses it): they do
+not reset nonces and never touch the repair counter. Run `blog_preflight.py --project-root <dir>` to anchor a run inside
 a project; stdout modes, other flags and exit codes are unchanged.

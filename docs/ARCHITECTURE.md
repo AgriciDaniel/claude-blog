@@ -106,7 +106,7 @@ Each sub-skill is a standalone Claude Code skill with its own:
 
 | Sub-Skill | Responsibility | Introduced |
 |-----------|----------------|------------|
-| blog-write | New article generation with full optimization (v1.9.0: iterates through 5-gate delivery contract until score >= 90 and zero P0, max 3 iterations) | v1.0.0 |
+| blog-write | New article generation with full optimization (v1.9.0: iterates through 5-gate delivery contract until score >= 90 and zero P0, at most 3 failed gate runs per draft) | v1.0.0 |
 | blog-rewrite | Existing post optimization preserving author voice (v1.9.0: same delivery contract) | v1.0.0 |
 | blog-analyze | Quality audit with 5-category 100-point scoring | v1.0.0 |
 | blog-brief | Content brief generation with research | v1.0.0 |
@@ -215,7 +215,7 @@ dependencies are stdlib-only or narrowly pinned.
 | `content_decay.py` | GSC content-decay detector: 20%+ QoQ decline | v1.10.0 |
 | `dependency_smoke.py` | Offline initialization smoke checks for the optional runtimes | Maintenance |
 | `discourse_research.py` | Discourse-brief synthesis from SERP JSON; depth-bounded parsing; path-traversal guards | v1.8.0 |
-| `generate_hero.py` | Hero image ladder: Banana MCP -> Gemini API -> Unsplash/Pexels/Pixabay -> Openverse | v1.9.0 |
+| `generate_hero.py` | Hero image ladder: Banana MCP -> Gemini API (only with `--allow-paid`) -> Unsplash/Pexels/Pixabay -> Openverse; keeps a valid existing hero | v1.9.0 |
 | `installer_ownership.py` | Shared Unix legacy/v2 ownership verification, migration and rollback | v2.3.0 |
 | `lint_prose.py` | Fence-aware prose-hygiene linter (no em-dash, en-dash, ` -- `); CI-enforced | v1.8.4 |
 | `load_untrusted_root.py` | Code-enforced BRAND/VOICE/DISCOURSE fencing with CSPRNG nonces; O_NOFOLLOW + size cap | v1.8.3 |

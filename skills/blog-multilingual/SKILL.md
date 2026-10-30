@@ -15,7 +15,7 @@ license: MIT
 compatibility: Requires claude-blog (blog-write). Optional integration with claude-seo (seo-hreflang) for richer hreflang validation.
 metadata:
   author: AgriciDaniel
-  version: "2.3.1"
+  version: "2.3.2"
   category: blog
 ---
 
@@ -334,7 +334,10 @@ independently. Multilingual-specific rules:
   `<locale-delivery-dir>/review.md`.
 - Gates: `blog_preflight.py --draft <locale-delivery-dir> --strict --slug <localized-slug>`.
 - Loop: after ANY change to the locale file, hero, HTML, or PDF, re-render,
-  re-init the nonce, and re-review. Maximum 3 iterations per locale.
+  re-init the nonce, and re-review. At most 3 failed gate runs per locale. Run
+  `blog_preflight.py --draft <locale-delivery-dir> --reset-iterations` first only
+  when a new locale write starts in a used directory or a delivered locale gets
+  a new edit pass; never reset a locale whose last run failed.
 
 Mark the locale passed only at 90+/100, zero P0, matching nonce, final
 `BLOCKING: false`, and all other gates. A failed locale remains

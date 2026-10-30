@@ -137,6 +137,22 @@ See `${CLAUDE_SKILL_DIR}/../blog/references/visual-media.md` for chart type sele
 
 ### Phase 4: Content Rewrite
 
+Before rewriting, set up the draft folder `D` (rules in Phase 5.5) and run
+capability discovery on it; the script needs `D` to exist. Copy the existing
+hero into `D` as lowercase `hero.<ext>` and every locally referenced image
+(for example `images/`) with its relative path BEFORE Gate 1, so Gate 1 sees
+the hero you plan to keep. If `D` was used before and this is a new rewrite or
+a new edit pass on a delivered post (its last full run passed), clear its
+repair counter first so this rewrite gets its own 3 failed runs; never reset
+inside a failing repair loop (`BLOG_SCRIPT_DIR` resolved as in Phase 5.5):
+
+```bash
+mkdir -p "$D"
+cp '<existing hero>' "$D/hero.<ext>"   # plus local images, keeping relative paths
+python3 "$BLOG_SCRIPT_DIR/blog_preflight.py" --draft "$D" --reset-iterations  # reused D only
+python3 "$BLOG_SCRIPT_DIR/blog_preflight.py" --draft "$D" --gate 1
+```
+
 Apply changes in this order:
 
 #### 4a. Preserve What Works
@@ -302,7 +318,7 @@ After rewriting, verify all quality gates pass:
 Before presenting the rewritten draft, run the delivery contract. The
 authoritative sequence is the "Canonical delivery sequence" in
 `${CLAUDE_SKILL_DIR}/../blog/references/blog-delivery-contract.md` (capability
-discovery with `blog_preflight.py --gate 1` first). The user is never the first
+discovery with `blog_preflight.py --gate 1` already ran before Phase 4). The user is never the first
 reviewer. Resolve the scripts root once, reject it unless absolute, and never
 use the current project's `scripts/`:
 
@@ -314,18 +330,20 @@ case "$BLOG_SCRIPT_DIR" in /*) ;; *) echo "ERROR: script dir must be absolute" >
 Rewrite-specific rules on top of the contract:
 
 - **Draft folder.** Work in `D` holding the rewritten post as `D/S.md` (a copy,
-  so the original stays untouched until the gates pass). Copy the existing hero
-  and every locally referenced image (for example `images/`) into `D`, keeping
-  the relative paths, so each image reference resolves inside `D`. Make sure the
+  so the original stays untouched until the gates pass). The existing hero and
+  every locally referenced image were copied into `D` in Phase 4, before Gate
+  1, keeping the relative paths, so each image reference resolves inside `D`. Make sure the
   frontmatter has `canonical` (from the post, or the project's site URL in
   `BRAND.md`, otherwise ask the user once). The markdown file stem is the
   artifact stem unless `slug` is set.
-- **Hero.** Keep an existing hero that is still on disk. If the topic changed
-  substantially or the hero is missing, run the command below (`--replace`
-  generates a new hero even though the copied one is in `D`; without it the
-  script keeps the existing file). A paid image call
-  needs the `blog-image` cost and consent gate first; without that consent the
-  `env -u` prefix keeps `generate_hero.py` on its free rungs. If the hero's
+- **Hero.** Keep an existing hero that is still on disk: the default command
+  below keeps a valid hero in `D` (a real image of at least 1200x630, the size Gate 2 enforces, named lowercase `hero.<ext>`) and
+  replaces a missing, too-small or broken one. Add
+  `--replace` only when the topic changed substantially; it generates a new
+  hero and swaps `hero-credit.txt` with it. Run it without `--allow-paid` by
+  default, so a Gemini key is ignored and the script stays on its free rungs;
+  add `--allow-paid` only after the `blog-image` cost and consent gate approved
+  the paid call. If the hero's
   `hero-credit.txt` names a license that needs visible credit (CC BY, BY-SA, or
   a stock license that asks for it), add that credit line to the Sources section
   or hero caption in `S.md`.
@@ -336,21 +354,24 @@ Rewrite-specific rules on top of the contract:
   Threshold: 90/100 or higher and zero P0 (see `quality-scoring.md`).
 
 ```bash
-env -u GOOGLE_AI_API_KEY -u GEMINI_API_KEY \
-  python3 "$BLOG_SCRIPT_DIR/generate_hero.py" --topic '<new title>' --tags '<tags>' --out "$D" --replace
+# hero: keeps a valid existing hero; add --replace only for a substantial topic change,
+# and --allow-paid only after the blog-image consent gate
+python3 "$BLOG_SCRIPT_DIR/generate_hero.py" --topic '<new title>' --tags '<tags>' --out "$D"
 # render
 python3 "$BLOG_SCRIPT_DIR/blog_render.py" --md "$D/S.md" --out-dir "$D"
 # nonce
 NONCE=$(python3 "$BLOG_SCRIPT_DIR/blog_preflight.py" --init-review-nonce --draft "$D")
 # review: dispatch blog-reviewer with the draft path, reference roots, $NONCE and both scores;
 # it returns text and you save it verbatim to "$D/review.md"
-# gates (add --repair-attempt inside the repair loop); exit 0 = ship, exit 1 = block
+# gates (each failed full run counts toward the cap of 3); exit 0 = ship, exit 1 = block
 python3 "$BLOG_SCRIPT_DIR/blog_preflight.py" --draft "$D" --strict
 ```
 
-Loop: maximum 3 iterations. After ANY change to `S.md`, `S.html`, `S.pdf` or
-the hero, re-render, re-init the nonce and re-review. After the 3rd failure,
-STOP and present the diagnostic from `D/preflight-report.json`.
+Loop: at most 3 failed full gate runs per draft (after the third failure the
+next full run exits 2). After
+ANY change to `S.md`, `S.html`, `S.pdf` or the hero, re-render, re-init the
+nonce and re-review. After the 3rd failure, STOP and present the diagnostic
+from `D/preflight-report.json`, not the draft.
 
 Rewrites keep the additional compatibility rule documented for this command:
 the new score must be no lower than the original score. Pass both scores to the

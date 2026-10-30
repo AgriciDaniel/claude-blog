@@ -9,7 +9,7 @@ description: >
   (blog-cluster), or detecting declining pages from Search Console exports
   (blog-decay). Publication frequency is not a ranking signal.
 user-invocable: true
-argument-hint: "[<niche>]"
+argument-hint: "[monthly|quarterly] [<niche>]"
 license: MIT
 ---
 

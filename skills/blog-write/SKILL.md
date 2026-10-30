@@ -200,6 +200,18 @@ See `${CLAUDE_SKILL_DIR}/../blog/references/visual-media.md` for chart type sele
 
 ### Phase 5: Content Writing
 
+Before writing, create the draft folder `D` and run capability discovery
+(Gate 1) on it; the script needs `D` to exist. Resolve `BLOG_SCRIPT_DIR` as in
+Phase 6.5 first. If `D` was used before and this is a new write, a new rewrite, or a new edit pass on a delivered post (its last full run passed),
+clear its repair counter so this draft gets its own 3 failed runs (never reset
+inside a failing repair loop):
+
+```bash
+mkdir -p "$D"
+python3 "$BLOG_SCRIPT_DIR/blog_preflight.py" --draft "$D" --reset-iterations  # reused D only
+python3 "$BLOG_SCRIPT_DIR/blog_preflight.py" --draft "$D" --gate 1
+```
+
 Write the full article to `D/S.md` (spawn `blog-writer` with the research packet and
 outline, or write inline) following these rules. The agent has Write and Edit
 access, so tell it the exact draft folder: it may create or edit files only
@@ -380,7 +392,7 @@ Before delivering, verify:
 3. All statistics have named tier 1-3 sources
 4. Every chart present clarifies chart-worthy evidence and uses an appropriate type
 5. Every inline image present materially helps the reader and has descriptive alt text
-6. A valid local hero (`hero.<ext>`) sits in the draft folder, with `og_image_alt` set in frontmatter
+6. A valid local hero (a real image of at least 1200x630, the size Gate 2 enforces, named lowercase `hero.<ext>`) sits in the draft folder, with `og_image_alt` set in frontmatter
 7. FAQ section present with 3-5 items when warranted by user questions
 8. Heading hierarchy is clean (H1 -> H2 -> H3)
 9. Meta description accurately and specifically summarizes the visible content
@@ -419,9 +431,9 @@ BLOG_SCRIPT_DIR="${CLAUDE_BLOG_SCRIPTS_DIR:-${CLAUDE_SKILL_DIR}/../../scripts}"
 case "$BLOG_SCRIPT_DIR" in /*) ;; *) echo "ERROR: script dir must be absolute" >&2; exit 1 ;; esac
 ```
 
-With draft folder `D` and slug `S` (the draft from Phase 5 is `D/S.md`), run
-capability discovery once (`blog_preflight.py --draft "$D" --gate 1`), then the
-contract's steps in order. This skill's own rules:
+With draft folder `D` and slug `S` (the draft from Phase 5 is `D/S.md`; Gate 1
+already ran before Phase 5), run the contract's steps in order. This skill's
+own rules:
 
 - **Visuals** (you, not the agent): resolve every `[CHART]` through `blog-chart`
   as inline SVG, every `[INTERNAL-LINK]` with a real link or remove it, every
@@ -429,32 +441,32 @@ contract's steps in order. This skill's own rules:
   that needs visible credit (CC BY, BY-SA, or a stock license that asks for it),
   add that credit line to the Sources section or hero caption, because the
   renderer does not publish it. No marker may remain.
-- **Hero (one step, owned here)**: keep a valid local `hero.<ext>`, otherwise
-  generate it once with the command below. A paid image call needs the
-  `blog-image` cost and consent gate first; without that consent run the hero
-  step with the Gemini key variables unset (`env -u GOOGLE_AI_API_KEY -u
-  GEMINI_API_KEY ...`) so `generate_hero.py` falls to the free rungs. Phase 2
-  only chooses the route; it does not produce a second hero.
+- **Hero (one step, owned here)**: keep a valid local hero (a real image of at least 1200x630, the size Gate 2 enforces, named lowercase `hero.<ext>`;
+  `generate_hero.py` keeps the first valid one, removes invalid siblings and
+  replaces a too-small or broken one), otherwise generate it once with the command below. By default run it without
+  `--allow-paid`, so a Gemini key is ignored and `generate_hero.py` uses the
+  free rungs. Add `--allow-paid` only after the `blog-image` cost and consent
+  gate approved the paid call. Phase 2 only chooses the route; it does not
+  produce a second hero.
 
 ```bash
-# hero without paid-image consent; drop the env -u prefix only after the consent gate
-env -u GOOGLE_AI_API_KEY -u GEMINI_API_KEY \
-  python3 "$BLOG_SCRIPT_DIR/generate_hero.py" --topic '<title>' --tags '<tags>' --out "$D"
+# hero on the free rungs; add --allow-paid only after the consent gate
+python3 "$BLOG_SCRIPT_DIR/generate_hero.py" --topic '<title>' --tags '<tags>' --out "$D"
 # render
 python3 "$BLOG_SCRIPT_DIR/blog_render.py" --md "$D/S.md" --out-dir "$D"
 # nonce
 NONCE=$(python3 "$BLOG_SCRIPT_DIR/blog_preflight.py" --init-review-nonce --draft "$D")
 # review: dispatch blog-reviewer with the draft path, reference roots and $NONCE;
 # it returns text and you save it verbatim to "$D/review.md"
-# gates (add --repair-attempt inside the repair loop)
+# gates (each failed full run counts toward the cap of 3)
 python3 "$BLOG_SCRIPT_DIR/blog_preflight.py" --draft "$D" --strict
 ```
 
 - **Loop**: on a block, capture `D/preflight-report.json`, fix, and repeat from
   the visuals or render step. Any edit to `S.md`, `S.html`, `S.pdf` or the hero
   after the nonce needs a re-render, a new nonce and a new review (re-init and
-  re-review). Maximum 3 iterations; on the third failure stop and present the
-  diagnostic instead of the draft.
+  re-review). At most 3 failed full gate runs per draft (after the third failure
+  the next full run exits 2); on the third failure stop and present the diagnostic instead of the draft.
 
 The user is never the first reviewer; the gates are.
 

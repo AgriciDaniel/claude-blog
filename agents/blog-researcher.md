@@ -220,8 +220,9 @@ Return structured findings:
 
 ## Cover Image Search
 
-The orchestrator generates or fetches the hero (`generate_hero.py`: image model,
-then official stock APIs, then Openverse). When asked for cover ideas, return
+The orchestrator generates or fetches the hero (`generate_hero.py`: a valid existing hero,
+the paid image model only with consent and `--allow-paid`, then official stock
+APIs, then Openverse). When asked for cover ideas, return
 concepts and Openverse candidates as described under "When Finding Images",
 note the aspect ratio wanted (at least 1200x630, wide), and write descriptive alt
 text: a full sentence, topic keywords naturally. Do not claim a candidate is

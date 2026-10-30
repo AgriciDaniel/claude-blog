@@ -14,7 +14,7 @@ license: MIT
 compatibility: Requires Claude Code and claude-blog (provides blog-write, blog-chart, blog-image)
 metadata:
   author: AgriciDaniel
-  version: "2.3.1"
+  version: "2.3.2"
   category: blog
 user-invocable: true
 argument-hint: "[plan|execute] [seed-keyword|cluster-plan.json]"
@@ -240,12 +240,13 @@ Before reading a user-supplied plan path, canonicalize it relative to the curren
 **One-time cost question (before the first post).** Execution is bulk and
 paid. Ask once, and wait for an explicit yes: "This plan has N posts. Each
 post runs a full `blog-write` pass, one `blog-reviewer` pass (more if a gate
-blocks, up to 3 iterations), and one hero image. A Gemini hero is one paid
+blocks, at most 3 failed gate runs per post), and one hero image. A Gemini hero is one paid
 image call per post (about N times the current per-image price on
 https://ai.google.dev/gemini-api/docs/pricing). Proceed with Gemini heroes,
 use free stock heroes only, or stop?" Record the answer in the cluster
 context as `HERO: gemini` or `HERO: stock-only`. For `stock-only`, run
-`generate_hero.py` with the Gemini key unset (`env -u GOOGLE_AI_API_KEY`).
+`generate_hero.py` without `--allow-paid` (its default), so a Gemini key is
+ignored. Only `HERO: gemini` adds `--allow-paid`.
 The yes covers exactly N heroes; never regenerate in a loop. Report each
 fallback or skip (a stock hero, a skipped post) as one line under
 "Fallbacks and skips" in the final report.
@@ -307,8 +308,11 @@ case explicitly:
    (file, anchor text, the sentence to change, target filename) and show the
    list in the final report. If the user explicitly opts in to apply a patch,
    edit the markdown and then repeat the canonical sequence for that post:
-   re-render, re-init the review nonce, re-review, re-run preflight `--strict`
-   (max 3 iterations). Tell the user the number of extra reviewer runs first.
+   if the post's last full gate run passed (it was delivered, so this is a new
+   edit pass), run `blog_preflight.py --draft <post folder> --reset-iterations`;
+   never reset a post whose last run failed. Then re-render, re-init the review
+   nonce, re-review, re-run preflight `--strict` (at most 3 failed gate runs).
+   Tell the user the number of extra reviewer runs first.
 4. Cluster metadata (`cluster:`, `cluster_role:`, `cluster_group:`,
    `cluster_position:`) is written into each post's frontmatter during its
    own draft (Step 3), never added afterward.

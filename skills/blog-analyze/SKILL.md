@@ -12,7 +12,7 @@ description: >
   (orphan pages, cannibalization, stale content, schema across all posts) use
   blog-audit instead.
 user-invocable: true
-argument-hint: "<file-path>"
+argument-hint: "<file-or-url>"
 license: MIT
 ---
 

@@ -15,7 +15,7 @@ license: MIT
 compatibility: Standalone within claude-blog. Invoked by blog-multilingual.
 metadata:
   author: AgriciDaniel
-  version: "2.3.1"
+  version: "2.3.2"
   category: blog
 ---
 
@@ -222,7 +222,10 @@ This skill does not give legal advice.
      `blog_preflight.py --draft <locale-delivery-dir> --strict --slug <localized-slug>`.
    - Require 90+/100, zero P0, matching nonce, final `BLOCKING: false`, and all
      other gates. After ANY later change to the file, hero, HTML, or PDF,
-     re-render, re-init the nonce, and re-review (max 3 iterations). On failure,
+     re-render, re-init the nonce, and re-review (at most 3 failed gate runs;
+     run `blog_preflight.py --draft <locale-delivery-dir> --reset-iterations`
+     first only when a new localization starts in a used directory or a
+     delivered locale gets a new edit pass, never after a failed run). On failure,
      retain the file as `draft-blocked` and report the diagnostic instead of
      calling localization complete.
 

@@ -241,6 +241,7 @@ Gate 4 parses the score and P0 clearance independently, so these must appear:
 - `### Overall Score: [N]/100 - [Rating]`
 - A standalone affirmative `no P0` or `zero P0 issues found` statement when no P0 issue exists
 - Exactly one Overall Score field, one Nonce field and one final BLOCKING decision
+- All five category scores, with the overall equal to their sum; a missing category or a mismatched overall fails Gate 4
 - A non-empty reason in the final decision; negated or qualified clearance is invalid
 
 Set `BLOCKING: true` if ANY of the following hold:

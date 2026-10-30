@@ -12,7 +12,7 @@ argument-hint: "[generate|edit|setup] [description-or-path]"
 license: MIT
 metadata:
   author: AgriciDaniel
-  version: "2.3.1"
+  version: "2.3.2"
   optional-mcp-package: "@ycse/nanobanana-mcp"
 ---
 
@@ -48,8 +48,9 @@ This skill spends the user's Google AI credit and writes image files.
 - **No uncapped spend:** never loop on paid calls. Safety rephrases stop at 3
   attempts per image. Bulk work (for example a cluster) needs a stated total
   count and a cap, confirmed once before the first call.
-- **Declined or unavailable:** skip the Gemini call (run the script with the
-  key unset, `env -u GOOGLE_AI_API_KEY`, to use the free stock rungs) and
+- **Declined or unavailable:** skip the Gemini call (run the script without
+  `--allow-paid`, its default, so a key is ignored and it uses the free rungs:
+  existing hero, then stock keys, then Openverse) and
   return ONE line for the orchestrator's "Fallbacks and skips" summary, such as
   "Hero image: user declined paid generation, used a stock photo".
 
@@ -86,7 +87,8 @@ Match the image type to blog use case:
 ## Generation Routes
 
 1. **Direct API (default).** The repo's `generate_hero.py` calls the Gemini
-   API with `GOOGLE_AI_API_KEY` or `GEMINI_API_KEY` (the `google-genai` SDK
+   API only when run with `--allow-paid` (after the consent gate) and
+   `GOOGLE_AI_API_KEY` or `GEMINI_API_KEY` is set (the `google-genai` SDK
    must be installed), then falls back to premium stock and Openverse. It needs
    no MCP server. `NANOBANANA_MODEL` sets its default model ID.
 2. **Optional MCP (at your own risk).** `@ycse/nanobanana-mcp@1.1.1` is the
@@ -130,14 +132,18 @@ Pass the title and tags as single-quoted arguments (shell argument rule in
 ```bash
 python3 "$BLOG_SCRIPT_DIR/generate_hero.py" --topic '<post title>' \
   --tags 'tag1,tag2' --out "<draft-folder>" [--width 1200] [--height 630] \
-  [--model <image-model-id>] [--replace] --json
+  [--model <image-model-id>] [--replace] --allow-paid --json
 ```
 
 Flags: `--topic` (required), `--tags`, `--out` (required, receives
 `hero.<ext>` and `hero-credit.txt`), `--width`, `--height`, `--model`,
-`--replace`, `--json`. A hero already in `--out` is kept and nothing is
-generated (JSON `source` is `existing`) unless you pass `--replace`, which the
-user must have asked for. Exit 0 means a hero is in place (the JSON `source`
+`--replace`, `--allow-paid`, `--json`. `--allow-paid` enables the paid Gemini
+rung; pass it only after the consent gate approved this call, and omit it
+otherwise (a key is then ignored and only the free rungs run). A valid
+image hero already in `--out` is kept and nothing is generated (JSON `source`
+is `existing`) unless you pass `--replace`, which the user must have asked for
+and which swaps the hero and `hero-credit.txt` together. An invalid existing
+`hero.*` is not kept, and a symlinked `hero.*` makes the script stop. Exit 0 means a hero is in place (the JSON `source`
 field says `existing`, `gemini`, a stock provider, or `openverse`: report any
 stock or Openverse source as a fallback). Exit 1 means every rung failed.
 
@@ -262,7 +268,8 @@ image capability configuration, and it needs the user's explicit yes first.
 1. Export `GOOGLE_AI_API_KEY` or `GEMINI_API_KEY` (free to create at
    https://aistudio.google.com/apikey; a billing-enabled project may be
    required for image models). `generate_hero.py` reads `GOOGLE_AI_API_KEY`
-   first, then `GEMINI_API_KEY`; `NANOBANANA_MODEL` sets its default model ID.
+   first, then `GEMINI_API_KEY`, and uses the key only with `--allow-paid`;
+   `NANOBANANA_MODEL` sets its default model ID.
 2. Install the SDK with the project's explicit setup (`google-genai` is
    declared in the repo `pyproject.toml` dependencies); never
    install implicitly during a run.

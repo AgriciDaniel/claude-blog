@@ -18,7 +18,7 @@ license: MIT
 compatibility: Standalone within claude-blog. Invoked by blog-multilingual.
 metadata:
   author: AgriciDaniel
-  version: "2.3.1"
+  version: "2.3.2"
   category: blog
 ---
 
@@ -224,7 +224,10 @@ Translation-specific rules:
   `<locale-delivery-dir>/review.md`.
 - Gates: `blog_preflight.py --draft <locale-delivery-dir> --strict --slug <localized-slug>`.
 - Loop: after ANY change to the file, hero, HTML, or PDF, re-render, re-init the
-  nonce, and re-review (maximum 3 iterations).
+  nonce, and re-review (at most 3 failed gate runs per locale draft; run
+  `blog_preflight.py --draft <locale-delivery-dir> --reset-iterations` before
+  the first gate run only when a new translation starts in a used directory or a
+  delivered locale gets a new edit pass, never after a failed run).
 
 Require 90+/100, zero P0, the matching nonce, final `BLOCKING: false`, and all
 other gates. A failed locale remains `draft-blocked`; report its diagnostic and

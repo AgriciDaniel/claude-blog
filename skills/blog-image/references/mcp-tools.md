@@ -112,7 +112,7 @@ Reset session context and conversation history.
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `GOOGLE_AI_API_KEY` | Yes | API key from https://aistudio.google.com/apikey (also the only key variable `generate_hero.py` reads) |
+| `GOOGLE_AI_API_KEY` | Yes | API key from https://aistudio.google.com/apikey (for the MCP server; `generate_hero.py` reads `GOOGLE_AI_API_KEY` or `GEMINI_API_KEY`, and only with `--allow-paid`) |
 | `NANOBANANA_MODEL` | No | Pinned package accepts only `gemini-3.1-flash-image-preview` or `gemini-3-pro-image-preview`; both are shut down |
 
 ## Output Directory

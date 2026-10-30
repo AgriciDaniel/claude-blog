@@ -227,7 +227,7 @@ Set quality standards that all blog content must meet:
 ### Content Quality Standards
 | Metric | Target | Measured By |
 |--------|--------|-------------|
-| Blog quality score | 90+ to deliver a new post (`blog-write` gate); 80+ floor for existing posts | `/blog analyze` |
+| Blog quality score | 90+ to deliver a new post (`blog-write` gate); 80+ as a planning goal for existing posts | `/blog analyze` |
 | Editorial trust | Named author and sufficient claim-level support | Manual review |
 | AI citation readiness | Evidence-backed claims + purpose fit + entity clarity | `/blog analyze` |
 | Visual support | Charts and images where they add information gain | Asset count and editorial review |
@@ -237,8 +237,10 @@ Set quality standards that all blog content must meet:
 ```
 
 Every post should be scored before publishing. New posts from `blog-write`
-must reach 90 to be delivered; for a site audit of existing posts, 80 is the
-floor and posts below it should be revised (thresholds table in
+must reach 90 to be delivered. For existing posts, 80 or higher is a planning
+goal for the back catalog, not a delivery rule or audit floor: use it to rank
+which posts to revise first. The audit buckets stay as defined (70-89 is Good;
+thresholds table in
 `${CLAUDE_SKILL_DIR}/../blog/references/quality-scoring.md`).
 
 ### Step 5.7: Multi-Surface Readiness Strategy
@@ -300,7 +302,7 @@ Reference: `${CLAUDE_SKILL_DIR}/../blog/references/distribution-playbook.md` for
 - Brand mention volume (branded search + web mentions)
 
 #### Content Quality
-- Blog quality score via `/blog analyze` (new posts 90+, existing posts 80+ floor)
+- Blog quality score via `/blog analyze` (new posts 90+, existing posts 80+ as a planning goal)
 - Content freshness (% of posts updated within 30 days)
 - Visual element coverage where assets add information gain
 - Citation tier quality (% tier 1-3 sources)
@@ -364,7 +366,7 @@ Output format:
 - [ ] Launch off-site presence on review platforms
 
 ### Month 3: Optimization
-- [ ] Audit all posts with `/blog analyze` (80+ floor for existing posts)
+- [ ] Audit all posts with `/blog analyze` (80+ as the planning goal for existing posts)
 - [ ] Optimize lowest-scoring posts
 - [ ] Publish [Pillar 3] guide
 - [ ] Review AI citation metrics across all platforms
