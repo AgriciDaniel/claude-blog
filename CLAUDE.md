@@ -23,14 +23,13 @@ claude-blog/
   docs/CONTRIBUTORS.md               # Pro Hub Challenge attribution and integration decisions
   CHANGELOG.md                       # Keep a Changelog format
   .claude-plugin/plugin.json         # Plugin manifest (v2.3.2)
-  .claude-plugin/marketplace.json    # Marketplace catalog for distribution (claude-blog + optional blog-studio)
-  plugins/blog-studio/               # Optional Claude Code mod companion (status band, pipeline panel); own README, tests, version 0.2.0
+  .claude-plugin/marketplace.json    # Marketplace catalog: claude-blog (./) + optional blog-studio (git-subdir, blog-studio branch, pinned sha)
   .mcp.example.json                  # MCP config example (tracked; .mcp.json is gitignored)
   pyproject.toml                     # Python packaging (3.11+)
   brain/                             # Vendored self-contained evidence-gated Obsidian brain; not plugin payload; tooling stays under skills/
   scripts/analyze_blog.py            # 5-category quality scoring (stdlib)
   scripts/blog_preflight.py          # 5-gate delivery contract runner (v1.9.0)
-  scripts/blog_studio_status.py      # Read-only preflight evidence inspector for the optional blog-studio plugin
+  scripts/blog_studio_status.py      # Read-only preflight evidence inspector; engine contract for Blog Studio (blog-studio branch)
   scripts/blog_render.py             # md -> html -> pdf renderer; XSS-safe JSON-LD (v1.9.0)
   scripts/blog_hygiene.py            # Optional deterministic hygiene: lazy-load imgs + auto-TOC (v1.11.0)
   scripts/cognitive_load.py          # Per-section concept-density analyzer (v1.8.0)
@@ -190,6 +189,25 @@ Submit at: claude.ai/settings/plugins/submit or platform.claude.com/plugins/subm
 /plugin marketplace add AgriciDaniel/claude-blog
 /plugin install claude-blog@agricidaniel-blog
 ```
+
+### Blog Studio (blog-studio branch)
+Blog Studio, the optional status band and pipeline panel, lives in
+`plugins/blog-studio` on the `blog-studio` branch of this repository
+(https://github.com/AgriciDaniel/claude-blog/tree/blog-studio/plugins/blog-studio), not on main. Claude Desktop refuses a plugin folder that holds a
+nested plugin manifest, and the claude-blog plugin folder is the whole
+repository. The marketplace entry installs Studio from that branch with a
+`git-subdir` source pinned to a commit `sha`; bump the `sha` (and `version`)
+in `.claude-plugin/marketplace.json` for each Studio release. The install id
+and commands are unchanged:
+```
+/plugin marketplace add AgriciDaniel/claude-blog
+/plugin install blog-studio@agricidaniel-blog
+```
+Studio 0.3.0 needs claude-blog 2.3.2 or later (it passes `--manual-check`). Its
+engine contract stays on main: `scripts/blog_studio_status.py`,
+`blog_preflight.py --project-root` and `--manual-check`, covered by
+`tests/test_blog_studio_integration.py`. `tests/test_manifest_layout.py` fails
+if any nested `.claude-plugin/plugin.json` appears on main.
 
 ### Standalone Install (no marketplace)
 ```bash

@@ -1,6 +1,11 @@
 """Run the real engine scripts the way the Blog Studio plugin does.
 
-plugins/blog-studio/hooks/register.ts runs ``python3 -E blog_preflight.py`` with
+Blog Studio lives in plugins/blog-studio on the blog-studio branch of this
+repository, not on main, and this file reads nothing from it. The parser and
+report checks below mirror that branch's hooks/register.ts and hooks/logic.ts,
+so a change to the engine contract shows up here without a Studio checkout.
+
+hooks/register.ts runs ``python3 -E blog_preflight.py`` with
 ``--draft <d> --strict --json --manual-check --tools-json <list> --project-root <root>``
 and then ``python3 -E blog_studio_status.py`` with ``--project-root`` and
 ``--expected-run``. These tests
@@ -56,7 +61,7 @@ raise SystemExit(p.main())
 
 
 def parse_status(raw: str) -> dict:
-    """Mirror of parseStatus in plugins/blog-studio/hooks/logic.ts."""
+    """Mirror of parseStatus in hooks/logic.ts on the blog-studio branch."""
     assert len(raw) <= 1024 * 1024
     x = json.loads(raw)
     assert isinstance(x, dict)

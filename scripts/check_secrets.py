@@ -18,6 +18,10 @@ SHA_FIELD_RE = re.compile(
     re.IGNORECASE,
 )
 GIT_REVISION_FIELD_RE = re.compile(r'"revision"\s*:\s*"[0-9a-f]{40}"', re.IGNORECASE)
+# The marketplace pins Blog Studio's git-subdir source to a full commit. Only a
+# lowercase 40-hex "sha" field in the marketplace manifest is adjudicated.
+MARKETPLACE_PATH = ".claude-plugin/marketplace.json"
+MARKETPLACE_SHA_FIELD_RE = re.compile(r'^\s*"sha"\s*:\s*"[0-9a-f]{40}"\s*,?\s*$')
 ACTION_PIN_RE = re.compile(r"uses:\s*[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+@[0-9a-f]{40}\b")
 ACTION_EXPECTATION_RE = re.compile(
     r'"actions/(?:checkout|setup-node|setup-python)"\s*:\s*"[0-9a-f]{40}"'
@@ -136,6 +140,7 @@ def is_adjudicated(path: str, finding: dict[str, object], line: str) -> bool:
             or ACTION_PIN_RE.search(line)
             or ACTION_EXPECTATION_RE.search(line)
             or reviewed_commit
+            or (path == MARKETPLACE_PATH and MARKETPLACE_SHA_FIELD_RE.fullmatch(line) is not None)
         )
     if finding_type == "Secret Keyword":
         return is_placeholder_value(line)

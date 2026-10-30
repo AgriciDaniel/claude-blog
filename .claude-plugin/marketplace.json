@@ -14,9 +14,20 @@
     },
     {
       "name": "blog-studio",
-      "source": "./plugins/blog-studio",
-      "version": "0.2.0",
-      "description": "Optional companion to claude-blog: article status band, live pipeline and five-gate review panel, history of past blogs, and an explicit Run checks control. A Claude Code mod; install it separately."
+      "source": {
+        "source": "git-subdir",
+        "url": "AgriciDaniel/claude-blog",
+        "path": "plugins/blog-studio",
+        "ref": "blog-studio",
+        "sha": "c1cc72f85aab4398d9e9dc76196928fb9be3dd15"
+      },
+      "version": "0.3.0",
+      "description": "Optional companion to claude-blog (needs claude-blog 2.3.2 or later): article status band, live pipeline and five-gate review panel, history of past blogs, and an explicit Run checks control. A Claude Code mod served from the blog-studio branch; install it separately.",
+      "author": {
+        "name": "AgriciDaniel",
+        "url": "https://github.com/AgriciDaniel"
+      },
+      "homepage": "https://github.com/AgriciDaniel/claude-blog/tree/blog-studio/plugins/blog-studio"
     }
   ]
 }

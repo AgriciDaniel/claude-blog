@@ -355,7 +355,7 @@ Claude Blog runs inside Claude Code, so your drafts are sent to Claude, the same
 
 **Requirements.** Claude Code and Python 3.11 or newer. PDF rendering and screenshots need the `presentation` extra in `pyproject.toml`.
 
-**Blog Studio.** [`plugins/blog-studio`](plugins/blog-studio) is an optional second plugin in the same marketplace: a live status band, a pipeline and five-gate panel, a history of past posts and a **Run checks** button. Install it with `/plugin install blog-studio@agricidaniel-blog`. The standalone installers never enable it.
+**Blog Studio.** An optional companion plugin in the same marketplace: a live status band, a pipeline and five-gate panel, a history of past posts and a **Run checks** button. Install it with `/plugin install blog-studio@agricidaniel-blog`. It lives on the [`blog-studio` branch](https://github.com/AgriciDaniel/claude-blog/tree/blog-studio/plugins/blog-studio), needs claude-blog 2.3.2 or later, and the standalone installers never enable it.
 
 **Known warning.** `claude plugin validate` on Claude Code 2.1.292 and later reports the name `claude-blog` as reserved. The plugin still installs and loads, and CI tolerates exactly that one finding. See [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md#plugin-validate-reports-claude-blog-as-reserved).
 

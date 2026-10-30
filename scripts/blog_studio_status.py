@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """Inspect saved preflight evidence without rendering, network calls or writes.
 
+Blog Studio (plugins/blog-studio on the blog-studio branch of this repository)
+runs this script to show a draft's status; it is engine contract and stays on main.
+
 Fingerprints describe the files checked, not authenticated approval. The
 preflight remains the delivery authority. Legacy reports have unknown freshness.
 

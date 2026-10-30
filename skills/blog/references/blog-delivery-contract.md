@@ -346,7 +346,9 @@ cannot evidence.
 
 ## Optional status companion
 
-Blog Studio reads the additive `evidence` object in `preflight-report.json`
+Blog Studio (an optional plugin on the `blog-studio` branch of this repository,
+installed as `blog-studio@agricidaniel-blog`; it needs claude-blog 2.3.2 or
+later) reads the additive `evidence` object in `preflight-report.json`
 (`schema_version`, `run_id`, `contract_version`, `engine`, `started_at`,
 `finished_at`, `requested_gates`, `completed_gates`, `inputs`, `inputs_unchanged`,
 `outputs`). The `scripts/blog_studio_status.py` inspector checks run scope and
