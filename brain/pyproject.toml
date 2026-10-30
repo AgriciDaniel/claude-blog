@@ -8,7 +8,7 @@ version = "0.2.0"
 description = "Claude Blog Brain Obsidian brain template and script layer."
 readme = "README.md"
 requires-python = ">=3.11"
-license = {text = "Custom license"}
+license = {text = "MIT"}
 authors = [{name = "Daniel Agrici"}]
 dependencies = []
 

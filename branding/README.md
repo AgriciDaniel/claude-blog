@@ -4,11 +4,15 @@ Source-of-truth visual assets for the `claude-blog` skill suite. Same brand
 system as `claude-ads` and `claude-seo` v2.x: OS-window-framed dark CRT
 terminal with BRAND-ORANGE accent palette unified across all three products.
 
+These assets were the README art through v2.3.1. From v2.3.2 the README uses
+the animated scenes in `../assets/readme/`; the files below are kept as the
+static brand set.
+
 ## Canonical artifacts (the 5 SVGs)
 
 | File | Purpose |
 |---|---|
-| `../assets/cover-blog.svg` | Final cover asset for the README hero |
+| `../assets/cover-blog.svg` | Static cover (the README hero through v2.3.1) |
 | `../assets/diagrams/01-architecture-B.svg` | System architecture. L-to-R orchestrator pipeline |
 | `../assets/diagrams/02-pipeline-B.svg` | Final delivery pipeline diagram |
 | `../assets/diagrams/03-sub-skill-map-A.svg` | Final sub-skill map diagram |

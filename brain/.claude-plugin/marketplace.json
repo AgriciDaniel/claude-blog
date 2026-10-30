@@ -17,7 +17,7 @@
         "name": "Daniel Agrici"
       },
       "repository": "https://github.com/AgriciDaniel/claude-blog-brain",
-      "license": "Custom license",
+      "license": "MIT",
       "category": "claude-blog",
       "tags": [
         "obsidian",

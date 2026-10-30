@@ -3,11 +3,11 @@
 The Claude Blog Brain synthesizes publicly available guidance and cites it in
 `references/source-ledger.json` and `data/google-updates.json`. Primary upstream sources:
 
-- Google Search Central documentation (developers.google.com/search), Apache 2.0 / Google terms.
+- Google Search Central documentation (developers.google.com/search): prose under CC BY 4.0, code samples under Apache 2.0, per the Google Developers Site Policies.
 - web.dev Core Web Vitals guidance (web.dev), Google terms.
 - Schema.org vocabulary (schema.org), CC BY-SA 3.0.
 - Search Quality Rater Guidelines (Google), quoted under fair use with attribution.
-- The claude-blog skill (github.com/AgriciDaniel/claude-blog), custom license.
+- The claude-blog skill (github.com/AgriciDaniel/claude-blog), MIT license.
 - Brainstein brain generator, which scaffolds this repository.
 
 All quotations are dated and attributed to their source URL. No third-party code is vendored.

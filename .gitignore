@@ -102,3 +102,6 @@ definitive-resesarch-blueprint-for-claude-blog.md
 
 # Local Claude Code settings (never commit)
 .claude/settings.local.json
+
+# /blog audit output in the project root
+/reports/

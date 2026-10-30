@@ -94,6 +94,23 @@ README) carries an HTML-comment header crediting Daniel Agrici / FLOW / CC BY 4.
 
 ================================================================================
 
+Fonts embedded in the README scenes (assets/readme/*.svg)
+
+The animated README scenes embed subsets of these fonts, under renamed
+family names, as permitted by the SIL Open Font License 1.1:
+
+- Geist and Geist Mono
+  Copyright 2024 The Geist Project Authors (https://github.com/vercel/geist-font.git)
+- Silkscreen
+  Copyright 2001 The Silkscreen Project Authors (https://github.com/googlefonts/silkscreen)
+- Pixelify Sans (the YouTube, AI Marketing Hub and Pro buttons)
+  Copyright 2021 The Pixelify Sans Project Authors (https://github.com/eifetx/Pixelify-Sans)
+
+Licensed under the SIL Open Font License, Version 1.1. The full license text
+ships in assets/readme/OFL.txt.
+
+================================================================================
+
 For details on how each adaptation maps source to target, including the exact
 methodology elements adopted and the rationale for non-ported elements, see
 docs/CONTRIBUTORS.md in this repository.
