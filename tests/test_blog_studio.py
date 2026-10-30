@@ -351,9 +351,9 @@ def test_unfinished_run_marker_is_blocked_not_passed(draft, monkeypatch):
 
 def test_iteration_cap_keeps_lexical_draft_and_never_looks_passed(draft, monkeypatch):
     run(draft, monkeypatch)
-    (draft / '.iteration-count').write_text(str(preflight.MAX_ITERATIONS) + '\n')
+    preflight._write_iteration_count(draft, preflight._iteration_state_path(draft), preflight.MAX_ITERATIONS)
     monkeypatch.setattr(sys, 'argv', ['blog_preflight.py', '--draft', str(draft), '--json',
-                                      '--repair-attempt', '--project-root', str(draft.parent)])
+                                      '--project-root', str(draft.parent)])
     assert preflight.main() == preflight.EXIT_ITERATION_CAP
     report = json.loads((draft / 'preflight-report.json').read_text())
     assert report['draft'] == str(draft) and report['incomplete'] is True and report['blocked'] is True

@@ -1,8 +1,9 @@
 """Run the real engine scripts the way the Blog Studio plugin does.
 
-plugins/blog-studio/hooks/register.ts runs blog_preflight.py with
-``--draft <d> --strict --json --tools-json <list> --project-root <root>`` and then
-blog_studio_status.py with ``--project-root`` and ``--expected-run``. These tests
+plugins/blog-studio/hooks/register.ts runs ``python3 -E blog_preflight.py`` with
+``--draft <d> --strict --json --manual-check --tools-json <list> --project-root <root>``
+and then ``python3 -E blog_studio_status.py`` with ``--project-root`` and
+``--expected-run``. These tests
 spawn both scripts as subprocesses and validate the output with a Python mirror
 of ``parseStatus`` in hooks/logic.ts and the report checks in hooks/register.ts.
 
@@ -99,14 +100,16 @@ def project(tmp_path):
     draft.mkdir(parents=True)
     for name in ("post.md", "post.html", "post.pdf", "hero.webp", "review.md"):
         (draft / name).write_text("fixture " + name)
-    env = {**os.environ, "CLAUDE_BLOG_REVIEW_STATE_DIR": str(tmp_path / "verifier")}
+    # A stock key gives Gate 1 a hero path, so it never probes Openverse.
+    env = {**os.environ, "CLAUDE_BLOG_REVIEW_STATE_DIR": str(tmp_path / "verifier"), "PEXELS_API_KEY": "your-test-key"}
     return root, draft, env
 
 
-def preflight(root, draft, env, *, patched, extra=()):
-    argv = [sys.executable]
+def preflight(root, draft, env, *, patched, extra=(), manual=True):
+    argv = [sys.executable, "-E"]
     argv += ["-c", HARNESS, str(SCRIPTS)] if patched else [str(SCRIPTS / "blog_preflight.py")]
-    argv += ["--draft", str(draft), "--strict", "--json", "--tools-json", "[]", "--project-root", str(root), *extra]
+    argv += ["--draft", str(draft), "--strict", "--json", *(["--manual-check"] if manual else []),
+             "--tools-json", "[]", "--project-root", str(root), *extra]
     proc = subprocess.run(argv, cwd=root, env=env, capture_output=True, text=True, timeout=120)
     return proc, json.loads(proc.stdout)
 
@@ -171,15 +174,32 @@ def test_expected_run_mismatch_is_an_error_status(project):
 
 def test_iteration_cap_exit_stays_additive_and_never_passes(project):
     root, draft, env = project
+    # Passing runs never count; three failed full runs reach the cap.
     assert preflight(root, draft, env, patched=True)[0].returncode == 0
-    (draft / ".iteration-count").write_text("3\n")
+    for _ in range(3):
+        assert preflight(root, draft, env, patched=False, manual=False)[0].returncode == 1
+    # A legacy in-draft counter is ignored; the external one already holds 3 failed runs.
+    (draft / ".iteration-count").write_text("0\n")
     argv = [sys.executable, str(SCRIPTS / "blog_preflight.py"), "--draft", str(draft), "--strict", "--json",
-            "--tools-json", "[]", "--project-root", str(root), "--repair-attempt"]
+            "--tools-json", "[]", "--project-root", str(root)]
     proc = subprocess.run(argv, cwd=root, env=env, capture_output=True, text=True, timeout=60)
     assert proc.returncode == 2 and "ITERATION CAP EXCEEDED" in proc.stderr
     marker = json.loads((draft / "preflight-report.json").read_text())
     assert marker["draft"] == str(draft) and marker["incomplete"] is True
     assert status(root, draft, env)[1]["status"] == "blocked"
+
+
+def test_repeated_studio_checks_never_reach_the_cap(project):
+    """Studio runs pass --manual-check: re-checking a post, failing or passing, never caps."""
+    root, draft, env = project
+    for _ in range(5):
+        proc, report = preflight(root, draft, env, patched=False)
+        assert proc.returncode == 1 and report["blocked"] is True
+    for _ in range(2):
+        proc, _report = preflight(root, draft, env, patched=True)
+        assert proc.returncode == 0, proc.stderr
+    state = Path(env["CLAUDE_BLOG_REVIEW_STATE_DIR"])
+    assert not list(state.glob("*.iterations.json"))
 
 
 def test_preflight_without_project_root_still_works_and_adds_evidence(project):
@@ -218,3 +238,82 @@ def test_project_root_outside_the_draft_is_refused(project, tmp_path):
     proc = subprocess.run(argv, cwd=root, env=env, capture_output=True, text=True, timeout=60)
     assert proc.returncode == 1 and "refused" in proc.stderr
     assert not (draft / "preflight-report.json").exists()
+
+
+def _linked_project(tmp_path):
+    """A project reached through a symlinked ancestor, like /home -> var/home."""
+    real = tmp_path / "real"
+    draft = real / "project" / "drafts" / "post"
+    draft.mkdir(parents=True)
+    for name in ("post.md", "post.html", "post.pdf", "hero.webp", "review.md"):
+        (draft / name).write_text("fixture " + name)
+    (tmp_path / "link").symlink_to(real, target_is_directory=True)
+    root = tmp_path / "link" / "project"
+    env = {**os.environ, "CLAUDE_BLOG_REVIEW_STATE_DIR": str(tmp_path / "verifier"), "PEXELS_API_KEY": "your-test-key"}
+    return root, root / "drafts" / "post", env
+
+
+def test_symlinked_ancestor_of_the_project_root_is_resolved(tmp_path):
+    root, draft, env = _linked_project(tmp_path)
+    proc, report = preflight(root, draft, env, patched=True)
+    assert proc.returncode == 0, proc.stderr
+    run_id = check_report(report, draft, proc.returncode)
+    # The report records the absolute draft path, symlinks not resolved.
+    assert report["draft"] == str(draft)
+    proc, passed = status(root, draft, env, run_id)
+    assert proc.returncode == 0, passed
+    assert passed["status"] == "passed"
+
+
+def test_project_root_that_is_itself_a_symlink_is_resolved(tmp_path):
+    _root, _draft, env = _linked_project(tmp_path)
+    (tmp_path / "proj-link").symlink_to(tmp_path / "real" / "project", target_is_directory=True)
+    root = tmp_path / "proj-link"
+    draft = root / "drafts" / "post"
+    proc, report = preflight(root, draft, env, patched=True)
+    assert proc.returncode == 0, proc.stderr
+    assert status(root, draft, env, check_report(report, draft, proc.returncode))[1]["status"] == "passed"
+
+
+def test_symlink_between_the_project_root_and_the_draft_is_still_refused(tmp_path):
+    root, draft, env = _linked_project(tmp_path)
+    (root / "drafts" / "alias").symlink_to(draft, target_is_directory=True)
+    (root / "hop").symlink_to(root / "drafts", target_is_directory=True)
+    for linked in (root / "drafts" / "alias", root / "hop" / "post"):
+        argv = [sys.executable, str(SCRIPTS / "blog_preflight.py"), "--draft", str(linked), "--strict", "--json",
+                "--tools-json", "[]", "--project-root", str(root)]
+        proc = subprocess.run(argv, cwd=tmp_path, env=env, capture_output=True, text=True, timeout=60)
+        assert proc.returncode == 1 and "refused" in proc.stderr, proc.stderr
+        proc = subprocess.run([sys.executable, str(SCRIPTS / "blog_studio_status.py"), "--draft", str(linked),
+                               "--project-root", str(root)], cwd=tmp_path, env=env, capture_output=True, text=True, timeout=60)
+        assert json.loads(proc.stdout)["status"] == "error"
+    assert not (draft / "preflight-report.json").exists()
+
+
+def test_dot_dot_escape_is_still_refused(tmp_path):
+    root, draft, env = _linked_project(tmp_path)
+    escaped = f"{root}/drafts/../drafts/post"
+    proc = subprocess.run([sys.executable, str(SCRIPTS / "blog_studio_status.py"), "--draft", escaped,
+                           "--project-root", str(root)], cwd=tmp_path, env=env, capture_output=True, text=True, timeout=60)
+    result = json.loads(proc.stdout)
+    assert proc.returncode == 1 and result["status"] == "error"
+    assert "traversal" in result["diagnostics"][0]
+
+
+@pytest.mark.skipif(not Path("/home").is_symlink(), reason="needs a system /home symlink (Fedora atomic)")
+def test_system_home_symlink_project_root_works(tmp_path):
+    """The reported repro: /home -> var/home made --project-root fail with 'Not a directory'."""
+    home_target = Path(os.path.realpath("/home"))
+    real_tmp = Path(os.path.realpath(tmp_path))
+    if home_target not in real_tmp.parents:
+        pytest.skip("tmp_path is not below the /home symlink target")
+    lexical = Path("/home") / real_tmp.relative_to(home_target)
+    draft = lexical / "post"
+    draft.mkdir()
+    for name in ("post.md", "post.html", "post.pdf", "hero.webp", "review.md"):
+        (draft / name).write_text("fixture " + name)
+    env = {**os.environ, "CLAUDE_BLOG_REVIEW_STATE_DIR": str(tmp_path / "verifier"), "PEXELS_API_KEY": "your-test-key"}
+    proc, report = preflight(lexical, draft, env, patched=True)
+    assert proc.returncode == 0, proc.stderr
+    proc, result = status(lexical, draft, env, check_report(report, draft, proc.returncode))
+    assert result["status"] == "passed", result

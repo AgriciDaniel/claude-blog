@@ -99,8 +99,8 @@ test('Run checks button executes the checker and inspector, then redraws', async
   host(on)
   const calls: string[] = []
   on('process.run', ($, e) => {
-    calls.push(e.argv[1] ?? '')
-    return { value: done({ exitCode: 0, stderr: '', stdout: JSON.stringify(e.argv[1]?.endsWith('blog_preflight.py') ?
+    calls.push(e.argv[2] ?? '')
+    return { value: done({ exitCode: 0, stderr: '', stdout: JSON.stringify(e.argv[2]?.endsWith('blog_preflight.py') ?
       { strict: true, blocked: false, draft: '/work/outputs/article', evidence: { run_id: PASS.run_id } } : PASS) }) }
   })
   await $.session.start({ cwd: '/work', surface: 'terminal', isInteractive: true })
@@ -183,7 +183,7 @@ for (const stage of ['checker', 'inspector']) {
   test('malformed ' + stage + ' JSON retains sanitized stderr diagnostics', async ($, on) => {
     host(on)
     on('process.run', ($, e) => {
-      const isChecker = e.argv[1]?.endsWith('blog_preflight.py')
+      const isChecker = e.argv[2]?.endsWith('blog_preflight.py')
       const broken = stage === 'checker' ? isChecker : !isChecker
       return { value: done({ exitCode: broken ? 1 : 0, stderr: broken ? '\x1b[31mMissing browser at /var/home/owner/private; ' + 'c'.repeat(32) : '',
         stdout: broken ? 'private article body' : JSON.stringify({ strict: true, blocked: false,
@@ -227,16 +227,19 @@ test('check invokes strict canonical script with no shell then verifies run iden
   const limits: number[] = []
   on('process.run', ($, e) => {
     calls.push([...e.argv]); limits.push(e.init?.timeoutMs ?? 0)
-    return { value: done({ exitCode: 0, stderr: '', stdout: JSON.stringify(e.argv[1]?.endsWith('blog_preflight.py') ?
+    return { value: done({ exitCode: 0, stderr: '', stdout: JSON.stringify(e.argv[2]?.endsWith('blog_preflight.py') ?
       { strict: true, blocked: false, draft: '/work/outputs/article', evidence: { run_id: PASS.run_id } } : PASS) }) }
   })
   await $.session.start({ cwd: '/work', surface: 'terminal', isInteractive: true })
   await $.command.run({ command: 'blog-studio', args: 'select outputs/article', ...RUN })
   const out = await $.command.run({ command: 'blog-studio', args: 'check', ...RUN })
   expect(out).toMatchObject({ text: expect.stringContaining('Preflight passed') })
-  expect(calls[0]?.slice(0, 6)).toEqual(['python3', '/trusted/scripts/blog_preflight.py', '--draft', '/work/outputs/article', '--strict', '--json'])
+  expect(calls[0]?.slice(0, 7)).toEqual(['python3', '-E', '/trusted/scripts/blog_preflight.py', '--draft', '/work/outputs/article', '--strict', '--json'])
+  expect(calls[1]?.slice(0, 3)).toEqual(['python3', '-E', '/trusted/scripts/blog_studio_status.py'])
   expect(limits).toEqual([600_000, 30_000])
   expect(calls[1]).toContain('--expected-run')
+  expect(calls[0]?.[7]).toBe('--manual-check')
+  expect(calls[0]).not.toContain('-I')
   expect(calls[0]).not.toContain('--repair-attempt')
   expect(calls[0]).not.toContain('--init-review-nonce')
   expect(calls[0]?.slice(-2)).toEqual(['--project-root', '/work'])
@@ -247,7 +250,7 @@ for (const failure of ['timeout', 'malformed', 'truncated', 'wrong-exit', 'missi
     host(on)
     on('process.run', () => {
       if (failure === 'timeout') throw new Error('python3 unavailable or process timed out')
-      return { value: done({ exitCode: failure === 'wrong-exit' ? 2 : 0, stderr: 'fixture stderr',
+      return { value: done({ exitCode: failure === 'wrong-exit' ? 3 : 0, stderr: 'fixture stderr',
         stdout: failure === 'malformed' ? '{broken' : failure === 'missing-report' ? '' : JSON.stringify({ strict: true,
           blocked: false, draft: '/work/outputs/article', evidence: { run_id: PASS.run_id } }),
         isStdoutTruncated: failure === 'truncated' }) }
@@ -257,6 +260,30 @@ for (const failure of ['timeout', 'malformed', 'truncated', 'wrong-exit', 'missi
     const out = await $.command.run({ command: 'blog-studio', args: 'check', ...RUN })
     expect(out).toMatchObject({ text: expect.stringContaining('Execution error') })
     expect(out).not.toMatchObject({ text: expect.stringContaining('Preflight passed') })
+  })
+}
+
+for (const kind of ['capped', 'old-engine']) {
+  test('checker exit 2 shows Blocked with its reason, never an execution error: ' + kind, async ($, on) => {
+    host(on)
+    const calls: string[][] = []
+    on('process.run', ($, e) => {
+      calls.push([...e.argv])
+      return { value: done({ exitCode: 2,
+        stderr: kind === 'capped' ? 'ITERATION CAP EXCEEDED' : 'blog_preflight.py: error: unrecognized arguments: --manual-check',
+        stdout: kind === 'capped' ? JSON.stringify({ draft: '/work/outputs/article', strict: true, blocked: true,
+          incomplete: true, iteration_cap_exceeded: true, gates: [] }) : '' }) }
+    })
+    await $.session.start({ cwd: '/work', surface: 'terminal', isInteractive: true })
+    await $.command.run({ command: 'blog-studio', args: 'select outputs/article', ...RUN })
+    const out = await $.command.run({ command: 'blog-studio', args: 'check', ...RUN })
+    expect(out).toMatchObject({ text: expect.stringContaining('Blocked') })
+    expect(out).not.toMatchObject({ text: expect.stringContaining('Execution error') })
+    expect(out).not.toMatchObject({ text: expect.stringContaining('no valid report') })
+    expect(out).toMatchObject({ text: expect.stringContaining(kind === 'capped' ? 'Repair cap reached' : 'does not support --manual-check') })
+    expect(out).not.toMatchObject({ text: expect.stringContaining('Preflight passed') })
+    // The inspector never runs after a stopped checker.
+    expect(calls.length).toBe(1)
   })
 }
 
@@ -503,7 +530,7 @@ test('history follows the agent, backfills by scan, and opens a past blog in ano
   on('process.run', ($$, e) => {
     argvs.push([...e.argv])
     if (e.argv[0] === 'find') return { value: done({ exitCode: 0, stderr: '', stdout: '1760000000.0\t/other/proj/blog-a\n' }) }
-    const isChecker = e.argv[1]?.endsWith('blog_preflight.py')
+    const isChecker = e.argv[2]?.endsWith('blog_preflight.py')
     return { value: done({ exitCode: 0, stderr: '', stdout: JSON.stringify(isChecker ?
       { strict: true, blocked: false, draft: '/other/proj/blog-a', evidence: { run_id: PASS.run_id } } : PASS) }) }
   })
@@ -520,7 +547,7 @@ test('history follows the agent, backfills by scan, and opens a past blog in ano
   const opened = await $.command.run({ command: 'blog-studio', args: 'open 2', ...RUN })
   expect(opened).toMatchObject({ text: expect.stringContaining('Project root: /other/proj') })
   await $.command.run({ command: 'blog-studio', args: 'check', ...RUN })
-  const checker = argvs.find(a => a[1]?.endsWith('blog_preflight.py'))
+  const checker = argvs.find(a => a[2]?.endsWith('blog_preflight.py'))
   expect(checker).toEqual(expect.arrayContaining(['--draft', '/other/proj/blog-a', '--project-root', '/other/proj']))
   const missing = await $.command.run({ command: 'blog-studio', args: 'open 9', ...RUN })
   expect(missing).toMatchObject({ text: expect.stringContaining('No blog number 9') })
@@ -549,7 +576,7 @@ test('the engine location is remembered across sessions and can be forgotten', a
   host(on, { env: null, sessionId: () => sessionId })
   on('process.run', ($$, e) => {
     argvs.push([...e.argv])
-    const isChecker = e.argv[1]?.endsWith('blog_preflight.py')
+    const isChecker = e.argv[2]?.endsWith('blog_preflight.py')
     return { value: done({ exitCode: 0, stderr: '', stdout: JSON.stringify(isChecker ?
       { strict: true, blocked: false, draft: '/work/outputs/article', evidence: { run_id: PASS.run_id } } : PASS) }) }
   })
@@ -559,7 +586,7 @@ test('the engine location is remembered across sessions and can be forgotten', a
   sessionId = 'two'
   await $.command.run({ command: 'blog-studio', args: 'select outputs/article', ...RUN })
   await $.command.run({ command: 'blog-studio', args: 'check', ...RUN })
-  expect(argvs.some(a => a[1] === '/trusted/scripts/blog_preflight.py')).toBe(true)
+  expect(argvs.some(a => a[2] === '/trusted/scripts/blog_preflight.py')).toBe(true)
   const cleared = await $.command.run({ command: 'blog-studio', args: 'configure reset', ...RUN })
   expect(cleared).toMatchObject({ text: expect.stringContaining('cleared') })
   sessionId = 'three'

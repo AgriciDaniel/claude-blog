@@ -20,13 +20,18 @@ def test_configurable_quality_gate_boundaries(monkeypatch, score, threshold, pas
     assert gate.DEFAULT_THRESHOLD == 70
     assert gate.analyze_post("post.md", threshold)["passed"] is passed
 
+def categories(score):
+    """All five rubric categories, summing to ``score`` (Gate 4 requires them)."""
+    return (f"Content Quality: {score - 63}/30\nSEO Optimization: 22/25\nE-E-A-T Signals: 14/15\n"
+            "Technical Elements: 14/15\nAI Citation Readiness: 13/15\n")
+
 @pytest.mark.parametrize("score,clearance,passed", [(89,"zero P0 issues",False),(90,"zero P0 issues",True),(90,"",False),(90,"zero P0 issues\nP0: unresolved fabricated statistic",False)])
 def test_delivery_score_and_explicit_p0_clearance(monkeypatch, tmp_path, score, clearance, passed):
     gate = load("boundary_preflight", "scripts/blog_preflight.py")
     monkeypatch.setenv("CLAUDE_BLOG_REVIEW_STATE_DIR", str(tmp_path / "state"))
     draft = tmp_path / "draft"; draft.mkdir()
     nonce = gate._init_review_nonce(draft)
-    (draft / "review.md").write_text(f"Overall Score: {score}/100\n{clearance}\nNonce: {nonce}\nBLOCKING: false (review decision)\n")
+    (draft / "review.md").write_text(f"Overall Score: {score}/100\n{categories(score)}{clearance}\nNonce: {nonce}\nBLOCKING: false (review decision)\n")
     assert gate.gate_4_content_review(draft)["passed"] is passed
 
 
@@ -40,7 +45,7 @@ def test_delivery_rejects_ambiguous_review_fields(monkeypatch, tmp_path, mutatio
     monkeypatch.setenv("CLAUDE_BLOG_REVIEW_STATE_DIR", str(tmp_path / "state"))
     draft = tmp_path / "draft"; draft.mkdir()
     nonce = gate._init_review_nonce(draft)
-    review = f"Overall Score: 90/100\nzero P0 issues\nNonce: {nonce}\nBLOCKING: false (controlled review)\n"
+    review = f"Overall Score: 90/100\n{categories(90)}zero P0 issues\nNonce: {nonce}\nBLOCKING: false (controlled review)\n"
     changes = {
         "negated-clearance": ("zero P0 issues", "There are not zero P0 issues."),
         "qualified-clearance": ("zero P0 issues", "zero P0 issues except an unresolved claim"),
@@ -69,5 +74,5 @@ def test_delivery_accepts_affirmative_legacy_review_forms(monkeypatch, tmp_path,
     monkeypatch.setenv("CLAUDE_BLOG_REVIEW_STATE_DIR", str(tmp_path / "state"))
     draft = tmp_path / "draft"; draft.mkdir()
     nonce = gate._init_review_nonce(draft)
-    (draft / "review.md").write_text(f"Overall Score: 92/100\n{clearance}\nNonce: {nonce}\nBLOCKING: false ({reason})\n")
+    (draft / "review.md").write_text(f"Overall Score: 92/100\n{categories(92)}{clearance}\nNonce: {nonce}\nBLOCKING: false ({reason})\n")
     assert gate.gate_4_content_review(draft)["passed"] is True

@@ -246,7 +246,9 @@ def test_every_gate_3_context_blocks_service_workers():
 # --- Gate 4 reviewer contract -----------------------------------------------
 
 
-def _review(nonce, clearance="zero P0 issues found", overall=92, categories="", reason="cleared all gates"):
+def _review(nonce, clearance="zero P0 issues found", overall=92, categories=None, reason="cleared all gates"):
+    if categories is None:
+        categories = TABLE_92
     return (
         "## Quality Review: Fixture\n"
         f"### Overall Score: {overall}/100 - Exceptional\n"
@@ -301,7 +303,7 @@ def test_gate_4_accepts_plural_zero_clearance(gate4, clearance):
 
 
 def test_gate_4_rejects_category_scores_that_contradict_the_overall(gate4):
-    result = gate4(categories="Content Quality: 3/30\n", overall=91)
+    result = gate4(categories=TABLE_92.replace("| Content Quality | 28 |", "| Content Quality | 3 |"), overall=91)
     assert not result["passed"]
     assert any("inconsistent with its category scores" in item for item in result["violations"])
 
@@ -330,15 +332,34 @@ def test_gate_4_rejects_conflicting_category_scores(gate4):
     assert any("conflicting Content Quality" in item for item in result["violations"])
 
 
+LINES_92 = (
+    "Content Quality: 28/30\nSEO Optimization: 23/25\nE-E-A-T Signals: 14/15\n"
+    "Technical Elements: 14/15\nAI Citation Readiness: 13/15\n"
+)
+
+
 @pytest.mark.parametrize("categories,overall", [
     (TABLE_92, 92),
-    ("Content Quality: 28/30\nSEO Optimization: 23/25\n", 92),
-    ("Content Quality (30 pts): 28\n", 92),
-    ("", 92),
+    (LINES_92, 92),
+    (LINES_92.replace("Content Quality: 28/30", "Content Quality (30 pts): 28"), 92),
 ])
-def test_gate_4_accepts_consistent_or_absent_category_scores(gate4, categories, overall):
+def test_gate_4_accepts_consistent_category_scores(gate4, categories, overall):
     result = gate4(categories=categories, overall=overall)
     assert result["passed"], result["violations"]
+
+
+@pytest.mark.parametrize("categories,missing", [
+    ("", ["Content Quality", "SEO Optimization", "E-E-A-T Signals", "Technical Elements", "AI Citation Readiness"]),
+    ("Content Quality: 28/30\nSEO Optimization: 23/25\n", ["E-E-A-T Signals", "Technical Elements", "AI Citation Readiness"]),
+    (TABLE_92.replace("| AI Citation Readiness | 13 | 15 | strong |\n", ""), ["AI Citation Readiness"]),
+])
+def test_gate_4_requires_all_five_category_scores(gate4, categories, missing):
+    """An overall-only or partial scorecard fails: the contract requires all five."""
+    result = gate4(categories=categories, overall=92)
+    assert not result["passed"]
+    for name in missing:
+        assert f"review.md is missing the {name} score" in result["violations"]
+    assert not any("inconsistent" in item for item in result["violations"])
 
 
 def test_gate_4_blocks_when_the_draft_changed_after_the_nonce_was_issued(preflight, gate4):
@@ -438,8 +459,9 @@ def test_crashing_gate_becomes_a_failed_gate_and_a_fresh_report(preflight, monke
 
 def test_iteration_cap_cannot_leave_a_stale_passing_report(preflight, monkeypatch, tmp_path, capsys):
     (tmp_path / "preflight-report.json").write_text(json.dumps(STALE_PASS))
-    (tmp_path / ".iteration-count").write_text("3\n")
-    assert _run_main(preflight, monkeypatch, tmp_path, "--repair-attempt") == preflight.EXIT_ITERATION_CAP
+    monkeypatch.setenv("CLAUDE_BLOG_REVIEW_STATE_DIR", str(tmp_path.parent / "state"))
+    preflight._write_iteration_count(tmp_path, preflight._iteration_state_path(tmp_path), 3)
+    assert _run_main(preflight, monkeypatch, tmp_path) == preflight.EXIT_ITERATION_CAP
     report = json.loads((tmp_path / "preflight-report.json").read_text())
     assert report["blocked"] is True and report["incomplete"] is True
     assert "iteration cap" in report["reason"]
@@ -554,7 +576,7 @@ def test_rendered_gate_accepts_a_second_json_ld_block(preflight, renderer, tmp_p
     assert result["passed"], result["violations"]
 
 
-def test_reset_iterations_help_matches_the_behaviour(preflight, tmp_path):
+def test_reset_iterations_help_matches_the_behaviour(preflight, tmp_path, monkeypatch):
     import subprocess
     help_text = subprocess.run(
         [sys.executable, str(ROOT / "scripts" / "blog_preflight.py"), "--help"],
@@ -562,6 +584,12 @@ def test_reset_iterations_help_matches_the_behaviour(preflight, tmp_path):
     ).stdout
     flat = " ".join(help_text.split())
     assert "counter to 0" in flat
-    (tmp_path / ".iteration-count").write_text("2\n")
-    preflight._iteration_check(tmp_path, reset=True)
-    assert (tmp_path / ".iteration-count").read_text().strip() == "0"
+    assert "starting a new write or rewrite" in flat
+    monkeypatch.setenv("CLAUDE_BLOG_REVIEW_STATE_DIR", str(tmp_path / "state"))
+    draft = tmp_path / "draft"
+    draft.mkdir()
+    counter = preflight._iteration_state_path(draft)
+    preflight._write_iteration_count(draft, counter, 2)
+    preflight._iteration_check(draft, reset=True)
+    assert json.loads(counter.read_text())["runs"] == 0
+    assert not (draft / ".iteration-count").exists()

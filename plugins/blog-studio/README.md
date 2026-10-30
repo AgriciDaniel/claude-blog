@@ -63,9 +63,13 @@ workspace/session changes, clear, resume, and branch. Reload keeps a selection
 only in the same workspace/session and invalidates cached and in-flight results.
 A run already started may finish writing its selected draft after a clear or
 workspace switch; its result cannot populate the new session's panel.
-The companion passes `--project-root` to the checker. On Linux, the checker
-opens the selected directory through descriptors without following symlinks
-and anchors its working directory there. Replacing the selected path after
+The companion runs both engine scripts with `python3 -E` (Python environment
+variables are ignored; user site-packages, where `install.sh` puts the optional
+dependencies without a virtual environment, stay available) and passes
+`--project-root` to the checker. On Linux, the checker resolves symlinks at or
+above the project root once (for example `/home` on Fedora atomic), then opens
+the selected directory through descriptors without following any symlink
+between the project root and the draft, and anchors its working directory there. Replacing the selected path after
 launch cannot redirect its report writes to a different directory.
 
 ## The live pipeline
@@ -119,7 +123,10 @@ paths. It does not read the article body for display, reveal the review nonce,
 write a review, rotate verifier state, reset repair counters, or repair articles.
 The analyzer's configurable 70-point gate and the separate delivery requirement
 (score at least 90, zero uncleared P0 issues, valid matching nonce and nonblocking
-decision) stay in the core engine. Manual checks do not consume repair iterations.
+decision) stay in the core engine. Run checks passes `--manual-check`, so it
+never reads or changes the draft's repair counter and the cap of 3 failed runs
+does not apply to it. If the checker still exits 2 (an older engine without
+`--manual-check`, or a capped run), the panel shows Blocked with that reason.
 
 ## Evidence format
 

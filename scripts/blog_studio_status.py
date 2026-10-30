@@ -53,29 +53,40 @@ LABELS = {
 def anchored_draft(draft_name: str, project_name: str):
     """Anchor a Linux companion subprocess to a verified directory object.
 
-    Walking with directory descriptors and O_NOFOLLOW refuses ancestor links.
-    Relative gate I/O then uses the anchored cwd, so replacing the lexical
-    draft path after launch cannot redirect report writes to another directory.
-    This is path containment, not a sandbox against a hostile local user.
+    Symlinks at or above the project root (``/home -> var/home`` on Fedora
+    atomic, ``/tmp`` and ``/var`` on macOS, or a linked project folder) are
+    the operator's choice and are resolved once. Every component from the
+    resolved root down to the draft is then walked with directory descriptors
+    and O_NOFOLLOW, so a symlink between the project root and the draft is
+    refused, as is any ``..``. Relative gate I/O then uses the anchored cwd, so
+    replacing the lexical draft path after launch cannot redirect report
+    writes to another directory. The yielded identity is the draft path made
+    absolute (joined to the current directory, symlinks not resolved). This is
+    path containment, not a sandbox against a hostile local user.
     """
     if not all(hasattr(os, name) for name in ("O_NOFOLLOW", "O_DIRECTORY", "fchdir")):
         raise ValueError("project-contained execution requires Unix directory descriptors")
     # "." is harmless (pathlib drops it, so `--project-root .` works); ".." is not.
     if any(part == ".." for value in (draft_name, project_name) for part in value.split("/")):
         raise ValueError("draft/project traversal is refused")
-    project = Path(project_name).absolute()
+    lexical_project = Path(project_name).absolute()
+    project = Path(os.path.realpath(lexical_project))
     selected = Path(draft_name).absolute()
-    selected.relative_to(project)
+    try:
+        relative = selected.relative_to(lexical_project)
+    except ValueError:
+        # The draft may be spelled from the resolved root instead.
+        relative = selected.relative_to(project)
     flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW
     previous = os.open(".", flags)
     current = -1
     try:
         current = os.open("/", flags)
-        for component in selected.parts[1:]:
+        for component in project.parts[1:] + relative.parts:
             child = os.open(component, flags, dir_fd=current)
             os.close(current)
             current = child
-        expected, actual = os.stat(selected, follow_symlinks=False), os.fstat(current)
+        expected, actual = os.stat(project / relative, follow_symlinks=False), os.fstat(current)
         if (expected.st_dev, expected.st_ino) != (actual.st_dev, actual.st_ino):
             raise ValueError("selected draft changed during launch")
         os.fchdir(current)

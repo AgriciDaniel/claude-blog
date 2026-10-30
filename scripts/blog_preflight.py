@@ -18,7 +18,8 @@ Usage:
   --json      Emit the report JSON to stdout in addition to the file.
 
 Exit codes: 0 = all gates passed; 1 = at least one gate blocked
-(when --strict); 2 = repair iteration cap exceeded. Warnings never block.
+(when --strict); 2 = repair iteration cap exceeded (a fourth full gate run
+for the same draft). Warnings never block.
 """
 
 from __future__ import annotations
@@ -27,6 +28,7 @@ import argparse
 import contextlib
 import datetime as dt
 import hashlib
+import http.client
 import ipaddress
 import importlib.util
 import json
@@ -34,8 +36,10 @@ import os
 import re
 import shutil
 import socket
+import ssl
 import sys
 import tempfile
+import threading
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -84,11 +88,14 @@ PREFLIGHT_TARGETS_FILE = "preflight-targets.json"
 LEGACY_ALLOWLIST_FILE = "preflight-allowlist.json"
 
 # VULN-802 code-enforced iteration counter (v1.9.1).
-# The contract documents "up to 3 retries before escalating." v1.9.0
-# enforced this only as orchestrator prose; any draft-controlled text
-# could convince the orchestrator the counter was at 0. v1.9.1 backs the
-# claim with a file on disk that survives across preflight invocations.
-ITERATION_COUNTER_FILE = ".iteration-count"
+# The contract allows 3 failed full gate runs per draft, then a stop: the
+# next full run exits 2. Passing runs, --gate runs and --manual-check runs
+# never count. The counter lives with the review verifier state outside the
+# draft folder, keyed like the nonce, so an agent that can write the draft
+# cannot reset it. A legacy <draft>/.iteration-count file is ignored.
+ITERATION_COUNTER_FILE = ".iteration-count"  # legacy location, never read
+ITERATION_STATE_SUFFIX = ".iterations.json"
+ITERATION_LOCK_SUFFIX = ".iterations.lock"
 MAX_ITERATIONS = 3
 EXIT_ITERATION_CAP = 2
 
@@ -108,6 +115,12 @@ def _review_state_path(draft: Path) -> Path:
     state_root = Path(os.environ.get(REVIEW_STATE_ENV, str(REVIEW_STATE_DIR))).expanduser()
     digest = hashlib.sha256(str(draft.resolve()).encode("utf-8")).hexdigest()
     return state_root / f"{digest}.json"
+
+
+def _iteration_state_path(draft: Path) -> Path:
+    """Return the external repair-counter path, keyed like the review nonce."""
+    nonce_path = _review_state_path(draft)
+    return nonce_path.with_name(nonce_path.stem + ITERATION_STATE_SUFFIX)
 
 
 def _reject_symlink_output(path: Path) -> None:
@@ -337,56 +350,84 @@ def _init_review_nonce(draft: Path) -> str:
     return nonce
 
 
-def _iteration_check(draft: Path, reset: bool = False, increment: bool = False) -> int:
-    """Read or increment the per-draft repair counter; refuse past cap.
-
-    Behavior:
-      * reset=True: counter is set to 0.
-      * increment=False: no counter mutation after any reset.
-      * increment=True, counter absent or corrupt: counter is set to 1.
-      * increment=True, counter at MAX_ITERATIONS: emit stderr message and
-        return EXIT_ITERATION_CAP. Caller should sys.exit(2).
-      * Otherwise with increment=True: counter += 1; return 0.
-
-    Fail-soft on corrupt counter file: a non-integer value resets to 1
-    rather than refusing to run (an attacker who can write to the draft
-    folder has bigger problems; refusing on garbage would be a self-DoS).
-    """
-    counter_path = draft / ITERATION_COUNTER_FILE
-    if reset:
-        _atomic_write_counter(counter_path, 0)
-    if not increment:
-        return 0
+def _read_iteration_count(draft: Path) -> int:
+    """Failed full gate runs recorded for this draft; absent or corrupt is 0."""
     try:
-        raw = counter_path.read_text(encoding="utf-8").strip()
-        current = int(raw)
-    except (FileNotFoundError, ValueError, OSError):
-        current = 0
-    if current >= MAX_ITERATIONS:
-        sys.stderr.write(
-            f"ITERATION CAP EXCEEDED: this draft has used all {MAX_ITERATIONS} "
-            f"preflight iterations. Escalate to the user, or run with "
-            f"--reset-iterations after a code change.\n"
-        )
+        data = json.loads(_read_text_no_follow(_iteration_state_path(draft)))
+    except FileNotFoundError:
+        return 0
+    except (ValueError, OSError):
+        return 0
+    runs = data.get("runs") if isinstance(data, dict) else None
+    return runs if type(runs) is int and runs >= 0 else 0
+
+
+@contextlib.contextmanager
+def _iteration_lock(draft: Path):
+    """Hold an exclusive per-draft lock (POSIX flock; msvcrt on Windows; else none).
+
+    The lock spans the cap check, the gates and the increment, so concurrent
+    counted runs on one draft run one at a time and see each other's count.
+    """
+    nonce_path = _review_state_path(draft)
+    path = nonce_path.with_name(nonce_path.stem + ITERATION_LOCK_SUFFIX)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        os.chmod(path.parent, 0o700)
+    except OSError:
+        pass
+    fd = os.open(path, os.O_RDWR | os.O_CREAT | getattr(os, "O_NOFOLLOW", 0), 0o600)
+    try:
+        try:
+            import fcntl
+        except ImportError:  # pragma: no cover - Windows
+            fcntl = None
+        if fcntl is not None:
+            fcntl.flock(fd, fcntl.LOCK_EX)
+        else:  # pragma: no cover - Windows best effort
+            try:
+                import msvcrt
+                msvcrt.locking(fd, msvcrt.LK_LOCK, 1)
+            except (ImportError, OSError):
+                pass
+        yield
+    finally:
+        os.close(fd)
+
+
+def _iteration_cap_message() -> str:
+    return (
+        f"ITERATION CAP EXCEEDED: this draft has failed {MAX_ITERATIONS} full gate runs. "
+        "Stop and show the user the diagnostic in preflight-report.json (manual fix required). "
+        "Use --reset-iterations only when starting a new write or rewrite in this draft folder."
+    )
+
+
+def _iteration_check(draft: Path, reset: bool = False) -> int:
+    """Reset the counter if asked, then return EXIT_ITERATION_CAP when it is at the cap.
+
+    The counter is stored next to the review nonce state, outside the draft
+    folder (see ``_iteration_state_path``). A legacy ``<draft>/.iteration-count``
+    file is ignored, and a corrupt counter counts as 0 rather than refusing to
+    run. Only failed counted runs increment it (see ``_run_preflight``).
+    """
+    if reset:
+        _write_iteration_count(draft, _iteration_state_path(draft), 0)
+        return 0
+    if _read_iteration_count(draft) >= MAX_ITERATIONS:
+        sys.stderr.write(_iteration_cap_message() + "\n")
         return EXIT_ITERATION_CAP
-    _atomic_write_counter(counter_path, current + 1)
     return 0
 
 
-def _atomic_write_counter(path: Path, value: int) -> None:
-    """Atomic write of the integer counter (mkstemp + os.replace)."""
-    import tempfile
-    fd, tmp = tempfile.mkstemp(dir=str(path.parent), prefix=f".{path.name}.", suffix=".tmp")
-    try:
-        with os.fdopen(fd, "w", encoding="utf-8") as f:
-            f.write(f"{int(value)}\n")
-        os.replace(tmp, str(path))
-    except Exception:
-        try:
-            os.unlink(tmp)
-        except OSError:
-            pass
-        raise
+def _write_iteration_count(draft: Path, path: Path, value: int) -> None:
+    """Atomic private write of the external gate-run counter."""
+    _atomic_write_json(
+        path,
+        {"draft": str(draft.resolve()), "runs": int(value), "max_runs": MAX_ITERATIONS},
+        private=True,
+        sort_keys=True,
+    )
 
 
 def _gate_result(gate: int, name: str, passed: bool, violations: Optional[list] = None, warnings: Optional[list] = None, **kwargs: Any) -> dict:
@@ -623,12 +664,109 @@ def _well_formed_http_url(url: str) -> tuple[bool, str | None]:
     return True, None
 
 
-def gate_1_capability_discovery(draft_dir: Path, live_tools: list[str] | None = None) -> dict:
-    """Enumerate available capabilities; write capabilities.json."""
+OPENVERSE_PROBE_URL = "https://api.openverse.org/v1/images/?q=landscape&page_size=1"
+OPENVERSE_PROBE_TIMEOUT = 3.0
+STOCK_KEYS = ("UNSPLASH_ACCESS_KEY", "PEXELS_API_KEY", "PIXABAY_API_KEY")
+GEMINI_KEYS = ("GOOGLE_AI_API_KEY", "GEMINI_API_KEY")
+NO_HERO_PATH_MESSAGE = (
+    "Hero image required but no generation path available. Configure Banana MCP, set GOOGLE_AI_API_KEY, "
+    "set UNSPLASH/PEXELS/PIXABAY key, or place a 1200x630 hero.png in the draft folder manually. "
+    "(No valid local hero, no live Banana MCP, no Gemini or stock key, and Openverse unreachable.)"
+)
+
+
+class _PinnedHTTPSConnection(http.client.HTTPSConnection):
+    """HTTPS connection to one already validated address; no global DNS patch."""
+
+    def __init__(self, host: str, address: str, port: int, timeout: float):
+        super().__init__(host, port, timeout=timeout, context=ssl.create_default_context())
+        self._pinned_address = address
+
+    def connect(self) -> None:
+        sock = socket.create_connection((self._pinned_address, self.port), self.timeout)
+        self.sock = self._context.wrap_socket(sock, server_hostname=self.host)
+
+
+def _openverse_probe_once(url: str, timeout: float) -> bool:
+    """One HEAD to Openverse: HTTPS only, public addresses only, no redirects."""
+    if urllib.parse.urlparse(url).scheme != "https":
+        return False
+    ok, _reason, host, port, infos = _resolve_public_http_url(url)
+    if not ok or host is None or port is None or not infos:
+        return False
+    parsed = urllib.parse.urlparse(url)
+    target = parsed.path + (f"?{parsed.query}" if parsed.query else "")
+    conn = _PinnedHTTPSConnection(host, infos[0][4][0], port, timeout)
+    try:
+        conn.request("HEAD", target or "/", headers={"User-Agent": USER_AGENT})
+        # http.client never follows redirects; only a direct 2xx counts.
+        return 200 <= conn.getresponse().status < 300
+    finally:
+        conn.close()
+
+
+def _openverse_reachable(url: str = OPENVERSE_PROBE_URL, timeout: float = OPENVERSE_PROBE_TIMEOUT) -> bool:
+    """Return whether the Openverse API answers within ``timeout`` seconds in total.
+
+    DNS, connect, TLS and the response all run in a daemon thread that is
+    abandoned at the deadline. Tests monkeypatch this function.
+    """
+    outcome: list[bool] = []
+
+    def probe() -> None:
+        try:
+            outcome.append(_openverse_probe_once(url, timeout))
+        except Exception:
+            outcome.append(False)
+
+    worker = threading.Thread(target=probe, name="openverse-probe", daemon=True)
+    worker.start()
+    worker.join(timeout)
+    return bool(outcome) and outcome[0]
+
+
+# The renderer and generate_hero.py pick the first of these that exists.
+HERO_PREFERENCE = ("hero.png", "hero.jpg", "hero.jpeg", "hero.webp")
+
+
+def _valid_local_hero(draft_dir: Path) -> str | None:
+    """Name of the hero the renderer would use, if it passes the Gate 2 image check.
+
+    Only exact lowercase names count, in renderer order (png, jpg, jpeg,
+    webp). The first regular, non-symlink match is the one the article
+    embeds, so it alone decides: it must decode and be at least
+    HERO_MIN_WIDTH x HERO_MIN_HEIGHT, as Gate 2 requires.
+    """
+    try:
+        names = set(os.listdir(draft_dir))
+    except OSError:
+        return None
+    for name in HERO_PREFERENCE:
+        hero = draft_dir / name
+        if name not in names or hero.is_symlink() or not hero.is_file():
+            continue
+        data = _safe_read_bytes(hero)
+        return name if data is not None and not _hero_check(hero, data)[0] else None
+    return None
+
+
+def gate_1_capability_discovery(
+    draft_dir: Path,
+    live_tools: list[str] | None = None,
+    project_dir: Path | None = None,
+) -> dict:
+    """Enumerate available capabilities; write capabilities.json.
+
+    ``project_dir`` is the user's project (``--project-root``, otherwise the
+    current directory), where BRAND.md, VOICE.md and DISCOURSE.md live. Agents
+    and helper scripts are looked up in the install root.
+    """
     root = _project_root()
+    user_project = project_dir if project_dir is not None else Path.cwd()
     live_tools = live_tools or []
     env_keys = {
         "GOOGLE_AI_API_KEY": bool(os.environ.get("GOOGLE_AI_API_KEY")),
+        "GEMINI_API_KEY": bool(os.environ.get("GEMINI_API_KEY")),
         "UNSPLASH_ACCESS_KEY": bool(os.environ.get("UNSPLASH_ACCESS_KEY")),
         "PEXELS_API_KEY": bool(os.environ.get("PEXELS_API_KEY")),
         "PIXABAY_API_KEY": bool(os.environ.get("PIXABAY_API_KEY")),
@@ -642,37 +780,49 @@ def gate_1_capability_discovery(draft_dir: Path, live_tools: list[str] | None = 
         "markdown": _has_module("markdown"),
     }
     project_files = {
-        "BRAND.md": (root / "BRAND.md").is_file(),
-        "VOICE.md": (root / "VOICE.md").is_file(),
-        "DISCOURSE.md": (root / "DISCOURSE.md").is_file(),
+        "BRAND.md": (user_project / "BRAND.md").is_file(),
+        "VOICE.md": (user_project / "VOICE.md").is_file(),
+        "DISCOURSE.md": (user_project / "DISCOURSE.md").is_file(),
     }
     agents = {a: (root / "agents" / f"{a}.md").is_file() for a in REQUIRED_AGENTS + OPTIONAL_AGENTS}
     scripts = {s: (root / s).is_file() for s in REQUIRED_SCRIPTS}
 
-    configured_image_paths = (
-        any("nanobanana" in tool.lower() or "banana" in tool.lower() for tool in live_tools)
-        or env_keys["GOOGLE_AI_API_KEY"]
-        or env_keys["UNSPLASH_ACCESS_KEY"]
-        or env_keys["PEXELS_API_KEY"]
-        or env_keys["PIXABAY_API_KEY"]
-    )
-    # Openverse is the no-key fallback at the bottom of the ladder. We do NOT
-    # probe its reachability here (network HEAD at gate-1 time is too slow
-    # and flaky); we report it as best-effort and let generate_hero.py
-    # surface a runtime failure if Openverse is unreachable when invoked.
-    openverse_assumed_available = True            # best-effort fallback
-    image_gen_available = configured_image_paths or openverse_assumed_available
+    local_hero = _valid_local_hero(draft_dir)
+    banana_live = any("banana" in tool.lower() for tool in live_tools)
+    stock_key = any(env_keys[k] for k in STOCK_KEYS)
+    gemini_key = any(env_keys[k] for k in GEMINI_KEYS)
+    # Free paths: a valid local hero, a stock key, a reachable Openverse.
+    # Paid paths (Banana MCP, Gemini key) need the user's consent, so they
+    # never stand in for the free probe: Openverse is probed (bounded,
+    # offline-safe) whenever no other free path exists.
+    openverse_reachable: bool | None = None
+    if not (local_hero or stock_key):
+        openverse_reachable = _openverse_reachable()
+    free_path = bool(local_hero or stock_key or openverse_reachable)
+    paid_path = bool(banana_live or gemini_key)
+    paid_only = paid_path and not free_path
+    image_gen_available = free_path or paid_path
 
     capabilities = {
         "live_tools": live_tools,
         "live_tools_source": "orchestrator" if live_tools else "not-provided",
         "env_keys_present": env_keys,
         "python_deps": py_deps,
+        "project_root": str(user_project),
         "project_root_files": project_files,
         "agents": agents,
         "scripts": scripts,
         "image_gen_path_available": image_gen_available,
-        "openverse_assumed_available": openverse_assumed_available,
+        "hero_paths": {
+            "local_hero": local_hero,
+            "banana_mcp": banana_live,
+            "gemini_api": {"available": gemini_key, "paid": True, "requires_consent": True},
+            "stock_api": stock_key,
+            # None: not probed because another free path is available.
+            "openverse_reachable": openverse_reachable,
+            "free_path": free_path,
+            "paid_only": paid_only,
+        },
     }
     try:
         _atomic_write_json(draft_dir / "capabilities.json", capabilities, indent=2)
@@ -686,7 +836,14 @@ def gate_1_capability_discovery(draft_dir: Path, live_tools: list[str] | None = 
     if not live_tools:
         warnings.append("live tool availability not provided; MCP image tools cannot be verified from declarations")
     if not image_gen_available:
-        violations.append("no image-gen path available: no live Banana MCP, API key, stock key, or Openverse fallback")
+        violations.append(NO_HERO_PATH_MESSAGE)
+    elif paid_only:
+        paid = " and ".join(name for name, present in (("Banana MCP", banana_live), ("Gemini API key", gemini_key)) if present)
+        warnings.append(
+            f"paid_only: the only hero path is paid ({paid}); the user must approve the cost first "
+            "(blog-image consent gate, then generate_hero.py --allow-paid), or add a free path: a 1200x630 "
+            "hero.png in the draft, a stock key, or a reachable Openverse"
+        )
     if not py_deps["patchright"] and not py_deps["playwright"]:
         warnings.append("neither patchright nor playwright installed; strict Gate 3 will block delivery")
     if not py_deps["weasyprint"] and not py_deps["patchright"] and not py_deps["playwright"]:
@@ -2893,11 +3050,10 @@ REVIEW_CATEGORY_MAX = {
 def _category_score_violations(text: str, overall: int) -> list[str]:
     """Check reviewer category scores against the rubric and the overall score.
 
-    Reads `Category: N/MAX` and `| Category | N | MAX |` forms. Absent
-    categories are allowed (older reviews carry only the overall line), but
-    every present score must fit its rubric maximum and the overall must lie
-    between the sum of the stated scores and that sum plus the maxima of the
-    categories not stated. With all five present this means overall == sum.
+    Reads `Category: N/MAX` and `| Category | N | MAX |` forms. All five
+    categories are required (the delivery contract and quality-scoring.md),
+    each score must fit its rubric maximum, and the overall must equal the sum
+    of the five category scores.
     """
     violations: list[str] = []
     found: dict[str, float] = {}
@@ -2910,6 +3066,7 @@ def _category_score_violations(text: str, overall: int) -> list[str]:
         )
         values = {(float(m.group(1)), float(m.group(2)) if m.group(2) else None) for m in pattern.finditer(text)}
         if not values:
+            violations.append(f"review.md is missing the {name} score")
             continue
         if len({value for value, _stated in values}) > 1:
             violations.append(f"review.md contains conflicting {name} scores")
@@ -2922,13 +3079,12 @@ def _category_score_violations(text: str, overall: int) -> list[str]:
             violations.append(f"review {name} score {value:g}/{maximum} exceeds its maximum")
         else:
             found[name] = value
-    if found and not violations:
-        floor = sum(found.values())
-        ceiling = floor + sum(m for n, m in REVIEW_CATEGORY_MAX.items() if n not in found)
-        if not floor - 1e-9 <= overall <= ceiling + 1e-9:
+    if not violations:
+        total = sum(found.values())
+        if abs(overall - total) > 1e-9:
             violations.append(
                 f"review overall score {overall}/100 is inconsistent with its category scores "
-                f"(stated categories sum to {floor:g}; overall must be between {floor:g} and {ceiling:g})"
+                f"(the five categories sum to {total:g}; the overall must equal that sum)"
             )
     return violations
 
@@ -3114,7 +3270,13 @@ def main() -> int:
     parser.add_argument("--draft", required=True, help="Draft folder containing the .md/.html/.pdf/hero artifacts")
     parser.add_argument(
         "--project-root",
-        help="Anchor execution inside this project directory (Unix only); the report then records the draft path as given",
+        help=(
+            "Anchor execution inside this project directory (Unix only) and look for BRAND.md, VOICE.md "
+            "and DISCOURSE.md there (default: the current directory). Symlinks at or above the project "
+            "root are resolved; a symlink or '..' between the project root and the draft is refused. "
+            "The report then records the draft as an absolute path (joined to the current directory, "
+            "symlinks not resolved)"
+        ),
     )
     parser.add_argument("--gate", type=int, choices=[1, 2, 3, 4, 5], help="Run only this gate (default: all)")
     parser.add_argument("--slug", help="Require all source/rendered artifacts to match this stem")
@@ -3123,11 +3285,32 @@ def main() -> int:
     parser.add_argument("--json", action="store_true", help="Emit report JSON to stdout")
     parser.add_argument("--tools-json", help="JSON list/object of live tool names supplied by the orchestrator")
     parser.add_argument("--diagnostics-all", action="store_true", help="Run later gates after a failure for diagnostics")
-    parser.add_argument("--repair-attempt", action="store_true", help="Increment the repair iteration counter for orchestrator repair loops")
+    parser.add_argument(
+        "--repair-attempt",
+        action="store_true",
+        help=(
+            "Apply the repair cap to this run even with --gate. Full gate runs (no --gate) always do: "
+            f"each failed run (exit 1 under --strict) counts, passing runs never count, and after "
+            f"{MAX_ITERATIONS} failed runs the next one exits {EXIT_ITERATION_CAP}"
+        ),
+    )
+    parser.add_argument(
+        "--manual-check",
+        action="store_true",
+        help=(
+            "Run the gates and write the report without reading or changing the repair counter, so no "
+            "cap applies. For status checks and re-checks of delivered posts (Blog Studio uses it), "
+            "never inside a repair loop"
+        ),
+    )
     parser.add_argument(
         "--reset-iterations",
         action="store_true",
-        help="Reset the per-draft iteration counter to 0 (the next --repair-attempt counts as the first).",
+        help=(
+            "Reset the per-draft failed-run counter to 0 and exit without running gates. Use it only when "
+            "starting a new write or rewrite in a draft folder that was used before, never to continue "
+            "a repair loop past the cap"
+        ),
     )
     parser.add_argument(
         "--init-review-nonce",
@@ -3145,6 +3328,8 @@ def main() -> int:
         if _anchored_draft is None:
             print("ERROR: --project-root needs scripts/blog_studio_status.py next to this script", file=sys.stderr)
             return 1
+        # Resolved before anchoring changes the working directory.
+        args.user_project_dir = Path(args.project_root).resolve()
         with contextlib.ExitStack() as stack:
             try:
                 draft, identity = stack.enter_context(_anchored_draft(args.draft, args.project_root))
@@ -3153,6 +3338,7 @@ def main() -> int:
                 return 1
             return _run_preflight(args, draft, identity)
 
+    args.user_project_dir = Path.cwd()
     draft = Path(args.draft).resolve()
     if not draft.is_dir():
         print(f"ERROR: {draft} is not a directory", file=sys.stderr)
@@ -3160,8 +3346,26 @@ def main() -> int:
     return _run_preflight(args, draft, str(draft))
 
 
+def _bypass_warning(results: list[dict]) -> str:
+    """The delivery contract's --no-strict warning, naming the failed gates."""
+    failed = ", ".join(f"Gate {r['gate']}" for r in results if not r["passed"])
+    return (
+        f"WARNING: Delivery contract bypassed. Failed gates: [{failed}].\n"
+        "The draft is being presented anyway per --no-strict. Do not publish without manual review."
+    )
+
+
 def _run_preflight(args: argparse.Namespace, draft: Path, draft_identity: str) -> int:
     """Run the requested gates. ``draft_identity`` is the path recorded in the report."""
+    if args.reset_iterations:
+        try:
+            _iteration_check(draft, reset=True)
+        except (OSError, ValueError) as e:
+            print(f"ERROR: iteration counter reset refused: {e}", file=sys.stderr)
+            return 1
+        if not args.init_review_nonce:
+            print(f"iteration counter reset to 0 ({MAX_ITERATIONS} failed full gate runs allowed)", file=sys.stderr)
+            return 0
     if args.init_review_nonce:
         nonce = _init_review_nonce(draft)
         print(nonce)
@@ -3181,24 +3385,66 @@ def _run_preflight(args: argparse.Namespace, draft: Path, draft_identity: str) -
         print(f"ERROR: preflight-report.json write refused: {e}", file=sys.stderr)
         return 1
 
-    # Count only orchestrator repair attempts, not every preflight or single-gate run.
-    iteration_exit = _iteration_check(
-        draft,
-        reset=args.reset_iterations,
-        increment=args.repair_attempt,
-    )
-    if iteration_exit != 0:
-        # Keep the diagnostic the cap exists to hand over, but never as a
-        # current result: the report stays blocked and incomplete.
-        capped = _incomplete_report(
-            draft_identity, args.strict,
-            "iteration cap exceeded; the last complete run's gates are in previous_gates",
-        )
-        capped["iteration_cap_exceeded"] = True
-        capped["previous_gates"] = previous_gates
-        _atomic_write_json(report_path, capped, indent=2)
-        return iteration_exit
+    # The cap applies to full gate runs and to --gate runs with
+    # --repair-attempt, never to --manual-check. Only a failed counted run
+    # (exit 1 under --strict) increments the counter. The lock spans the cap
+    # check, the gates and the increment, so concurrent runs cannot overrun.
+    if args.manual_check or not (args.gate is None or args.repair_attempt):
+        return _run_gates(args, draft, draft_identity)
+    lock = contextlib.ExitStack()
+    try:
+        lock.enter_context(_iteration_lock(draft))
+        iteration_exit = _iteration_check(draft)
+    except (OSError, ValueError) as e:
+        lock.close()
+        return _counter_failure(args, draft_identity, previous_gates, report_path, e)
+    with lock:
+        if iteration_exit != 0:
+            # Keep the diagnostic the cap exists to hand over, but never as a
+            # current result: the report stays blocked and incomplete.
+            capped = _incomplete_report(
+                draft_identity, args.strict,
+                "iteration cap exceeded; the last complete run's gates are in previous_gates",
+            )
+            capped["iteration_cap_exceeded"] = True
+            capped["previous_gates"] = previous_gates
+            _atomic_write_json(report_path, capped, indent=2)
+            if args.json:
+                print(json.dumps(capped))
+            return iteration_exit
+        code = _run_gates(args, draft, draft_identity)
+        if code == 1:
+            try:
+                _write_iteration_count(draft, _iteration_state_path(draft), _read_iteration_count(draft) + 1)
+            except (OSError, ValueError) as e:
+                print(f"ERROR: repair counter could not be updated: {e}", file=sys.stderr)
+        return code
 
+
+def _counter_failure(
+    args: argparse.Namespace, draft_identity: str, previous_gates: list[Any], report_path: Path, exc: BaseException,
+) -> int:
+    """Fail closed, with a clear message, when the repair counter is unusable."""
+    reason = (
+        f"repair counter unavailable ({type(exc).__name__}: {exc}); check that the review state "
+        f"directory is writable or set {REVIEW_STATE_ENV}"
+    )
+    failed = _incomplete_report(draft_identity, args.strict, reason)
+    failed["iteration_counter_error"] = True
+    if previous_gates:
+        failed["previous_gates"] = previous_gates
+    try:
+        _atomic_write_json(report_path, failed, indent=2)
+    except (OSError, ValueError):
+        pass
+    if args.json:
+        print(json.dumps(failed))
+    print(f"ERROR: {reason}", file=sys.stderr)
+    return 1
+
+
+def _run_gates(args: argparse.Namespace, draft: Path, draft_identity: str) -> int:
+    """Run the selected gates, write the report and return the exit status."""
     live_tools = _parse_tool_names(args.tools_json or os.environ.get("CLAUDE_BLOG_TOOLS_JSON"))
     rendered_context: dict[str, Any] = {}
 
@@ -3214,8 +3460,9 @@ def _run_preflight(args: argparse.Namespace, draft: Path, draft_identity: str) -
             rendered_schema_validation=rendered_context.get("schema"),
         )
 
+    project_dir = getattr(args, "user_project_dir", None)
     gates = [
-        (1, lambda d: gate_1_capability_discovery(d, live_tools=live_tools)),
+        (1, lambda d: gate_1_capability_discovery(d, live_tools=live_tools, project_dir=project_dir)),
         (2, lambda d: gate_2_format_completeness(d, slug=args.slug)),
         (3, run_gate_3),
         (4, gate_4_content_review),
@@ -3279,8 +3526,8 @@ def _run_preflight(args: argparse.Namespace, draft: Path, draft_identity: str) -
                 print(f"       violation: {v}")
             for w in r.get("warnings", []):
                 print(f"       warning:   {w}")
-        if blocked and not args.strict:
-            print("WARNING: contract bypassed via --no-strict; do not publish without manual review.", file=sys.stderr)
+    if blocked and not args.strict:
+        print(_bypass_warning(results), file=sys.stderr)
 
     if blocked and args.strict:
         return 1
