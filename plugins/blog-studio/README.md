@@ -3,8 +3,10 @@
 Blog Studio is an optional companion to `claude-blog`. It adds a compact article
 status band, a live pipeline and five-gate review panel, a history of past blogs,
 and an explicit **Run checks** control.
-Version 0.2.0. It ships in the claude-blog repository as a second plugin of the
-same marketplace, and it is not part of the `claude-blog` plugin itself.
+Version 0.3.0. It lives on the `blog-studio` branch of the claude-blog
+repository, and the claude-blog marketplace installs it from there, pinned to a
+commit. It is not part of the `claude-blog` plugin itself, and it needs the
+claude-blog engine 2.3.2 or later, because Run checks passes `--manual-check`.
 
 ## Install
 
