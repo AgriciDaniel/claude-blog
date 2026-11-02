@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.3.2] - 2026-10-30
+## [2.3.2] - 2026-11-03
 
 ### Security
 
@@ -40,7 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `blog-multilingual` and `blog-cluster` run their sub-skills one at a time, because an agent cannot start another agent.
 - Argument hints match `docs/COMMANDS.md` (`calendar`, `analyze`, `notebooklm`, `factcheck`, `flow`), and `/blog strategy` treats 80 as a planning goal, as `quality-scoring.md` does.
 - Add five Search Central documentation updates (2026-10-08 to 2026-10-26) to the Google ledger, which clears the failing weekly currentness workflow.
-- Lift the `Pillow<13` cap and refresh pillow 13.0.0, filelock, brotli, brotlicffi, setuptools and nltk in `uv.lock` and both pip locks. SECURITY.md describes the Dependabot setup.
+- Lift the `Pillow<13` cap and refresh pillow 13.0.0, filelock, brotli, brotlicffi, setuptools, nltk, pyasn1 0.6.5 and certifi 2026.10.23 in `uv.lock` and the pip locks. SECURITY.md describes the Dependabot setup.
 - `brain/` is MIT licensed like the rest of the repository, and its third-party notices list Google Search Central prose as CC BY 4.0. `brain/PUBLISHING_NOTICE.md` describes `.raw` and the ledgers as tracked evidence kept off the website projection.
 - Turn off Dependabot version-update PRs (`open-pull-requests-limit: 0`). Hash-locked pip bumps need a maintainer relock, so the PRs only added notifications. Vulnerability alerts stay on.
 - Refresh the Google and audio dependency floors and their hash locks: `google-genai` 2.29.0, `google-auth` 2.61.0, `google-auth-oauthlib` >=1.5.0, `google-auth-httplib2` >=0.4.4. The locks stay on releases at least a week old.
