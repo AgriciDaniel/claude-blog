@@ -17,7 +17,7 @@ import json
 import sys
 from datetime import date, datetime, timedelta
 from typing import Optional
-
+from scripts.retry_utils import retry_with_backoff
 try:
     from google_auth import (
         describe_google_api_error, execute_with_retries, get_oauth_credentials,
@@ -68,7 +68,7 @@ def _build_gsc_service():
         print(f"Error building GSC service: {safe_exception_text(e)}", file=sys.stderr)
         return None
 
-
+@retry_with_backoff(retries=4, initial_delay=1.5)
 def query_search_analytics(
     site_url: str,
     start_date: Optional[str] = None,
