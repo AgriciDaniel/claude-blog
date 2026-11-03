@@ -487,6 +487,15 @@ def test_secret_scan_skips_local_virtualenvs(monkeypatch):
 def test_git_revision_field_is_adjudicated_but_a_bare_hex_secret_is_not():
     hex_finding = {"type": "Hex High Entropy String"}
     revision = '  "revision": "' + "ab12" * 10 + '",'
-    assert SECRETS.is_adjudicated("plugins/x/dev/types-source.json", hex_finding, revision)
+    assert SECRETS.is_adjudicated("data/legacy-install-ownership.json", hex_finding, revision)
     bare = '  "token": "' + "ab12" * 10 + '",'
-    assert not SECRETS.is_adjudicated("plugins/x/dev/types-source.json", hex_finding, bare)
+    assert not SECRETS.is_adjudicated("data/legacy-install-ownership.json", hex_finding, bare)
+
+
+def test_marketplace_commit_pin_is_adjudicated_only_in_the_marketplace():
+    hex_finding = {"type": "Hex High Entropy String"}
+    pin = '        "sha": "' + "c1cc72f8" * 5 + '"'
+    assert SECRETS.is_adjudicated(".claude-plugin/marketplace.json", hex_finding, pin)
+    assert not SECRETS.is_adjudicated("docs/INSTALLATION.md", hex_finding, pin)
+    assert not SECRETS.is_adjudicated(".claude-plugin/marketplace.json", hex_finding, '        "token": "' + "c1cc72f8" * 5 + '"')
+    assert not SECRETS.is_adjudicated(".claude-plugin/marketplace.json", hex_finding, pin + ', "token": "' + "ab12" * 10 + '"')

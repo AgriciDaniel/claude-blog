@@ -22,6 +22,19 @@ PUBLIC_SLUG = f"{PUBLIC_PLUGIN_IDENTIFIER}@agricidaniel-blog"
 PUBLIC_OWNER = "AgriciDaniel"
 PUBLIC_OWNER_URL = "https://github.com/AgriciDaniel"
 PUBLIC_MARKETPLACE = "agricidaniel-blog"
+# Blog Studio is served from the blog-studio branch of this repository, pinned
+# to a commit, because Claude Desktop refuses a plugin folder that holds a
+# nested .claude-plugin/plugin.json. The check below reads the entry only; it
+# never contacts the network.
+STUDIO_PLUGIN = "blog-studio"
+STUDIO_SOURCE = {
+    "source": "git-subdir",
+    "url": "AgriciDaniel/claude-blog",
+    "path": "plugins/blog-studio",
+    "ref": "blog-studio",
+}
+STUDIO_HOMEPAGE = f"{PUBLIC_REPOSITORY}/tree/blog-studio/plugins/blog-studio"
+COMMIT_SHA_RE = re.compile(r"[0-9a-f]{40}")
 PUBLIC_RAW_INSTALL_SH = (
     "https://raw.githubusercontent.com/AgriciDaniel/claude-blog/main/install.sh"
 )
@@ -116,17 +129,11 @@ def validate(root: Path) -> dict:
         "agents": ("*.md",),
         "scripts": ("*.py", "*.ps1"),
         "data": ("*.json",),
-        "plugins": ("*.md", "*.ts", "*.mjs", "*.json"),
         ".github/workflows": ("*.yml", "*.yaml"),
     }.items():
         for pattern in patterns:
             for path in (root / directory).rglob(pattern):
-                if path.is_symlink() or any(
-                    part in {".venv", "__pycache__", "node_modules", ".reference-types"}
-                    for part in path.parts
-                ):
-                    continue
-                if ".claude-plugin/types/" in path.as_posix():
+                if path.is_symlink() or any(part in {".venv", "__pycache__"} for part in path.parts):
                     continue
                 relative = path.relative_to(root).as_posix()
                 contents.setdefault(relative, path.read_text(encoding="utf-8"))
@@ -349,13 +356,11 @@ def validate(root: Path) -> dict:
             )
 
     marketplace_text = contents.get(".claude-plugin/marketplace.json", "")
-    marketplace: dict = {}
     try:
         marketplace = json.loads(marketplace_text)
         if not isinstance(marketplace, dict):
             raise ValueError("marketplace must be an object")
     except ValueError:  # JSONDecodeError is a ValueError
-        marketplace = {}
         errors.append(
             {"kind": "invalid_json", "file": ".claude-plugin/marketplace.json"}
         )
@@ -395,33 +400,52 @@ def validate(root: Path) -> dict:
                     "file": ".claude-plugin/marketplace.json",
                 }
             )
+        entries = [entry for entry in plugins if isinstance(entry, dict)] if isinstance(plugins, list) else []
+        # Only claude-blog may live inside the plugin root; any other local
+        # source would put a second plugin.json inside the claude-blog folder.
+        for entry in entries:
+            if entry.get("name") != PUBLIC_PLUGIN_IDENTIFIER and not isinstance(entry.get("source"), dict):
+                errors.append(
+                    {
+                        "kind": "local_companion_source",
+                        "file": ".claude-plugin/marketplace.json",
+                        "plugin": str(entry.get("name")),
+                    }
+                )
+        studio_entries = [entry for entry in entries if entry.get("name") == STUDIO_PLUGIN]
+        if studio_entries:
+            studio = studio_entries[0]
+            source = studio.get("source")
+            if (
+                len(studio_entries) != 1
+                or not isinstance(source, dict)
+                or set(source) != {*STUDIO_SOURCE, "sha"}
+                or any(source.get(key) != value for key, value in STUDIO_SOURCE.items())
+                or not isinstance(source.get("sha"), str)
+                or not COMMIT_SHA_RE.fullmatch(source["sha"])
+                or not isinstance(studio.get("version"), str)
+                or studio.get("homepage") != STUDIO_HOMEPAGE
+            ):
+                errors.append(
+                    {
+                        "kind": "invalid_studio_distribution",
+                        "file": ".claude-plugin/marketplace.json",
+                        "plugin": STUDIO_PLUGIN,
+                    }
+                )
 
-    # The optional Blog Studio companion versions independently of claude-blog:
-    # the manifest, its marketplace entry and the repository must agree.
-    studio_manifest = root / "plugins/blog-studio/.claude-plugin/plugin.json"
-    entries = marketplace.get("plugins")
-    studio_entries = [
-        entry for entry in entries
-        if isinstance(entry, dict) and entry.get("name") == "blog-studio"
-    ] if isinstance(entries, list) else []
-    if studio_manifest.exists() or studio_entries:
-        try:
-            studio = json.loads(studio_manifest.read_text(encoding="utf-8"))
-        except (OSError, ValueError):
-            studio = None
+    root_manifest = root / ".claude-plugin" / "plugin.json"
+    for manifest in sorted(root.rglob("plugin.json")):
+        relative_parts = set(manifest.relative_to(root).parts)
         if (
-            not isinstance(studio, dict)
-            or studio.get("name") != "blog-studio"
-            or not isinstance(studio.get("version"), str)
-            or studio.get("repository") != PUBLIC_REPOSITORY
-            or len(studio_entries) != 1
-            or studio_entries[0].get("source") != "./plugins/blog-studio"
-            or studio_entries[0].get("version") != studio.get("version")
+            manifest.parent.name == ".claude-plugin"
+            and manifest != root_manifest
+            and not {".git", ".venv", "node_modules"} & relative_parts
         ):
             errors.append(
                 {
-                    "kind": "invalid_studio_distribution",
-                    "file": "plugins/blog-studio/.claude-plugin/plugin.json",
+                    "kind": "nested_plugin_manifest",
+                    "file": manifest.relative_to(root).as_posix(),
                 }
             )
 

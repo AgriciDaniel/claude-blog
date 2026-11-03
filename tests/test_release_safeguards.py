@@ -705,6 +705,67 @@ def test_public_release_validator_rejects_desynchronized_plugin_identity(
     assert any(error["kind"] == expected_kind for error in result["errors"])
 
 
+_STUDIO_ENTRY = {
+    "name": "blog-studio",
+    "source": {
+        "source": "git-subdir",
+        "url": "AgriciDaniel/claude-blog",
+        "path": "plugins/blog-studio",
+        "ref": "blog-studio",
+        "sha": "c1cc72f8" * 5,
+    },
+    "version": "0.3.0",
+    "homepage": "https://github.com/AgriciDaniel/claude-blog/tree/blog-studio/plugins/blog-studio",
+}
+
+
+def _with_studio(root: Path, entry: dict) -> None:
+    path = root / ".claude-plugin" / "marketplace.json"
+    data = json.loads(path.read_text(encoding="utf-8"))
+    data["plugins"].append(entry)
+    path.write_text(json.dumps(data), encoding="utf-8")
+
+
+def test_public_release_validator_accepts_the_pinned_studio_entry(tmp_path: Path) -> None:
+    module = _load_module("release_studio_validator", ROOT / "scripts/validate_public_release.py")
+    _public_fixture(tmp_path)
+    _with_studio(tmp_path, _STUDIO_ENTRY)
+    assert module.validate(tmp_path)["status"] == "pass"
+
+
+@pytest.mark.parametrize(
+    ("change", "expected_kind"),
+    [
+        ({"source": "./plugins/blog-studio"}, "local_companion_source"),
+        ({"source": {**_STUDIO_ENTRY["source"], "sha": "__STUDIO_SHA__"}}, "invalid_studio_distribution"),
+        ({"source": {**_STUDIO_ENTRY["source"], "sha": "C1CC72F8" * 5}}, "invalid_studio_distribution"),
+        ({"source": {**_STUDIO_ENTRY["source"], "ref": "main"}}, "invalid_studio_distribution"),
+        ({"source": {**_STUDIO_ENTRY["source"], "url": "Someone/claude-blog"}}, "invalid_studio_distribution"),
+        ({"homepage": "https://example.com"}, "invalid_studio_distribution"),
+    ],
+)
+def test_public_release_validator_rejects_a_bad_studio_entry(
+    tmp_path: Path, change: dict, expected_kind: str,
+) -> None:
+    module = _load_module("release_bad_studio_validator", ROOT / "scripts/validate_public_release.py")
+    _public_fixture(tmp_path)
+    _with_studio(tmp_path, {**_STUDIO_ENTRY, **change})
+    result = module.validate(tmp_path)
+    assert result["status"] == "fail"
+    assert any(error["kind"] == expected_kind for error in result["errors"])
+
+
+def test_public_release_validator_rejects_a_nested_plugin_manifest(tmp_path: Path) -> None:
+    module = _load_module("release_nested_validator", ROOT / "scripts/validate_public_release.py")
+    _public_fixture(tmp_path)
+    nested = tmp_path / "plugins" / "blog-studio" / ".claude-plugin"
+    nested.mkdir(parents=True)
+    (nested / "plugin.json").write_text('{"name": "blog-studio"}', encoding="utf-8")
+    result = module.validate(tmp_path)
+    assert result["status"] == "fail"
+    assert {"kind": "nested_plugin_manifest", "file": "plugins/blog-studio/.claude-plugin/plugin.json"} in result["errors"]
+
+
 @pytest.mark.parametrize(
     ("surface", "unsafe"),
     [

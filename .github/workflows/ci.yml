@@ -202,35 +202,6 @@ jobs:
         # or warning. See .github/scripts/validate_plugin_tolerate_reserved_name.py.
         run: python3 .github/scripts/validate_plugin_tolerate_reserved_name.py --root .
 
-  blog-studio:
-    # Offline checks for the optional plugins/blog-studio companion: validate
-    # the manifest and run its hook fixtures. The job creates no session, loads
-    # no mod and needs no sign-in or network beyond the dependency download.
-    # The real engine contract it relies on is covered by
-    # tests/test_blog_studio_integration.py in the test job. The reference
-    # type check (npm run typecheck:reference) is not run here yet: it reports
-    # 3 errors in hooks/view.ts against the 2.1.277 reference typings.
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1, SHA-pinned
-        with:
-          persist-credentials: false
-
-      - name: Set up Node.js 22
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1  # v7.1.0, SHA-pinned
-        with:
-          node-version: "22"
-
-      - name: Install the pinned Claude Code test kit
-        run: npm install --global --no-audit --no-fund @anthropic-ai/claude-code@2.1.294
-
-      - name: Validate the companion without loading it
-        run: claude plugin validate --strict --json plugins/blog-studio
-
-      - name: Run the offline hook and drawing fixtures
-        run: claude plugin test plugins/blog-studio
-
   lint-markdown:
     runs-on: ubuntu-latest
     steps:

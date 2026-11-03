@@ -288,6 +288,23 @@ Pixabay/Unsplash/Pexels. AI image generation is an optional enhancement.
 
 ---
 
+## Optional: Blog Studio
+
+Blog Studio adds a live status band, a pipeline and five-gate panel, a history
+of past posts and a Run checks control. It is a separate plugin in the same
+marketplace, served from the `blog-studio` branch of this repository
+(https://github.com/AgriciDaniel/claude-blog/tree/blog-studio/plugins/blog-studio) and pinned to a commit:
+
+```
+/plugin marketplace add AgriciDaniel/claude-blog
+/plugin install blog-studio@agricidaniel-blog
+```
+
+Studio 0.3.0 needs claude-blog 2.3.2 or later, because its Run checks passes
+`blog_preflight.py --manual-check`.
+
+---
+
 ## Verification
 
 After installation, verify everything is in place:
