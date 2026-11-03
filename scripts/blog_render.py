@@ -501,12 +501,18 @@ def _build_json_ld(fm: dict, word_count: int, og_image_url: str) -> str:
     }
     if fm.get("canonical"):
         data["mainEntityOfPage"] = {"@type": "WebPage", "@id": fm["canonical"]}
-    # HTML-safe JSON encoding: escape "</" as "<\/" so an attacker who controls
-    # a frontmatter value (e.g. title) cannot inject a literal "</script>" that
-    # would break out of the surrounding <script type="application/ld+json">
-    # block and execute arbitrary JS. "\/" is a valid JSON escape for "/",
-    # so the embedded JSON remains semantically identical for any parser.
-    return json.dumps(data, ensure_ascii=False).replace("</", "<\\/")
+    # HTML-safe JSON encoding: escape "<", ">" and "&" as \u003c, \u003e and
+    # \u0026 so an attacker who controls a frontmatter value (e.g. title)
+    # cannot inject "</script>" or "<!--<script>" and break out of (or
+    # confuse the HTML parser inside) the surrounding
+    # <script type="application/ld+json"> block. These are valid JSON string
+    # escapes, so the embedded JSON stays semantically identical for any parser.
+    return (
+        json.dumps(data, ensure_ascii=False)
+        .replace("<", "\\u003c")
+        .replace(">", "\\u003e")
+        .replace("&", "\\u0026")
+    )
 
 
 def _read_md_bytes_safely(path: Path) -> bytes:
@@ -515,7 +521,10 @@ def _read_md_bytes_safely(path: Path) -> bytes:
     root files so a caller cannot redirect the renderer at an attacker-
     chosen target via symlink."""
     try:
-        fd = os.open(str(path), os.O_RDONLY | os.O_NOFOLLOW)
+        # O_NOFOLLOW is missing on Windows; refuse symlinks with an lstat check there.
+        if path.is_symlink():
+            raise ValueError(f"refusing to follow symlink: {path}")
+        fd = os.open(str(path), os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0))
     except OSError as e:
         if e.errno in (errno.ELOOP, errno.EMLINK):
             raise ValueError(f"refusing to follow symlink: {path}")
@@ -694,6 +703,14 @@ def _validate_frontmatter(fm: dict, body: str) -> None:
             f"missing or empty required frontmatter key(s): {missing}. "
             f"Required: {list(REQUIRED_FRONTMATTER_KEYS)}."
         )
+    canonical = str(fm.get("canonical", "")).strip()
+    if canonical:
+        parsed = urllib.parse.urlsplit(canonical)
+        if parsed.scheme not in ("http", "https") or not parsed.hostname:
+            raise ValueError(
+                f"frontmatter `canonical` must be a full http(s) URL with a host, got {canonical!r}. "
+                "Example: https://example.com/blog/my-post/"
+            )
     _resolve_modified(fm)
     if not body.strip():
         raise ValueError(

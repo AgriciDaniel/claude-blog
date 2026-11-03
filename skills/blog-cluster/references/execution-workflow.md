@@ -137,9 +137,12 @@ completes for a post:
    edit it. Append the proposed edit (file, anchor, sentence, target) to
    `cluster-<slug>/cluster-link-patches.md` for the user.
 4. Only with the user's explicit approval, apply a patch and rerun the
-   canonical sequence for that post: re-render, re-init the review nonce,
-   re-review, re-run `blog_preflight.py --strict` (max 3 iterations), using
-   the trusted absolute scripts path.
+   canonical sequence for that post. Only if its last full gate run passed (a
+   delivered post getting a new edit pass), run
+   `blog_preflight.py --reset-iterations` on its draft folder first; never reset
+   a post whose last run failed. Then re-render, re-init the review nonce,
+   re-review, re-run `blog_preflight.py --strict` (at most 3 failed gate runs),
+   using the trusted absolute scripts path.
 5. If no planned marker exists, do not edit automatically. Emit a proposed
    diff for user approval instead.
 
@@ -200,7 +203,8 @@ skipped), produce `cluster-<slug>/cluster-scorecard.md`:
 1. **Summary**: seed keyword, total posts attempted, total written, total
    failed, total words, total internal links, approximate execution time.
 2. **Per-post quality scores**: call `/blog analyze` on each successful post
-   in parallel via Task. Record the 5-category score and the cluster average.
+   one at a time, invoked by the orchestrator itself rather than inside an
+   agent. Record the 5-category score and the cluster average.
 3. **Cluster cohesion score** (0 to 100, formula below).
 4. **Link audit**: per-post outgoing and incoming counts; orphan-spoke flags
    (less than 2 incoming links); list of unresolved `[INTERNAL-LINK]` markers.

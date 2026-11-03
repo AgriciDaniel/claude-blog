@@ -18,24 +18,14 @@ SKILL.md are not automatically expanded in reference files or agent prompts.
 ## Execution Flow
 
 For `/blog write`, prepare, then run the canonical delivery sequence from
-`<blog_reference_root>/blog-delivery-contract.md` (that file is the single source
-of truth; the numbers below match it):
+`<blog_reference_root>/blog-delivery-contract.md`. That file is the single
+source of truth for the steps, their order and the gate behavior (it starts with
+`blog_preflight.py --gate 1`); do not restate them here.
 
 Preparation: parse topic, platform and template; research with
-`blog-researcher`; build the outline from the template and research gaps.
-
-1. Draft with `blog-writer` into `D/S.md` (markers allowed).
-2. Resolve visuals in the orchestrator: hero via `generate_hero.py`, charts via
-   `blog-chart`, internal links and images resolved or removed; optional
-   `blog-seo` on the resolved draft. No marker may remain.
-3. Render with `blog_render.py`.
-4. Issue the review nonce with `blog_preflight.py --init-review-nonce`.
-5. Review with `blog-reviewer` (it returns text; the orchestrator saves it
-   verbatim as `D/review.md`).
-6. Run `blog_preflight.py --draft D --strict` (`--repair-attempt` in the loop).
-7. Loop at most 3 times; after any change to `S.md`, `S.html`, `S.pdf` or the
-   hero, re-render, re-init the nonce and re-review. Deliver only after all
-   gates pass.
+`blog-researcher`; build the outline from the template and research gaps. Then
+draft with `blog-writer`, and run the contract's visuals, render, nonce, review,
+gates and loop steps in the orchestrator. Deliver only after all gates pass.
 
 Agents cannot call skills or run helpers. Everything that needs `blog-chart`,
 `blog-image`, a helper script or a skill is done by the orchestrator, which then

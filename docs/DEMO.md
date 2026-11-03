@@ -1,4 +1,4 @@
-# claude-blog v2.3.1: Demo Runbook
+# claude-blog v2.3.2: Demo Runbook
 
 End-to-end demo flow that exercises every wired integration: YouTube
 embedding (blog-google), keyword research (DataForSEO MCP), AI image
@@ -135,7 +135,7 @@ here.
 Output: file path under `~/Documents/nanobanana_generated/`. Banana
 acts as Creative Director and constructs the 5-component prompt;
 the skill auto-loads `references/gemini-models.md` and
-`references/prompt-engineering.md` per its MANDATORY rule.
+`references/prompt-engineering-blog.md` per its MANDATORY rule.
 
 ### B2. "Inline SVG chart from data"
 

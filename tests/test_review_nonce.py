@@ -174,6 +174,12 @@ def _passing_review(nonce: str) -> str:
     return (
         "## Quality Review: Fixture\n"
         "### Overall Score: 92/100 - Exceptional\n"
+        "| Category | Score | Max |\n"
+        "| Content Quality | 28 | 30 |\n"
+        "| SEO Optimization | 23 | 25 |\n"
+        "| E-E-A-T Signals | 14 | 15 |\n"
+        "| Technical Elements | 14 | 15 |\n"
+        "| AI Citation Readiness | 13 | 15 |\n"
         "### Editorial Style Diagnostics\n"
         "These observations are advisory and do not infer authorship.\n"
         "zero P0 issues found\n"

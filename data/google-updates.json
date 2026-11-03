@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "last_verified": "2026-10-11",
+  "last_verified": "2026-10-29",
   "policy": "Only Google-supported facts in verified[] may inform guidance. Event timing never proves site impact. Product announcements never become ranking factors. Source conflicts remain explicit. Unverified entries are research leads and must never change scoring, gates, or recommendations.",
   "source_watch": [
     {
@@ -42,6 +42,78 @@
   ],
   "verified": [
     {
+      "id": "search-docs-ugc-spam-prevention-2026-10-26",
+      "event_date": "2026-10-26",
+      "title": "User-generated spam prevention guidance updated",
+      "source_url": "https://developers.google.com/search/docs/monitor-debug/prevent-abuse",
+      "category": "crawling-indexing",
+      "applicability": "sites-with-user-generated-content",
+      "affected_components": [
+        "blog-seo-check",
+        "blog-audit"
+      ],
+      "evidence_status": "confirmed",
+      "summary": "The guide now advises considering a noindex robots meta tag on posts from new users without reputation and allowing indexing once reputation is earned. It adds an Only index content meant for Search section for shareable pages, generated outputs and interactive tools (noindex via robots meta tag or X-Robots-Tag, or block crawling in robots.txt by default). It recommends nofollow or ugc rel values on links in untrusted content, verifying the property in Search Console for manual action alerts, and watching the Page Indexing and Search performance reports for unexpected spikes. For a blog this matters for comment sections and any user-submitted pages."
+    },
+    {
+      "id": "search-docs-url-structure-2026-10-23",
+      "event_date": "2026-10-23",
+      "title": "Crawlable URL structure guidance updated",
+      "source_url": "https://developers.google.com/search/docs/crawling-indexing/url-structure",
+      "category": "crawling-indexing",
+      "applicability": "all-sites",
+      "affected_components": [
+        "blog-write",
+        "blog-seo-check",
+        "blog-multilingual"
+      ],
+      "evidence_status": "confirmed",
+      "summary": "Google recommends hyphens instead of underscores to separate words in URLs and lists joining words together as not recommended. It prefers readable words over long ID numbers, words in the audience's language (transliterated where applicable), few parameters, no URL fragments that change page content, and percent-encoded non-ASCII characters. URLs are case sensitive, so /APPLE and /apple are distinct. The page gives no slug length limit."
+    },
+    {
+      "id": "search-docs-control-what-you-share-2026-10-21",
+      "event_date": "2026-10-21",
+      "title": "Control what you share with Google Search documentation updated",
+      "source_url": "https://developers.google.com/search/docs/crawling-indexing/control-what-you-share",
+      "category": "search-appearance",
+      "applicability": "all-sites",
+      "affected_components": [
+        "blog-geo",
+        "blog-seo-check"
+      ],
+      "evidence_status": "confirmed",
+      "summary": "The page now collects the existing controls in one place: noindex robots meta tag for all content types, robots.txt for images and video, and the robots meta tag, data-nosnippet and X-Robots-Tag for how content is presented. It also lists a site-wide Search generative AI control in Search Console for managing inclusion in generative AI features on Google Search, including AI Overviews and AI Mode. The page does not describe how that control works, so do not claim a mechanism."
+    },
+    {
+      "id": "indexing-api-quota-2026-10-16",
+      "event_date": "2026-10-16",
+      "title": "Indexing API quota page updated",
+      "source_url": "https://developers.google.com/search/apis/indexing-api/v3/quota-pricing",
+      "additional_source_urls": [
+        "https://developers.google.com/search/apis/indexing-api/v3/using-api"
+      ],
+      "category": "api-currentness",
+      "applicability": "job-posting-and-livestream-pages",
+      "affected_components": [
+        "blog-google"
+      ],
+      "evidence_status": "confirmed",
+      "summary": "Default quotas are 200 publish requests per day per project (URL_UPDATED and URL_DELETED, resetting at midnight Pacific Time), 180 metadata requests per minute and 380 requests per minute across all endpoints. Use is free. The usage page states the API can only be used for pages with JobPosting, or BroadcastEvent embedded in a VideoObject, and that spam policies apply to submitted content. Quota is counted per URL. Blog posts are not eligible."
+    },
+    {
+      "id": "ugc-fresh-data-program-2026-10-08",
+      "event_date": "2026-10-08",
+      "title": "UGC Fresh Data Program documented",
+      "source_url": "https://developers.google.com/search/docs/appearance/ugc-fresh-data-program",
+      "category": "search-appearance",
+      "applicability": "landscape-only",
+      "affected_components": [
+        "blog"
+      ],
+      "evidence_status": "confirmed",
+      "summary": "A new page describes an application-based pipeline for trending user-generated content, independent of the Indexing API and organic crawling. It requires platforms that primarily host UGC with stable per-item URLs, public creator profiles, OAuth 2.0 API authentication, validated SocialMediaPosting or DiscussionForumPosting JSON-LD, and active moderation. It does not guarantee appearance in Search, and gated content is ineligible. It is not relevant to ordinary blogs."
+    },
+    {
       "id": "search-docs-helpful-content-2026-10-05",
       "event_date": "2026-10-05",
       "title": "Creating helpful content page updated (page-level date)",
@@ -72,7 +144,7 @@
         "blog-rewrite"
       ],
       "evidence_status": "confirmed",
-      "summary": "Google updated its guidance for site owners using generative AI. Automation can help with research and structure, but generating many pages without added user value may violate the scaled content abuse policy. Review output for accuracy, quality, and relevance, and give readers useful context about how content was created when that context is reasonably expected."
+      "summary": "Google updated its guidance for site owners using generative AI. Automation can help with research and structure, but generating many pages without added user value may violate the scaled content abuse policy. Review output for accuracy, quality, and relevance, and give readers useful context about how content was created when that context is reasonably expected. The 2026-10-01 update also points to the Search Quality Raters guidelines on scaled content abuse (section 4.6.5) and low-effort main content (section 4.6.6) while stating that rater ratings do not directly influence ranking. The page does not require AI disclosure; it says to consider adding information on how content was created in a way that suits the audience."
     },
     {
       "id": "ranking-september-2026-spam",

@@ -8,12 +8,12 @@ description: >
   "evidence-led blogging", or "find optimize win", or asks for stage-specific
   blog prompts. Not for generic prompt writing.
 user-invocable: true
-argument-hint: "[stage] [url|topic]"
+argument-hint: "[find|optimize|win|prompts|sync] [topic-or-url]"
 license: MIT
 compatibility: Requires Claude Code and Python 3.11+ for the sync script
 metadata:
   author: AgriciDaniel
-  version: "2.3.1"
+  version: "2.3.2"
   category: blog
 ---
 

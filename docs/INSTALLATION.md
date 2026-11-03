@@ -160,12 +160,8 @@ If you prefer not to run the installer, copy files to these paths manually.
 ├── skills/
 │   ├── blog/
 │   │   ├── SKILL.md                          # Main orchestrator
-│   │   ├── references/
-│   │   │   ├── content-rules.md
-│   │   │   ├── geo-optimization.md
-│   │   │   ├── google-landscape-2026.md
-│   │   │   ├── quality-scoring.md
-│   │   │   └── visual-media.md
+│   │   ├── references/                   # 22 files; copy the whole directory
+│   │   │   └── *.md
 │   │   ├── templates/                        # 12 content type templates
 │   │   │   └── *.md
 │   │   └── scripts/
@@ -420,7 +416,7 @@ chmod +x uninstall.sh
 The uninstaller removes verified package-owned files from:
 
 - `~/.claude/skills/blog/` and `~/.claude/skills/blog-*/` (32 skill directories: 1 orchestrator + 31 sub-skills; 30 user-facing commands; `blog-chart` is internal-only)
-- `~/.claude/scripts/` (the root `scripts/*.py` helpers, 22 at the time of writing, including the shared `installer_ownership.py` engine)
+- `~/.claude/scripts/` (the root `scripts/*.py` helpers, 23 at the time of writing, including the shared `installer_ownership.py` engine)
 - `~/.claude/agents/blog-*.md` (all 5 agents: blog-researcher, blog-writer, blog-seo, blog-reviewer, blog-translator)
 
 Shared Google credentials under `~/.config/claude-seo/` are owned by the user

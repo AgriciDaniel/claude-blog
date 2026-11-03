@@ -326,11 +326,11 @@ Resolve `BLOG_SKILLS_DIR="${CLAUDE_BLOG_SKILLS_DIR:-${CLAUDE_SKILL_DIR}/..}"`
 and reject it unless it is absolute.
 
 1. Query GSC by page and query dimensions, then filter rows to the URL:
-   `python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" gsc_query --property <property> --dimensions query,page --json`
+   `python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" gsc_query --property '<property>' --dimensions query,page --json`
 2. Add to platform-specific analysis:
    - Current impressions, clicks, CTR, average position
    - Search queries driving traffic to this URL
-3. Check indexation: `python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" gsc_inspect <url> --json`
+3. Check indexation: `python3 "$BLOG_SKILLS_DIR/blog-google/scripts/run.py" gsc_inspect '<url>' --json`
 4. Report indexation status, canonical selection, mobile usability.
 5. If skipped, report `SKIPPED: credentials unavailable` or
    `SKIPPED: unpublished URL`.

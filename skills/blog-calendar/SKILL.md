@@ -9,7 +9,7 @@ description: >
   (blog-cluster), or detecting declining pages from Search Console exports
   (blog-decay). Publication frequency is not a ranking signal.
 user-invocable: true
-argument-hint: "[<niche>]"
+argument-hint: "[monthly|quarterly] [<niche>]"
 license: MIT
 ---
 
@@ -52,16 +52,17 @@ Gather context:
 
 ### Step 2: Topic Cluster Design
 
-Design 3-5 topic clusters (pillar + supporting content):
+Design 3-5 topic clusters (pillar + supporting content). Any length shown is an
+optional planning estimate, not a target or a quota:
 
 ```
 Cluster: [Pillar Topic]
-├── Pillar Page: [Comprehensive guide - 3,000+ words]
-├── Supporting: [Subtopic 1 - 2,000 words]
-├── Supporting: [Subtopic 2 - 2,000 words]
-├── Supporting: [Subtopic 3 - 1,500 words]
-├── Comparison: [X vs Y - 1,500 words]
-└── FAQ: [Common questions - 1,500 words]
+├── Pillar Page: [Comprehensive guide]
+├── Supporting: [Subtopic 1]
+├── Supporting: [Subtopic 2]
+├── Supporting: [Subtopic 3]
+├── Comparison: [X vs Y]
+└── FAQ: [Common questions]
 ```
 
 Each cluster should:

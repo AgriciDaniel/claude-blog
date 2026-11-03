@@ -30,19 +30,19 @@ Ask questions to NotebookLM notebooks with automated browser interaction.
 
 ```bash
 # Basic query (uses active notebook)
-python3 "$NOTEBOOKLM_RUN" ask_question.py --question "Your question"
+python3 "$NOTEBOOKLM_RUN" ask_question.py --question 'Your question'
 
 # Query specific notebook by ID
-python3 "$NOTEBOOKLM_RUN" ask_question.py --question "..." --notebook-id notebook-id
+python3 "$NOTEBOOKLM_RUN" ask_question.py --question '...' --notebook-id notebook-id
 
 # Query by URL directly
-python3 "$NOTEBOOKLM_RUN" ask_question.py --question "..." --notebook-url "https://..."
+python3 "$NOTEBOOKLM_RUN" ask_question.py --question '...' --notebook-url "https://..."
 
 # JSON output for structured responses
-python3 "$NOTEBOOKLM_RUN" ask_question.py --question "..." --json
+python3 "$NOTEBOOKLM_RUN" ask_question.py --question '...' --json
 
 # Show browser for debugging
-python3 "$NOTEBOOKLM_RUN" ask_question.py --question "..." --show-browser
+python3 "$NOTEBOOKLM_RUN" ask_question.py --question '...' --show-browser
 ```
 
 **Parameters:**
@@ -112,7 +112,7 @@ python3 "$NOTEBOOKLM_RUN" notebook_manager.py stats
 ```bash
 # Query the notebook to learn its content first
 python3 "$NOTEBOOKLM_RUN" ask_question.py \
-  --question "What is the content of this notebook? What topics are covered?" \
+  --question 'What is the content of this notebook? What topics are covered?' \
   --notebook-url "<URL>"
 # Then use discovered info for the add command
 ```
@@ -167,20 +167,20 @@ python3 "$NOTEBOOKLM_RUN" notebook_manager.py search --query "marketing"
 
 # 2. Query for source-grounded data
 python3 "$NOTEBOOKLM_RUN" ask_question.py \
-  --question "What are the latest conversion rate benchmarks?" \
+  --question 'What are the latest conversion rate benchmarks?' \
   --notebook-id marketing-research --json
 
 # 3. Follow up for completeness (maximum 3 follow-ups per question session)
 python3 "$NOTEBOOKLM_RUN" ask_question.py \
-  --question "Break down conversion rates by industry and channel" \
+  --question 'Break down conversion rates by industry and channel' \
   --notebook-id marketing-research --json
 ```
 
 ### Pattern: Multi-Notebook Research
 ```bash
 # Query different notebooks for a comprehensive view
-python3 "$NOTEBOOKLM_RUN" ask_question.py --question "..." --notebook-id source-a
-python3 "$NOTEBOOKLM_RUN" ask_question.py --question "..." --notebook-id source-b
+python3 "$NOTEBOOKLM_RUN" ask_question.py --question '...' --notebook-id source-a
+python3 "$NOTEBOOKLM_RUN" ask_question.py --question '...' --notebook-id source-b
 # Synthesize answers from both sources
 ```
 

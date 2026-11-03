@@ -14,7 +14,7 @@ license: MIT
 compatibility: Requires Claude Code and Python 3.11+ for quality scoring
 metadata:
   author: AgriciDaniel
-  version: "2.3.1"
+  version: "2.3.2"
 user-invocable: true
 argument-hint: "[write|rewrite|analyze|brief|calendar|cannibalization|strategy|outline|seo-check|schema|repurpose|geo|image|audit|factcheck|persona|brand|discourse|taxonomy|notebooklm|audio|google|update|cluster|multilingual|translate|localize|locale-audit|flow|style|decay] [topic-or-file]"
 ---
@@ -28,6 +28,13 @@ from `${CLAUDE_SKILL_DIR}/../blog/references`, `blog_template_root` from
 `${CLAUDE_SKILL_DIR}/../blog/templates`, and needed sibling roots to agents.
 Read the main reference `orchestration-details.md` before loading project
 context; pass only its helper-fenced output to downstream agents.
+
+**Shell argument rule (all sub-skills).** Pass model-written or user-supplied
+text (titles, tags, questions, narration, URLs) to a command only as a
+single-quoted argument, writing an embedded `'` as `'\''`, or through a
+`--text-file`/`--topic-file` option where the script has one. Never put such
+text inside double quotes, and always quote URL placeholders. Examples in this
+suite use `'<placeholder>'` for these arguments.
 
 Full-lifecycle blog management: strategy, briefs, outlines, writing, analysis,
 optimization, schema generation, repurposing, and editorial planning. Use
@@ -45,7 +52,7 @@ citation outcomes.
 | `/blog rewrite <file>` | Rewrite/optimize an existing blog post |
 | `/blog analyze <file-or-url>` | Score one post (or a folder of posts) 0-100 with prioritized fixes |
 | `/blog brief <topic>` | Generate a detailed content brief |
-| `/blog calendar [monthly\|quarterly]` | Generate an editorial calendar |
+| `/blog calendar [monthly\|quarterly] [niche]` | Generate an editorial calendar |
 | `/blog strategy <niche>` | Blog strategy and topic ideation |
 | `/blog outline <topic>` | Generate SERP-informed content outline |
 | `/blog seo-check <file>` | Post-writing SEO validation checklist |
@@ -60,7 +67,7 @@ citation outcomes.
 | `/blog brand [init\|show\|update]` | Generate BRAND.md + VOICE.md context files auto-loaded by all sub-skills |
 | `/blog discourse <topic>` | Research what people are actually saying about a topic in last 30 days; produces DISCOURSE.md (v1.8.0, API-free) |
 | `/blog taxonomy [suggest\|sync\|audit]` | Tag/category management across CMS platforms |
-| `/blog notebooklm <question>` | Query NotebookLM for source-grounded research |
+| `/blog notebooklm [ask\|discover\|library\|setup\|status\|cleanup]` | Query NotebookLM for source-grounded research |
 | `/blog audio [generate\|voices\|setup]` | Generate audio narration of blog posts |
 | `/blog google [command] [args]` | Google API data: PSI, CrUX, GSC, GA4, NLP, YouTube, Keywords |
 | `/blog update <file>` | Update existing post with fresh stats (routes to rewrite) |
@@ -251,30 +258,49 @@ reference roots when needed. Agent `tools` is the actual allowlist; agents
 never run Bash helpers and cannot call skills. The orchestrator runs helpers,
 resolves skills such as `blog-chart`, and passes their output to agents.
 
-Preparation for `/blog write` (no files in the draft folder yet):
+Preparation for `/blog write` (nothing written to the draft folder yet):
 
 - **Parse**: identify topic, detect platform, select template.
 - **Research**: spawn `blog-researcher` for statistics, sources, SERP data.
 - **Outline**: build section structure from template + research gaps.
 
-Then run the **canonical delivery sequence**. The full version, with the gate
-behavior, is in `${CLAUDE_SKILL_DIR}/../blog/references/blog-delivery-contract.md`
-and wins on any disagreement. Draft folder `D`, slug `S`:
+Then run the **canonical delivery sequence** in
+`${CLAUDE_SKILL_DIR}/../blog/references/blog-delivery-contract.md`. That file is
+the single source of truth (capability discovery with `blog_preflight.py
+--gate 1`, draft, visuals with the optional hygiene helper, render, nonce,
+review, gates, loop) and wins on any disagreement. Draft folder `D`, slug `S`.
+Create `D` first, then run Gate 1 before writing. The orchestrator's part of
+it, in order:
 
 ```bash
 BLOG_SCRIPT_DIR="${CLAUDE_BLOG_SCRIPTS_DIR:-${CLAUDE_SKILL_DIR}/../../scripts}"
 case "$BLOG_SCRIPT_DIR" in /*) ;; *) echo "ERROR: script dir must be absolute" >&2; exit 1 ;; esac
+# draft folder first; Gate 1 needs it to exist and runs before writing
+mkdir -p "$D"
+# reused folder, new write/rewrite or new edit pass on a delivered post only;
+# never inside a failing repair loop (clears the counter, runs no gates)
+python3 "$BLOG_SCRIPT_DIR/blog_preflight.py" --draft "$D" --reset-iterations
+python3 "$BLOG_SCRIPT_DIR/blog_preflight.py" --draft "$D" --gate 1
+# visuals: hero (resolve every marker, then optional blog-seo and blog_hygiene.py);
+# free rungs only; add --allow-paid only after the blog-image cost and consent gate
+python3 "$BLOG_SCRIPT_DIR/generate_hero.py" --topic '<title>' --tags '<tags>' --out "$D"
+# render
+python3 "$BLOG_SCRIPT_DIR/blog_render.py" --md "$D/S.md" --out-dir "$D"
+# nonce
+NONCE=$(python3 "$BLOG_SCRIPT_DIR/blog_preflight.py" --init-review-nonce --draft "$D")
+# review: spawn blog-reviewer with the draft path, reference roots and $NONCE;
+# it returns text and you save it verbatim to "$D/review.md"
+# gates (each full run counts toward the cap of 3)
+python3 "$BLOG_SCRIPT_DIR/blog_preflight.py" --draft "$D" --strict
 ```
 
-Never run a helper through a path relative to the current project.
-
-1. **Draft**: spawn `blog-writer` to write `D/S.md`. Markers `[INTERNAL-LINK: ...]`, `[IMAGE: ...]`, `[CHART: ...]` are allowed here only.
-2. **Visuals**: you resolve every marker. Hero: `python3 "$BLOG_SCRIPT_DIR/generate_hero.py" --topic "<title>" --tags "<tags>" --out "$D"`. Charts: the `blog-chart` skill, inline SVG. Internal links: real links or remove the marker. Images: local files or remove. Optionally run `blog-seo` on the resolved `S.md`. No marker may remain.
-3. **Render**: `python3 "$BLOG_SCRIPT_DIR/blog_render.py" --md "$D/S.md" --out-dir "$D"`.
-4. **Init nonce**: `NONCE=$(python3 "$BLOG_SCRIPT_DIR/blog_preflight.py" --init-review-nonce --draft "$D")`.
-5. **Review**: spawn `blog-reviewer` with the draft path, the reference roots and `$NONCE`. It returns text; you save it verbatim to `D/review.md`. The reviewer never writes files.
-6. **Gates**: `python3 "$BLOG_SCRIPT_DIR/blog_preflight.py" --draft "$D" --strict` (add `--repair-attempt` inside the repair loop).
-7. **Loop**: on a block, fix and repeat from step 2 or 3. Any change to `S.md`, `S.html`, `S.pdf` or the hero requires a re-render, a re-init of the nonce and a re-review (the gate checks stored digests and fails otherwise). Maximum 3 iterations; on the third failure stop and present the diagnostic instead of the draft.
+Never run a helper through a path relative to the current project. Spawn
+`blog-writer` for the draft. After any change to `S.md`, `S.html`, `S.pdf` or the
+hero, re-render, re-init the nonce and re-review; at most 3 failed full gate
+runs per draft (passing runs, `--gate N` without `--repair-attempt` and
+`--manual-check` runs never count), then stop and present the diagnostic, not the draft. A paid
+image call needs the `blog-image` cost and consent gate first, and only then
+`--allow-paid` on `generate_hero.py`; without the flag a Gemini key is ignored.
 
 Deliver the content, scorecard, `preview/*.png` and improvement notes ONLY when all gates pass. The gates review first, not the user. The nonce stops accidents and casual forgery; it does not stop a process running as the same user that can read the verifier state file.
 

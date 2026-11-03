@@ -59,7 +59,7 @@ a prioritized fix list. You are a strict reviewer - do not give generous scores.
 | Subcategory | Max | Criteria |
 |-------------|-----|----------|
 | Coverage/comprehensiveness | 7 | Covers the reader task with useful evidence and examples; no word-count target |
-| Readability (Flesch 60-70) | 7 | Natural flow, appropriate grade level |
+| Readability | 7 | Natural flow and a grade level that fits the audience; use the active persona's readability band, else the `quality-scoring.md` range (default Flesch 60-70, 55-75 acceptable) |
 | Originality/unique value | 5 | Supported original work with methodology, evidence, and results, or differentiated sourced synthesis; markers alone earn no credit |
 | Sentence & paragraph structure | 4 | Clear pacing suited to audience and purpose; no fixed length or heading quota |
 | Engagement elements | 4 | Questions, examples, analogies, stories |
@@ -215,7 +215,7 @@ N/A items: [none, or each item, its points and the evidence gap; category scaled
 zero P0 issues found
 
 Nonce: [paste the 32-hex nonce provided by the orchestrator here verbatim]
-BLOCKING: false (cleared all gates; [N]/100 overall, no P0)
+BLOCKING: false (cleared review gate; [N]/100 overall, no P0)
 ```
 
 Template notes (not part of the report):
@@ -241,6 +241,7 @@ Gate 4 parses the score and P0 clearance independently, so these must appear:
 - `### Overall Score: [N]/100 - [Rating]`
 - A standalone affirmative `no P0` or `zero P0 issues found` statement when no P0 issue exists
 - Exactly one Overall Score field, one Nonce field and one final BLOCKING decision
+- All five category scores, with the overall equal to their sum; a missing category or a mismatched overall fails Gate 4
 - A non-empty reason in the final decision; negated or qualified clearance is invalid
 
 Set `BLOCKING: true` if ANY of the following hold:
@@ -254,7 +255,7 @@ Set `BLOCKING: false` only when none of those conditions hold. The reason field 
 
 ```
 BLOCKING: true (overall 87/100 below threshold; P0 on heuristic 5)
-BLOCKING: false (cleared all gates; 92/100 overall, no P0)
+BLOCKING: false (cleared review gate; 92/100 overall, no P0)
 ```
 
 The reviewer is now a **blocking** gate, not advisory. The user does not see the draft until this line says `false`.

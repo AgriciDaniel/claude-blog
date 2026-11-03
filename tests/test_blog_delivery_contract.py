@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import json
 import importlib.util
+import os
 import re
 import subprocess
 import sys
@@ -408,6 +409,8 @@ def test_preflight_gate_1_rejects_symlink_capabilities_output(tmp_path: Path) ->
         [sys.executable, str(PREFLIGHT_PATH), "--draft", str(tmp_path),
          "--gate", "1", "--no-strict"],
         capture_output=True, text=True, check=False,
+        # A stock key gives Gate 1 a hero path, so it never probes Openverse.
+        env={**os.environ, "PEXELS_API_KEY": "your-test-key"},
     )
     assert "FAIL" in result.stdout and "Gate 1" in result.stdout
     assert "capabilities.json write refused" in result.stdout

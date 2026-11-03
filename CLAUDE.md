@@ -22,7 +22,7 @@ claude-blog/
   CLAUDE.md                          # Project instructions (this file)
   docs/CONTRIBUTORS.md               # Pro Hub Challenge attribution and integration decisions
   CHANGELOG.md                       # Keep a Changelog format
-  .claude-plugin/plugin.json         # Plugin manifest (v2.3.1)
+  .claude-plugin/plugin.json         # Plugin manifest (v2.3.2)
   .claude-plugin/marketplace.json    # Marketplace catalog for distribution (claude-blog + optional blog-studio)
   plugins/blog-studio/               # Optional Claude Code mod companion (status band, pipeline panel); own README, tests, version 0.2.0
   .mcp.example.json                  # MCP config example (tracked; .mcp.json is gitignored)
@@ -30,11 +30,12 @@ claude-blog/
   brain/                             # Vendored self-contained evidence-gated Obsidian brain; not plugin payload; tooling stays under skills/
   scripts/analyze_blog.py            # 5-category quality scoring (stdlib)
   scripts/blog_preflight.py          # 5-gate delivery contract runner (v1.9.0)
+  scripts/blog_studio_status.py      # Read-only preflight evidence inspector for the optional blog-studio plugin
   scripts/blog_render.py             # md -> html -> pdf renderer; XSS-safe JSON-LD (v1.9.0)
   scripts/blog_hygiene.py            # Optional deterministic hygiene: lazy-load imgs + auto-TOC (v1.11.0)
   scripts/cognitive_load.py          # Per-section concept-density analyzer (v1.8.0)
   scripts/discourse_research.py      # Discourse brief synthesis from SERP JSON (v1.8.0)
-  scripts/generate_hero.py           # Hero image ladder: Banana -> Gemini -> stock -> Openverse (v1.9.0)
+  scripts/generate_hero.py           # Hero image ladder: Banana -> Gemini (--allow-paid) -> stock -> Openverse (v1.9.0)
   scripts/load_untrusted_root.py     # Code-enforced fence helper for BRAND/VOICE/DISCOURSE (v1.8.3)
   scripts/lint_prose.py              # Fence-aware prose-hygiene linter (v1.8.4; CI-enforced)
   scripts/sync_flow.py               # Pulls FLOW references (stdlib, sandboxed)
@@ -50,12 +51,14 @@ claude-blog/
   scripts/check_google_currentness.py # Google update ledger vs official feeds
   scripts/sync_google_updates.py     # Google update ledger sync into the Blog Brain
   scripts/installer_ownership.py     # Shared Unix installer ownership engine
-  # 22 scripts/*.py in total: `ls scripts/*.py | wc -l`
+  # 23 scripts/*.py in total: `ls scripts/*.py | wc -l`
   skills/                            # 32 skill directories (1 orchestrator + 31 sub-skills)
     blog/SKILL.md                   # Main orchestrator, routing, scoring
       references/                   # 22 on-demand knowledge files (5 in v1.8.0, 1 in v1.9.0)
       templates/                    # 12 content templates
-    blog-write/SKILL.md            # Write new articles from scratch
+    blog-write/                    # Write new articles from scratch
+      SKILL.md
+      references/                 # 2 reference docs (delivery, drafting)
     blog-rewrite/SKILL.md         # Optimize existing blog posts
     blog-analyze/SKILL.md         # 5-category 100-point scoring
     blog-brief/SKILL.md           # Detailed content briefs
@@ -64,17 +67,21 @@ claude-blog/
     blog-strategy/SKILL.md        # Blog positioning and planning
     blog-seo-check/SKILL.md      # Post-writing SEO validation
     blog-schema/SKILL.md          # JSON-LD schema generation
-    blog-chart/SKILL.md           # Inline SVG data visualizations
+    blog-chart/                    # Inline SVG data visualizations
+      SKILL.md
+      references/                 # 1 reference doc (chart input schema)
     blog-repurpose/SKILL.md       # Multi-platform repurposing
     blog-geo/SKILL.md             # AI citation optimization
     blog-audit/SKILL.md           # Full-site blog health assessment
     blog-image/                    # AI image generation via Gemini
       SKILL.md                    # Image generation sub-skill
-      references/                 # 3 reference docs (models, tools, prompts)
+      references/                 # 4 reference docs (models, tools, prompts, MCP route)
       scripts/                    # MCP setup and validation scripts
     blog-cannibalization/SKILL.md # Keyword overlap detection
     blog-factcheck/SKILL.md       # Statistics verification
-    blog-persona/SKILL.md         # Writing persona management
+    blog-persona/                  # Writing persona management
+      SKILL.md
+      references/                 # personas/ directory for saved personas
     blog-taxonomy/SKILL.md        # CMS taxonomy management
     blog-notebooklm/               # NotebookLM source-grounded research
       SKILL.md                    # NotebookLM query sub-skill
@@ -82,7 +89,7 @@ claude-blog/
       scripts/                    # 11 Python modules + requirements.txt/lock
     blog-audio/                    # Audio narration via Gemini TTS
       SKILL.md                    # Audio generation sub-skill
-      references/                 # 1 reference doc (30 voice catalog)
+      references/                 # 2 reference docs (30 voice catalog, dated models and pricing)
       scripts/                    # 5 Python scripts + requirements.txt
     blog-google/                   # Google API integration
       SKILL.md                    # Google API sub-skill (13 commands, 4 tiers)
@@ -95,6 +102,7 @@ claude-blog/
     blog-flow/                     # FLOW framework prompts (v1.7.0)
       SKILL.md                    # FLOW orchestrator (find/optimize/win/prompts/sync)
       references/                 # Synced from github.com/AgriciDaniel/flow (CC BY 4.0)
+      scripts/                    # sync_flow.py wrapper around the core scripts/sync_flow.py
     blog-multilingual/             # One-command international publishing (v1.7.0)
       SKILL.md                    # Multilingual orchestrator
     blog-translate/                # SEO-optimized translation (v1.7.0)

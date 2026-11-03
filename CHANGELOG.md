@@ -5,13 +5,51 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [2.3.2] - 2026-11-03
+
+### Security
+
+- Paid image generation is opt-in in code. `scripts/generate_hero.py` uses the paid Gemini route only with the new `--allow-paid` flag and a `GOOGLE_AI_API_KEY` or `GEMINI_API_KEY`; without the flag a set key is ignored, the free rungs run, and the JSON reports `paid_gemini_skipped`. Skills add the flag only after the `blog-image` cost and consent gate. The old `env -u` workaround lived in prose, and `blog-image` and `blog-cluster` unset only `GOOGLE_AI_API_KEY`.
+- The repair counter moved out of the draft folder, which `blog-writer` can write to, into the review state directory next to the nonce (`<state dir>/<sha256 of the draft>.iterations.json`). An old `D/.iteration-count` is ignored.
+- `generate_hero.py` checks every `hero.*` target and `hero-credit.txt` before any provider runs and stops, without writing, deleting or spending anything, when one is a symlink, a directory or not writable.
+- The Blog Studio plugin runs both engine scripts with `python3 -E`, so `PYTHON*` environment variables cannot redirect them while packages installed with `pip --user` still load.
+- The OAuth loopback listener in `google_auth.py` gives each connection a timeout, so a silent client cannot hold it past the deadline.
+
+### Fixed
+
+- Make Blog Studio 0.2.0 work with the real engine (#102). The plugin called a status script and a preflight flag that did not exist, so it could never show a passing result. `scripts/blog_studio_status.py` is new (read-only; prints the status JSON the plugin parses, with `--draft`, `--project-root` and `--expected-run`). `scripts/blog_preflight.py` gains `--project-root` and writes an additive `evidence` object (including a 32-hex `run_id`) into `preflight-report.json`. Stdout modes, other flags and exit codes are unchanged, and the report `draft` field records the draft as an absolute path with symlinks not resolved. An unfinished or iteration-capped run shows as Blocked, never as passed or stale.
+- `--project-root` accepts paths through system symlinks such as `/home` to `/var/home` (Fedora atomic) and macOS `/tmp`; symlinks between the project root and the draft and `..` escapes are still refused.
+- Gate 4 requires all five category scores, and the overall must equal their sum. A `review.md` with only an overall score no longer passes.
+- Gate 1 checks for a real hero path instead of assuming Openverse. Free paths are a valid hero already in the draft folder, a stock key, or Openverse, probed for up to 3 seconds when neither of the others exists. The Banana tool and a Gemini key are paid paths: with only those, Gate 1 passes with a `paid_only` warning that the user must approve the cost. It blocks only when there is no path. `capabilities.json` reports them in `hero_paths`.
+- The repair loop stops after 3 failed full gate runs per draft, as the skills say; the next full run exits 2. Passing runs never count, so a delivered post can be checked again. The counter is locked across concurrent runs, and an unwritable state directory gives a clear error instead of a traceback. `--reset-iterations` clears the counter without running gates and is the first step when a new write, rewrite or edit pass on a delivered post reuses a draft folder.
+- New `--manual-check` flag runs the gates without touching the repair counter. Blog Studio's Run checks uses it, so checks no longer use up a draft's repair runs, and a capped draft shows as Blocked instead of an execution error.
+- BRAND.md, VOICE.md and DISCOURSE.md are looked up in the project (`--project-root`, otherwise the current directory), not the install folder.
+- The bypass warning prints to stderr in every mode, `--json` included, with the failed gates.
+- `generate_hero.py` keeps an existing hero only when it is a real image of at least 1200x630 under a lowercase `hero.<ext>` name, the same bar Gates 1 and 2 use. It keeps the first valid one, never overwrites a valid file without `--replace`, and replaces or removes invalid ones, listing them in `replaced_invalid`. Every write stages the image and `hero-credit.txt` together and removes stale siblings only after both are in place.
+- Harden the quality gate, renderer, hero ladder and setup: staged names are read with `-z`, JSON-LD escapes `<`, `>` and `&`, canonical URLs must be full http(s) URLs, symlinked renderer input is refused on Windows, an undecodable image skips to the next provider, the OAuth callback waits for the right state, currentness feed errors are clear, pip runs with a timeout, `os.fchmod` is optional on Windows, and `install.ps1` skips the Microsoft Store python stubs.
+- Add `tests/test_blog_studio.py` and `tests/test_blog_studio_integration.py`, which run the real scripts the way the plugin does and mirror its response parser, plus a `blog-studio` CI job (strict plugin validation and the 59 test-kit tests on a pinned Claude Code release). The companion's reference type check still reports 3 errors in `hooks/view.ts`, so CI does not run it yet.
+- Extend `scripts/consistency_check.py` and `scripts/validate_public_release.py` to cover `plugins/` (the studio version must match its marketplace entry), and correct the script, reference and screenshot counts in the docs, the `installer_ownership.py` release note and the `/blog style` and `/blog decay` command sections.
 
 ### Changed
 
+- Ignore `/reports/`, where `/blog audit` writes its output.
+- New README with six animated scenes (`assets/readme/`) starring the three bots, rebuilt around install, commands, team, pricing and how a post ships. Font credits for the embedded Geist, Geist Mono, Silkscreen and Pixelify Sans subsets are in NOTICE, and the OFL 1.1 text ships in `assets/readme/OFL.txt`.
+- Add a plugin icon (`.claude-plugin/icon.png`); Claude Code 2.1.312 and later warn without one.
+- The delivery sequence is defined once in `blog-delivery-contract.md`, and the skills point to it. The draft folder is created first and Gate 1 runs before writing. After 3 failed runs the user gets the diagnostic, not the draft. The contract no longer claims that `lint_prose.py` runs inside Gate 4.
+- `blog-rewrite` keeps the existing hero by default and passes `--replace` only when the topic changed substantially.
+- `blog-multilingual` and `blog-cluster` run their sub-skills one at a time, because an agent cannot start another agent.
+- Argument hints match `docs/COMMANDS.md` (`calendar`, `analyze`, `notebooklm`, `factcheck`, `flow`), and `/blog strategy` treats 80 as a planning goal, as `quality-scoring.md` does.
+- Add five Search Central documentation updates (2026-10-08 to 2026-10-26) to the Google ledger, which clears the failing weekly currentness workflow.
+- Lift the `Pillow<13` cap and refresh pillow 13.0.0, filelock, brotli, brotlicffi, setuptools, nltk, pyasn1 0.6.5 and certifi 2026.10.23 in `uv.lock` and the pip locks. SECURITY.md describes the Dependabot setup.
+- `brain/` is MIT licensed like the rest of the repository, and its third-party notices list Google Search Central prose as CC BY 4.0. `brain/PUBLISHING_NOTICE.md` describes `.raw` and the ledgers as tracked evidence kept off the website projection.
 - Turn off Dependabot version-update PRs (`open-pull-requests-limit: 0`). Hash-locked pip bumps need a maintainer relock, so the PRs only added notifications. Vulnerability alerts stay on.
 - Refresh the Google and audio dependency floors and their hash locks: `google-genai` 2.29.0, `google-auth` 2.61.0, `google-auth-oauthlib` >=1.5.0, `google-auth-httplib2` >=0.4.4. The locks stay on releases at least a week old.
 - Move the reviewed `actions/setup-node` pin to v7.1.0 (`949feb2`).
+
+### Removed
+
+- `reports/`, four internal verification reports that did not belong in the public repository.
+- The stale v1.11.0 copy of the skill under `brain/.raw/sources/claude-blog-skill/` (104 files).
 
 ## [2.3.1] - 2026-10-13
 

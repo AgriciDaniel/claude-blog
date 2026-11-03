@@ -98,7 +98,10 @@ def _has(result, *needles):
 
 def _review(nonce: str) -> str:
     return (
-        "## Quality Review\n\n### Overall Score: 92/100\n\nzero P0 issues found\n\n"
+        "## Quality Review\n\n### Overall Score: 92/100\n\n"
+        "Content Quality: 28/30\nSEO Optimization: 23/25\nE-E-A-T Signals: 14/15\n"
+        "Technical Elements: 14/15\nAI Citation Readiness: 13/15\n\n"
+        "zero P0 issues found\n\n"
         f"Nonce: {nonce}\nBLOCKING: false (cleared all gates)\n"
     )
 
@@ -846,7 +849,7 @@ def test_a_crashed_run_leaves_an_incomplete_blocked_report(preflight, draft, mon
     assert _run_main(preflight, monkeypatch, draft) == 0
     passing = json.loads((draft / "preflight-report.json").read_text(encoding="utf-8"))
     assert passing["blocked"] is False
-    monkeypatch.setattr(preflight, "_iteration_check", lambda *a, **k: (_ for _ in ()).throw(RuntimeError("boom")))
+    monkeypatch.setattr(preflight, "_parse_tool_names", lambda *a, **k: (_ for _ in ()).throw(RuntimeError("boom")))
     with pytest.raises(RuntimeError):
         _run_main(preflight, monkeypatch, draft)
     report = json.loads((draft / "preflight-report.json").read_text(encoding="utf-8"))

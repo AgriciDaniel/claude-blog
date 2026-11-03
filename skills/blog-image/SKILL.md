@@ -12,7 +12,7 @@ argument-hint: "[generate|edit|setup] [description-or-path]"
 license: MIT
 metadata:
   author: AgriciDaniel
-  version: "2.3.1"
+  version: "2.3.2"
   optional-mcp-package: "@ycse/nanobanana-mcp"
 ---
 
@@ -48,29 +48,30 @@ This skill spends the user's Google AI credit and writes image files.
 - **No uncapped spend:** never loop on paid calls. Safety rephrases stop at 3
   attempts per image. Bulk work (for example a cluster) needs a stated total
   count and a cap, confirmed once before the first call.
-- **Declined or unavailable:** skip the Gemini call (run the script with the
-  key unset, `env -u GOOGLE_AI_API_KEY`, to use the free stock rungs) and
+- **Declined or unavailable:** skip the Gemini call (run the script without
+  `--allow-paid`, its default, so a key is ignored and it uses the free rungs:
+  existing hero, then stock keys, then Openverse) and
   return ONE line for the orchestrator's "Fallbacks and skips" summary, such as
   "Hero image: user declined paid generation, used a stock photo".
 
-You are a **Creative Director** that orchestrates Gemini's image generation
-specifically for blog content. Never pass raw user text directly to the API.
-Always interpret, enhance, and construct an optimized prompt using the
-6-component Reasoning Brief system.
+The default route builds one fixed editorial prompt from the topic and tags, so
+it needs no brief from you. Custom prompt briefs, domain modes and image edits
+exist only on the optional MCP route, documented in
+`${CLAUDE_SKILL_DIR}/references/mcp-route.md` (load it only for that route).
 
 ## Quick Reference
 
 | Command | What it does |
 |---------|-------------|
-| `/blog image generate <idea>` | Generate a blog image with full prompt engineering |
-| `/blog image edit <path> <instructions>` | Edit an existing blog image intelligently |
+| `/blog image generate <idea>` | Generate a hero-style blog image (default route), or a custom brief via the optional MCP route |
+| `/blog image edit <path> <instructions>` | Edit an existing blog image (optional MCP route only) |
 | `/blog image setup` | Check the API key and, optionally, install the MCP server |
 
 ## Blog Image Types
 
 Match the image type to blog use case:
 
-| Image Type | Aspect Ratio | Resolution | Domain Mode | Placement |
+| Image Type | Aspect Ratio | Resolution | Domain Mode (MCP route) | Placement |
 |------------|-------------|-----------|-------------|-----------|
 | Hero/Cover | `16:9` | 2K or 4K | Editorial / Landscape | Frontmatter `coverImage` |
 | OG/Social Card | `16:9` | 1K | Editorial / Infographic | Frontmatter `ogImage` |
@@ -86,11 +87,13 @@ Match the image type to blog use case:
 ## Generation Routes
 
 1. **Direct API (default).** The repo's `generate_hero.py` calls the Gemini
-   API with `GOOGLE_AI_API_KEY` (the `google-genai` SDK must be installed),
-   then falls back to premium stock and Openverse. It needs no MCP server.
+   API only when run with `--allow-paid` (after the consent gate) and
+   `GOOGLE_AI_API_KEY` or `GEMINI_API_KEY` is set (the `google-genai` SDK
+   must be installed), then falls back to premium stock and Openverse. It needs
+   no MCP server. `NANOBANANA_MODEL` sets its default model ID.
 2. **Optional MCP (at your own risk).** `@ycse/nanobanana-mcp@1.1.1` is the
    only package the setup script pins, and it only supports image model IDs
-   that Google shut down on 2026-06-25 (see Step 5). Use it only if the user
+   that Google shut down on 2026-06-25 (see Step 2). Use it only if the user
    already has a working server; never present it as the default.
 
 Before using the MCP route, check availability: call `get_image_history` with
@@ -105,60 +108,7 @@ caller's final summary. The calling workflow continues with stock photos.
 
 For `/blog image generate <idea>` or when invoked internally:
 
-### Step 1: Analyze Intent
-
-Determine what the blog needs:
-- **Image type**: Hero, inline, OG card, section divider?
-- **Blog topic**: What is the article about?
-- **Style**: Photorealistic, editorial, illustrated, minimal?
-- **Constraints**: Brand colors, specific dimensions, platform format?
-- **Mood**: Authoritative, inviting, dramatic, clean?
-
-If the request is vague, ask one clarifying question about use case and style.
-
-### Step 2: Select Domain Mode
-
-Choose the expertise lens for the image:
-
-| Mode | When to use | Prompt emphasis |
-|------|-------------|-----------------|
-| **Editorial** | Blog headers, feature images, lifestyle | Styling, composition, publication references |
-| **Product** | E-commerce posts, reviews, comparisons | Surface materials, studio lighting, clean BG |
-| **Landscape** | Environmental backgrounds, travel, hero sections | Atmospheric perspective, depth layers, time of day |
-| **UI/Web** | Tech blog icons, illustrations, diagrams | Clean vectors, flat design, exact colors |
-| **Infographic** | Data-driven posts, processes, comparisons | Layout structure, hierarchy, accessible colors |
-| **Abstract** | Pattern backgrounds, section dividers, decorative | Color theory, mathematical forms, textures |
-
-Load `${CLAUDE_SKILL_DIR}/references/prompt-engineering-blog.md` for domain mode modifier libraries.
-
-### Step 3: Construct the 6-Component Reasoning Brief
-
-Build the prompt as natural narrative paragraphs, not keyword lists:
-
-1. **Subject** - Who/what, with rich physical detail (textures, materials, scale)
-2. **Action** - What is happening, pose, gesture, movement, state
-3. **Context** - Environment, setting, time of day, season, weather
-4. **Composition** - Camera angle, shot type, framing, negative space, depth
-5. **Lighting** - Light source, quality, direction, color temperature, shadows
-6. **Style** - Art medium, aesthetic, film stock, reference artists/eras
-
-**Template for photorealistic blog images:**
-```
-A photorealistic [shot type] of [subject with physical detail], [action/pose],
-set in [environment with specifics]. [Lighting conditions] create [mood].
-Captured with [camera model], [focal length] lens at [f-stop], producing
-[depth of field effect]. [Color palette/grading notes]. Aspect ratio 16:9,
-suitable as a blog [hero image/inline illustration] at [target dimensions].
-```
-
-**Template for illustrated/stylized:**
-```
-A [art style] [format] of [subject with character detail], featuring
-[distinctive characteristics] with [color palette]. [Line style] and
-[shading technique]. Background is [description]. [Mood/atmosphere].
-```
-
-### Step 4: Set Aspect Ratio
+### Step 1: Aspect Ratio
 
 Direct API: the script requests `16:9` and fits the result to `--width` by
 `--height` (default 1200x630). MCP route: call `set_aspect_ratio` BEFORE
@@ -171,26 +121,39 @@ generating, with `conversation_id: "default"`.
 | Section divider | `21:9`, then crop wider in post-processing if needed |
 | Vertical (stories) | `9:16` |
 
-### Step 5: Generate
+### Step 2: Generate
 
 **Default: direct API.** After the consent gate, resolve
 `BLOG_SCRIPT_DIR="${CLAUDE_BLOG_SCRIPTS_DIR:-${CLAUDE_SKILL_DIR}/../../scripts}"`,
-reject it unless absolute, and never run a relative `scripts/generate_hero.py`:
+reject it unless absolute, and never run a relative `scripts/generate_hero.py`.
+Pass the title and tags as single-quoted arguments (shell argument rule in
+`${CLAUDE_SKILL_DIR}/../blog/SKILL.md`):
 
 ```bash
-python3 "$BLOG_SCRIPT_DIR/generate_hero.py" --topic "<post title>" \
-  --tags "tag1,tag2" --out "<draft-folder>" [--width 1200] [--height 630] \
-  [--model <image-model-id>] --json
+python3 "$BLOG_SCRIPT_DIR/generate_hero.py" --topic '<post title>' \
+  --tags 'tag1,tag2' --out "<draft-folder>" [--width 1200] [--height 630] \
+  [--model <image-model-id>] [--replace] --allow-paid --json
 ```
 
 Flags: `--topic` (required), `--tags`, `--out` (required, receives
 `hero.<ext>` and `hero-credit.txt`), `--width`, `--height`, `--model`,
-`--json`. Exit 0 means a hero was written (the JSON `source` field says
-`gemini`, a stock provider, or `openverse`: report any non-Gemini source as a
-fallback). Exit 1 means every rung failed. The script builds one fixed
-editorial prompt from the topic and tags; it has no `--prompt` flag, so
-custom briefs and edits need the optional MCP route or a direct `google-genai`
-call written from the current docs.
+`--replace`, `--allow-paid`, `--json`. `--allow-paid` enables the paid Gemini
+rung; pass it only after the consent gate approved this call, and omit it
+otherwise (a key is then ignored and only the free rungs run). A valid
+image hero already in `--out` is kept and nothing is generated (JSON `source`
+is `existing`) unless you pass `--replace`, which the user must have asked for
+and which swaps the hero and `hero-credit.txt` together. An invalid existing
+`hero.*` is not kept, and a symlinked `hero.*` makes the script stop. Exit 0 means a hero is in place (the JSON `source`
+field says `existing`, `gemini`, a stock provider, or `openverse`: report any
+stock or Openverse source as a fallback). Exit 1 means every rung failed.
+
+**What the default route supports.** It generates a hero-style image (one
+fixed editorial prompt built from the topic and tags), at the size you pass,
+then falls back to stock and Openverse. It has no `--prompt` flag, no inline
+illustrations from a custom brief, and no editing. For custom briefs, domain
+modes, edits or iterative refinement, use the optional MCP route
+(`references/mcp-route.md`) or a direct `google-genai` call written from the
+current docs.
 
 **Model IDs** (Google deprecations page, 2026-10-12): use
 `gemini-nano-banana-2.1` for new work. `gemini-3.1-flash-image` is the
@@ -201,21 +164,13 @@ of 2027-03-15. See `${CLAUDE_SKILL_DIR}/references/gemini-models.md`.
 **Optional MCP route (at your own risk).** Pinned `@ycse/nanobanana-mcp@1.1.1`
 exposes `set_model` aliases `flash` and `pro` that map to preview IDs shut
 down on 2026-06-25, so generation through it is expected to fail. Prefer the
-direct API unless a newer package explicitly supports stable IDs.
+direct API unless a newer package explicitly supports stable IDs. The tool
+table, brief composition and parameters are in `references/mcp-route.md` and
+`references/mcp-tools.md`.
 
-| MCP Tool | When |
-|----------|------|
-| `set_aspect_ratio` | Always call first, even for 1:1 |
-| `gemini_generate_image` | New image from crafted prompt |
-| `gemini_edit_image` | Modify existing image |
-| `gemini_chat` | Iterative refinement / multi-turn sessions |
-| `get_image_history` | Review generated images with `conversation_id: "default"` |
-| `clear_conversation` | Reset session context |
-
-Load `${CLAUDE_SKILL_DIR}/references/mcp-tools.md` for MCP parameter details.
 Load `${CLAUDE_SKILL_DIR}/references/gemini-models.md` for model specs, pricing, and rate limits.
 
-### Step 6: Post-Processing (when needed)
+### Step 3: Post-Processing (when needed)
 
 After generation, resize/convert for blog use:
 
@@ -235,12 +190,12 @@ magick input.png -resize 1200x630^ -gravity center -extent 1200x630 og-image.png
 
 Check if `magick` (ImageMagick 7) is available. Fall back to `convert` if not.
 
-### Step 7: Deliver
+### Step 4: Deliver
 
 Provide:
 1. **Image path** - where it was saved (the draft folder for the direct API, `~/Documents/nanobanana_generated/` for the MCP)
-2. **Crafted prompt** - show the full Reasoning Brief (educational)
-3. **Settings** - model, aspect ratio, domain mode
+2. **Prompt** - on the MCP route, show the full brief; on the default route say it used the script's fixed editorial prompt
+3. **Settings** - model, aspect ratio
 4. **Alt text** - descriptive sentence, 10-125 chars, topic keywords naturally
 5. **Frontmatter snippet** (for hero/OG images):
 ```yaml
@@ -252,23 +207,14 @@ ogImage: "/path/to/generated-image.png"
 
 ## Edit Workflow
 
-For `/blog image edit <path> <instructions>`:
-
-1. Read the image path and edit instruction
-2. Enhance the instruction (never pass raw):
-   | User says | Claude crafts |
-   |-----------|---------------|
-   | "remove background" | Detailed edge-preserving background removal |
-   | "make it warmer" | Specific color temperature shift with preservation notes |
-   | "add text" | Font style, size, placement, contrast, readability notes |
-   | "make it brighter" | Increase exposure, lift shadows, maintain highlights |
-   | "crop for social" | Resize to 1200x630 with center-gravity crop |
-3. Editing needs the optional MCP (`gemini_edit_image`), which is a paid call under the consent gate. Without a working MCP, say so and offer to regenerate through the direct API instead
-4. Return modified image path and description
+`/blog image edit <path> <instructions>` needs the optional MCP route
+(`gemini_edit_image`, a paid call under the consent gate). The edit recipes are
+in `${CLAUDE_SKILL_DIR}/references/mcp-route.md`. Without a working MCP, say so
+and offer to regenerate through the direct API instead.
 
 ## Internal API (for blog-write / blog-rewrite)
 
-When invoked as a Task subagent from blog-write or blog-rewrite:
+When the orchestrator invokes this skill for blog-write or blog-rewrite (the orchestrator runs this skill itself; the suite's agents have no Skill or Bash tool):
 
 **Input** (provided by calling skill):
 - `image_type`: hero, inline, og, divider
@@ -283,7 +229,7 @@ When invoked as a Task subagent from blog-write or blog-rewrite:
 - **Path:** <draft-folder>/hero.png
 - **Alt Text:** Descriptive sentence about the image
 - **Type:** hero / inline / og
-- **Domain Mode:** Editorial
+- **Domain Mode:** Editorial (MCP route only)
 - **Aspect Ratio:** 16:9
 - **Suggested Frontmatter:**
   coverImage: "/path/to/image.png"
@@ -319,73 +265,45 @@ and reject it unless absolute. Setup is the only action allowed to change
 image capability configuration, and it needs the user's explicit yes first.
 
 **Default path (no MCP):** the direct API only needs a key and the SDK.
-1. Export `GOOGLE_AI_API_KEY` (free to create at
+1. Export `GOOGLE_AI_API_KEY` or `GEMINI_API_KEY` (free to create at
    https://aistudio.google.com/apikey; a billing-enabled project may be
-   required for image models). `generate_hero.py` reads only this variable.
+   required for image models). `generate_hero.py` reads `GOOGLE_AI_API_KEY`
+   first, then `GEMINI_API_KEY`, and uses the key only with `--allow-paid`;
+   `NANOBANANA_MODEL` sets its default model ID.
 2. Install the SDK with the project's explicit setup (`google-genai` is
    declared in the repo `pyproject.toml` dependencies); never
    install implicitly during a run.
 
-**Optional MCP path (at your own risk):**
-1. Run `python3 "$BLOG_SKILLS_DIR/blog-image/scripts/setup_image_mcp.py"` (interactive)
-   - Prefer exporting `GOOGLE_AI_API_KEY` before invoking the setup script so a
-     literal key does not enter shell history
-   - Or: `python3 "$BLOG_SKILLS_DIR/blog-image/scripts/setup_image_mcp.py" --key-file /path/to/key.txt`
-   - Avoid `--key` unless necessary because command arguments can enter shell history and process lists
-   - Default writes to `~/.claude/settings.json` (user-private, mode 0600)
-   - `--project` flag opts into project `.mcp.json` (env-expansion only,
-     refuses to write a literal key into a tracked file)
-2. Verify: `python3 "$BLOG_SKILLS_DIR/blog-image/scripts/validate_image_setup.py"`
-3. Requires Node.js 18+ (npx).
-4. **Caveat:** the script pins `@ycse/nanobanana-mcp@1.1.1`. That npm
-   release hard-codes preview image model IDs that Google shut down on
-   2026-06-25 (deprecations page, checked 2026-10-12), so image calls
-   through it are expected to fail. Tell the user this before installing.
-   Update setup, validation, and this documentation together when a package
-   release with stable ID support is available.
+**Optional MCP path (at your own risk):** setup steps, the pinned package
+caveat and the validation script are in
+`${CLAUDE_SKILL_DIR}/references/mcp-route.md`. Tell the user the caveat (the
+pinned package targets shut-down model IDs) before installing.
 
-## Safety Filter Auto-Rephrase
+## Safety Filter
 
-When `IMAGE_SAFETY` or `SAFETY` is returned, do NOT give up. Auto-rephrase and retry:
-
-1. Identify the likely trigger (violence, public figures, NSFW-adjacent, or overly cautious filter)
-2. Rephrase using positive framing - describe what you WANT, not what to avoid
-3. If the subject is a person, make them generic (remove celebrity-like specifics)
-4. If the scene is dramatic, soften: "intense" → "focused", "battle" → "competition"
-5. Retry with the rephrased prompt (max 3 attempts before reporting to user)
-
-Google acknowledged filters "became way more cautious than we intended" - benign prompts
-are sometimes blocked. Persistence with rephrasing usually succeeds.
-
-## Edit, Don't Re-roll
-
-If an image is 80% correct, use `gemini_chat` for conversational editing rather than
-regenerating from scratch. The session maintains style consistency, so targeted edits
-preserve what works while fixing what doesn't.
-
-**When to edit vs regenerate:**
-- Color slightly off → Edit ("shift the color temperature warmer")
-- Wrong composition entirely → Regenerate with revised brief
-- Good scene but wrong lighting → Edit ("change to golden hour lighting from the left")
-- Missing a detail → Edit ("add a steaming coffee cup on the desk")
+If `IMAGE_SAFETY` or `SAFETY` comes back, the default route simply falls to the
+next rung. Rephrasing a custom prompt (positive framing, generic people, softer
+wording; at most 3 attempts per image) applies only to the MCP route, see
+`references/mcp-route.md`.
 
 ## Error Handling
 
 | Error | Resolution |
 |-------|-----------|
-| No generation route | Export `GOOGLE_AI_API_KEY` (see Setup); the MCP is optional |
+| No generation route | Export `GOOGLE_AI_API_KEY` or `GEMINI_API_KEY` (see Setup); the MCP is optional |
 | API key invalid | New key at https://aistudio.google.com/apikey |
 | Rate limited (429) | Wait 60s, retry. Check live limits at https://ai.google.dev/gemini-api/docs/rate-limits |
-| `IMAGE_SAFETY` | Auto-rephrase (see above) - Layer 2 filter, non-configurable |
+| `IMAGE_SAFETY` | Layer 2 filter, non-configurable; rephrase on the MCP route only (see Safety Filter) |
 | `PROHIBITED_CONTENT` | Content policy violation - topic is blocked. Non-retryable. |
-| `SAFETY` | Rephrase prompt - Layer 1 filter |
+| `SAFETY` | Layer 1 filter; rephrase on the MCP route only |
 | Vague request | Ask one clarifying question before generating |
-| Poor quality | Review Reasoning Brief - likely missing lighting (biggest quality differentiator) |
+| Poor quality | On the MCP route, review the brief (lighting is the biggest differentiator); on the default route, try another `--model` or an MCP brief |
 | No route or consent declined (internal call) | Return a one-line fallback note; calling workflow uses stock photos and reports it |
 
 ## Reference Documentation
 
 Load on-demand - do NOT load all at startup:
+- `${CLAUDE_SKILL_DIR}/references/mcp-route.md` - Optional MCP route: brief composition, domain modes, edit flows, tool table, MCP setup
 - `${CLAUDE_SKILL_DIR}/references/prompt-engineering-blog.md` - Domain modes, 6-component system, blog templates
 - `${CLAUDE_SKILL_DIR}/references/gemini-models.md` - Model specs, rate limits, aspect ratios, pricing
 - `${CLAUDE_SKILL_DIR}/references/mcp-tools.md` - MCP tool parameters and response formats

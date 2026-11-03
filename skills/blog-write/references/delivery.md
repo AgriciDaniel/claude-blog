@@ -17,16 +17,23 @@ are not expanded by the host, so the owning skill passes the resolved path.)
 
 ## Gate Steps
 
-Draft folder `D`, slug `S`. Run capability discovery once first:
-`python3 "$BLOG_SCRIPT_DIR/blog_preflight.py" --draft "$D" --gate 1`.
+Draft folder `D`, slug `S`. Create `D` first (`mkdir -p "$D"`), then run
+capability discovery once before writing:
+`python3 "$BLOG_SCRIPT_DIR/blog_preflight.py" --draft "$D" --gate 1`. If `D` was
+used before and this is a new write, a new rewrite, or a new edit pass on a delivered post (its last full run passed), run
+`python3 "$BLOG_SCRIPT_DIR/blog_preflight.py" --draft "$D" --reset-iterations`
+before Gate 1 so the new draft gets its own 3 failed runs. Never reset inside a
+failing repair loop.
 
 1. Draft: `D/S.md` exists. Draft markers `[INTERNAL-LINK: ...]`, `[IMAGE: ...]`, `[CHART: ...]` are allowed here only.
 2. Visuals, done by the orchestrator (the `blog-writer` agent cannot call skills):
-   - Hero: keep a valid local `hero.<ext>`; otherwise run `python3 "$BLOG_SCRIPT_DIR/generate_hero.py" --topic "<title>" --tags "<tags>" --out "$D"` or use `blog-image`. Record provider, model ID, prompt, license and attribution.
+   - Hero: keep a valid local hero (a real image of at least 1200x630, the size Gate 2 enforces, named lowercase `hero.<ext>`); otherwise run `python3 "$BLOG_SCRIPT_DIR/generate_hero.py" --topic '<title>' --tags '<tags>' --out "$D"` or use `blog-image`. Run it without `--allow-paid` by default: a Gemini key is then ignored and the script uses its free rungs. Add `--allow-paid` only after the `blog-image` cost and consent gate approved the paid call. `blog-write` produces one hero, in this step. Record provider, model ID, prompt, license and attribution.
+   - Quote model or user text as in the shell argument rule of `skills/blog/SKILL.md` (single quotes, embedded `'` as `'\''`).
    - Charts: run `blog-chart` for each `[CHART]` marker and embed the SVG in a `<figure>`.
    - Internal links: replace each `[INTERNAL-LINK]` with a real link to a page that exists, or remove the marker and keep the plain text.
    - Images: replace each `[IMAGE]` with a local file in `D`, or remove it.
    - Attribution: if `hero-credit.txt` names a license that needs visible credit (CC BY, BY-SA, or a stock license that asks for it), add the credit line to the article's Sources section or the hero caption. The renderer does not publish it.
+   - Optional: `blog-seo` on the resolved `S.md`, then `blog_hygiene.py --md "$D/S.md" --apply` on the markdown only, never on rendered files.
    - Confirm no marker remains: search `S.md` for `[INTERNAL-LINK`, `[IMAGE` and `[CHART`.
 3. Render: `python3 "$BLOG_SCRIPT_DIR/blog_render.py" --md "$D/S.md" --out-dir "$D"`.
 4. Init nonce: `NONCE=$(python3 "$BLOG_SCRIPT_DIR/blog_preflight.py" --init-review-nonce --draft "$D")`.
@@ -34,7 +41,7 @@ Draft folder `D`, slug `S`. Run capability discovery once first:
    - It returns the report as text. Save that text verbatim to `D/review.md` (no edits).
    - Required: score 90/100 or higher (see the threshold table in `quality-scoring.md`; unpublished drafts follow its draft-stage rule), zero P0 issues, a matching `Nonce:` line, and a last line `BLOCKING: true|false (reason)`.
 6. Gates: `python3 "$BLOG_SCRIPT_DIR/blog_preflight.py" --draft "$D" --strict`. Strict delivery requires renderer support for the visual checks; if the renderer is unavailable, mark the output non-shippable instead of treating it as passed.
-7. Loop: use `D/preflight-report.json` as the diagnostic input and add `--repair-attempt` on gate runs inside the loop. After ANY change to `S.md`, `S.html`, `S.pdf` or the hero, re-render, re-init the nonce and re-review; the gate fails if they were not. Stop after 3 failed iterations and present the diagnostic.
+7. Loop: use `D/preflight-report.json` as the diagnostic input; each failed full gate run counts toward the cap of 3 (passing runs, `--gate N` without `--repair-attempt` and `--manual-check` runs do not). After ANY change to `S.md`, `S.html`, `S.pdf` or the hero, re-render, re-init the nonce and re-review; the gate fails if they were not. After the third failed full run the next one exits 2: after the third failure stop and present the diagnostic, not the draft.
 
 ## URL And Asset Safety
 

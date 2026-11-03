@@ -55,8 +55,8 @@ skill directories.
 
 - Vulnerabilities in upstream dependencies (`patchright`, `google-genai`,
   `weasyprint`, etc.) - please report those upstream first; we will
-  monitor and pin once a fix is published. Dependabot tracks all four
-  pip manifests + GitHub Actions.
+  monitor and pin once a fix is published. Dependabot alerts are on, but
+  version-update PRs are disabled, so locks are refreshed by hand.
 - Vulnerabilities in the `@ycse/nanobanana-mcp` npm package - report to
   that package's maintainer at
   `https://www.npmjs.com/package/@ycse/nanobanana-mcp`. We pin the

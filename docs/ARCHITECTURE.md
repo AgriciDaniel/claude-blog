@@ -53,7 +53,7 @@ The Claude Blog Brain is vendored at `./brain` as a self-contained, evidence-gat
        |          |
        v          v
 +------------------+  +------------------------+
-|  5 Subagents     |  |  22 root-level Scripts  |
+|  5 Subagents     |  |  23 root-level Scripts  |
 |  agents/*.md     |  |  scripts/*.py          |
 |                  |  |                        |
 |  blog-researcher |  |  analyze_blog          |
@@ -106,7 +106,7 @@ Each sub-skill is a standalone Claude Code skill with its own:
 
 | Sub-Skill | Responsibility | Introduced |
 |-----------|----------------|------------|
-| blog-write | New article generation with full optimization (v1.9.0: iterates through 5-gate delivery contract until score >= 90 and zero P0, max 3 iterations) | v1.0.0 |
+| blog-write | New article generation with full optimization (v1.9.0: iterates through 5-gate delivery contract until score >= 90 and zero P0, at most 3 failed gate runs per draft) | v1.0.0 |
 | blog-rewrite | Existing post optimization preserving author voice (v1.9.0: same delivery contract) | v1.0.0 |
 | blog-analyze | Quality audit with 5-category 100-point scoring | v1.0.0 |
 | blog-brief | Content brief generation with research | v1.0.0 |
@@ -189,11 +189,11 @@ Structural templates for different content types. Each template defines
 section structure, word count targets, and format-specific guidance.
 See [TEMPLATES.md](TEMPLATES.md) for the full reference.
 
-### 6. Root-Level Python Scripts (22)
+### 6. Root-Level Python Scripts (23)
 
 **Location**: `scripts/*.py`
 
-Twenty-two Python helpers live at the repository root (count them with
+Twenty-three Python helpers live at the repository root (count them with
 `ls scripts/*.py | wc -l`; `scripts/windows_installer_ownership.ps1` is the
 PowerShell twin of the ownership engine and is not counted). They support the
 orchestrator, the delivery contract, the installers and the CI checks.
@@ -207,6 +207,7 @@ dependencies are stdlib-only or narrowly pinned.
 | `blog_hygiene.py` | Optional deterministic hygiene: lazy-load images and auto-TOC | v1.11.0 |
 | `blog_preflight.py` | Runs the 5-gate Blog Delivery Contract (Gates 1, 2, 3, 5 plus the Gate 4 nonce and digest checks); `--init-review-nonce` issues the review nonce | v1.9.0 |
 | `blog_render.py` | md -> html -> pdf renderer; XSS-safe JSON-LD via `</`->`<\/`; O_NOFOLLOW symlink refusal; frontmatter validation; embeds `blog-source-sha256`; refuses `.html` input | v1.9.0 |
+| `blog_studio_status.py` | Read-only inspector for the saved preflight report's `evidence` object; prints the status JSON the optional Blog Studio plugin displays (`--draft`, `--project-root`, `--expected-run`) | Unreleased |
 | `check_google_currentness.py` | Checks the reviewed Google update ledger against official machine-readable feeds | Maintenance |
 | `check_secrets.py` | Fails on unadjudicated detect-secrets findings without printing raw values | Maintenance |
 | `cognitive_load.py` | Per-section concept-density analyzer (entities, numerics, jargon, forward refs, clause depth) | v1.8.0 |
@@ -214,8 +215,8 @@ dependencies are stdlib-only or narrowly pinned.
 | `content_decay.py` | GSC content-decay detector: 20%+ QoQ decline | v1.10.0 |
 | `dependency_smoke.py` | Offline initialization smoke checks for the optional runtimes | Maintenance |
 | `discourse_research.py` | Discourse-brief synthesis from SERP JSON; depth-bounded parsing; path-traversal guards | v1.8.0 |
-| `generate_hero.py` | Hero image ladder: Banana MCP -> Gemini API -> Unsplash/Pexels/Pixabay -> Openverse | v1.9.0 |
-| `installer_ownership.py` | Shared Unix legacy/v2 ownership verification, migration and rollback | Unreleased |
+| `generate_hero.py` | Hero image ladder: Banana MCP -> Gemini API (only with `--allow-paid`) -> Unsplash/Pexels/Pixabay -> Openverse; keeps a valid existing hero | v1.9.0 |
+| `installer_ownership.py` | Shared Unix legacy/v2 ownership verification, migration and rollback | v2.3.0 |
 | `lint_prose.py` | Fence-aware prose-hygiene linter (no em-dash, en-dash, ` -- `); CI-enforced | v1.8.4 |
 | `load_untrusted_root.py` | Code-enforced BRAND/VOICE/DISCOURSE fencing with CSPRNG nonces; O_NOFOLLOW + size cap | v1.8.3 |
 | `quality_gate.py` | Pre-commit gate: block posts scoring < 70; fail-closed on bad paths and missing frontmatter; `--select` is the pre-commit hook mode that skips Markdown files that are not blog posts | v1.10.0 |
@@ -277,8 +278,8 @@ dependencies are stdlib-only or narrowly pinned.
       +-- Writes file to user's project
       |
       v
-  Delivery summary: md, html, pdf, hero, 3 viewport screenshots (preview/),
-  review.md, preflight-report.json
+  Delivery summary: md, html, pdf, hero, 3 viewport screenshots plus a dark-mode
+  screenshot (preview/), review.md, preflight-report.json
 ```
 
 The authoritative sequence and the full list of what each gate enforces live

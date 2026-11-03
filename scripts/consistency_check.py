@@ -16,7 +16,9 @@ import sys
 from pathlib import Path
 from urllib.parse import unquote
 
-SCANNED_ROOTS = ("docs", "skills", "agents", ".github")
+SCANNED_ROOTS = ("docs", "skills", "agents", ".github", "plugins")
+# Vendored or generated trees below plugins/ that are not project documentation.
+SKIPPED_PARTS = {"node_modules", ".reference-types"}
 RESOURCE_ROOTS = ("docs", "skills", "agents", "scripts")
 EXPLICIT_PATH_RE = re.compile(
     r"`((?:skills|agents|scripts|docs)/[A-Za-z0-9_./-]+)`"
@@ -45,7 +47,11 @@ def _markdown_sources(root: Path) -> list[Path]:
     for directory in SCANNED_ROOTS:
         base = root / directory
         if base.is_dir():
-            sources.extend(base.rglob("*.md"))
+            sources.extend(
+                path for path in base.rglob("*.md")
+                if not SKIPPED_PARTS & set(path.parts)
+                and ".claude-plugin/types/" not in path.as_posix()
+            )
     return sorted({path for path in sources if path.is_file()})
 
 

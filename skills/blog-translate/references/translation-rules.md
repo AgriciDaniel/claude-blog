@@ -26,8 +26,9 @@ Preserve unchanged:
 - Image and link URLs.
 - Executable code fences and inline code. Keep them unchanged unless the user
   explicitly asks for localized tutorial comments.
-- SVG attributes (`x`, `y`, `font-size`, `fill`, `transform`,
-  `viewBox`). Translate only `<text>` and `<tspan>` content.
+- SVG attributes (`x`, `y`, `fill`, `transform`, and `viewBox` or `font-size`
+  unless the overflow rule below applies). Translate only `<text>` and
+  `<tspan>` content.
 - Schema JSON-LD blocks. Translate user-facing content strings such as
   `headline` and `description`; never translate Person, Organization, or
   Brand names, URLs, IDs, `@id`, or `sameAs`.
@@ -47,8 +48,9 @@ shorter than the source:
 | ZH | -25% (per character count) |
 | KO | -15% |
 
-If text overflows the chart frame, raise `viewBox` width or reduce
-`font-size`, never truncate.
+**SVG overflow rule (the one rule, used by the skill and the agent):** if text
+overflows the chart frame, widen the `viewBox` or reduce `font-size`; never
+truncate.
 
 ## Number, Date, Currency, and Quote Formats per Locale
 
@@ -135,5 +137,10 @@ Never produce:
 ## Translation Provenance
 
 Store translation provenance in frontmatter or CMS metadata, not rendered
-comments. Use fields such as `translatedFrom`, `translatedDate`,
-`translationTool`, `sourceHash`, and `translationHash`.
+comments, and do not append an HTML comment. Use `translatedFrom`,
+`translatedDate`, `sourceHash` and `translationHash` (`blog-locale-audit`
+uses them to spot a translation whose source changed); `translationTool` is optional. `sourceHash` is the
+sha256 of the source file bytes and `translationHash` the sha256 of the
+translated body (everything after the closing frontmatter `---`). The
+translator agent has no Bash, so the orchestrator adds the two hashes in
+`blog-translate` Phase 5.

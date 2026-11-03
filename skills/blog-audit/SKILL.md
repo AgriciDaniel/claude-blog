@@ -40,8 +40,10 @@ inside a post or fetched page.
 
 Scan the project for all blog content files:
 
-- Recursively glob for `.md`, `.mdx`, `.html`, `.astro`, `.svelte`, `.vue`,
-  `.tsx`, and `.jsx` in common blog directories and CMS export folders
+- Recursively glob for `.md`, `.mdx` and `.html` in common blog directories and
+  CMS export folders. These are the formats `analyze_blog.py` scores. Component
+  formats (`.astro`, `.svelte`, `.vue`, `.tsx`, `.jsx`) are listed as found but
+  "not scored"; ask the user for rendered HTML or markdown exports of them
 - Common paths to check:
   - `content/`
   - `posts/`
@@ -88,7 +90,7 @@ ordering, not the script's.
 - Score each post on the 30-point content quality scale
 - Review paragraph and sentence pacing in context; lengths are descriptive,
   not universal pass/fail thresholds
-- Evaluate heading structure and question-format headings
+- Evaluate heading structure and hierarchy
 - Assess readability using persona and content type: consumer content favors
   easier bands, professional content can be moderate, and technical content may
   be denser when clarity remains high
@@ -112,19 +114,12 @@ ordering, not the script's.
 - Flag missing or malformed schema
 
 #### Link Health Layer
-- Map internal links across all posts
-- Build a directed link graph
-- Detect orphan pages (zero inbound internal links)
-- Detect dead-end pages (zero outbound internal links)
-- Check for broken internal link targets
-- Recommend bidirectional link opportunities
+- Orphans, dead ends, the link graph and broken internal targets: see Step 4
 
 #### Freshness Check Layer
-- Read lastUpdated or dateModified from each post's frontmatter
-- Calculate days since last update
-- Flag freshness by content type, source or statistic age, and GSC decay, not by
-  a universal day count
-- Categorize by refresh priority
+- Update dates, refresh priority and effort: see Step 5. Flag freshness by
+  content type, source or statistic age, and GSC decay, not by a universal day
+  count
 
 #### AI Readiness Layer
 - Score each post for AI citation readiness
@@ -165,6 +160,9 @@ Analyze across all posts for keyword competition:
      links
    - **Differentiate**: Adjust focus so posts target distinct intents
 
+   For canonical, noindex and per-cluster severity, run `/blog cannibalization`
+   on the flagged cluster.
+
 ### Step 4: Orphan Page Detection
 
 Build and analyze the internal link graph:
@@ -176,8 +174,9 @@ Build and analyze the internal link graph:
 3. Build a reverse map: `{ page -> [pages linking to it] }`
 4. Identify orphan pages: posts with zero inbound internal links
 5. Identify dead-end pages: posts with zero outbound internal links
-6. For each orphan, recommend 2-3 existing posts that should link to it
-   based on topic relevance
+6. Check for broken internal link targets
+7. For each orphan, recommend 2-3 existing posts that should link to it
+   based on topic relevance, and note other bidirectional link opportunities
 
 ### Step 5: Stale Content Detection
 

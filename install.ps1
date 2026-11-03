@@ -20,7 +20,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$ClaudeBlogVersion = "2.3.1"
+$ClaudeBlogVersion = "2.3.2"
 
 function Write-Color($Color, $Text) { Write-Host $Text -ForegroundColor $Color }
 
@@ -157,6 +157,22 @@ function Test-Python311($PythonCommand) {
     } catch { return $false }
 }
 
+function Find-Python311 {
+    # Windows ships python.exe and python3.exe Microsoft Store stubs that sit on
+    # PATH but are not Python. Take the first candidate that really runs
+    # Python 3.11+; if none does, return the first one found so the caller can
+    # report its version (or the missing interpreter) as before. The py launcher
+    # is last and runs the default Python 3 install.
+    $first = $null
+    foreach ($name in @("python", "python3", "py")) {
+        foreach ($candidate in @(Get-Command $name -CommandType Application -All -ErrorAction SilentlyContinue)) {
+            if (-not $first) { $first = $candidate }
+            if (Test-Python311 $candidate) { return $candidate }
+        }
+    }
+    return $first
+}
+
 function Test-PythonHasPip($PythonCommand) {
     try {
         & $PythonCommand.Source -m pip --version *> $null
@@ -263,8 +279,7 @@ function Main {
         if (-not (Test-Path -LiteralPath $LegacyInventory -PathType Leaf)) { throw "Reviewed legacy ownership inventory is missing: $LegacyInventory" }
         . $OwnershipHelper
 
-        $PythonCmd = Get-Command python3 -ErrorAction SilentlyContinue
-        if (-not $PythonCmd) { $PythonCmd = Get-Command python -ErrorAction SilentlyContinue }
+        $PythonCmd = Find-Python311
         if (-not $PythonCmd) {
             Write-Color Yellow "WARNING: Python not found. The scripts require Python 3.11+."
         } elseif (-not (Test-Python311 $PythonCmd)) {

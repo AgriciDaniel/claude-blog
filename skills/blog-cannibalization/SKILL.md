@@ -5,8 +5,8 @@ description: >
   from titles and headings, clustering semantically similar targets, and flagging
   posts competing for the same search intent. Supports a free local mode
   (file analysis) and a paid DataForSEO API mode that runs only after the user
-  approves the call count. Outputs a severity-scored report with merge or
-  differentiate recommendations. Use when the user says "cannibalization",
+  approves the call count. Outputs a severity-scored report with a recommended
+  action per cluster (merge, differentiate, canonical, noindex, or no action). Use when the user says "cannibalization",
   "keyword overlap", "competing pages". Not a site audit (blog-audit) or
   cluster planning (blog-cluster); it changes no files or redirects.
 user-invocable: true
@@ -206,7 +206,7 @@ For each flagged cluster, provide:
 
 ## Recommendations
 
-Four possible actions for each cannibalization cluster:
+Five possible actions for each cannibalization cluster (MERGE, DIFFERENTIATE, CANONICAL, NOINDEX, NO ACTION):
 
 ### MERGE
 When both pages are thin or cover the same intent with similar depth.

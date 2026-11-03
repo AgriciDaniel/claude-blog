@@ -2,14 +2,12 @@
 
 ## Raw Sources
 
-- `.raw/sources/claude-blog-skill/`: immutable local claude-blog v1.11.0
-  snapshot captured 2026-07-09, covering 32 skill directories
-  (1 orchestrator + 31 sub-skills), 30 user-facing commands, 5 agents,
-  14 scripts, 22 references, 12 templates, plugin metadata, README, license,
-  changelog, and top docs.
 - `.raw/sources/claude-blog-brain-data/google-updates.json`: immutable
   historical snapshot of the repo's Google update ledger captured 2026-07-09.
   It is provenance, not the current ledger.
+- The live claude-blog skill surface (`skills/`, `agents/`, `scripts/`, and
+  plugin metadata at the repository root) is the current reference; the Brain
+  keeps no raw copy of it.
 - Google Search Central docs; web.dev CWV; FLOW framework bibliography;
   GEO/AEO studies; content-marketing and copywriting research.
 

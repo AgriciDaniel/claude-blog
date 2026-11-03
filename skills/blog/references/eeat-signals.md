@@ -153,7 +153,9 @@ can follow the site's existing information architecture.
 
 The Person schema embedded in BlogPosting and on author pages.
 
-| Property | Required | Description | Example |
+The "This project" column is the house convention for author pages. Google's Article documentation recommends only `author.name` and `author.url`; the other properties are optional trust signals, not requirements.
+
+| Property | This project | Description | Example |
 |----------|----------|-------------|---------|
 | `@type` | Yes | Always "Person" | `"Person"` |
 | `@id` | Yes | Stable URI with fragment | `"https://example.com/author/sarah-chen#person"` |

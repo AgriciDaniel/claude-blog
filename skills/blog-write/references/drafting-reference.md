@@ -14,7 +14,7 @@ adapt this skeleton to match the template's section structure:
 ```
 # [Title as Question - Include Primary Keyword]
 
-## Introduction (100-150 words)
+## Introduction
 - Open with the reader's problem, a useful finding, a concrete example, or an
   optional verified statistic when evidence makes that the strongest hook
 - Problem/opportunity statement
@@ -67,7 +67,7 @@ adapt this skeleton to match the template's section structure:
 ## Optional FAQ Section (only when real reader questions warrant it)
 - [INTERNAL-LINK: anchor text → detailed content]
 
-## Conclusion (100-150 words)
+## Conclusion
 - Key takeaways (bulleted)
 - Call to action
 - [INTERNAL-LINK: anchor text → next logical content]
@@ -126,7 +126,9 @@ points.
 ## 5f. Internal Linking Zones
 
 Mark internal linking opportunities throughout the article using placeholder
-notation. The user (or a follow-up pass) will resolve these to actual URLs.
+notation. The orchestrator resolves every marker before render (a real link, or
+the marker removed and the plain text kept), and the delivery gates block any
+marker that remains.
 
 Zone placement:
 - **Introduction** - Link to related pillar content or topic hub
@@ -145,6 +147,6 @@ For a deeper dive into keyword clustering, see our
 [INTERNAL-LINK: complete guide to keyword clustering → pillar page on keyword research methodology].
 ```
 
-Target 5-10 internal link zones per 2,000-word post. Use descriptive anchor text
+Place as many zones as the subject earns; there is no per-length quota. Use descriptive anchor text
 (never "click here" or "read more"). See `${CLAUDE_SKILL_DIR}/../blog/references/internal-linking.md` for
 anchor text rules and linking strategy.

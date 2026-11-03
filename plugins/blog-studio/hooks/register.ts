@@ -147,13 +147,16 @@ function response(raw: { stdout: string; stderr: string; exitCode: number }): st
 
 async function inspect($: EngineInterface, s: StudioState, runId?: string): Promise<Status> {
   const paths = await prepare($, s)
-  const args = ['python3', paths.scripts + '/' + HELPER, '--draft', paths.draft, '--project-root', rootOf(s)]
+  const args = ['python3', '-E', paths.scripts + '/' + HELPER, '--draft', paths.draft, '--project-root', rootOf(s)]
   if (runId) args.push('--expected-run', runId)
   const out = await $.process.run(args, { cwd: rootOf(s), timeoutMs: 30_000 })
   const status = parseStatus(response(out), out.stderr)
   if (out.exitCode !== 0 && status.status !== 'error') throw new Error('Status inspector failed.')
   return status
 }
+
+// Exit 2 from the checker: it stopped before the gates. Shown as Blocked, never as passed.
+class CheckerStopped extends Error {}
 
 async function perform($: EngineInterface, check: boolean): Promise<string> {
   const snapshot = await context($)
@@ -170,8 +173,17 @@ async function perform($: EngineInterface, check: boolean): Promise<string> {
     if (check) {
       const paths = await prepare($, s)
       const tools = (await $.tool.list()).map(t => t.name)
-      const out = await $.process.run(['python3', paths.scripts + '/' + CHECKER, '--draft', paths.draft,
-        '--strict', '--json', '--tools-json', JSON.stringify(tools), '--project-root', rootOf(s)], { cwd: rootOf(s), timeoutMs: 600_000 })
+      // -E ignores PYTHON* variables but keeps user site-packages, where install.sh puts the
+      // optional dependencies without a venv. --manual-check never reads or changes the repair counter.
+      const out = await $.process.run(['python3', '-E', paths.scripts + '/' + CHECKER, '--draft', paths.draft,
+        '--strict', '--json', '--manual-check', '--tools-json', JSON.stringify(tools), '--project-root', rootOf(s)], { cwd: rootOf(s), timeoutMs: 600_000 })
+      if (out.exitCode === 2) {
+        let capped = false
+        try { capped = (JSON.parse(response(out)) as { iteration_cap_exceeded?: unknown })?.iteration_cap_exceeded === true } catch { /* no report */ }
+        throw new CheckerStopped(capped
+          ? 'Repair cap reached: this draft failed 3 full gate runs. Manual fix required before checks can continue.'
+          : 'Checker stopped before running the gates (exit 2): the repair cap is reached or this engine does not support --manual-check. ' + clean(out.stderr, 300))
+      }
       const report = jsonResponse(response(out), out.stderr)
       if (!report || typeof report !== 'object') throw new Error('Checker returned no valid report.')
       const r = report as { evidence?: { run_id?: unknown }; strict?: unknown; blocked?: unknown; draft?: unknown }
@@ -185,8 +197,11 @@ async function perform($: EngineInterface, check: boolean): Promise<string> {
     status = await inspect($, s, runId)
   } catch (error) {
     message = clean(error instanceof Error ? error.message : String(error))
-    status = { schema_version: 1, status: 'error', label: 'Execution error', checked_at: null,
-      passed_count: 0, gates: [], artifacts: [], diagnostics: [message] }
+    status = error instanceof CheckerStopped
+      ? { schema_version: 1, status: 'blocked', label: 'Blocked', checked_at: null,
+        passed_count: 0, gates: [], artifacts: [], diagnostics: [message] }
+      : { schema_version: 1, status: 'error', label: 'Execution error', checked_at: null,
+        passed_count: 0, gates: [], artifacts: [], diagnostics: [message] }
   }
   if (((await $.session.root()).replace(/\/$/, '') || '/') !== s.workspace || await $.session.id() !== s.sessionId) return 'Previous check finished after the session changed; its result was discarded.'
   const final = { ...s, busy: false, status, message }

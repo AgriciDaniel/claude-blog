@@ -7,7 +7,9 @@ Thank you for your interest in contributing to claude-blog!
 1. Fork and clone the repository
 2. Install dev dependencies: `pip install -e ".[dev]"`
 3. Run tests: `python -m pytest tests/ -v`
-4. Validate plugin metadata: `claude plugin validate .`
+4. Validate plugin metadata: `python3 .github/scripts/validate_plugin_tolerate_reserved_name.py`
+   (plain `claude plugin validate .` on Claude Code 2.1.292 or later reports the
+   reserved `claude-` name once per manifest; the wrapper tolerates exactly that)
 
 ## Development
 
@@ -25,7 +27,7 @@ claude-blog/
 │   ├── blog-rewrite/
 │   └── ...                  # 31 sub-skill dirs: 30 user-facing + 1 internal
 ├── agents/                  # 5 specialized agents
-├── scripts/                 # 20 root-level Python helper scripts
+├── scripts/                 # 23 root-level Python helper scripts
 ├── tests/                   # pytest test suite (security guardrails + script tests)
 ├── docs/                    # Documentation (installation, commands, architecture, templates, troubleshooting, MCP)
 └── .github/workflows/       # CI pipeline
@@ -38,7 +40,7 @@ claude-blog/
 - **Template paths** in sub-skills use `templates/` (relative to installed location).
 - **Agent frontmatter** must NOT include `Bash` in the `tools` list (blast-radius reduction for prompt-injection surfaces; enforced by tests).
 - Run `python -m pytest tests/ -v` before submitting.
-- Run `claude plugin validate .` before submitting.
+- Run the plugin validation wrapper from step 4 before submitting.
 
 ### Code Style
 
@@ -77,7 +79,7 @@ claude-blog/
 1. Create a feature branch from `main`.
 2. Make your changes with clear conventional-commit messages.
 3. Ensure all tests pass (`python -m pytest tests/`).
-4. Ensure plugin validates (`claude plugin validate .`).
+4. Ensure plugin validates (the wrapper from the Getting Started steps).
 5. Update `CHANGELOG.md` with an `[Unreleased]` entry describing the change.
 6. Submit a PR using the template. Fill in: type of change, linked issue, test plan, docs checklist, and security checklist (if applicable).
 

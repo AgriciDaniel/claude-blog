@@ -6,7 +6,7 @@
   "generated_at": "2026-07-09",
   "last_verified": "2026-08-25",
   "refresh_cadence": "monthly for Google algorithm updates and Search Central policy; before every release for E-E-A-T framing, schema deprecations, and GEO/AEO citation claims; on-changelog for the claude-blog skill",
-  "provenance": "Derived from the canonical repository data/google-updates.json, immutable local snapshots of the claude-blog v1.11.0 skill surface recorded in .raw/.manifest.json, the 2026 Blog-SEO Research Substrate, blog-relevant entries in Claude SEO Brain references/source-ledger.json, and URLs cited by the claude-blog skill references. Raw snapshot hashes cover the historical local skill surface and captured Google ledger. External web sources are recorded by URL, retrieval date, source type, confidence, evidence tier, limitations, and claim coverage when a raw snapshot is unavailable.",
+  "provenance": "Derived from the canonical repository data/google-updates.json, an immutable snapshot of that ledger recorded in .raw/.manifest.json, the 2026 Blog-SEO Research Substrate, blog-relevant entries in Claude SEO Brain references/source-ledger.json, and URLs cited by the claude-blog skill references. Raw snapshot hashes cover the captured Google ledger; the live claude-blog skill surface is read from the repository root, not from a raw copy. External web sources are recorded by URL, retrieval date, source type, confidence, evidence tier, limitations, and claim coverage when a raw snapshot is unavailable.",
   "rules": {
     "researched_requires": [
       "at least two captured sources for fast-moving or high-stakes domains",
@@ -44,7 +44,7 @@
       "living_doc"
     ],
     "raw_snapshot_required_for_market_ready": false,
-    "raw_snapshot_policy": "Raw snapshots are complete for the local claude-blog skill surface and repo data captured in .raw/.manifest.json. External web sources are not all raw-snapshotted; when a raw web snapshot exists, record raw_snapshot_path and raw_snapshot_sha256, otherwise rely on URL, retrieved date, source type, confidence, evidence tier, limitations, and claim coverage.",
+    "raw_snapshot_policy": "Raw snapshots are complete for the repo data captured in .raw/.manifest.json. External web sources are not all raw-snapshotted; when a raw web snapshot exists, record raw_snapshot_path and raw_snapshot_sha256, otherwise rely on URL, retrieved date, source type, confidence, evidence tier, limitations, and claim coverage.",
     "date_precision_enum": [
       "day",
       "month",

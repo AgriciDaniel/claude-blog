@@ -7,7 +7,7 @@ domain: "blog content creation, optimization, and management dual-optimized for 
 buyer: "Content teams, bloggers, SEO content strategists, and operators who run the claude-blog skill and need a persistent, source-cited operating system for writing, optimizing, and auditing blog content that ranks on Google and gets cited by AI assistants."
 owner: "Daniel Agrici"
 repo_url: "https://github.com/AgriciDaniel/claude-blog-brain"
-license_name: "Custom license"
+license_name: "MIT"
 research_refresh_cadence: "monthly for Google algorithm updates and Search Central policy; before every release for E-E-A-T framing, schema deprecations, and GEO/AEO citation claims; on-changelog for the claude-blog skill"
 workflows:
   - "Source intake and provenance capture from the claude-blog skill and official docs"
