@@ -18,7 +18,7 @@ version = "2.3.2"
 description = "AI-powered blog creation and optimization skill for Claude Code"
 readme = "README.md"
 license = {text = "MIT"}
-requires-python = ">=3.11"
+requires-python = ">=3.11.5"
 authors = [
     {name = "AgriciDaniel"},
 ]
