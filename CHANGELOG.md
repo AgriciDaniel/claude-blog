@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- French analysis profile in `scripts/analyze_blog.py`, selected when a post declares `lang: fr` (frontmatter, `<html lang>` or JSON-LD `inLanguage`). Before, French posts fell back to the English profile. Readability uses the Kandel-Moles formula (`207 - 1.015 x words per sentence - 73.6 x syllables per word`) with a stdlib French syllable counter, reported as `kandel_moles_reading_ease`. Summary labels, about and contact pages, first-hand experience and methodology phrases, definition verbs, transition words and example markers have French patterns.
+- Language profiles may set optional `definition_verbs`, `transition_words` and `example_patterns`. `analyze_transition_words()` and `analyze_engagement()` take an optional `language` argument; English output is unchanged.
+
 ## [2.3.2] - 2026-11-03
 
 ### Security

@@ -822,3 +822,80 @@ guidance and explain the reader's next decision.
             assert seo["breakdown"]["meta_description"] == base_seo["breakdown"][
                 "meta_description"
             ]
+
+
+def test_french_uses_kandel_moles_instead_of_flesch():
+    text = (
+        "Le salarié pose ses congés dans le logiciel. "
+        "L'employeur valide la demande en quelques clics. "
+        "Le planning se met à jour pour toute l'équipe."
+    )
+    result = analyze_blog.analyze_readability(text, "fr")
+
+    assert result["reading_model"] == "kandel_moles"
+    assert "kandel_moles_reading_ease" in result
+    assert "flesch_reading_ease" not in result
+    assert 50 <= result["reading_ease"] <= 100
+
+
+def test_french_syllable_counter_handles_silent_endings():
+    assert analyze_blog._count_french_syllables("table") == 1
+    assert analyze_blog._count_french_syllables("travaillent") == 2
+    assert analyze_blog._count_french_syllables("salariés") == 3
+    assert analyze_blog._count_french_syllables("été") == 2
+
+
+def test_french_transitions_and_examples_use_french_lexicon():
+    text = (
+        "Le forfait jours concerne les cadres autonomes. "
+        "Cependant, il impose un suivi régulier de la charge. "
+        "Par exemple, un entretien annuel reste obligatoire."
+    )
+    transitions = analyze_blog.analyze_transition_words(text, "fr")
+    engagement = analyze_blog.analyze_engagement(text, "fr")
+
+    assert transitions["transition_count"] == 2
+    assert engagement["example_count"] >= 1
+    assert analyze_blog.analyze_transition_words(text)["transition_count"] == 0
+
+
+def test_french_profile_detects_summary_definitions_and_supported_experience(tmp_path):
+    post = """---
+title: Le forfait jours expliqué
+description: Fonctionnement du forfait jours et calcul des RTT.
+author: Camille Martin
+lang: fr-FR
+---
+# Le forfait jours expliqué
+
+## En bref
+
+Le **forfait jours** est un mode de décompte du temps de travail en jours.
+
+## Méthodologie
+
+Nous avons analysé 120 plannings issus de nos données internes pour mesurer l'écart.
+
+## Contact
+
+[Qui sommes-nous](/qui-sommes-nous) et [Contactez-nous](/contact).
+"""
+    path = tmp_path / "french.md"
+    path.write_text(post, encoding="utf-8")
+
+    result = analyze_blog.analyze_file(str(path))
+
+    assert result["language"] == "fr"
+    assert result["readability"]["reading_model"] == "kandel_moles"
+    assert result["ai_citation_readiness"]["has_tldr"] is True
+    assert result["ai_citation_readiness"]["entity_definitions"] >= 1
+    assert result["originality"]["first_person_count"] >= 1
+    assert result["originality"]["methodology_count"] >= 1
+    assert result["originality"]["unsupported_experience_claims"] == 0
+    assert not any("Flesch" in issue["issue"] for issue in result["score"]["issues"])
+
+
+def test_english_definition_pattern_is_unchanged():
+    pattern = analyze_blog._definition_pattern("en")
+    assert analyze_blog.re.search(pattern, "**Churn** is the rate of loss.")
+    assert not analyze_blog.re.search(pattern, "**Churn** est le taux de perte.")

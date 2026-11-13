@@ -232,7 +232,74 @@ LANGUAGE_PROFILES: dict[str, dict[str, Any]] = {
         ),
         'readability_model': 'atesman',
     },
+    'fr': {
+        'summary_labels': (
+            r'en bref', r'en r[ée]sum[ée]', r"l['’]essentiel", r'[àa] retenir',
+            r'ce qu.il faut retenir', r'points cl[ée]s', r'TL;?DR',
+        ),
+        'about_patterns': (
+            r'/(?:a-propos|qui-sommes-nous)(?:[/?#]|$)', r'\b[àa] propos\b',
+            r'\bqui sommes-nous\b',
+        ),
+        'contact_patterns': (
+            r'/contact(?:ez-nous)?(?:[/?#]|$)', r'\bcontactez-nous\b', r'\bnous contacter\b',
+        ),
+        'first_person_patterns': (
+            r"\b(?:j['’]ai|nous avons|notre [ée]quipe a)\s+(?:test[ée]|mesur[ée]|analys[ée]|"
+            r'construit|compar[ée]|constat[ée]|observ[ée]|interrog[ée]|men[ée]|d[ée]couvert)\b',
+            r'\b(?:selon|d.apr[èe]s) (?:notre|mon) exp[ée]rience\b',
+            r'\b(?:chez|parmi) nos clients\b',
+            r'\bnos (?:donn[ée]es|chiffres) internes\b',
+        ),
+        'methodology_patterns': (
+            r'\b(?:m[ée]thodologie|[ée]chantillon|taille de l.[ée]chantillon|protocole de test|'
+            r'm[ée]thode de calcul|source des donn[ée]es)\b',
+            r'\b(?:nous avons|notre [ée]quipe a)\s+(?:test[ée]|mesur[ée]|analys[ée])\b[^.\n]{0,180}'
+            r'(?:\d|https?://|\[[^\]\n]{1,300}\]\(https?://)',
+        ),
+        # Kandel & Moles (1958) adaptation of Flesch reading ease for French.
+        'readability_model': 'kandel_moles',
+        'definition_verbs': (
+            r'est', r'sont', r'd[ée]signe(?:nt)?', r'correspond(?:ent)? [àa]',
+            r'signifie(?:nt)?', r'se d[ée]finit', r'repr[ée]sente(?:nt)?',
+            r':',
+        ),
+        'transition_words': (
+            'cependant', 'pourtant', 'toutefois', 'néanmoins', 'en revanche',
+            'par conséquent', 'ainsi', 'donc', 'de plus', 'en outre', 'par ailleurs',
+            'en effet', 'par exemple', 'notamment', 'en particulier', 'autrement dit',
+            "c'est-à-dire", 'en résumé', 'enfin', "d'abord", 'ensuite', 'de même',
+            'au contraire', 'à l’inverse', "à l'inverse", 'en conclusion',
+        ),
+        'example_patterns': (
+            r'(?i)\bpar exemple\b', r'(?i)\bprenons (?:le cas|l.exemple)\b',
+            r'(?i)\bexemple\s*:', r'(?i)\bimaginons\b', r'(?i)\bc.est le cas\b',
+            r'(?i)\bnotamment\b',
+        ),
+    },
 }
+
+# Definition verbs shared by every profile (historical behaviour). Profiles may
+# add their own through an optional ``definition_verbs`` tuple.
+_READING_MODEL_LABELS = {'flesch': 'Flesch', 'flesch-estimate': 'Flesch', 'kandel_moles': 'Kandel-Moles'}
+
+DEFAULT_DEFINITION_VERBS = (r'is', r'are', r'refers to', r'means', r'adalah', r'merupakan')
+
+
+def _definition_pattern(language: str = 'en') -> str:
+    profile = LANGUAGE_PROFILES.get(language, LANGUAGE_PROFILES['en'])
+    verbs = DEFAULT_DEFINITION_VERBS + tuple(profile.get('definition_verbs', ()))
+    return r'\*\*[^*]+\*\*\s*(?:' + '|'.join(verbs) + r')'
+
+
+def _count_french_syllables(word: str) -> int:
+    """Approximate French syllables: vowel groups minus a silent final e/es."""
+    w = word.lower()
+    groups = re.findall(r'[aeiouyàâäéèêëîïôöùûüÿœæ]+', w)
+    count = len(groups)
+    if count > 1 and re.search(r'[^aeiouyàâäéèêëîïôöùûüÿœæ]e?s?$', w) and re.search(r'e(?:s|nt)?$', w) and not w.endswith(('é', 'ée', 'ées', 'és')):
+        count -= 1
+    return max(count, 1)
 
 
 def _read_safely(path: Path, max_bytes: int = MAX_INPUT_BYTES) -> str:
@@ -918,6 +985,21 @@ def analyze_readability(text: str, language: str = 'en') -> dict[str, Any]:
             'estimated': False,
         }
 
+    if LANGUAGE_PROFILES.get(language, LANGUAGE_PROFILES['en'])["readability_model"] == 'kandel_moles':
+        syllables = sum(_count_french_syllables(word) for word in words)
+        mean_syllables = syllables / max(word_count, 1)
+        score = 207.0 - 1.015 * avg_sentence_len - 73.6 * mean_syllables
+        score = max(0.0, min(100.0, score))
+        return {
+            'reading_model': 'kandel_moles',
+            'reading_ease': round(score, 1),
+            'kandel_moles_reading_ease': round(score, 1),
+            'reading_time_minutes': round(word_count / 228, 1),
+            'avg_sentence_length': round(avg_sentence_len, 1),
+            'mean_syllables_per_word': round(mean_syllables, 2),
+            'estimated': False,
+        }
+
     if HAS_TEXTSTAT:
         fre = textstat.flesch_reading_ease(text)
         fkg = textstat.flesch_kincaid_grade(text)
@@ -1058,7 +1140,7 @@ def analyze_passive_voice(text: str) -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 
-def analyze_transition_words(text: str) -> dict[str, Any]:
+def analyze_transition_words(text: str, language: str = 'en') -> dict[str, Any]:
     """Measure percentage of sentences containing transition words."""
     sentences = re.split(r'(?<=[.!?])\s+', text)
     sentences = [s for s in sentences if len(s.split()) > 2]
@@ -1068,7 +1150,7 @@ def analyze_transition_words(text: str) -> dict[str, Any]:
     lower_sentences = [s.lower() for s in sentences]
     transition_count = 0
     for s in lower_sentences:
-        for tw in TRANSITION_WORDS:
+        for tw in LANGUAGE_PROFILES.get(language, {}).get('transition_words', TRANSITION_WORDS):
             if tw in s:
                 transition_count += 1
                 break  # count each sentence once
@@ -1260,7 +1342,7 @@ def analyze_originality(content: str, language: str = 'en') -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 
-def analyze_engagement(content: str) -> dict[str, Any]:
+def analyze_engagement(content: str, language: str = 'en') -> dict[str, Any]:
     """Detect questions in body text, examples, call-to-action patterns."""
     # Questions in body (not in headings)
     body_lines = [line for line in content.split('\n') if not line.strip().startswith('#')]
@@ -1273,6 +1355,7 @@ def analyze_engagement(content: str) -> dict[str, Any]:
         r'(?i)\bconsider\b', r'(?i)\blet\'s say\b', r'(?i)\bimagine\b',
         r'(?i)\bhere\'s (?:an|a) example\b',
     ]
+    example_patterns += list(LANGUAGE_PROFILES.get(language, {}).get('example_patterns', ()))
     example_count = sum(len(re.findall(p, content)) for p in example_patterns)
 
     return {
@@ -1305,7 +1388,7 @@ def analyze_ai_citation_readiness(content: str, headings_info: dict[str, Any],
             re.IGNORECASE,
         ))
         has_definition = bool(re.search(
-            r'\*\*[^*]+\*\*\s*(?:is|are|refers to|means|adalah|merupakan)',
+            _definition_pattern(language),
             section,
             re.IGNORECASE,
         ))
@@ -1331,7 +1414,7 @@ def analyze_ai_citation_readiness(content: str, headings_info: dict[str, Any],
 
     # Entity clarity: detect defined terms (bold terms followed by explanations)
     entity_definitions = len(re.findall(
-        r'\*\*[^*]+\*\*\s*(?:is|are|refers to|means|adalah|merupakan)',
+        _definition_pattern(language),
         content,
     ))
 
@@ -1529,7 +1612,7 @@ def calculate_score(analysis: dict[str, Any]) -> dict[str, Any]:
     else:
         read_score = 1
         issues.append({'category': 'content', 'severity': 'medium',
-                       'issue': f'Flesch reading ease ({reading_ease}) outside acceptable range (55-75)'})
+                       'issue': f'{_READING_MODEL_LABELS.get(reading_model, "Flesch")} reading ease ({reading_ease}) outside acceptable range (55-75)'})
     cq += read_score
     cq_breakdown['readability'] = read_score
 
@@ -2108,12 +2191,12 @@ def analyze_file(file_path: str) -> dict[str, Any]:
         'sentences': sentences_info,
         'ai_signals': analyze_ai_signals(plain_text, sentences_info),
         'passive_voice': analyze_passive_voice(plain_text),
-        'transition_words': analyze_transition_words(plain_text),
+        'transition_words': analyze_transition_words(plain_text, language),
         'ai_trigger_words': analyze_ai_trigger_words(plain_text),
         'schema': analyze_schema(content),
         'links': analyze_links(body),
         'originality': analyze_originality(body, language),
-        'engagement': analyze_engagement(body),
+        'engagement': analyze_engagement(body, language),
         'ai_citation_readiness': ai_citation_readiness,
         'social_meta': analyze_social_meta(content, frontmatter),
         'structured_data': analyze_structured_data(body),
